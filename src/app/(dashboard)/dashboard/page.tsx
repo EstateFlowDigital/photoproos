@@ -16,6 +16,8 @@ import { getExpiringSoonGalleries } from "@/lib/actions/gallery-expiration";
 import { isSectionVisible, isSectionCollapsed } from "@/lib/dashboard-types";
 import Link from "next/link";
 import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 
 const OnboardingFallback = () => (
   <div className="h-[260px] rounded-xl border border-[var(--card-border)] bg-[var(--card)]" aria-hidden />
@@ -194,6 +196,7 @@ export default async function DashboardPage() {
     dashboardConfigResult,
     expiringGalleriesResult,
     overdueInvoicesResult,
+    walkthroughPreferenceResult,
   ] = await Promise.all([
     // This month's revenue - from paid invoices
     prisma.invoice.aggregate({
@@ -364,6 +367,9 @@ export default async function DashboardPage() {
 
     // Overdue invoices for widget
     getOverdueInvoicesForDashboard(organization.id),
+
+    // Walkthrough preference
+    getWalkthroughPreference("dashboard"),
   ]);
 
   const thisMonthRevenueValue = thisMonthRevenue._sum.totalCents || 0;
@@ -374,6 +380,9 @@ export default async function DashboardPage() {
   const overdueInvoices = overdueInvoicesResult.success
     ? overdueInvoicesResult.data
     : { invoices: [], totalOverdueCents: 0 };
+  const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data
+    ? walkthroughPreferenceResult.data.state
+    : "open";
 
   // Calculate changes for stats
   const revenueChange = calculatePercentChange(thisMonthRevenueValue, lastMonthRevenueValue);
@@ -443,6 +452,13 @@ export default async function DashboardPage() {
       <Suspense fallback={null}>
         <TourStarter />
       </Suspense>
+
+      {/* Page Walkthrough */}
+      <WalkthroughWrapper
+        pageId="dashboard"
+        initialState={walkthroughState}
+      />
+
       <div className="flex flex-wrap items-start justify-between gap-4">
         <PageHeader
           title="Dashboard"

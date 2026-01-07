@@ -1,71 +1,59 @@
 export const dynamic = "force-dynamic";
 
-import { PageHeader, PageContextNav } from "@/components/dashboard";
-import { MessageSquare, Users, Bell } from "lucide-react";
+import { MessageSquare, Edit } from "lucide-react";
+import Link from "next/link";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
-import { getUserConversations, getTotalUnreadCount } from "@/lib/actions/conversations";
-import { getPendingChatRequestCount } from "@/lib/actions/chat-requests";
-import { MessagesPageClient } from "./messages-page-client";
+import { getUserConversations } from "@/lib/actions/conversations";
 
-interface PageProps {
-  searchParams: Promise<{ type?: string; search?: string }>;
-}
-
-export default async function MessagesPage({ searchParams }: PageProps) {
-  const params = await searchParams;
-  const typeFilter = params.type as "direct" | "group" | "channel" | "client_support" | undefined;
-
+export default async function MessagesPage() {
   const auth = await getAuthContext();
   if (!auth) {
     redirect("/sign-in");
   }
 
-  // Fetch conversations
-  const conversationsResult = await getUserConversations({
-    type: typeFilter,
-    search: params.search,
-  });
+  const result = await getUserConversations();
+  const conversations = result.success && result.data ? result.data : [];
 
-  const conversations = conversationsResult.success ? conversationsResult.data : [];
-
-  // Get counts for badges
-  const [unreadResult, pendingRequestsResult] = await Promise.all([
-    getTotalUnreadCount(),
-    getPendingChatRequestCount(),
-  ]);
-
-  const unreadCount = unreadResult.success ? unreadResult.data : 0;
-  const pendingRequestCount = pendingRequestsResult.success ? pendingRequestsResult.data : 0;
-
+  // Empty state - shown in main content area when no conversation is selected
+  // On mobile, users see the sidebar. On desktop, they see this.
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Messages"
-        subtitle="Team conversations and client support"
-      />
+    <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
+      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-hover)]">
+        <MessageSquare className="h-12 w-12 text-white" />
+      </div>
+      <h2 className="mt-6 text-2xl font-semibold text-[var(--foreground)]">
+        Messages
+      </h2>
+      <p className="mt-3 max-w-md text-[var(--foreground-muted)]">
+        {conversations.length > 0
+          ? "Select a conversation from the sidebar to view messages, or start a new conversation."
+          : "Start a new message to connect with your team members or clients."}
+      </p>
+      <Link
+        href="/messages/new?type=direct"
+        className="mt-8 inline-flex items-center gap-2 rounded-full bg-[var(--primary)] px-6 py-3 text-sm font-medium text-white hover:bg-[var(--primary-hover)] transition-colors shadow-lg shadow-[var(--primary)]/25"
+      >
+        <Edit className="h-4 w-4" />
+        New Message
+      </Link>
 
-      <PageContextNav
-        items={[
-          {
-            label: "Inbox",
-            href: "/messages",
-            icon: <MessageSquare className="h-4 w-4" />,
-            badge: unreadCount > 0 ? unreadCount : undefined,
-          },
-          {
-            label: "Chat Requests",
-            href: "/messages/requests",
-            icon: <Bell className="h-4 w-4" />,
-            badge: pendingRequestCount > 0 ? pendingRequestCount : undefined,
-          },
-        ]}
-      />
-
-      <MessagesPageClient
-        conversations={conversations}
-        typeFilter={typeFilter}
-      />
+      {/* Quick Stats */}
+      {conversations.length > 0 && (
+        <div className="mt-12 flex items-center gap-8 text-sm text-[var(--foreground-muted)]">
+          <div className="text-center">
+            <div className="text-2xl font-semibold text-[var(--foreground)]">{conversations.length}</div>
+            <div>Conversations</div>
+          </div>
+          <div className="h-8 w-px bg-[var(--card-border)]" />
+          <div className="text-center">
+            <div className="text-2xl font-semibold text-[var(--foreground)]">
+              {conversations.filter(c => c.unreadCount && c.unreadCount > 0).length}
+            </div>
+            <div>Unread</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

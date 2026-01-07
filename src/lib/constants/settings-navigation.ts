@@ -55,7 +55,8 @@ export type SettingsIconName =
   | "layers"
   | "code"
   | "package"
-  | "image";
+  | "image"
+  | "helpCircle";
 
 export interface SettingsNavItemWithIconName {
   id: string;
@@ -103,6 +104,13 @@ export const SETTINGS_NAVIGATION: SettingsNavCategoryWithIconNames[] = [
         href: "/settings/billing",
         iconName: "creditCard",
         description: "Subscription and payment methods",
+      },
+      {
+        id: "walkthroughs",
+        label: "Walkthroughs",
+        href: "/settings/walkthroughs",
+        iconName: "helpCircle",
+        description: "Tutorial visibility settings",
       },
     ],
   },
@@ -389,6 +397,13 @@ export const SETTINGS_PAGE_CATEGORIES: SettingsPageCategory[] = [
         description: "Update your personal information and avatar",
         href: "/settings/profile",
         iconName: "user",
+      },
+      {
+        id: "walkthroughs",
+        label: "Walkthroughs & Guides",
+        description: "Control which tutorials appear throughout the app",
+        href: "/settings/walkthroughs",
+        iconName: "helpCircle",
       },
     ],
   },

@@ -7,6 +7,8 @@ import { ClientsPageClient } from "./clients-page-client";
 import { TagsManagementClient } from "./tags-management-client";
 import { getClientTags } from "@/lib/actions/client-tags";
 import type { Prisma } from "@prisma/client";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 
 interface PageProps {
   searchParams: Promise<{ q?: string; view?: string; tag?: string }>;
@@ -127,8 +129,20 @@ export default async function ClientsPage({ searchParams }: PageProps) {
   const tagsResult = await getClientTags();
   const allTags = tagsResult.success ? tagsResult.data : [];
 
+  // Get walkthrough preference
+  const walkthroughResult = await getWalkthroughPreference("clients");
+  const walkthroughState = walkthroughResult.success && walkthroughResult.data
+    ? walkthroughResult.data.state
+    : "open";
+
   return (
     <div className="space-y-6">
+      {/* Page Walkthrough */}
+      <WalkthroughWrapper
+        pageId="clients"
+        initialState={walkthroughState}
+      />
+
       <ClientsPageClient
         clients={clientsWithTags}
         searchQuery={searchQuery}

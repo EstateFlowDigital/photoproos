@@ -35,6 +35,11 @@ export type WalkthroughPageId =
   | "marketing-kit";
 
 /**
+ * Position for spotlight tooltip
+ */
+export type SpotlightPosition = "top" | "bottom" | "left" | "right" | "auto";
+
+/**
  * Single step in a walkthrough
  */
 export interface WalkthroughStep {
@@ -42,6 +47,16 @@ export interface WalkthroughStep {
   title: string;
   description: string;
   icon?: ComponentType<{ className?: string }>;
+  /** CSS selector for the element to highlight (e.g., "[data-tour='quick-actions']") */
+  targetSelector?: string;
+  /** Padding around the highlighted element in pixels */
+  highlightPadding?: number;
+  /** Position of the tooltip relative to the highlighted element */
+  tooltipPosition?: SpotlightPosition;
+  /** Action button text (e.g., "Try it now") */
+  actionLabel?: string;
+  /** Action button href or callback */
+  actionHref?: string;
 }
 
 /**

@@ -33,6 +33,7 @@ import {
   CodeIcon,
   PackageIcon,
   ImageIcon,
+  HelpCircleIcon,
 } from "@/components/ui/settings-icons";
 
 // ============================================================================
@@ -62,6 +63,7 @@ const ICON_MAP: Record<SettingsIconName, React.FC<{ className?: string }>> = {
   code: CodeIcon,
   package: PackageIcon,
   image: ImageIcon,
+  helpCircle: HelpCircleIcon,
 };
 
 // ============================================================================

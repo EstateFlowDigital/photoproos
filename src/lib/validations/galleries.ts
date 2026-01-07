@@ -101,6 +101,9 @@ export const gallerySchema = z.object({
     .optional()
     .nullable()
     .transform((val) => val || null),
+  selectionRequired: z.boolean().default(false),
+  // Reminder settings
+  reminderEnabled: z.boolean().default(true),
 });
 
 // Schema for creating a new gallery

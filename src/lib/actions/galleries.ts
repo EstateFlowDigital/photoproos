@@ -204,6 +204,8 @@ export async function updateGallery(
         ...(updateData.sendNotifications !== undefined && { sendNotifications: updateData.sendNotifications }),
         ...(updateData.allowSelections !== undefined && { allowSelections: updateData.allowSelections }),
         ...(updateData.selectionLimit !== undefined && { selectionLimit: updateData.selectionLimit }),
+        ...(updateData.selectionRequired !== undefined && { selectionRequired: updateData.selectionRequired }),
+        ...(updateData.reminderEnabled !== undefined && { reminderEnabled: updateData.reminderEnabled }),
       },
     });
 
@@ -876,7 +878,10 @@ export async function getGallery(id: string) {
       // Selection settings
       allowSelections: gallery.allowSelections,
       selectionLimit: gallery.selectionLimit,
+      selectionRequired: gallery.selectionRequired,
       selectionsSubmitted: gallery.selectionsSubmitted,
+      // Reminder settings
+      reminderEnabled: gallery.reminderEnabled,
       // Related data
       client: gallery.client,
       service: gallery.service,

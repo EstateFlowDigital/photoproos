@@ -105,7 +105,12 @@ export default async function EditGalleryPage({ params }: EditGalleryPageProps) 
       emailNotifications: gallery.sendNotifications ?? true,
       downloadResolution: (gallery.downloadResolution as "full" | "web" | "both") || "both",
       downloadRequiresPayment: gallery.downloadRequiresPayment ?? true,
+      reminderEnabled: gallery.reminderEnabled ?? true,
     },
+    // Selection settings
+    allowSelections: gallery.allowSelections ?? false,
+    selectionLimit: gallery.selectionLimit ?? null,
+    selectionRequired: gallery.selectionRequired ?? false,
   };
 
   return (
@@ -134,6 +139,70 @@ export default async function EditGalleryPage({ params }: EditGalleryPageProps) 
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Gallery Links */}
+          {gallery.deliverySlug && (
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4">Gallery Links</h2>
+              <div className="space-y-4">
+                {/* Branded Gallery Link */}
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    <span className="flex items-center gap-2">
+                      <LinkIcon className="h-4 w-4" />
+                      Branded Gallery Link
+                    </span>
+                  </label>
+                  <p className="text-xs text-foreground-muted mb-2">
+                    Includes your branding and business logo
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={`${process.env.NEXT_PUBLIC_APP_URL || ''}/g/${gallery.deliverySlug}`}
+                      className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-xs text-foreground-muted truncate"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_APP_URL || ''}/g/${gallery.deliverySlug}`)}
+                      className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-xs font-medium text-foreground hover:bg-[var(--background-hover)]"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+
+                {/* Clean Gallery Link */}
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    <span className="flex items-center gap-2">
+                      <LinkIcon className="h-4 w-4" />
+                      Clean Gallery Link
+                    </span>
+                  </label>
+                  <p className="text-xs text-foreground-muted mb-2">
+                    Minimal view without business branding
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={`${process.env.NEXT_PUBLIC_APP_URL || ''}/g/${gallery.deliverySlug}?clean=true`}
+                      className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-xs text-foreground-muted truncate"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_APP_URL || ''}/g/${gallery.deliverySlug}?clean=true`)}
+                      className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-xs font-medium text-foreground hover:bg-[var(--background-hover)]"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Gallery Status */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Gallery Status</h2>
@@ -312,6 +381,15 @@ function NoteIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function LinkIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M12.232 4.232a2.5 2.5 0 0 1 3.536 3.536l-1.225 1.224a.75.75 0 0 0 1.061 1.06l1.224-1.224a4 4 0 0 0-5.656-5.656l-3 3a4 4 0 0 0 .225 5.865.75.75 0 0 0 .977-1.138 2.5 2.5 0 0 1-.142-3.667l3-3Z" />
+      <path d="M11.603 7.963a.75.75 0 0 0-.977 1.138 2.5 2.5 0 0 1 .142 3.667l-3 3a2.5 2.5 0 0 1-3.536-3.536l1.225-1.224a.75.75 0 0 0-1.061-1.06l-1.224 1.224a4 4 0 1 0 5.656 5.656l3-3a4 4 0 0 0-.225-5.865Z" />
     </svg>
   );
 }

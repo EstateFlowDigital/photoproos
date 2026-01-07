@@ -124,6 +124,8 @@ export function CreateGalleryModal({
           sendNotifications: true,
           allowSelections: false,
           selectionLimit: null,
+          selectionRequired: false,
+          reminderEnabled: true,
           services: selectedServices,
         });
 

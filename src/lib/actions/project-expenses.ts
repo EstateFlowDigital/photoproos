@@ -5,7 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { ok, fail, success } from "@/lib/types/action-result";
 import { generatePresignedUploadUrl, generateFileKey } from "@/lib/storage";
-import type { ExpenseCategory, ExpenseApprovalStatus, RecurrenceFrequency } from "@prisma/client";
+import type { ExpenseCategory, ExpenseApprovalStatus, RecurrenceFrequency, PaymentMethod } from "@prisma/client";
 
 // ============================================================================
 // TYPES
@@ -23,6 +23,12 @@ export interface CreateExpenseInput {
   paidDate?: Date;
   receiptUrl?: string;
   notes?: string;
+  // Enhanced tracking fields
+  isBillable?: boolean;
+  paymentMethod?: PaymentMethod;
+  taxCents?: number;
+  mileageDistance?: number;
+  mileageRateCents?: number;
 }
 
 export interface UpdateExpenseInput {
@@ -37,6 +43,12 @@ export interface UpdateExpenseInput {
   paidDate?: Date;
   receiptUrl?: string;
   notes?: string;
+  // Enhanced tracking fields
+  isBillable?: boolean;
+  paymentMethod?: PaymentMethod;
+  taxCents?: number;
+  mileageDistance?: number;
+  mileageRateCents?: number;
 }
 
 export interface ProjectPLSummary {
@@ -259,6 +271,12 @@ export async function createProjectExpense(
         receiptUrl: input.receiptUrl || null,
         notes: input.notes || null,
         createdBy: userId,
+        // Enhanced tracking fields
+        isBillable: input.isBillable ?? false,
+        paymentMethod: input.paymentMethod || null,
+        taxCents: input.taxCents || null,
+        mileageDistance: input.mileageDistance || null,
+        mileageRateCents: input.mileageRateCents || null,
       },
     });
 
@@ -316,6 +334,12 @@ export async function updateProjectExpense(
         paidDate: input.paidDate,
         receiptUrl: input.receiptUrl,
         notes: input.notes,
+        // Enhanced tracking fields
+        isBillable: input.isBillable,
+        paymentMethod: input.paymentMethod,
+        taxCents: input.taxCents,
+        mileageDistance: input.mileageDistance,
+        mileageRateCents: input.mileageRateCents,
       },
     });
 
@@ -1827,5 +1851,652 @@ export async function generateExpenseReport(
   } catch (error) {
     console.error("Error generating expense report:", error);
     return fail("Failed to generate expense report");
+  }
+}
+
+// ============================================================================
+// EXPENSE DUPLICATION
+// ============================================================================
+
+/**
+ * Duplicate an existing expense
+ */
+export async function duplicateExpense(expenseId: string, projectId?: string) {
+  const { orgId, userId } = await auth();
+  if (!orgId || !userId) {
+    return fail("Not authenticated");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    const existing = await prisma.projectExpense.findUnique({
+      where: { id: expenseId },
+    });
+
+    if (!existing || existing.organizationId !== org.id) {
+      return fail("Expense not found");
+    }
+
+    // If a different project is specified, verify it belongs to the org
+    const targetProjectId = projectId || existing.projectId;
+    if (projectId && projectId !== existing.projectId) {
+      const project = await prisma.project.findFirst({
+        where: { id: projectId, organizationId: org.id },
+      });
+      if (!project) {
+        return fail("Target project not found");
+      }
+    }
+
+    const duplicate = await prisma.projectExpense.create({
+      data: {
+        organizationId: org.id,
+        projectId: targetProjectId,
+        description: existing.description,
+        category: existing.category,
+        amountCents: existing.amountCents,
+        currency: existing.currency,
+        vendor: existing.vendor,
+        teamMemberId: existing.teamMemberId,
+        expenseDate: new Date(), // Set to today
+        isPaid: false, // Default to unpaid for duplicates
+        receiptUrl: null, // Don't copy receipt
+        notes: existing.notes ? `(Duplicated) ${existing.notes}` : "(Duplicated)",
+        createdBy: userId,
+        // Enhanced tracking fields
+        isBillable: existing.isBillable,
+        paymentMethod: existing.paymentMethod,
+        taxCents: existing.taxCents,
+        mileageDistance: existing.mileageDistance,
+        mileageRateCents: existing.mileageRateCents,
+      },
+    });
+
+    revalidatePath(`/galleries/${targetProjectId}`);
+
+    return success(duplicate);
+  } catch (error) {
+    console.error("Error duplicating expense:", error);
+    return fail("Failed to duplicate expense");
+  }
+}
+
+// ============================================================================
+// MILEAGE CALCULATOR
+// ============================================================================
+
+/**
+ * Get organization's default mileage rate
+ */
+export async function getOrganizationMileageRate() {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return fail("Not authenticated");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { expenseMileageRateCents: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    return success({ rateCents: org.expenseMileageRateCents });
+  } catch (error) {
+    console.error("Error fetching mileage rate:", error);
+    return fail("Failed to fetch mileage rate");
+  }
+}
+
+/**
+ * Update organization's default mileage rate
+ */
+export async function updateOrganizationMileageRate(rateCents: number) {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return fail("Not authenticated");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    await prisma.organization.update({
+      where: { id: org.id },
+      data: { expenseMileageRateCents: rateCents },
+    });
+
+    return ok();
+  } catch (error) {
+    console.error("Error updating mileage rate:", error);
+    return fail("Failed to update mileage rate");
+  }
+}
+
+/**
+ * Calculate mileage expense amount
+ */
+export function calculateMileageAmount(distance: number, rateCents: number): number {
+  return Math.round(distance * rateCents);
+}
+
+// ============================================================================
+// EXPENSE FORECASTING
+// ============================================================================
+
+export interface ExpenseForecast {
+  templateId: string;
+  templateName: string;
+  category: ExpenseCategory;
+  amountCents: number;
+  frequency: RecurrenceFrequency;
+  nextDueDate: Date | null;
+  projectedExpenses: {
+    date: Date;
+    amountCents: number;
+  }[];
+  totalProjected: number;
+}
+
+/**
+ * Get expense forecast based on recurring templates
+ */
+export async function getExpenseForecast(
+  projectId: string,
+  months: number = 3
+) {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return fail("Not authenticated");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    // Get active recurring templates
+    const templates = await prisma.recurringExpenseTemplate.findMany({
+      where: {
+        organizationId: org.id,
+        isActive: true,
+      },
+    });
+
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + months);
+
+    const forecasts: ExpenseForecast[] = templates.map((template) => {
+      const projectedExpenses: { date: Date; amountCents: number }[] = [];
+      const currentDate = template.nextDueDate ? new Date(template.nextDueDate) : new Date();
+
+      // Generate projected expenses until end date
+      while (currentDate <= endDate) {
+        projectedExpenses.push({
+          date: new Date(currentDate),
+          amountCents: template.amountCents,
+        });
+
+        // Calculate next occurrence
+        switch (template.frequency) {
+          case "weekly":
+            currentDate.setDate(currentDate.getDate() + 7);
+            break;
+          case "biweekly":
+            currentDate.setDate(currentDate.getDate() + 14);
+            break;
+          case "monthly":
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            break;
+          case "quarterly":
+            currentDate.setMonth(currentDate.getMonth() + 3);
+            break;
+          case "yearly":
+            currentDate.setFullYear(currentDate.getFullYear() + 1);
+            break;
+        }
+      }
+
+      return {
+        templateId: template.id,
+        templateName: template.name,
+        category: template.category,
+        amountCents: template.amountCents,
+        frequency: template.frequency,
+        nextDueDate: template.nextDueDate,
+        projectedExpenses,
+        totalProjected: projectedExpenses.reduce((sum, e) => sum + e.amountCents, 0),
+      };
+    });
+
+    // Calculate totals
+    const totalByMonth = new Map<string, number>();
+    const totalByCategory = new Map<ExpenseCategory, number>();
+
+    forecasts.forEach((f) => {
+      f.projectedExpenses.forEach((e) => {
+        const monthKey = `${e.date.getFullYear()}-${String(e.date.getMonth() + 1).padStart(2, "0")}`;
+        totalByMonth.set(monthKey, (totalByMonth.get(monthKey) || 0) + e.amountCents);
+        totalByCategory.set(f.category, (totalByCategory.get(f.category) || 0) + e.amountCents);
+      });
+    });
+
+    return success({
+      forecasts,
+      summary: {
+        totalProjected: forecasts.reduce((sum, f) => sum + f.totalProjected, 0),
+        byMonth: Array.from(totalByMonth.entries()).map(([month, amount]) => ({
+          month,
+          amountCents: amount,
+        })),
+        byCategory: Array.from(totalByCategory.entries()).map(([category, amount]) => ({
+          category,
+          amountCents: amount,
+        })),
+      },
+      periodMonths: months,
+    });
+  } catch (error) {
+    console.error("Error generating expense forecast:", error);
+    return fail("Failed to generate forecast");
+  }
+}
+
+// ============================================================================
+// VENDOR MANAGEMENT
+// ============================================================================
+
+export interface CreateVendorInput {
+  name: string;
+  description?: string;
+  category?: ExpenseCategory;
+  email?: string;
+  phone?: string;
+  website?: string;
+  contactName?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  defaultPaymentMethod?: PaymentMethod;
+  taxId?: string;
+  notes?: string;
+}
+
+export interface UpdateVendorInput {
+  name?: string;
+  description?: string;
+  category?: ExpenseCategory;
+  email?: string;
+  phone?: string;
+  website?: string;
+  contactName?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  defaultPaymentMethod?: PaymentMethod;
+  taxId?: string;
+  notes?: string;
+  isActive?: boolean;
+}
+
+/**
+ * Get all vendors for the organization
+ */
+export async function getVendors(includeInactive: boolean = false) {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return fail("Not authenticated");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    const vendors = await prisma.vendor.findMany({
+      where: {
+        organizationId: org.id,
+        ...(includeInactive ? {} : { isActive: true }),
+      },
+      orderBy: { name: "asc" },
+    });
+
+    return success(vendors);
+  } catch (error) {
+    console.error("Error fetching vendors:", error);
+    return fail("Failed to fetch vendors");
+  }
+}
+
+/**
+ * Get a single vendor
+ */
+export async function getVendor(vendorId: string) {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return fail("Not authenticated");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    const vendor = await prisma.vendor.findUnique({
+      where: { id: vendorId },
+    });
+
+    if (!vendor || vendor.organizationId !== org.id) {
+      return fail("Vendor not found");
+    }
+
+    return success(vendor);
+  } catch (error) {
+    console.error("Error fetching vendor:", error);
+    return fail("Failed to fetch vendor");
+  }
+}
+
+/**
+ * Create a new vendor
+ */
+export async function createVendor(input: CreateVendorInput) {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return fail("Not authenticated");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    // Check for duplicate vendor name
+    const existing = await prisma.vendor.findUnique({
+      where: {
+        organizationId_name: {
+          organizationId: org.id,
+          name: input.name,
+        },
+      },
+    });
+
+    if (existing) {
+      return fail("A vendor with this name already exists");
+    }
+
+    const vendor = await prisma.vendor.create({
+      data: {
+        organizationId: org.id,
+        name: input.name,
+        description: input.description || null,
+        category: input.category || "other",
+        email: input.email || null,
+        phone: input.phone || null,
+        website: input.website || null,
+        contactName: input.contactName || null,
+        address: input.address || null,
+        city: input.city || null,
+        state: input.state || null,
+        postalCode: input.postalCode || null,
+        country: input.country || "US",
+        defaultPaymentMethod: input.defaultPaymentMethod || null,
+        taxId: input.taxId || null,
+        notes: input.notes || null,
+      },
+    });
+
+    return success(vendor);
+  } catch (error) {
+    console.error("Error creating vendor:", error);
+    return fail("Failed to create vendor");
+  }
+}
+
+/**
+ * Update a vendor
+ */
+export async function updateVendor(vendorId: string, input: UpdateVendorInput) {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return fail("Not authenticated");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    const existing = await prisma.vendor.findUnique({
+      where: { id: vendorId },
+    });
+
+    if (!existing || existing.organizationId !== org.id) {
+      return fail("Vendor not found");
+    }
+
+    // If name is being updated, check for duplicates
+    if (input.name && input.name !== existing.name) {
+      const duplicate = await prisma.vendor.findUnique({
+        where: {
+          organizationId_name: {
+            organizationId: org.id,
+            name: input.name,
+          },
+        },
+      });
+      if (duplicate) {
+        return fail("A vendor with this name already exists");
+      }
+    }
+
+    const vendor = await prisma.vendor.update({
+      where: { id: vendorId },
+      data: {
+        name: input.name,
+        description: input.description,
+        category: input.category,
+        email: input.email,
+        phone: input.phone,
+        website: input.website,
+        contactName: input.contactName,
+        address: input.address,
+        city: input.city,
+        state: input.state,
+        postalCode: input.postalCode,
+        country: input.country,
+        defaultPaymentMethod: input.defaultPaymentMethod,
+        taxId: input.taxId,
+        notes: input.notes,
+        isActive: input.isActive,
+      },
+    });
+
+    return success(vendor);
+  } catch (error) {
+    console.error("Error updating vendor:", error);
+    return fail("Failed to update vendor");
+  }
+}
+
+/**
+ * Delete a vendor
+ */
+export async function deleteVendor(vendorId: string) {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return fail("Not authenticated");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    const existing = await prisma.vendor.findUnique({
+      where: { id: vendorId },
+    });
+
+    if (!existing || existing.organizationId !== org.id) {
+      return fail("Vendor not found");
+    }
+
+    await prisma.vendor.delete({
+      where: { id: vendorId },
+    });
+
+    return ok();
+  } catch (error) {
+    console.error("Error deleting vendor:", error);
+    return fail("Failed to delete vendor");
+  }
+}
+
+/**
+ * Search vendors by name
+ */
+export async function searchVendors(query: string) {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return fail("Not authenticated");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    const vendors = await prisma.vendor.findMany({
+      where: {
+        organizationId: org.id,
+        isActive: true,
+        name: {
+          contains: query,
+          mode: "insensitive",
+        },
+      },
+      orderBy: { name: "asc" },
+      take: 10,
+    });
+
+    return success(vendors);
+  } catch (error) {
+    console.error("Error searching vendors:", error);
+    return fail("Failed to search vendors");
+  }
+}
+
+// ============================================================================
+// BILLABLE EXPENSES SUMMARY
+// ============================================================================
+
+/**
+ * Get billable expenses summary for a project
+ */
+export async function getBillableExpensesSummary(projectId: string) {
+  const { orgId } = await auth();
+  if (!orgId) {
+    return fail("Not authenticated");
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrganizationId: orgId },
+      select: { id: true },
+    });
+
+    if (!org) {
+      return fail("Organization not found");
+    }
+
+    const expenses = await prisma.projectExpense.findMany({
+      where: {
+        projectId,
+        organizationId: org.id,
+        isBillable: true,
+      },
+      select: {
+        id: true,
+        description: true,
+        category: true,
+        amountCents: true,
+        taxCents: true,
+        expenseDate: true,
+        isPaid: true,
+      },
+      orderBy: { expenseDate: "desc" },
+    });
+
+    const totalBillable = expenses.reduce((sum, e) => sum + e.amountCents, 0);
+    const totalTax = expenses.reduce((sum, e) => sum + (e.taxCents || 0), 0);
+
+    return success({
+      expenses,
+      summary: {
+        totalBillable,
+        totalTax,
+        totalWithTax: totalBillable + totalTax,
+        count: expenses.length,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching billable expenses:", error);
+    return fail("Failed to fetch billable expenses");
   }
 }

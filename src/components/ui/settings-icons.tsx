@@ -27,6 +27,7 @@ export {
   XCircleIcon,
   WarningIcon,
   InfoIcon,
+  HelpCircleIcon,
   LoadingSpinner,
   // Settings & Feature Icons
   ShieldIcon,

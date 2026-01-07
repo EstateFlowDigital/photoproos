@@ -44,7 +44,12 @@ interface GalleryData {
     emailNotifications: boolean;
     downloadResolution: "full" | "web" | "both";
     downloadRequiresPayment: boolean;
+    reminderEnabled: boolean;
   };
+  // Selection settings
+  allowSelections: boolean;
+  selectionLimit: number | null;
+  selectionRequired: boolean;
 }
 
 interface GalleryEditFormProps {
@@ -74,6 +79,15 @@ export function GalleryEditForm({ gallery, clients, services }: GalleryEditFormP
   const [downloadResolution, setDownloadResolution] = useState<"full" | "web" | "both">(
     gallery.settings.downloadResolution || "both"
   );
+
+  // Selection settings state
+  const [allowSelections, setAllowSelections] = useState(gallery.allowSelections || false);
+  const [selectionLimit, setSelectionLimit] = useState<number | null>(gallery.selectionLimit || null);
+  const [selectionRequired, setSelectionRequired] = useState(gallery.selectionRequired || false);
+
+  // Branded link toggles
+  const [showBrandedLink, setShowBrandedLink] = useState(true);
+  const [showUnbrandedLink, setShowUnbrandedLink] = useState(true);
 
   // Expiration state - determine initial type based on existing expiresAt
   const getInitialExpirationType = (): "never" | "30days" | "60days" | "90days" | "custom" => {
@@ -192,6 +206,12 @@ export function GalleryEditForm({ gallery, clients, services }: GalleryEditFormP
         sendNotifications: settings.emailNotifications,
         downloadResolution,
         downloadRequiresPayment: settings.downloadRequiresPayment,
+        // Selection settings
+        allowSelections,
+        selectionLimit: allowSelections ? selectionLimit : null,
+        selectionRequired: allowSelections ? selectionRequired : false,
+        // Reminder settings
+        reminderEnabled: settings.reminderEnabled,
       });
 
       if (result.success) {
@@ -430,6 +450,12 @@ export function GalleryEditForm({ gallery, clients, services }: GalleryEditFormP
             checked={settings.emailNotifications}
             onToggle={() => toggleSetting("emailNotifications")}
           />
+          <ToggleSetting
+            label="Enable Reminders"
+            description="Send automatic reminder emails to clients"
+            checked={settings.reminderEnabled}
+            onToggle={() => toggleSetting("reminderEnabled")}
+          />
         </div>
 
         {/* Download Resolution Options */}
@@ -467,6 +493,79 @@ export function GalleryEditForm({ gallery, clients, services }: GalleryEditFormP
             </div>
           </div>
         )}
+      </div>
+
+      {/* Photo Selections Section */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-2">Photo Selections</h2>
+        <p className="text-sm text-foreground-muted mb-4">
+          Allow clients to select their favorite photos from the gallery
+        </p>
+
+        <div className="space-y-4">
+          <ToggleSetting
+            label="Allow Photo Selections"
+            description="Let clients select and mark their preferred photos"
+            checked={allowSelections}
+            onToggle={() => setAllowSelections(!allowSelections)}
+          />
+
+          {allowSelections && (
+            <div className="ml-0 pl-4 border-l-2 border-[var(--card-border)] space-y-4">
+              {/* Selection Limit */}
+              <div>
+                <label htmlFor="selectionLimit" className="block text-sm font-medium text-foreground mb-1.5">
+                  Selection Limit
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    id="selectionLimit"
+                    min="1"
+                    max="1000"
+                    value={selectionLimit ?? ""}
+                    onChange={(e) => setSelectionLimit(e.target.value ? parseInt(e.target.value) : null)}
+                    placeholder="No limit"
+                    className="w-32 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  />
+                  <span className="text-sm text-foreground-muted">photos maximum</span>
+                </div>
+                <p className="mt-1 text-xs text-foreground-muted">Leave empty for unlimited selections</p>
+              </div>
+
+              {/* Selection Required */}
+              <ToggleSetting
+                label="Require Selection Before Download"
+                description="Client must make selections before downloading photos"
+                checked={selectionRequired}
+                onToggle={() => setSelectionRequired(!selectionRequired)}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Gallery Links Section */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-2">Gallery Link Options</h2>
+        <p className="text-sm text-foreground-muted mb-4">
+          Control which gallery link versions are available
+        </p>
+
+        <div className="space-y-4">
+          <ToggleSetting
+            label="Branded Gallery Link"
+            description="Gallery includes your branding and logo"
+            checked={showBrandedLink}
+            onToggle={() => setShowBrandedLink(!showBrandedLink)}
+          />
+          <ToggleSetting
+            label="Clean Gallery Link"
+            description="Minimal gallery view without business branding"
+            checked={showUnbrandedLink}
+            onToggle={() => setShowUnbrandedLink(!showUnbrandedLink)}
+          />
+        </div>
       </div>
 
       {/* Gallery Expiration Section */}

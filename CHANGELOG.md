@@ -14,7 +14,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Applied consistent styling across dashboard and help breadcrumb components
 
 ### Added
-- **Advanced Expense Tracking Features** - Comprehensive expense management enhancements
+- **Enhanced Expense Tracking Features (Phase 2)** - Additional expense management capabilities
+  - **Billable Expense Tracking** - Mark expenses as billable to clients
+    - `isBillable` field on expenses for client billing
+    - Billable expense summary action with totals
+    - Track billable vs internal expenses separately
+  - **Payment Method Tracking** - Record how expenses were paid
+    - `PaymentMethod` enum (cash, check, credit_card, debit_card, bank_transfer, paypal, venmo, zelle, other)
+    - Payment method field on expense form
+  - **Tax Tracking** - Separate tax amounts from expense amounts
+    - `taxCents` field for recording tax separately
+    - Tax amounts included in billable summaries
+  - **Mileage Calculator** - Track travel expenses with configurable rates
+    - `mileageDistance` and `mileageRateCents` fields on expenses
+    - Organization-level default mileage rate (IRS default: $0.67/mile)
+    - Auto-calculate expense amount from mileage × rate
+  - **Expense Duplication** - One-click duplicate for recurring similar expenses
+    - Duplicate expense action with option to target different project
+    - Copies all fields except receipt and resets date/payment status
+  - **Expense Forecasting** - Project future costs based on recurring templates
+    - Forecast expenses for 1-12 months ahead
+    - Summary by month and category
+    - Total projected expense calculations
+  - **Vendor Directory** - Save and manage frequently used vendors
+    - Full vendor model with contact info, address, tax ID
+    - Default expense category and payment method per vendor
+    - Search vendors by name
+    - Active/inactive status for vendors
+  - **Database Schema Updates**:
+    - `PaymentMethod` enum for payment tracking
+    - `Vendor` model for vendor directory
+    - Enhanced `ProjectExpense` with billable, payment method, tax, and mileage fields
+    - `expenseMileageRateCents` on Organization for default mileage rate
+
+- **Advanced Expense Tracking Features (Phase 1)** - Comprehensive expense management enhancements
   - **Recurring Expense Templates** - Create and manage templates for expenses that occur regularly
     - Support for weekly, bi-weekly, monthly, quarterly, and yearly frequencies
     - Configure specific day of week/month for each recurrence
@@ -83,6 +116,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Settings Page**: `/settings/walkthroughs` page to manage walkthrough visibility across all pages
   - **HelpCircleIcon**: New icon for walkthrough settings navigation
   - **Settings Navigation**: Added walkthroughs to account settings category
+  - **Walkthrough Configs**: Step-by-step tutorial content for Dashboard, Galleries, Clients, Invoices, Contracts, Calendar, Settings, Analytics, Integrations, Property Websites
+  - **WalkthroughWrapper**: Client-side component handling state management and server sync
+  - **Page Integration**: Walkthroughs applied to Dashboard, Galleries, and Clients pages
+- **Dashboard Widget System** - Drag-and-drop customizable dashboard with widget library
+  - **Widget Infrastructure**:
+    - `WidgetContainer`: Draggable container with @dnd-kit sortable support
+    - `WidgetGrid`: DnD context wrapper with keyboard navigation
+    - `AddWidgetPanel`: Slide-out panel to browse and add widgets by category
+  - **Core Widgets**: 13 reusable widget components
+    - `KeyMetricsWidget`: Revenue, galleries, clients, invoices at a glance
+    - `QuickActionsWidget`: Configurable shortcuts with grid/list layouts
+    - `RecentActivityWidget`: Timeline with activity type icons and styling
+    - `RecentGalleriesWidget`: Gallery cards with thumbnails and status
+    - `UpcomingBookingsWidget`: Booking list with client and location info
+    - `RevenueWidget`: Monthly revenue with goal progress bar
+    - `ClientGrowthWidget`: Client metrics with sparkline chart
+    - `CalendarPreviewWidget`: Mini week view with event dots
+    - `WeatherWidget`: Weather forecast for outdoor shoots
+    - `ContractStatusWidget`: Contract tracking with status badges
+    - `DeadlinesWidget`: Due dates with urgency indicators
+    - `TodoListWidget`: Task checklist with priority styling
+    - `NotesWidget`: Quick notes with auto-save functionality
+  - **Widget Categories**: Analytics, Financial, Scheduling, Projects, Communication, Productivity, Marketing, Other
+  - **Photography Presets**: Industry-based default layouts for 8 photographer types
+  - **Widget Library**: 37 widget definitions with metadata, sizes, and configurations
 - **Help & Support Center** - Comprehensive help documentation system at `/help`
   - **Main Help Page**: Hero search, category grid, popular articles, getting started banner
   - **Category Pages**: Dynamic `/help/[category]` pages with article listings

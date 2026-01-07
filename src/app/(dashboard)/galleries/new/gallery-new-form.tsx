@@ -73,6 +73,12 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
   const [sendNotifications, setSendNotifications] = useState(defaultTemplate?.sendNotifications ?? true);
   const [downloadResolution, setDownloadResolution] = useState<"full" | "web" | "both">("both");
   const [downloadRequiresPayment, setDownloadRequiresPayment] = useState(true);
+  const [reminderEnabled, setReminderEnabled] = useState(true);
+
+  // Selection settings
+  const [allowSelections, setAllowSelections] = useState(false);
+  const [selectionLimit, setSelectionLimit] = useState<number | null>(null);
+  const [selectionRequired, setSelectionRequired] = useState(false);
 
   // Expiration settings
   const [expirationType, setExpirationType] = useState<"never" | "30days" | "60days" | "90days" | "custom">(
@@ -165,8 +171,10 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
         allowFavorites,
         allowComments,
         sendNotifications,
-        allowSelections: false,
-        selectionLimit: null,
+        allowSelections,
+        selectionLimit: allowSelections ? selectionLimit : null,
+        selectionRequired: allowSelections ? selectionRequired : false,
+        reminderEnabled,
         services: selectedService ? [{ serviceId: selectedService.id, isPrimary: true }] : [],
       });
 
@@ -480,6 +488,12 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
             checked={sendNotifications}
             onChange={setSendNotifications}
           />
+          <ToggleSetting
+            label="Enable Reminders"
+            description="Send automatic reminder emails to clients"
+            checked={reminderEnabled}
+            onChange={setReminderEnabled}
+          />
         </div>
 
         {/* Download Resolution Options */}
@@ -516,6 +530,59 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Photo Selection Settings Section */}
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-2">Photo Selections</h2>
+        <p className="text-sm text-foreground-muted mb-4">
+          Allow clients to select their favorite photos for final delivery
+        </p>
+
+        <div className="space-y-4">
+          <ToggleSetting
+            label="Allow Selections"
+            description="Let clients select photos they want for final delivery"
+            checked={allowSelections}
+            onChange={setAllowSelections}
+          />
+
+          {allowSelections && (
+            <>
+              <div className="pl-4 border-l-2 border-[var(--card-border)] space-y-4">
+                <ToggleSetting
+                  label="Require Selection Before Download"
+                  description="Clients must submit their selections before downloading"
+                  checked={selectionRequired}
+                  onChange={setSelectionRequired}
+                />
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">
+                    Selection Limit
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="number"
+                      min="1"
+                      max="1000"
+                      value={selectionLimit || ""}
+                      onChange={(e) => setSelectionLimit(e.target.value ? parseInt(e.target.value) : null)}
+                      placeholder="Unlimited"
+                      className="w-32 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                    />
+                    <span className="text-sm text-foreground-muted">
+                      {selectionLimit ? `Max ${selectionLimit} photos` : "No limit"}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-foreground-muted">
+                    Leave empty for unlimited selections
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Gallery Expiration Section */}

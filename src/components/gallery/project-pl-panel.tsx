@@ -41,15 +41,22 @@ import {
   getProjectBudgetStatus,
   // PDF reports
   generateExpenseReport,
+  // Enhanced features
+  duplicateExpense,
+  getOrganizationMileageRate,
+  getExpenseForecast,
+  getVendors,
+  searchVendors,
   type ProjectPLSummary,
   type CreateExpenseInput,
   type CreateRecurringTemplateInput,
   type CreateBudgetInput,
   type BudgetStatus,
   type ExpenseReportData,
+  type ExpenseForecast,
 } from "@/lib/actions/project-expenses";
 import { getExpenseCategories } from "@/lib/utils/expenses";
-import type { ProjectExpense, ExpenseCategory, RecurringExpenseTemplate, ExpenseApprovalStatus, RecurrenceFrequency, ProjectBudget } from "@prisma/client";
+import type { ProjectExpense, ExpenseCategory, RecurringExpenseTemplate, ExpenseApprovalStatus, RecurrenceFrequency, ProjectBudget, PaymentMethod, Vendor } from "@prisma/client";
 
 // ============================================================================
 // ICONS
@@ -287,6 +294,51 @@ function PlayIcon({ className }: { className?: string }) {
   );
 }
 
+function CopyIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+  );
+}
+
+function CarIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.6-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" />
+      <circle cx="7" cy="17" r="2" />
+      <path d="M9 17h6" />
+      <circle cx="17" cy="17" r="2" />
+    </svg>
+  );
+}
+
+function TrendingIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+      <polyline points="16 7 22 7 22 13" />
+    </svg>
+  );
+}
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
+  { value: "cash", label: "Cash" },
+  { value: "check", label: "Check" },
+  { value: "credit_card", label: "Credit Card" },
+  { value: "debit_card", label: "Debit Card" },
+  { value: "bank_transfer", label: "Bank Transfer" },
+  { value: "paypal", label: "PayPal" },
+  { value: "venmo", label: "Venmo" },
+  { value: "zelle", label: "Zelle" },
+  { value: "other", label: "Other" },
+];
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -491,6 +543,12 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
     teamMemberId: string;
     receiptUrl: string;
     expenseDate: string;
+    // Enhanced tracking fields
+    isBillable: boolean;
+    paymentMethod: PaymentMethod | "";
+    taxCents: number;
+    mileageDistance: number;
+    mileageRateCents: number;
   }
 
   const [formData, setFormData] = useState<FormData>({
@@ -503,7 +561,21 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
     teamMemberId: "",
     receiptUrl: "",
     expenseDate: new Date().toISOString().split("T")[0],
+    // Enhanced tracking fields
+    isBillable: false,
+    paymentMethod: "",
+    taxCents: 0,
+    mileageDistance: 0,
+    mileageRateCents: 0,
   });
+
+  // Vendors state
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [mileageRate, setMileageRate] = useState<number>(67); // Default IRS rate
+
+  // Forecast state
+  const [forecast, setForecast] = useState<{ forecasts: ExpenseForecast[]; summary: { totalProjected: number; byMonth: { month: string; amountCents: number }[]; byCategory: { category: ExpenseCategory; amountCents: number }[] }; periodMonths: number } | null>(null);
+  const [showForecastModal, setShowForecastModal] = useState(false);
 
   // Recurring templates state
   const [recurringTemplates, setRecurringTemplates] = useState<RecurringExpenseTemplate[]>([]);
@@ -555,12 +627,14 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const [plResult, expensesResult, teamResult, templatesResult, budgetResult] = await Promise.all([
+      const [plResult, expensesResult, teamResult, templatesResult, budgetResult, vendorsResult, mileageResult] = await Promise.all([
         getProjectPL(galleryId),
         getProjectExpenses(galleryId),
         getTeamMembers(),
         getRecurringTemplates(),
         getProjectBudgetStatus(galleryId),
+        getVendors(),
+        getOrganizationMileageRate(),
       ]);
 
       if (plResult.success) {
@@ -583,6 +657,14 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
 
       if (budgetResult.success) {
         setBudgetStatus(budgetResult.data);
+      }
+
+      if (vendorsResult.success) {
+        setVendors(vendorsResult.data);
+      }
+
+      if (mileageResult.success) {
+        setMileageRate(mileageResult.data.rateCents);
       }
     } catch {
       setError("Failed to load P&L data");
@@ -666,6 +748,12 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
       teamMemberId: "",
       receiptUrl: "",
       expenseDate: new Date().toISOString().split("T")[0],
+      // Enhanced tracking fields
+      isBillable: false,
+      paymentMethod: "",
+      taxCents: 0,
+      mileageDistance: 0,
+      mileageRateCents: mileageRate,
     });
     setEditingExpense(null);
   }
@@ -687,6 +775,12 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
       teamMemberId: expense.teamMemberId || "",
       receiptUrl: expense.receiptUrl || "",
       expenseDate: new Date(expense.expenseDate).toISOString().split("T")[0],
+      // Enhanced tracking fields
+      isBillable: expense.isBillable,
+      paymentMethod: expense.paymentMethod || "",
+      taxCents: expense.taxCents || 0,
+      mileageDistance: expense.mileageDistance || 0,
+      mileageRateCents: expense.mileageRateCents || mileageRate,
     });
     setIsModalOpen(true);
   }
@@ -711,6 +805,12 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
         teamMemberId: formData.teamMemberId || undefined,
         receiptUrl: formData.receiptUrl || undefined,
         expenseDate: new Date(formData.expenseDate),
+        // Enhanced tracking fields
+        isBillable: formData.isBillable,
+        paymentMethod: formData.paymentMethod || undefined,
+        taxCents: formData.taxCents || undefined,
+        mileageDistance: formData.mileageDistance || undefined,
+        mileageRateCents: formData.mileageRateCents || undefined,
       };
 
       if (editingExpense) {
@@ -761,6 +861,35 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
       await loadData();
     } catch {
       setError("Failed to update expense");
+    }
+  }
+
+  // Duplicate expense handler
+  async function handleDuplicateExpense(expenseId: string) {
+    try {
+      const result = await duplicateExpense(expenseId);
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+      await loadData();
+    } catch {
+      setError("Failed to duplicate expense");
+    }
+  }
+
+  // Load expense forecast
+  async function handleLoadForecast() {
+    try {
+      const result = await getExpenseForecast(galleryId, 3);
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+      setForecast(result.data);
+      setShowForecastModal(true);
+    } catch {
+      setError("Failed to load forecast");
     }
   }
 

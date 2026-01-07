@@ -6,6 +6,8 @@ import { getGalleryCounts } from "@/lib/actions/galleries";
 import { GalleriesPageClient } from "./galleries-page-client";
 import { formatCurrency } from "@/lib/utils/units";
 import { Prisma } from "@prisma/client";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 
 type FilterTab = "all" | "delivered" | "pending" | "draft";
 
@@ -117,6 +119,12 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
     // Continue with defaults - these aren't critical for viewing galleries
   }
 
+  // Get walkthrough preference
+  const walkthroughResult = await getWalkthroughPreference("galleries");
+  const walkthroughState = walkthroughResult.success && walkthroughResult.data
+    ? walkthroughResult.data.state
+    : "open";
+
   // Map galleries to the format expected by GalleriesPageClient
   const mappedGalleries = galleries.map((gallery) => ({
     id: gallery.id,
@@ -154,6 +162,12 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
 
   return (
     <div className="space-y-6">
+      {/* Page Walkthrough */}
+      <WalkthroughWrapper
+        pageId="galleries"
+        initialState={walkthroughState}
+      />
+
       <GalleriesPageClient
         galleries={mappedGalleries}
         clients={mappedClients}

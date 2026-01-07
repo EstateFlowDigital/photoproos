@@ -62,6 +62,18 @@ enum RecurrenceFrequency {
   yearly
 }
 
+enum PaymentMethod {
+  cash
+  check
+  credit_card
+  debit_card
+  bank_transfer
+  paypal
+  venmo
+  zelle
+  other
+}
+
 enum BookingStatus {
   pending
   confirmed
@@ -720,6 +732,20 @@ enum MessageReactionType {
   celebration
 }
 
+// CannedResponseCategory - Categories for quick reply templates
+enum CannedResponseCategory {
+  booking // Booking confirmations, scheduling
+  pricing // Pricing quotes, packages
+  scheduling // Availability, rescheduling
+  delivery // Gallery delivery, timelines
+  follow_up // Follow-up messages
+  greeting // Initial greetings, introductions
+  objection // Handling objections, concerns
+  closing // Closing deals, next steps
+  support // Client support responses
+  general // Miscellaneous responses
+}
+
 // ============================================================================
 // CORE MODELS
 // ============================================================================
@@ -775,6 +801,9 @@ model Organization {
   homeBaseLocationId String?
   travelFeePerMile   Int?    @default(0) // in cents (e.g., 65 = $0.65/mile)
   travelFeeThreshold Float?  @default(0) // free miles before charging
+
+  // Expense mileage reimbursement rate (IRS standard rate default: 67 cents/mile for 2024)
+  expenseMileageRateCents Int @default(67) // Default mileage rate in cents for expense tracking
 
   // ============================================================================
   // ONBOARDING & INDUSTRY SETTINGS
@@ -967,8 +996,12 @@ model Organization {
   audioTracks        AudioTrack[]
 
   // Messaging System
-  conversations Conversation[]
-  chatRequests  ChatRequest[]
+  conversations   Conversation[]
+  chatRequests    ChatRequest[]
+  cannedResponses CannedResponse[]
+
+  // Expense/Vendor Management
+  vendors Vendor[]
 
   @@index([slug])
   @@index([plan])
@@ -1044,6 +1077,7 @@ model User {
   messageReactions         MessageReaction[]
   messageReadReceipts      MessageReadReceipt[]
   chatRequestResponses     ChatRequest[]             @relation("ChatRequestResponder")
+  cannedResponses          CannedResponse[]
 
   // Walkthrough System
   walkthroughPreferences UserWalkthroughPreference[]
@@ -7704,6 +7738,15 @@ model ProjectExpense {
   receiptUrl String? // URL to receipt image
   notes      String? @db.Text
 
+  // Enhanced expense tracking
+  isBillable    Boolean        @default(false) // Is this expense billable to client?
+  paymentMethod PaymentMethod? // How was this expense paid?
+  taxCents      Int? // Tax amount in cents (separate from amountCents)
+
+  // Mileage tracking (for travel expenses)
+  mileageDistance  Float? // Distance traveled (in miles or km)
+  mileageRateCents Int? // Rate per mile/km in cents (if different from org default)
+
   // Tracking
   createdBy String? // User ID who created this
 
@@ -7808,6 +7851,49 @@ model ProjectBudget {
 
   @@index([organizationId])
   @@index([projectId])
+}
+
+// Vendor Directory - Frequently used vendors/payees
+model Vendor {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Vendor details
+  name        String
+  description String? // What they provide/do
+  category    ExpenseCategory @default(other) // Default expense category
+
+  // Contact info
+  email       String?
+  phone       String?
+  website     String?
+  contactName String? // Primary contact person
+
+  // Address
+  address    String?
+  city       String?
+  state      String?
+  postalCode String?
+  country    String? @default("US")
+
+  // Payment info
+  defaultPaymentMethod PaymentMethod?
+  taxId                String? // Tax ID / EIN for 1099 reporting
+  notes                String?        @db.Text
+
+  // Status
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@index([category])
+  @@index([isActive])
 }
 
 // ============================================================================
@@ -8060,4 +8146,45 @@ model UserWalkthroughPreference {
 
   @@unique([userId, pageId])
   @@index([userId])
+}
+
+// ============================================================================
+// CANNED RESPONSES / QUICK REPLIES
+// ============================================================================
+
+// CannedResponse - Pre-written message templates for quick replies
+model CannedResponse {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Owner - null means organization-wide, userId means personal
+  userId String?
+
+  // Content
+  title    String // Display title (e.g., "Pricing Request Response")
+  content  String  @db.Text // The actual message content
+  shortcut String? // Optional keyboard shortcut (e.g., "/pricing")
+
+  // Categorization
+  category CannedResponseCategory @default(general)
+
+  // Status & Ordering
+  isActive Boolean @default(true)
+  order    Int     @default(0) // For custom ordering within category
+
+  // Usage tracking
+  usageCount Int       @default(0)
+  lastUsedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([category])
+  @@index([isActive])
 }
