@@ -149,33 +149,11 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  if (!hydrated || !currentMonth || !selectedDate || !today) {
-    return (
-      <div
-        className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4"
-        role="status"
-        aria-live="polite"
-        aria-label="Loading calendar"
-      >
-        <div className="flex items-center justify-between">
-          <Skeleton variant="text" className="h-5 w-40" />
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-7 w-16 rounded-lg" />
-            <Skeleton className="h-7 w-20 rounded-lg" />
-            <Skeleton className="h-7 w-7 rounded-lg" />
-            <Skeleton className="h-7 w-7 rounded-lg" />
-          </div>
-        </div>
-        <div className="mt-4 grid grid-cols-7 gap-1">
-          {Array.from({ length: 21 }).map((_, index) => (
-            <Skeleton key={index} className="h-16 rounded-lg" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   const normalizedEvents = useMemo<CalendarEvent[]>(() => {
+    if (!hydrated) {
+      return [];
+    }
+
     return events
       .map((event) => {
         const dateObject = new Date(event.date);
@@ -188,7 +166,7 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
       })
       .filter((event): event is CalendarEvent => !!event && activeFilters.includes(event.type))
       .sort((a, b) => a.dateObject.getTime() - b.dateObject.getTime());
-  }, [events, activeFilters]);
+  }, [events, activeFilters, hydrated]);
 
   const eventsByDate = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>();
@@ -200,19 +178,18 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
     return map;
   }, [normalizedEvents]);
 
-  const monthLabel = currentMonth.toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
+  const monthLabel = currentMonth
+    ? currentMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })
+    : "";
 
-  const monthStart = useMemo(
-    () => new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1),
-    [currentMonth]
-  );
-  const monthEnd = useMemo(
-    () => new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0, 23, 59, 59, 999),
-    [currentMonth]
-  );
+  const monthStart = useMemo(() => {
+    if (!currentMonth) return new Date();
+    return new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+  }, [currentMonth]);
+  const monthEnd = useMemo(() => {
+    if (!currentMonth) return new Date();
+    return new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0, 23, 59, 59, 999);
+  }, [currentMonth]);
 
   const gridDays = useMemo(() => {
     const start = startOfWeek(monthStart);
@@ -225,9 +202,10 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
   }, [monthStart, monthEnd]);
 
   const weekRange = useMemo(() => {
+    const anchor = selectedDate ?? new Date();
     return {
-      start: startOfWeek(selectedDate),
-      end: endOfWeek(selectedDate),
+      start: startOfWeek(anchor),
+      end: endOfWeek(anchor),
     };
   }, [selectedDate]);
 
@@ -236,7 +214,7 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
       return formatWeekLabel(weekRange.start, weekRange.end);
     }
     return monthLabel;
-  }, [monthLabel, viewMode, weekRange.end, weekRange.start]);
+  }, [monthLabel, viewMode, weekRange]);
 
   const listEvents = useMemo(() => {
     if (viewMode === "week") {
@@ -273,6 +251,32 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
       }))
       .sort((a, b) => a.date.getTime() - b.date.getTime());
   }, [listEvents]);
+
+  if (!hydrated || !currentMonth || !selectedDate || !today) {
+    return (
+      <div
+        className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4"
+        role="status"
+        aria-live="polite"
+        aria-label="Loading calendar"
+      >
+        <div className="flex items-center justify-between">
+          <Skeleton variant="text" className="h-5 w-40" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-7 w-16 rounded-lg" />
+            <Skeleton className="h-7 w-20 rounded-lg" />
+            <Skeleton className="h-7 w-7 rounded-lg" />
+            <Skeleton className="h-7 w-7 rounded-lg" />
+          </div>
+        </div>
+        <div className="mt-4 grid grid-cols-7 gap-1">
+          {Array.from({ length: 21 }).map((_, index) => (
+            <Skeleton key={index} className="h-16 rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const handleToday = () => {
     const today = new Date();

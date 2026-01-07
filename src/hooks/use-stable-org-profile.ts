@@ -79,7 +79,7 @@ export function useStableOrgProfile() {
         // ignore storage failures
       }
     }
-  }, [organization, user, cached.org, cached.user]);
+  }, [organization, user]);
 
   const stableOrg = useMemo(() => organization || cached.org || null, [organization, cached.org]);
   const stableUser = useMemo(() => user || cached.user || null, [user, cached.user]);

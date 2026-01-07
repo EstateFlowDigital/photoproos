@@ -24,20 +24,18 @@ interface UpcomingBookingsProps {
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  const now = new Date();
-  const tomorrow = new Date(now);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  const dateKey = date.toISOString().split("T")[0];
+  const todayKey = new Date().toISOString().split("T")[0];
+  const tomorrowKey = new Date(Date.now() + 86400000).toISOString().split("T")[0];
 
-  const isToday = date.toDateString() === now.toDateString();
-  const isTomorrow = date.toDateString() === tomorrow.toDateString();
-
-  if (isToday) return "Today";
-  if (isTomorrow) return "Tomorrow";
+  if (dateKey === todayKey) return "Today";
+  if (dateKey === tomorrowKey) return "Tomorrow";
 
   return date.toLocaleDateString("en-US", {
     weekday: "short",
     month: "short",
     day: "numeric",
+    timeZone: "UTC",
   });
 }
 
