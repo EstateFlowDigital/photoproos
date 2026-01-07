@@ -4,7 +4,7 @@ import nextDynamic from "next/dynamic";
 import { StatCard, ActivityItem, PageHeader, EmptyGalleries, ReferralWidget, CollapsibleSection, QuickActionsSkeleton, UpcomingBookingsSkeleton, OverdueInvoicesWidget } from "@/components/dashboard";
 import { ExpiringGalleriesWidget } from "@/components/dashboard/expiring-galleries-widget";
 import { getOverdueInvoicesForDashboard } from "@/lib/actions/invoices";
-import { getChecklistItemsWithStatus } from "@/lib/actions/onboarding-checklist";
+import { getChecklistItemsWithStatus, getOnboardingProgress } from "@/lib/actions/onboarding-checklist";
 import { GalleryCard } from "@/components/dashboard/gallery-card";
 import { TourStarter } from "@/components/tour";
 import { prisma } from "@/lib/db";
@@ -22,8 +22,8 @@ import { IconBadge } from "@/components/ui/icon-badge";
 import { DebugBanner } from "@/components/debug/debug-banner";
 import { ErrorBoundary } from "@/components/debug/error-boundary";
 import { triggerLoginStreak } from "@/lib/gamification/trigger";
-import { getDailyBonusState } from "@/lib/actions/gamification";
-import { DailyBonusCard } from "@/components/gamification";
+import { getDailyBonusState, getGamificationState } from "@/lib/actions/gamification";
+import { DailyBonusCard, GamificationWidget } from "@/components/gamification";
 
 const OnboardingFallback = () => (
   <div className="h-[260px] rounded-xl border border-[var(--card-border)] bg-[var(--card)]" aria-hidden />
@@ -208,6 +208,8 @@ export default async function DashboardPage() {
     walkthroughPreferenceResult,
     checklistItemsResult,
     dailyBonusResult,
+    onboardingProgressResult,
+    gamificationStateResult,
   ] = await Promise.all([
     // This month's revenue - from paid invoices
     prisma.invoice.aggregate({
@@ -387,6 +389,12 @@ export default async function DashboardPage() {
 
     // Daily bonus state
     getDailyBonusState(),
+
+    // Onboarding progress for milestone celebrations
+    getOnboardingProgress(),
+
+    // Gamification state for widget
+    getGamificationState(),
   ]);
 
   const thisMonthRevenueValue = thisMonthRevenue._sum.totalCents || 0;
@@ -404,16 +412,19 @@ export default async function DashboardPage() {
     ? checklistItemsResult.data
     : [];
   const dailyBonusState = dailyBonusResult.success ? dailyBonusResult.data : null;
+  const onboardingProgress = onboardingProgressResult.success ? onboardingProgressResult.data : null;
+  const gamificationState = gamificationStateResult.success ? gamificationStateResult.data : null;
 
   // Calculate changes for stats
   const revenueChange = calculatePercentChange(thisMonthRevenueValue, lastMonthRevenueValue);
   const galleriesChange = calculateCountChange(activeGalleries, lastMonthActiveGalleries);
   const clientsChange = calculateCountChange(totalClients, lastMonthTotalClients);
 
-  // Only show checklist if onboarding was recently completed (within 30 days)
-  const showChecklist = organization.onboardingCompleted &&
-    organization.onboardingCompletedAt &&
-    (now.getTime() - organization.onboardingCompletedAt.getTime()) < 30 * 24 * 60 * 60 * 1000;
+  // Show checklist if onboarding is NOT completed, or was recently completed (within 7 days)
+  // This ensures users see the celebration and can review their progress
+  const showChecklist = !organization.onboardingCompleted ||
+    (organization.onboardingCompletedAt &&
+      (now.getTime() - organization.onboardingCompletedAt.getTime()) < 7 * 24 * 60 * 60 * 1000);
 
   // Transform bookings to match UpcomingBookings component format
   // Convert Date to ISO string for proper serialization to client components
@@ -490,10 +501,11 @@ export default async function DashboardPage() {
       )}
 
       {/* Onboarding Checklist */}
-      {showChecklist && (
+      {showChecklist && checklistItems.length > 0 && (
         <OnboardingChecklist
           items={checklistItems}
           organizationName={organization.name}
+          progress={onboardingProgress || undefined}
         />
       )}
 
@@ -619,6 +631,24 @@ export default async function DashboardPage() {
           {/* Daily Login Bonus */}
           {dailyBonusState && (
             <DailyBonusCard initialState={dailyBonusState} />
+          )}
+
+          {/* Gamification Progress Widget */}
+          {gamificationState && (
+            <GamificationWidget
+              level={gamificationState.level}
+              totalXp={gamificationState.totalXp}
+              currentLoginStreak={gamificationState.currentLoginStreak}
+              longestLoginStreak={gamificationState.longestLoginStreak}
+              currentDeliveryStreak={gamificationState.currentDeliveryStreak}
+              longestDeliveryStreak={gamificationState.longestDeliveryStreak}
+              recentAchievements={gamificationState.recentAchievements.map((a) => ({
+                ...a,
+                unlockedAt: new Date(a.unlockedAt),
+              }))}
+              totalAchievements={gamificationState.totalAchievements}
+              unlockedAchievements={gamificationState.unlockedAchievements}
+            />
           )}
 
           {/* Overdue Invoices */}

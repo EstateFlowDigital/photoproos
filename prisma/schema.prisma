@@ -880,6 +880,7 @@ model Organization {
   onboardingCompletedAt       DateTime?
   onboardingReminderSentAt    DateTime? // When the last onboarding reminder email was sent
   onboardingRemindersDisabled Boolean   @default(false) // User can opt-out
+  onboardingMilestones        String[]  @default([]) // Milestones reached: "25", "50", "75", "100", "speed"
 
   // Industry Selection (array of industry IDs)
   industries      Industry[] @default([real_estate])
@@ -1258,15 +1259,20 @@ model User {
   messageReadReceipts      MessageReadReceipt[]
   chatRequestResponses     ChatRequest[]             @relation("ChatRequestResponder")
   cannedResponses          CannedResponse[]
+  typingIndicators         TypingIndicator[]
+  starredMessages          StarredMessage[]
+  scheduledMessages        ScheduledMessage[]
+  initiatedCalls           Call[]              @relation("CallInitiator")
+  callParticipations       CallParticipant[]
 
   // Walkthrough System
   walkthroughPreferences UserWalkthroughPreference[]
 
   // Gamification System
-  gamificationProfile    GamificationProfile?
-  userAchievements       UserAchievement[]
-  challengeProgress      ChallengeProgress[]
-  milestoneAchievements  MilestoneAchievement[]
+  gamificationProfile   GamificationProfile?
+  userAchievements      UserAchievement[]
+  challengeProgress     ChallengeProgress[]
+  milestoneAchievements MilestoneAchievement[]
 
   @@index([email])
   @@index([clerkUserId])
@@ -1423,6 +1429,7 @@ model Client {
   messageReactions         MessageReaction[]         @relation("ReactionClient")
   messageReadReceipts      MessageReadReceipt[]      @relation("ReadReceiptClient")
   chatRequests             ChatRequest[]
+  callParticipations       CallParticipant[]
 
   // Review Gate System
   reviewRequests ReviewRequest[]
@@ -2974,12 +2981,24 @@ model OnboardingChecklistItem {
   isEnabled Boolean @default(true) // Can be toggled off
   isDefault Boolean @default(true) // System default vs custom
   isCustom  Boolean @default(false) // User-created item
+  category  String  @default("getting_started") // "getting_started", "payments", "workflow", "advanced"
+
+  // Enhanced UX features
+  estimatedMinutes Int      @default(2) // Time estimate to complete
+  videoUrl         String?  // Link to tutorial video
+  tip              String?  // Contextual tip/hint for this step
+  dependencies     String[] @default([]) // completionTypes that must be done first
+
+  // Gamification
+  xpReward         Int      @default(50) // XP awarded for completing this step
+  xpAwarded        Boolean  @default(false) // Whether XP has been awarded
 
   // Completion tracking
   completionType  String? // "hasClients", "hasGalleries", "hasExpenses", "custom", etc.
   completionValue String? // For custom completion checks (e.g., a URL or action ID)
-  completed       Boolean @default(false) // Manual completion for custom items
+  completed       Boolean   @default(false) // Manual completion for custom items
   skippedAt       DateTime? // When the user skipped this item (null = not skipped)
+  completedAt     DateTime? // When this step was completed
 
   // Visibility conditions
   industries String[] @default([]) // Only show for these industries (empty = all)
@@ -8162,12 +8181,15 @@ model Conversation {
   archivedAt DateTime?
 
   // Relations
-  organization Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  client       Client?                   @relation("ConversationClient", fields: [clientId], references: [id], onDelete: SetNull)
-  project      Project?                  @relation("ConversationProject", fields: [projectId], references: [id], onDelete: SetNull)
-  participants ConversationParticipant[]
-  messages     Message[]
-  chatRequest  ChatRequest?
+  organization     Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client           Client?                   @relation("ConversationClient", fields: [clientId], references: [id], onDelete: SetNull)
+  project          Project?                  @relation("ConversationProject", fields: [projectId], references: [id], onDelete: SetNull)
+  participants      ConversationParticipant[]
+  messages          Message[]
+  chatRequest       ChatRequest?
+  typingIndicators  TypingIndicator[]
+  scheduledMessages ScheduledMessage[]
+  calls             Call[]
 
   @@index([organizationId])
   @@index([clientId])
@@ -8272,6 +8294,7 @@ model Message {
   replies      Message[]            @relation("MessageThread")
   reactions    MessageReaction[]
   readReceipts MessageReadReceipt[]
+  starredBy    StarredMessage[]
 
   @@index([conversationId])
   @@index([parentId])
@@ -8354,6 +8377,187 @@ model ChatRequest {
   @@index([clientId])
   @@index([status])
   @@index([createdAt])
+}
+
+// Typing Indicator - Ephemeral data for showing who's typing
+model TypingIndicator {
+  id             String @id @default(cuid())
+  conversationId String
+  userId         String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([updatedAt])
+}
+
+// Starred Message - Per-user saved/bookmarked messages
+model StarredMessage {
+  id        String @id @default(cuid())
+  userId    String
+  messageId String
+
+  note      String? // Optional note about why it was starred
+  createdAt DateTime @default(now())
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, messageId])
+  @@index([userId])
+  @@index([messageId])
+}
+
+// Scheduled Message - Messages queued to be sent at a later time
+model ScheduledMessage {
+  id             String @id @default(cuid())
+  conversationId String
+  userId         String
+
+  // Message content (will be used when sending)
+  content      String  @db.Text
+  contentHtml  String? @db.Text
+  attachments  Json? // MessageAttachment[]
+  mentions     Json? // String[]
+  parentId     String? // For scheduled thread replies
+
+  // Scheduling
+  scheduledFor  DateTime
+  timezone      String                 @default("UTC")
+  status        ScheduledMessageStatus @default(pending)
+
+  // Tracking
+  sentAt        DateTime?
+  sentMessageId String? // ID of the message once sent
+  failedAt      DateTime?
+  failureReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([userId])
+  @@index([scheduledFor])
+  @@index([status])
+}
+
+enum ScheduledMessageStatus {
+  pending   // Waiting to be sent
+  sent      // Successfully sent
+  failed    // Failed to send
+  cancelled // Cancelled by user
+}
+
+// Voice/Video Call - Track calls within conversations
+model Call {
+  id             String @id @default(cuid())
+  conversationId String
+  initiatorId    String // User who started the call
+
+  // Call type and status
+  type   CallType   @default(video)
+  status CallStatus @default(pending)
+
+  // Provider details (e.g., Daily.co, Twilio, LiveKit)
+  provider  String? // "daily" | "twilio" | "livekit" | etc.
+  roomId    String? // Provider's room/session ID
+  roomUrl   String? // Join URL for the call
+  roomToken String? // Auth token (if applicable)
+
+  // Timing
+  scheduledFor DateTime? // For scheduled calls
+  startedAt    DateTime?
+  endedAt      DateTime?
+  duration     Int? // Duration in seconds
+
+  // Recording
+  isRecorded   Boolean @default(false)
+  recordingUrl String?
+
+  // Metadata
+  title       String?
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  conversation Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  initiator    User              @relation("CallInitiator", fields: [initiatorId], references: [id], onDelete: Cascade)
+  participants CallParticipant[]
+
+  @@index([conversationId])
+  @@index([initiatorId])
+  @@index([status])
+  @@index([scheduledFor])
+}
+
+// Call Participant - Track who joined a call
+model CallParticipant {
+  id       String  @id @default(cuid())
+  callId   String
+  userId   String?
+  clientId String?
+
+  // Participation details
+  joinedAt DateTime?
+  leftAt   DateTime?
+  duration Int? // Time in call in seconds
+
+  // Status
+  status CallParticipantStatus @default(invited)
+
+  // Media state
+  isMuted     Boolean @default(false)
+  isCameraOff Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  call   Call    @relation(fields: [callId], references: [id], onDelete: Cascade)
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([callId, userId])
+  @@unique([callId, clientId])
+  @@index([callId])
+  @@index([userId])
+  @@index([clientId])
+}
+
+enum CallType {
+  audio // Audio-only call
+  video // Video call
+}
+
+enum CallStatus {
+  pending  // Call initiated, waiting for others
+  ringing  // Call is ringing
+  active   // Call in progress
+  ended    // Call ended normally
+  missed   // Call was not answered
+  declined // Call was declined
+  failed   // Technical failure
+}
+
+enum CallParticipantStatus {
+  invited  // Invited but not yet joined
+  joining  // Currently joining
+  joined   // In the call
+  left     // Left the call
+  declined // Declined the call
 }
 
 // ============================================================================
@@ -8511,11 +8715,11 @@ model GamificationProfile {
   totalBonusesClaimed  Int       @default(0) // Total lifetime bonuses claimed
 
   // Personal Bests
-  bestMonthRevenueCents BigInt    @default(0) // Best single month revenue
-  bestMonthRevenueDate  DateTime? // When best month was achieved
-  fastestDeliveryHours  Int?      // Fastest gallery delivery in hours
-  fastestDeliveryDate   DateTime? // When fastest delivery was achieved
-  bestWeekDeliveries    Int       @default(0) // Most deliveries in a single week
+  bestMonthRevenueCents  BigInt    @default(0) // Best single month revenue
+  bestMonthRevenueDate   DateTime? // When best month was achieved
+  fastestDeliveryHours   Int? // Fastest gallery delivery in hours
+  fastestDeliveryDate    DateTime? // When fastest delivery was achieved
+  bestWeekDeliveries     Int       @default(0) // Most deliveries in a single week
   bestWeekDeliveriesDate DateTime? // When best week was achieved
 
   // Cached Stats (for performance - updated periodically)
@@ -8529,6 +8733,11 @@ model GamificationProfile {
   // Skill Trees
   unlockedSkillIds String[] @default([]) // Array of unlocked skill IDs
   spentSkillPoints Int      @default(0) // Total skill points spent
+
+  // Quest/Story Mode
+  completedQuestIds String[] @default([]) // Array of completed quest IDs
+  activeQuestId     String? // Currently active quest ID
+  questObjectives   Json? // Progress on current quest objectives { objId: currentValue }
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -8599,8 +8808,8 @@ model ChallengeProgress {
 
 // Milestone achievements - tracks when users reach business milestones
 model MilestoneAchievement {
-  id        String @id @default(cuid())
-  userId    String
+  id          String @id @default(cuid())
+  userId      String
   milestoneId String // e.g., "revenue-1k", "clients-10", etc.
 
   // When the milestone was reached

@@ -41,8 +41,14 @@ import {
   Sparkles,
   CheckCircle2,
   Circle,
+  Zap,
+  Trophy,
+  Star,
+  Target,
+  Info,
 } from "lucide-react";
 import Link from "next/link";
+import { CATEGORY_LABELS, ONBOARDING_XP_REWARDS } from "@/lib/constants/onboarding";
 
 // ============================================================================
 // Types
@@ -56,9 +62,22 @@ interface CompletionStats {
   firstIncompleteLabel: string | null;
 }
 
+interface ProgressData {
+  completedCount: number;
+  totalCount: number;
+  progress: number;
+  totalXpEarned: number;
+  totalXpAvailable: number;
+  milestonesReached: string[];
+  nextMilestone: { percent: number; bonusXp: number } | null;
+  estimatedTimeRemaining: number;
+  categorySummary: Record<string, { completed: number; total: number }>;
+}
+
 interface OnboardingSettingsClientProps {
   initialItems: ChecklistItemData[];
   completionStats: CompletionStats;
+  progressData: ProgressData | null;
 }
 
 // ============================================================================
@@ -104,6 +123,7 @@ const AVAILABLE_ICONS = [
 export function OnboardingSettingsClient({
   initialItems,
   completionStats,
+  progressData,
 }: OnboardingSettingsClientProps) {
   const [items, setItems] = useState<ChecklistItemData[]>(initialItems);
   const [isLoading, setIsLoading] = useState(false);
@@ -111,11 +131,30 @@ export function OnboardingSettingsClient({
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState<ChecklistItemData | null>(null);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   // Calculate local stats
   const enabledCount = items.filter((item) => item.isEnabled).length;
   const customCount = items.filter((item) => item.isCustom).length;
   const allComplete = completionStats.completionRate === 100;
+
+  // Group items by category
+  const itemsByCategory = items.reduce((acc, item) => {
+    const category = item.category || "getting_started";
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(item);
+    return acc;
+  }, {} as Record<string, ChecklistItemData[]>);
+
+  // Milestone data
+  const milestones = [
+    { percent: 25, label: "25%", bonusXp: ONBOARDING_XP_REWARDS.MILESTONE_25 },
+    { percent: 50, label: "50%", bonusXp: ONBOARDING_XP_REWARDS.MILESTONE_50 },
+    { percent: 75, label: "75%", bonusXp: ONBOARDING_XP_REWARDS.MILESTONE_75 },
+    { percent: 100, label: "100%", bonusXp: ONBOARDING_XP_REWARDS.MILESTONE_100 },
+  ];
 
   // ============================================================================
   // Handlers
@@ -287,7 +326,7 @@ export function OnboardingSettingsClient({
               )}
             >
               {allComplete ? (
-                <CheckCircle2 className="h-6 w-6" />
+                <Trophy className="h-6 w-6" />
               ) : (
                 <Sparkles className="h-6 w-6" />
               )}
@@ -296,25 +335,64 @@ export function OnboardingSettingsClient({
               <h3 className="text-lg font-semibold text-foreground">
                 {allComplete ? "Setup Complete!" : "Setup Progress"}
               </h3>
-              <p className="text-sm text-foreground-muted">
-                {allComplete
-                  ? "You've completed all onboarding steps"
-                  : `${completionStats.completed} of ${completionStats.total} steps completed`}
-              </p>
-              {/* Progress Bar */}
-              <div className="mt-3 flex items-center gap-3">
-                <div className="h-2 w-48 overflow-hidden rounded-full bg-[var(--background-secondary)]">
+              <div className="flex items-center gap-4 text-sm text-foreground-muted">
+                <span>
+                  {allComplete
+                    ? "You've completed all onboarding steps"
+                    : `${completionStats.completed} of ${completionStats.total} steps completed`}
+                </span>
+                {progressData && progressData.estimatedTimeRemaining > 0 && (
+                  <span className="flex items-center gap-1 text-foreground-muted">
+                    <Clock className="h-3.5 w-3.5" />
+                    ~{progressData.estimatedTimeRemaining} min left
+                  </span>
+                )}
+              </div>
+              {/* Progress Bar with Milestones */}
+              <div className="mt-3">
+                <div className="relative h-3 w-64 overflow-hidden rounded-full bg-[var(--background-secondary)]">
                   <div
                     className={cn(
                       "h-full rounded-full transition-all duration-500",
-                      allComplete ? "bg-[var(--success)]" : "bg-[var(--primary)]"
+                      allComplete
+                        ? "bg-gradient-to-r from-[var(--success)] to-[var(--success)]"
+                        : "bg-gradient-to-r from-[var(--primary)] to-[var(--ai)]"
                     )}
                     style={{ width: `${completionStats.completionRate}%` }}
                   />
                 </div>
-                <span className="text-sm font-medium text-foreground">
-                  {completionStats.completionRate}%
-                </span>
+                {/* Milestone markers */}
+                <div className="mt-2 flex justify-between w-64">
+                  {milestones.map((m) => {
+                    const reached = progressData?.milestonesReached?.includes(m.percent.toString()) || false;
+                    return (
+                      <div
+                        key={m.percent}
+                        className={cn(
+                          "flex flex-col items-center",
+                          reached ? "text-[var(--primary)]" : "text-foreground-muted"
+                        )}
+                        title={`${m.label} milestone: +${m.bonusXp} XP bonus`}
+                      >
+                        <div
+                          className={cn(
+                            "flex h-5 w-5 items-center justify-center rounded-full border-2",
+                            reached
+                              ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                              : "border-[var(--border)] bg-[var(--background-secondary)]"
+                          )}
+                        >
+                          {reached ? (
+                            <Check className="h-3 w-3" />
+                          ) : (
+                            <Star className="h-2.5 w-2.5" />
+                          )}
+                        </div>
+                        <span className="mt-0.5 text-[10px] font-medium">{m.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
@@ -332,7 +410,14 @@ export function OnboardingSettingsClient({
         </div>
 
         {/* Stats Row */}
-        <div className="mt-6 grid grid-cols-3 gap-4 border-t border-[var(--card-border)] pt-6">
+        <div className="mt-6 grid grid-cols-4 gap-4 border-t border-[var(--card-border)] pt-6">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1 text-2xl font-bold text-[var(--warning)]">
+              <Zap className="h-5 w-5" />
+              {progressData?.totalXpEarned || 0}
+            </div>
+            <p className="text-xs text-foreground-muted">XP Earned</p>
+          </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-foreground">{items.length}</p>
             <p className="text-xs text-foreground-muted">Total Steps</p>
@@ -346,6 +431,21 @@ export function OnboardingSettingsClient({
             <p className="text-xs text-foreground-muted">Custom</p>
           </div>
         </div>
+
+        {/* Next Milestone Hint */}
+        {progressData?.nextMilestone && !allComplete && (
+          <div className="mt-4 flex items-center gap-3 rounded-lg bg-[var(--primary)]/5 p-3 border border-[var(--primary)]/10">
+            <Target className="h-5 w-5 text-[var(--primary)]" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">
+                Next milestone: {progressData.nextMilestone.percent}%
+              </p>
+              <p className="text-xs text-foreground-muted">
+                Complete {Math.ceil((progressData.nextMilestone.percent / 100) * items.length) - completionStats.completed} more steps to earn +{progressData.nextMilestone.bonusXp} XP bonus
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Error message */}

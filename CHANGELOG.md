@@ -8,6 +8,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Onboarding Gamification Integration** - Complete XP and achievement system for onboarding
+  - **XP Rewards for Setup Steps** - Earn 50-150 XP for completing each onboarding step
+    - Category-based organization (Getting Started, Payments, Workflow, Advanced)
+    - Each step has estimated time, contextual tips, and XP rewards
+    - Dependencies between steps (e.g., must add clients before galleries)
+  - **Milestone Celebrations** - Visual celebrations and bonus XP at key progress points
+    - 25% milestone (+100 XP bonus)
+    - 50% milestone (+200 XP bonus)
+    - 75% milestone (+300 XP bonus)
+    - 100% completion (+500 XP bonus)
+    - Speed Demon achievement for completing within 7 days (+200 XP)
+  - **Enhanced Dashboard Checklist UI** - Completely redesigned onboarding experience
+    - Time estimates per step ("~2 min")
+    - XP reward badges showing potential earnings
+    - Collapsible categories with completion counts
+    - Milestone progress indicator with animated markers
+    - Contextual tips expandable on each step
+    - Dependency locking (steps unlock when prerequisites complete)
+    - Confetti celebrations when reaching milestones
+  - **Onboarding Achievements** - 6 new achievements in the onboarding category
+    - "First Steps" - Complete first onboarding step
+    - "Getting Started" - 25% complete
+    - "Halfway There" - 50% complete
+    - "Almost There" - 75% complete
+    - "Fully Setup" - 100% complete
+    - "Speed Demon" (hidden) - Complete in under 7 days
+  - **Enhanced Settings Page** - XP tracking and milestone progress in onboarding settings
+    - XP earned vs available display
+    - Milestone markers showing reached/upcoming milestones
+    - Time remaining estimate
+    - Next milestone hint with XP bonus preview
+  - **Onboarding Constants Module** - Shared constants for onboarding system
+    - Category labels, XP rewards, achievement IDs
+    - Separated from server actions for client/server compatibility
+  - **Prisma Schema Updates** - New fields for enhanced onboarding
+    - `category`, `estimatedMinutes`, `videoUrl`, `tip`, `dependencies`
+    - `xpReward`, `xpAwarded`, `completedAt` for gamification
+    - `onboardingMilestones` field on Organization model
+- **Gamification XP Triggers** - Complete XP reward system throughout the app
+  - **Integration Connection XP** - Earn XP when connecting integrations (Google Calendar, Dropbox, Gmail, QuickBooks)
+    - Added `triggerIntegrationConnected` function to gamification triggers
+    - "Connected" (100 XP), "Power User" (200 XP), "Fully Integrated" (300 XP) achievements
+  - **Communication XP** - Earn XP for sending emails and SMS
+    - Added `triggerEmailSent` and `triggerSmsSent` functions
+    - "First Email" (25 XP), "Email Pro" (200 XP), "First Text" (25 XP), "25 Texts" (75 XP) achievements
+  - **Dashboard Gamification Widget** - See your progress at a glance
+    - Level and XP progress bar
+    - Login and delivery streak displays
+    - Achievement progress (unlocked/total)
+    - Recently unlocked achievements with rarity indicators
+    - Links to full achievements page
+  - **Auto-Start First Quest** - New users automatically start the "Welcome to Your Journey" quest
+    - Triggers on first login when profile is created
+    - Also checks and starts quest if user has no active/completed quests
+  - Existing triggers already in place: galleries (create, deliver), clients (add), payments, bookings
+
+### Changed
+- **Settings Page Consistency Audit** - Refactored settings pages for consistent patterns
+  - Gamification settings page refactored to follow server/client component pattern
+  - Moved client logic from page.tsx to `gamification-settings-client.tsx`
+  - Added proper metadata export for SEO
+  - Standardized PageHeader with back button action pattern
+  - Updated color tokens from `var(--background-secondary)` to `var(--background-tertiary)` for consistency
+
+### Added
 - **Onboarding Checklist in Settings Navigation** - Added "Onboarding Checklist" to the settings sidebar under Account category
   - Allows users to easily find and customize their dashboard onboarding steps
   - Added clipboard icon to settings icon system
@@ -208,6 +273,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - **Category Progress**: Per-category completion tracking with progress bars
     - **Overall Progress**: Track total quests completed and XP earned
     - `QuestCard` and `ActiveQuestWidget` components
+  - **Gamification Navigation** - Added to main dashboard sidebar
+    - Achievements module in core navigation (`/achievements`)
+    - Subnav items: Overview, Quests, Skill Trees, Leaderboard, Year in Review
+    - Trophy icon in navigation
+  - **Gamification Settings Page** (`/settings/gamification`)
+    - Stats overview (level, XP, achievements, skill points, quests)
+    - Quick links to all gamification features
+    - Notification preferences (XP, achievements, streaks, level ups, milestones)
+    - Skill points reset functionality
+    - Added to settings sidebar under Account category
 - **Review Gate System** - Smart review collection that captures internal feedback first
   - **Rating-Based Routing** - 4-5 star ratings redirect to public review platforms, 1-3 stars collect private feedback
     - Configurable review platforms (Google Business, Yelp, TripAdvisor, Facebook, Thumbtack, WeddingWire, The Knot, custom)

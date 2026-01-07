@@ -16,7 +16,13 @@ export type AchievementTrigger =
   | { type: "contract_signed_count"; threshold: number }
   | { type: "invoice_paid_count"; threshold: number }
   | { type: "level_reached"; threshold: number }
-  | { type: "onboarding_complete"; threshold: 1 };
+  | { type: "onboarding_complete"; threshold: 1 }
+  | { type: "onboarding_progress"; threshold: number } // Percentage threshold (25, 50, 75, 100)
+  | { type: "onboarding_first_step"; threshold: 1 }
+  | { type: "onboarding_speed"; threshold: number } // Complete in X days
+  | { type: "integration_count"; threshold: number }
+  | { type: "email_count"; threshold: number }
+  | { type: "sms_count"; threshold: number };
 
 export type TriggerType = AchievementTrigger["type"];
 
@@ -518,15 +524,178 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
   // ONBOARDING
   // ============================================================================
   {
-    slug: "onboarding_complete",
-    name: "Getting Started",
-    description: "Complete the onboarding checklist",
+    slug: "onboarding_first_step",
+    name: "First Steps",
+    description: "Complete your first onboarding step",
     category: "onboarding",
     rarity: "common",
+    icon: "footprints",
+    xpReward: 25,
+    order: 75,
+    trigger: { type: "onboarding_first_step", threshold: 1 },
+  },
+  {
+    slug: "onboarding_25",
+    name: "Getting Started",
+    description: "Complete 25% of the onboarding checklist",
+    category: "onboarding",
+    rarity: "common",
+    icon: "rocket",
+    xpReward: 50,
+    order: 76,
+    trigger: { type: "onboarding_progress", threshold: 25 },
+  },
+  {
+    slug: "onboarding_50",
+    name: "Halfway There",
+    description: "Complete 50% of the onboarding checklist",
+    category: "onboarding",
+    rarity: "uncommon",
+    icon: "star",
+    xpReward: 100,
+    order: 77,
+    trigger: { type: "onboarding_progress", threshold: 50 },
+  },
+  {
+    slug: "onboarding_75",
+    name: "Almost There",
+    description: "Complete 75% of the onboarding checklist",
+    category: "onboarding",
+    rarity: "rare",
+    icon: "target",
+    xpReward: 150,
+    order: 78,
+    trigger: { type: "onboarding_progress", threshold: 75 },
+  },
+  {
+    slug: "onboarding_complete",
+    name: "Fully Setup",
+    description: "Complete the entire onboarding checklist",
+    category: "onboarding",
+    rarity: "epic",
     icon: "check-circle",
-    xpReward: 200,
-    order: 80,
+    xpReward: 300,
+    order: 79,
     trigger: { type: "onboarding_complete", threshold: 1 },
+  },
+  {
+    slug: "onboarding_speed_demon",
+    name: "Speed Demon",
+    description: "Complete onboarding in under 7 days",
+    category: "onboarding",
+    rarity: "rare",
+    icon: "zap",
+    xpReward: 200,
+    isHidden: true,
+    order: 80,
+    trigger: { type: "onboarding_speed", threshold: 7 },
+  },
+
+  // ============================================================================
+  // INTEGRATIONS
+  // ============================================================================
+  {
+    slug: "first_integration",
+    name: "Connected",
+    description: "Connect your first integration",
+    category: "engagement",
+    rarity: "common",
+    icon: "plug",
+    xpReward: 100,
+    order: 81,
+    trigger: { type: "integration_count", threshold: 1 },
+  },
+  {
+    slug: "integration_3",
+    name: "Power User",
+    description: "Connect 3 integrations",
+    category: "engagement",
+    rarity: "uncommon",
+    icon: "plug",
+    xpReward: 200,
+    order: 82,
+    trigger: { type: "integration_count", threshold: 3 },
+  },
+  {
+    slug: "integration_5",
+    name: "Fully Integrated",
+    description: "Connect 5 integrations",
+    category: "engagement",
+    rarity: "rare",
+    icon: "network",
+    xpReward: 300,
+    order: 83,
+    trigger: { type: "integration_count", threshold: 5 },
+  },
+
+  // ============================================================================
+  // COMMUNICATIONS
+  // ============================================================================
+  {
+    slug: "first_email",
+    name: "First Email",
+    description: "Send your first email",
+    category: "engagement",
+    rarity: "common",
+    icon: "mail",
+    xpReward: 25,
+    order: 84,
+    trigger: { type: "email_count", threshold: 1 },
+  },
+  {
+    slug: "email_10",
+    name: "10 Emails",
+    description: "Send 10 emails",
+    category: "engagement",
+    rarity: "common",
+    icon: "mail",
+    xpReward: 50,
+    order: 85,
+    trigger: { type: "email_count", threshold: 10 },
+  },
+  {
+    slug: "email_50",
+    name: "50 Emails",
+    description: "Send 50 emails",
+    category: "engagement",
+    rarity: "uncommon",
+    icon: "mail-check",
+    xpReward: 100,
+    order: 86,
+    trigger: { type: "email_count", threshold: 50 },
+  },
+  {
+    slug: "email_100",
+    name: "Email Pro",
+    description: "Send 100 emails",
+    category: "engagement",
+    rarity: "rare",
+    icon: "mail-check",
+    xpReward: 200,
+    order: 87,
+    trigger: { type: "email_count", threshold: 100 },
+  },
+  {
+    slug: "first_sms",
+    name: "First Text",
+    description: "Send your first SMS",
+    category: "engagement",
+    rarity: "common",
+    icon: "message",
+    xpReward: 25,
+    order: 88,
+    trigger: { type: "sms_count", threshold: 1 },
+  },
+  {
+    slug: "sms_25",
+    name: "25 Texts",
+    description: "Send 25 text messages",
+    category: "engagement",
+    rarity: "uncommon",
+    icon: "message",
+    xpReward: 75,
+    order: 89,
+    trigger: { type: "sms_count", threshold: 25 },
   },
 
   // ============================================================================

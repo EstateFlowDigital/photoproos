@@ -20,7 +20,12 @@ export type GamificationEvent =
   | { type: "invoice_paid"; amountCents: number }
   | { type: "contract_signed" }
   | { type: "booking_confirmed" }
-  | { type: "login" };
+  | { type: "login" }
+  | { type: "integration_connected"; integration: string }
+  | { type: "email_sent" }
+  | { type: "sms_sent" }
+  | { type: "onboarding_step_completed"; progress: number; isFirstStep: boolean }
+  | { type: "onboarding_complete"; daysToComplete: number };
 
 // ============================================================================
 // FIRE-AND-FORGET TRIGGER
@@ -97,6 +102,40 @@ async function handleTrigger(
       await updateLoginStreak(userId);
       triggerTypes.push("streak_login");
       break;
+
+    case "integration_connected":
+      await incrementStat(userId, "totalIntegrations");
+      await incrementChallengeProgress(userId, organizationId, "integration_connected");
+      triggerTypes.push("integration_count");
+      break;
+
+    case "email_sent":
+      await incrementStat(userId, "totalEmails");
+      await incrementChallengeProgress(userId, organizationId, "email_sent");
+      triggerTypes.push("email_count");
+      break;
+
+    case "sms_sent":
+      await incrementStat(userId, "totalSms");
+      await incrementChallengeProgress(userId, organizationId, "sms_sent");
+      triggerTypes.push("sms_count");
+      break;
+
+    case "onboarding_step_completed":
+      if (event.isFirstStep) {
+        triggerTypes.push("onboarding_first_step");
+      }
+      // Check progress milestones (25%, 50%, 75%)
+      if (event.progress >= 25) triggerTypes.push("onboarding_progress");
+      break;
+
+    case "onboarding_complete":
+      triggerTypes.push("onboarding_complete");
+      // Check for speed achievement (completed in under 7 days)
+      if (event.daysToComplete <= 7) {
+        triggerTypes.push("onboarding_speed");
+      }
+      break;
   }
 
   // Check for newly unlocked achievements
@@ -163,4 +202,65 @@ export function triggerContractSigned(userId: string, organizationId: string): v
  */
 export function triggerBookingConfirmed(userId: string, organizationId: string): void {
   fireGamificationTrigger(userId, organizationId, { type: "booking_confirmed" });
+}
+
+/**
+ * Trigger after connecting an integration (Google Calendar, Dropbox, Stripe, etc.)
+ */
+export function triggerIntegrationConnected(
+  userId: string,
+  organizationId: string,
+  integration: string
+): void {
+  fireGamificationTrigger(userId, organizationId, {
+    type: "integration_connected",
+    integration,
+  });
+}
+
+/**
+ * Trigger after sending an email
+ */
+export function triggerEmailSent(userId: string, organizationId: string): void {
+  fireGamificationTrigger(userId, organizationId, { type: "email_sent" });
+}
+
+/**
+ * Trigger after sending an SMS
+ */
+export function triggerSmsSent(userId: string, organizationId: string): void {
+  fireGamificationTrigger(userId, organizationId, { type: "sms_sent" });
+}
+
+/**
+ * Trigger after completing an onboarding step
+ * @param progress - Current progress percentage (0-100)
+ * @param isFirstStep - Whether this is the first step completed
+ */
+export function triggerOnboardingStepCompleted(
+  userId: string,
+  organizationId: string,
+  progress: number,
+  isFirstStep: boolean = false
+): void {
+  fireGamificationTrigger(userId, organizationId, {
+    type: "onboarding_step_completed",
+    progress,
+    isFirstStep,
+  });
+}
+
+/**
+ * Trigger when onboarding is fully completed
+ * @param daysToComplete - Number of days from account creation to completion
+ */
+export function triggerOnboardingComplete(
+  userId: string,
+  organizationId: string,
+  daysToComplete: number
+): void {
+  fireGamificationTrigger(userId, organizationId, {
+    type: "onboarding_complete",
+    daysToComplete,
+  });
 }

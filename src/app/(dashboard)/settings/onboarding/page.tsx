@@ -4,19 +4,22 @@ import { PageHeader } from "@/components/dashboard";
 import {
   getOnboardingChecklistItems,
   getChecklistItemsWithStatus,
+  getOnboardingProgress,
 } from "@/lib/actions/onboarding-checklist";
 import { OnboardingSettingsClient } from "./onboarding-settings-client";
 
 export default async function OnboardingSettingsPage() {
-  // Fetch both raw items and items with completion status
-  const [itemsResult, statusResult] = await Promise.all([
+  // Fetch both raw items and items with completion status, plus progress data
+  const [itemsResult, statusResult, progressResult] = await Promise.all([
     getOnboardingChecklistItems(),
     getChecklistItemsWithStatus(),
+    getOnboardingProgress(),
   ]);
 
   const items = itemsResult.success && itemsResult.data ? itemsResult.data : [];
   const itemsWithStatus =
     statusResult.success && statusResult.data ? statusResult.data : [];
+  const progress = progressResult.success && progressResult.data ? progressResult.data : null;
 
   // Calculate completion stats
   const enabledItems = itemsWithStatus.filter((item) => item.isEnabled);
@@ -45,6 +48,7 @@ export default async function OnboardingSettingsPage() {
           firstIncompleteHref: firstIncomplete?.href || null,
           firstIncompleteLabel: firstIncomplete?.label || null,
         }}
+        progressData={progress}
       />
     </div>
   );
