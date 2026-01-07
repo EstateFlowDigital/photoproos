@@ -25,11 +25,31 @@ import {
   bulkDeleteExpenses,
   exportExpensesToCSV,
   getReceiptUploadUrl,
+  // Recurring templates
+  getRecurringTemplates,
+  createRecurringTemplate,
+  updateRecurringTemplate,
+  deleteRecurringTemplate,
+  generateExpenseFromTemplate,
+  // Approval workflow
+  submitExpenseForApproval,
+  approveExpense,
+  rejectExpense,
+  // Budget tracking
+  getProjectBudget,
+  upsertProjectBudget,
+  getProjectBudgetStatus,
+  // PDF reports
+  generateExpenseReport,
   type ProjectPLSummary,
   type CreateExpenseInput,
+  type CreateRecurringTemplateInput,
+  type CreateBudgetInput,
+  type BudgetStatus,
+  type ExpenseReportData,
 } from "@/lib/actions/project-expenses";
 import { getExpenseCategories } from "@/lib/utils/expenses";
-import type { ProjectExpense, ExpenseCategory } from "@prisma/client";
+import type { ProjectExpense, ExpenseCategory, RecurringExpenseTemplate, ExpenseApprovalStatus, RecurrenceFrequency, ProjectBudget } from "@prisma/client";
 
 // ============================================================================
 // ICONS
@@ -184,6 +204,85 @@ function CalendarIcon({ className }: { className?: string }) {
       <line x1="16" y1="2" x2="16" y2="6" />
       <line x1="8" y1="2" x2="8" y2="6" />
       <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  );
+}
+
+function RepeatIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path d="M17 1l4 4-4 4" />
+      <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+      <path d="M7 23l-4-4 4-4" />
+      <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+    </svg>
+  );
+}
+
+function ClipboardCheckIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+      <path d="M9 14l2 2 4-4" />
+    </svg>
+  );
+}
+
+function WalletIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+      <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+      <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+    </svg>
+  );
+}
+
+function FileTextIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <polyline points="10 9 9 9 8 9" />
+    </svg>
+  );
+}
+
+function AlertTriangleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  );
+}
+
+function ClockIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
+
+function SettingsIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
+
+function PlayIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <polygon points="5 3 19 12 5 21 5 3" />
     </svg>
   );
 }
@@ -406,6 +505,47 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
     expenseDate: new Date().toISOString().split("T")[0],
   });
 
+  // Recurring templates state
+  const [recurringTemplates, setRecurringTemplates] = useState<RecurringExpenseTemplate[]>([]);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<RecurringExpenseTemplate | null>(null);
+  const [showApplyTemplateModal, setShowApplyTemplateModal] = useState(false);
+  const [templateFormData, setTemplateFormData] = useState({
+    name: "",
+    description: "",
+    category: "other" as ExpenseCategory,
+    amountCents: 0,
+    vendor: "",
+    frequency: "monthly" as RecurrenceFrequency,
+    dayOfWeek: 1,
+    dayOfMonth: 1,
+    monthOfYear: 1,
+  });
+
+  // Budget state
+  const [budgetStatus, setBudgetStatus] = useState<BudgetStatus | null>(null);
+  const [showBudgetModal, setShowBudgetModal] = useState(false);
+  const [budgetFormData, setBudgetFormData] = useState<CreateBudgetInput>({
+    totalBudgetCents: 0,
+    warningThreshold: 80,
+    criticalThreshold: 95,
+  });
+
+  // Approval workflow state
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectingExpenseId, setRejectingExpenseId] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [approvalFilter, setApprovalFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
+
+  // PDF Report state
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [reportDateFrom, setReportDateFrom] = useState("");
+  const [reportDateTo, setReportDateTo] = useState("");
+  const [showReportModal, setShowReportModal] = useState(false);
+
+  // Active tab for advanced features
+  const [activeAdvancedTab, setActiveAdvancedTab] = useState<"expenses" | "templates" | "budget">("expenses");
+
   // Load data
   useEffect(() => {
     loadData();
@@ -415,10 +555,12 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const [plResult, expensesResult, teamResult] = await Promise.all([
+      const [plResult, expensesResult, teamResult, templatesResult, budgetResult] = await Promise.all([
         getProjectPL(galleryId),
         getProjectExpenses(galleryId),
         getTeamMembers(),
+        getRecurringTemplates(),
+        getProjectBudgetStatus(galleryId),
       ]);
 
       if (plResult.success) {
@@ -433,6 +575,14 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
 
       if (teamResult.success) {
         setTeamMembers(teamResult.data);
+      }
+
+      if (templatesResult.success) {
+        setRecurringTemplates(templatesResult.data);
+      }
+
+      if (budgetResult.success) {
+        setBudgetStatus(budgetResult.data);
       }
     } catch {
       setError("Failed to load P&L data");
@@ -819,6 +969,376 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
     [toggleSelection]
   );
 
+  // ============================================================================
+  // RECURRING TEMPLATES HANDLERS
+  // ============================================================================
+
+  function resetTemplateForm() {
+    setTemplateFormData({
+      name: "",
+      description: "",
+      category: "other",
+      amountCents: 0,
+      vendor: "",
+      frequency: "monthly",
+      dayOfWeek: 1,
+      dayOfMonth: 1,
+      monthOfYear: 1,
+    });
+    setEditingTemplate(null);
+  }
+
+  function openAddTemplateModal() {
+    resetTemplateForm();
+    setShowTemplateModal(true);
+  }
+
+  function openEditTemplateModal(template: RecurringExpenseTemplate) {
+    setEditingTemplate(template);
+    setTemplateFormData({
+      name: template.name,
+      description: template.description,
+      category: template.category,
+      amountCents: template.amountCents,
+      vendor: template.vendor || "",
+      frequency: template.frequency,
+      dayOfWeek: template.dayOfWeek || 1,
+      dayOfMonth: template.dayOfMonth || 1,
+      monthOfYear: template.monthOfYear || 1,
+    });
+    setShowTemplateModal(true);
+  }
+
+  async function handleSaveTemplate() {
+    if (!templateFormData.name || !templateFormData.description || templateFormData.amountCents <= 0) {
+      setError("Name, description, and amount are required");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const input: CreateRecurringTemplateInput = {
+        name: templateFormData.name,
+        description: templateFormData.description,
+        category: templateFormData.category,
+        amountCents: templateFormData.amountCents,
+        vendor: templateFormData.vendor || undefined,
+        frequency: templateFormData.frequency,
+        dayOfWeek: ["weekly", "biweekly"].includes(templateFormData.frequency) ? templateFormData.dayOfWeek : undefined,
+        dayOfMonth: ["monthly", "quarterly", "yearly"].includes(templateFormData.frequency) ? templateFormData.dayOfMonth : undefined,
+        monthOfYear: templateFormData.frequency === "yearly" ? templateFormData.monthOfYear : undefined,
+      };
+
+      if (editingTemplate) {
+        const result = await updateRecurringTemplate(editingTemplate.id, input);
+        if (!result.success) {
+          setError(result.error);
+          return;
+        }
+      } else {
+        const result = await createRecurringTemplate(input);
+        if (!result.success) {
+          setError(result.error);
+          return;
+        }
+      }
+
+      setShowTemplateModal(false);
+      resetTemplateForm();
+      await loadData();
+    } catch {
+      setError("Failed to save template");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleDeleteTemplate(templateId: string) {
+    try {
+      const result = await deleteRecurringTemplate(templateId);
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+      await loadData();
+    } catch {
+      setError("Failed to delete template");
+    }
+  }
+
+  async function handleApplyTemplate(templateId: string) {
+    try {
+      const result = await generateExpenseFromTemplate(templateId, galleryId);
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+      setShowApplyTemplateModal(false);
+      await loadData();
+    } catch {
+      setError("Failed to apply template");
+    }
+  }
+
+  const getFrequencyLabel = (freq: RecurrenceFrequency) => {
+    const labels: Record<RecurrenceFrequency, string> = {
+      weekly: "Weekly",
+      biweekly: "Every 2 Weeks",
+      monthly: "Monthly",
+      quarterly: "Quarterly",
+      yearly: "Yearly",
+    };
+    return labels[freq] || freq;
+  };
+
+  // ============================================================================
+  // APPROVAL WORKFLOW HANDLERS
+  // ============================================================================
+
+  async function handleSubmitForApproval(expenseId: string) {
+    try {
+      const result = await submitExpenseForApproval(expenseId);
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+      await loadData();
+    } catch {
+      setError("Failed to submit for approval");
+    }
+  }
+
+  async function handleApproveExpense(expenseId: string) {
+    try {
+      const result = await approveExpense(expenseId);
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+      await loadData();
+    } catch {
+      setError("Failed to approve expense");
+    }
+  }
+
+  async function handleRejectExpense() {
+    if (!rejectingExpenseId || !rejectionReason.trim()) {
+      setError("Please provide a reason for rejection");
+      return;
+    }
+
+    try {
+      const result = await rejectExpense(rejectingExpenseId, rejectionReason);
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+      setShowRejectModal(false);
+      setRejectingExpenseId(null);
+      setRejectionReason("");
+      await loadData();
+    } catch {
+      setError("Failed to reject expense");
+    }
+  }
+
+  const getApprovalStatusColor = (status: ExpenseApprovalStatus) => {
+    switch (status) {
+      case "pending": return "text-[var(--warning)]";
+      case "approved": return "text-[var(--success)]";
+      case "rejected": return "text-[var(--error)]";
+      default: return "text-foreground-muted";
+    }
+  };
+
+  const getApprovalStatusLabel = (status: ExpenseApprovalStatus) => {
+    switch (status) {
+      case "pending": return "Pending Approval";
+      case "approved": return "Approved";
+      case "rejected": return "Rejected";
+      default: return "";
+    }
+  };
+
+  // ============================================================================
+  // BUDGET HANDLERS
+  // ============================================================================
+
+  async function handleSaveBudget() {
+    try {
+      const result = await upsertProjectBudget(galleryId, budgetFormData);
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+      setShowBudgetModal(false);
+      await loadData();
+    } catch {
+      setError("Failed to save budget");
+    }
+  }
+
+  const getBudgetStatusColor = (status: BudgetStatus["status"]) => {
+    switch (status) {
+      case "ok": return "text-[var(--success)]";
+      case "warning": return "text-[var(--warning)]";
+      case "critical": return "text-orange-500";
+      case "over": return "text-[var(--error)]";
+      default: return "text-foreground-muted";
+    }
+  };
+
+  const getBudgetBarColor = (percentUsed: number | null, status: BudgetStatus["status"]) => {
+    if (percentUsed === null) return "bg-[var(--foreground-muted)]";
+    if (status === "over" || percentUsed > 100) return "bg-[var(--error)]";
+    if (status === "critical") return "bg-orange-500";
+    if (status === "warning") return "bg-[var(--warning)]";
+    return "bg-[var(--success)]";
+  };
+
+  // ============================================================================
+  // PDF REPORT HANDLERS
+  // ============================================================================
+
+  async function handleGeneratePDFReport() {
+    setIsGeneratingReport(true);
+    try {
+      const dateFrom = reportDateFrom ? new Date(reportDateFrom) : undefined;
+      const dateTo = reportDateTo ? new Date(reportDateTo) : undefined;
+
+      const result = await generateExpenseReport(galleryId, dateFrom, dateTo);
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+
+      // Generate a simple HTML report that can be printed as PDF
+      const reportData = result.data;
+      const htmlContent = generateHTMLReport(reportData);
+
+      // Open in new window for printing
+      const printWindow = window.open("", "_blank");
+      if (printWindow) {
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        printWindow.focus();
+        // Auto-trigger print dialog
+        setTimeout(() => printWindow.print(), 500);
+      }
+
+      setShowReportModal(false);
+    } catch {
+      setError("Failed to generate report");
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  }
+
+  function generateHTMLReport(data: ExpenseReportData): string {
+    const formatReportCurrency = (cents: number) =>
+      new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
+
+    const formatReportDate = (dateStr: string) =>
+      new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Expense Report - ${data.projectName}</title>
+        <style>
+          body { font-family: system-ui, -apple-system, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; color: #333; }
+          h1 { font-size: 24px; margin-bottom: 8px; }
+          h2 { font-size: 18px; margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+          .meta { color: #666; font-size: 14px; margin-bottom: 24px; }
+          .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+          .summary-card { padding: 16px; background: #f9f9f9; border-radius: 8px; }
+          .summary-label { font-size: 12px; color: #666; }
+          .summary-value { font-size: 24px; font-weight: bold; margin-top: 4px; }
+          .category-list { margin-bottom: 24px; }
+          .category-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+          table { width: 100%; border-collapse: collapse; font-size: 14px; }
+          th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #eee; }
+          th { background: #f5f5f5; font-weight: 600; }
+          .status-paid { color: #22c55e; }
+          .status-unpaid { color: #f59e0b; }
+          .budget-section { margin-top: 24px; padding: 16px; background: #f9f9f9; border-radius: 8px; }
+          @media print { body { padding: 20px; } }
+        </style>
+      </head>
+      <body>
+        <h1>Expense Report</h1>
+        <div class="meta">
+          <strong>${data.projectName}</strong><br>
+          Generated: ${formatReportDate(data.generatedAt)}<br>
+          Period: ${formatReportDate(data.dateRange.from)} - ${formatReportDate(data.dateRange.to)}
+        </div>
+
+        <div class="summary-grid">
+          <div class="summary-card">
+            <div class="summary-label">Total Expenses</div>
+            <div class="summary-value">${formatReportCurrency(data.summary.totalExpenses)}</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Paid</div>
+            <div class="summary-value" style="color: #22c55e;">${formatReportCurrency(data.summary.totalPaid)}</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Unpaid</div>
+            <div class="summary-value" style="color: #f59e0b;">${formatReportCurrency(data.summary.totalUnpaid)}</div>
+          </div>
+        </div>
+
+        <h2>By Category</h2>
+        <div class="category-list">
+          ${data.summary.byCategory.map(cat => `
+            <div class="category-item">
+              <span>${getCategoryLabel(cat.category)} (${cat.count})</span>
+              <span><strong>${formatReportCurrency(cat.amount)}</strong> (${cat.percentage}%)</span>
+            </div>
+          `).join("")}
+        </div>
+
+        ${data.budget ? `
+          <div class="budget-section">
+            <h2 style="margin-top: 0;">Budget Status</h2>
+            <p>Budget: ${data.budget.totalBudget ? formatReportCurrency(data.budget.totalBudget) : "Not set"}</p>
+            <p>Spent: ${formatReportCurrency(data.budget.totalSpent)} ${data.budget.percentUsed !== null ? `(${data.budget.percentUsed}%)` : ""}</p>
+            <p>Remaining: ${data.budget.remaining !== null ? formatReportCurrency(data.budget.remaining) : "N/A"}</p>
+            <p>Status: <strong style="color: ${data.budget.status === "ok" ? "#22c55e" : data.budget.status === "warning" ? "#f59e0b" : "#ef4444"}">${data.budget.status.toUpperCase()}</strong></p>
+          </div>
+        ` : ""}
+
+        <h2>Expense Details (${data.summary.expenseCount})</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Category</th>
+              <th>Vendor</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.expenses.map(exp => `
+              <tr>
+                <td>${formatReportDate(exp.date)}</td>
+                <td>${exp.description}</td>
+                <td>${getCategoryLabel(exp.category)}</td>
+                <td>${exp.vendor || "-"}</td>
+                <td>${formatReportCurrency(exp.amount)}</td>
+                <td class="${exp.isPaid ? "status-paid" : "status-unpaid"}">${exp.isPaid ? "Paid" : "Unpaid"}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+  }
+
   if (isLoading) {
     return (
       <div className={cn("flex items-center justify-center py-12", className)} role="status" aria-label="Loading expenses">
@@ -909,8 +1429,94 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
         </div>
       )}
 
+      {/* Budget Status Alert */}
+      {budgetStatus && budgetStatus.alerts.length > 0 && (
+        <div className="space-y-2">
+          {budgetStatus.alerts.map((alert, i) => (
+            <div
+              key={i}
+              className={cn(
+                "p-3 rounded-lg border flex items-center gap-3",
+                alert.type === "over" && "bg-[var(--error)]/10 border-[var(--error)]/20 text-[var(--error)]",
+                alert.type === "critical" && "bg-orange-500/10 border-orange-500/20 text-orange-500",
+                alert.type === "warning" && "bg-[var(--warning)]/10 border-[var(--warning)]/20 text-[var(--warning)]"
+              )}
+              role="alert"
+            >
+              <AlertTriangleIcon className="h-5 w-5 shrink-0" />
+              <div className="flex-1">
+                <span className="font-medium">
+                  {alert.type === "over" ? "Over Budget" : alert.type === "critical" ? "Critical" : "Warning"}:
+                </span>{" "}
+                <span>
+                  {alert.category === "total" ? "Total budget" : getCategoryLabel(alert.category as ExpenseCategory)}
+                  {" "}is at {alert.percentUsed}% ({formatCurrency(alert.spentCents)} of {formatCurrency(alert.budgetCents)})
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Advanced Features Toolbar */}
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-2">
+          <Button
+            variant={activeAdvancedTab === "expenses" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setActiveAdvancedTab("expenses")}
+          >
+            <DollarIcon className="h-4 w-4 mr-1" />
+            Expenses
+          </Button>
+          <Button
+            variant={activeAdvancedTab === "templates" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setActiveAdvancedTab("templates")}
+          >
+            <RepeatIcon className="h-4 w-4 mr-1" />
+            Templates
+            {recurringTemplates.length > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-[var(--background-secondary)]">
+                {recurringTemplates.length}
+              </span>
+            )}
+          </Button>
+          <Button
+            variant={activeAdvancedTab === "budget" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setActiveAdvancedTab("budget")}
+          >
+            <WalletIcon className="h-4 w-4 mr-1" />
+            Budget
+            {budgetStatus && budgetStatus.status !== "ok" && (
+              <span className={cn(
+                "ml-1 px-1.5 py-0.5 text-xs rounded-full",
+                budgetStatus.status === "over" && "bg-[var(--error)]/20 text-[var(--error)]",
+                budgetStatus.status === "critical" && "bg-orange-500/20 text-orange-500",
+                budgetStatus.status === "warning" && "bg-[var(--warning)]/20 text-[var(--warning)]"
+              )}>
+                !
+              </span>
+            )}
+          </Button>
+        </div>
+        <div className="flex items-center gap-2">
+          {recurringTemplates.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={() => setShowApplyTemplateModal(true)}>
+              <PlayIcon className="h-4 w-4 mr-1" />
+              Apply Template
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" onClick={() => setShowReportModal(true)}>
+            <FileTextIcon className="h-4 w-4 mr-1" />
+            PDF Report
+          </Button>
+        </div>
+      </div>
+
       {/* Expense Breakdown by Category with Pie Chart */}
-      {plSummary && plSummary.expenses.byCategory.length > 0 && (
+      {activeAdvancedTab === "expenses" && plSummary && plSummary.expenses.byCategory.length > 0 && (
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
           <h3 className="font-semibold text-foreground mb-4">Expenses by Category</h3>
           <div className="flex flex-col lg:flex-row gap-6">
@@ -954,7 +1560,169 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
         </div>
       )}
 
+      {/* Templates Tab Content */}
+      {activeAdvancedTab === "templates" && (
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+          <div className="p-4 border-b border-[var(--card-border)] flex items-center justify-between">
+            <h3 className="font-semibold text-foreground">Recurring Expense Templates</h3>
+            <Button size="sm" onClick={openAddTemplateModal}>
+              <PlusIcon className="h-4 w-4 mr-1" />
+              Add Template
+            </Button>
+          </div>
+          {recurringTemplates.length === 0 ? (
+            <div className="p-8 text-center">
+              <RepeatIcon className="h-10 w-10 mx-auto text-foreground-muted mb-3" />
+              <p className="text-foreground-muted">No recurring templates yet</p>
+              <p className="text-sm text-foreground-muted mt-1">
+                Create templates for expenses that occur regularly
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-[var(--card-border)]">
+              {recurringTemplates.map((template) => (
+                <div
+                  key={template.id}
+                  className="p-4 flex items-center justify-between gap-4 hover:bg-[var(--background-hover)] transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-foreground">{template.name}</span>
+                      <span className="px-2 py-0.5 text-xs rounded-full bg-[var(--primary)]/10 text-[var(--primary)]">
+                        {getFrequencyLabel(template.frequency)}
+                      </span>
+                      {!template.isActive && (
+                        <span className="px-2 py-0.5 text-xs rounded-full bg-[var(--foreground-muted)]/10 text-foreground-muted">
+                          Paused
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm text-foreground-muted mt-1">
+                      {template.description} • {getCategoryLabel(template.category)} • {formatCurrency(template.amountCents)}
+                    </div>
+                    {template.nextDueDate && (
+                      <div className="text-xs text-foreground-muted mt-1 flex items-center gap-1">
+                        <ClockIcon className="h-3 w-3" />
+                        Next: {formatDate(template.nextDueDate)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleApplyTemplate(template.id)}
+                      className="p-1.5 rounded text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-[var(--primary)] transition-colors"
+                      title="Apply template now"
+                    >
+                      <PlayIcon className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => openEditTemplateModal(template)}
+                      className="p-1.5 rounded text-foreground-muted hover:bg-[var(--background-secondary)] transition-colors"
+                      title="Edit template"
+                    >
+                      <EditIcon className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteTemplate(template.id)}
+                      className="p-1.5 rounded text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-[var(--error)] transition-colors"
+                      title="Delete template"
+                    >
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Budget Tab Content */}
+      {activeAdvancedTab === "budget" && (
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+          <div className="p-4 border-b border-[var(--card-border)] flex items-center justify-between">
+            <h3 className="font-semibold text-foreground">Budget Tracking</h3>
+            <Button size="sm" onClick={() => setShowBudgetModal(true)}>
+              <SettingsIcon className="h-4 w-4 mr-1" />
+              Configure
+            </Button>
+          </div>
+          <div className="p-4 space-y-4">
+            {/* Overall Budget */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-foreground">Total Budget</span>
+                <span className={cn("text-sm font-medium", getBudgetStatusColor(budgetStatus?.status || "ok"))}>
+                  {budgetStatus?.percentUsed !== null && budgetStatus?.percentUsed !== undefined ? `${budgetStatus.percentUsed}%` : "Not set"}
+                </span>
+              </div>
+              <div className="h-2 bg-[var(--background-secondary)] rounded-full overflow-hidden">
+                <div
+                  className={cn(
+                    "h-full transition-all",
+                    getBudgetBarColor(budgetStatus?.percentUsed ?? null, budgetStatus?.status || "ok")
+                  )}
+                  style={{ width: `${Math.min(100, budgetStatus?.percentUsed || 0)}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between mt-1 text-xs text-foreground-muted">
+                <span>Spent: {formatCurrency(budgetStatus?.totalSpent || 0)}</span>
+                <span>
+                  {budgetStatus?.budget.totalBudgetCents
+                    ? `Budget: ${formatCurrency(budgetStatus.budget.totalBudgetCents)}`
+                    : "No budget set"}
+                </span>
+              </div>
+            </div>
+
+            {/* Category Budgets */}
+            {budgetStatus && budgetStatus.budget.byCategory.some(c => c.budgetCents !== null) && (
+              <div className="space-y-3 pt-4 border-t border-[var(--card-border)]">
+                <h4 className="text-sm font-medium text-foreground">By Category</h4>
+                {budgetStatus.budget.byCategory
+                  .filter(c => c.budgetCents !== null || c.spentCents > 0)
+                  .map((cat) => (
+                    <div key={cat.category}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-foreground-muted">{getCategoryLabel(cat.category)}</span>
+                        <span className="text-xs text-foreground-muted">
+                          {formatCurrency(cat.spentCents)}
+                          {cat.budgetCents !== null && ` / ${formatCurrency(cat.budgetCents)}`}
+                        </span>
+                      </div>
+                      {cat.budgetCents !== null && (
+                        <div className="h-1.5 bg-[var(--background-secondary)] rounded-full overflow-hidden">
+                          <div
+                            className={cn(
+                              "h-full transition-all",
+                              cat.percentUsed !== null && cat.percentUsed > 100 ? "bg-[var(--error)]" :
+                              cat.percentUsed !== null && cat.percentUsed >= 80 ? "bg-[var(--warning)]" :
+                              "bg-[var(--success)]"
+                            )}
+                            style={{ width: `${Math.min(100, cat.percentUsed || 0)}%` }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {!budgetStatus?.budget.totalBudgetCents && (
+              <div className="text-center py-4">
+                <WalletIcon className="h-8 w-8 mx-auto text-foreground-muted mb-2" />
+                <p className="text-sm text-foreground-muted">No budget configured</p>
+                <Button variant="ghost" size="sm" onClick={() => setShowBudgetModal(true)} className="mt-2">
+                  Set Budget
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Expenses List */}
+      {activeAdvancedTab === "expenses" && (
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
         {/* Header with Search, Filters, and Actions */}
         <div className="p-4 border-b border-[var(--card-border)] space-y-4">
@@ -1336,6 +2104,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
           </div>
         )}
       </div>
+      )}
 
       {/* Add/Edit Expense Modal */}
       <Dialog open={isModalOpen} onOpenChange={(open) => !open && setIsModalOpen(false)}>
@@ -1611,6 +2380,398 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
               disabled={isBulkProcessing}
             >
               {isBulkProcessing ? "Deleting..." : `Delete ${selectedIds.size} Expense${selectedIds.size !== 1 ? "s" : ""}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Recurring Template Modal */}
+      <Dialog open={showTemplateModal} onOpenChange={(open) => !open && setShowTemplateModal(false)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {editingTemplate ? "Edit Template" : "Create Recurring Template"}
+            </DialogTitle>
+          </DialogHeader>
+          <DialogBody className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Template Name <span className="text-[var(--error)]">*</span>
+              </label>
+              <Input
+                value={templateFormData.name}
+                onChange={(e) => setTemplateFormData({ ...templateFormData, name: e.target.value })}
+                placeholder="e.g., Monthly Software Subscription"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Description <span className="text-[var(--error)]">*</span>
+              </label>
+              <Input
+                value={templateFormData.description}
+                onChange={(e) => setTemplateFormData({ ...templateFormData, description: e.target.value })}
+                placeholder="Expense description when applied"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Amount <span className="text-[var(--error)]">*</span>
+                </label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={templateFormData.amountCents / 100}
+                  onChange={(e) =>
+                    setTemplateFormData({
+                      ...templateFormData,
+                      amountCents: Math.round(parseFloat(e.target.value || "0") * 100),
+                    })
+                  }
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Category
+                </label>
+                <select
+                  value={templateFormData.category}
+                  onChange={(e) =>
+                    setTemplateFormData({ ...templateFormData, category: e.target.value as ExpenseCategory })
+                  }
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+                >
+                  {EXPENSE_CATEGORIES.map((cat) => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Vendor
+              </label>
+              <Input
+                value={templateFormData.vendor}
+                onChange={(e) => setTemplateFormData({ ...templateFormData, vendor: e.target.value })}
+                placeholder="Optional vendor name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Frequency
+              </label>
+              <select
+                value={templateFormData.frequency}
+                onChange={(e) =>
+                  setTemplateFormData({ ...templateFormData, frequency: e.target.value as RecurrenceFrequency })
+                }
+                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+              >
+                <option value="weekly">Weekly</option>
+                <option value="biweekly">Every 2 Weeks</option>
+                <option value="monthly">Monthly</option>
+                <option value="quarterly">Quarterly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+            </div>
+
+            {["weekly", "biweekly"].includes(templateFormData.frequency) && (
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Day of Week
+                </label>
+                <select
+                  value={templateFormData.dayOfWeek}
+                  onChange={(e) =>
+                    setTemplateFormData({ ...templateFormData, dayOfWeek: parseInt(e.target.value) })
+                  }
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+                >
+                  <option value={0}>Sunday</option>
+                  <option value={1}>Monday</option>
+                  <option value={2}>Tuesday</option>
+                  <option value={3}>Wednesday</option>
+                  <option value={4}>Thursday</option>
+                  <option value={5}>Friday</option>
+                  <option value={6}>Saturday</option>
+                </select>
+              </div>
+            )}
+
+            {["monthly", "quarterly", "yearly"].includes(templateFormData.frequency) && (
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Day of Month
+                </label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="31"
+                  value={templateFormData.dayOfMonth}
+                  onChange={(e) =>
+                    setTemplateFormData({ ...templateFormData, dayOfMonth: parseInt(e.target.value) || 1 })
+                  }
+                />
+              </div>
+            )}
+
+            {templateFormData.frequency === "yearly" && (
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Month
+                </label>
+                <select
+                  value={templateFormData.monthOfYear}
+                  onChange={(e) =>
+                    setTemplateFormData({ ...templateFormData, monthOfYear: parseInt(e.target.value) })
+                  }
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm"
+                >
+                  {["January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"].map((month, i) => (
+                    <option key={month} value={i + 1}>{month}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowTemplateModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveTemplate} disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : editingTemplate ? "Save Changes" : "Create Template"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Apply Template Modal */}
+      <Dialog open={showApplyTemplateModal} onOpenChange={(open) => !open && setShowApplyTemplateModal(false)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Apply Recurring Template</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <p className="text-foreground-muted mb-4">
+              Select a template to create an expense for this project.
+            </p>
+            <div className="space-y-2">
+              {recurringTemplates.filter(t => t.isActive).map((template) => (
+                <button
+                  key={template.id}
+                  onClick={() => handleApplyTemplate(template.id)}
+                  className="w-full text-left p-3 rounded-lg border border-[var(--card-border)] hover:bg-[var(--background-hover)] transition-colors"
+                >
+                  <div className="font-medium text-foreground">{template.name}</div>
+                  <div className="text-sm text-foreground-muted mt-1">
+                    {template.description} • {formatCurrency(template.amountCents)}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowApplyTemplateModal(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Budget Configuration Modal */}
+      <Dialog open={showBudgetModal} onOpenChange={(open) => !open && setShowBudgetModal(false)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Configure Project Budget</DialogTitle>
+          </DialogHeader>
+          <DialogBody className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Total Project Budget
+              </label>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                value={(budgetFormData.totalBudgetCents || 0) / 100}
+                onChange={(e) =>
+                  setBudgetFormData({
+                    ...budgetFormData,
+                    totalBudgetCents: Math.round(parseFloat(e.target.value || "0") * 100),
+                  })
+                }
+                placeholder="0.00"
+              />
+              <p className="text-xs text-foreground-muted mt-1">
+                Set to 0 to remove the total budget limit
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Warning Threshold (%)
+                </label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={budgetFormData.warningThreshold || 80}
+                  onChange={(e) =>
+                    setBudgetFormData({ ...budgetFormData, warningThreshold: parseInt(e.target.value) || 80 })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Critical Threshold (%)
+                </label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={budgetFormData.criticalThreshold || 95}
+                  onChange={(e) =>
+                    setBudgetFormData({ ...budgetFormData, criticalThreshold: parseInt(e.target.value) || 95 })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-[var(--card-border)]">
+              <h4 className="text-sm font-medium text-foreground mb-3">Category Budgets (Optional)</h4>
+              <div className="grid grid-cols-2 gap-3">
+                {EXPENSE_CATEGORIES.map((cat) => {
+                  const fieldName = `${cat.value}BudgetCents` as keyof CreateBudgetInput;
+                  return (
+                    <div key={cat.value}>
+                      <label className="block text-xs text-foreground-muted mb-1">
+                        {cat.label}
+                      </label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={((budgetFormData[fieldName] as number) || 0) / 100}
+                        onChange={(e) =>
+                          setBudgetFormData({
+                            ...budgetFormData,
+                            [fieldName]: Math.round(parseFloat(e.target.value || "0") * 100),
+                          })
+                        }
+                        placeholder="0.00"
+                        className="text-sm"
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowBudgetModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveBudget}>
+              Save Budget
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* PDF Report Modal */}
+      <Dialog open={showReportModal} onOpenChange={(open) => !open && setShowReportModal(false)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Generate Expense Report</DialogTitle>
+          </DialogHeader>
+          <DialogBody className="space-y-4">
+            <p className="text-foreground-muted">
+              Generate a printable PDF expense report for this project.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  From Date (Optional)
+                </label>
+                <Input
+                  type="date"
+                  value={reportDateFrom}
+                  onChange={(e) => setReportDateFrom(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  To Date (Optional)
+                </label>
+                <Input
+                  type="date"
+                  value={reportDateTo}
+                  onChange={(e) => setReportDateTo(e.target.value)}
+                />
+              </div>
+            </div>
+            <p className="text-xs text-foreground-muted">
+              Leave dates empty to include all expenses.
+            </p>
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowReportModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleGeneratePDFReport} disabled={isGeneratingReport}>
+              <FileTextIcon className="h-4 w-4 mr-1" />
+              {isGeneratingReport ? "Generating..." : "Generate Report"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rejection Reason Modal */}
+      <Dialog open={showRejectModal} onOpenChange={(open) => !open && setShowRejectModal(false)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reject Expense</DialogTitle>
+          </DialogHeader>
+          <DialogBody className="space-y-4">
+            <p className="text-foreground-muted">
+              Please provide a reason for rejecting this expense.
+            </p>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                Reason <span className="text-[var(--error)]">*</span>
+              </label>
+              <Textarea
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder="Enter reason for rejection..."
+                rows={3}
+              />
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => {
+              setShowRejectModal(false);
+              setRejectingExpenseId(null);
+              setRejectionReason("");
+            }}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleRejectExpense}>
+              Reject Expense
             </Button>
           </DialogFooter>
         </DialogContent>

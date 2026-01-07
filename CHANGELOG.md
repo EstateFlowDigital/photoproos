@@ -8,6 +8,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Advanced Expense Tracking Features** - Comprehensive expense management enhancements
+  - **Recurring Expense Templates** - Create and manage templates for expenses that occur regularly
+    - Support for weekly, bi-weekly, monthly, quarterly, and yearly frequencies
+    - Configure specific day of week/month for each recurrence
+    - Apply templates to instantly create expenses
+    - Track next due dates for upcoming expenses
+  - **Expense Approval Workflow** - Multi-step approval process for expenses
+    - Submit expenses for approval
+    - Approve or reject expenses with reasons
+    - Track approval status (none, pending, approved, rejected)
+    - View pending approvals across all projects
+  - **Budget Tracking & Limits** - Set and monitor project budgets
+    - Total project budget limits
+    - Per-category budget limits (labor, travel, equipment, etc.)
+    - Warning threshold alerts (default 80%)
+    - Critical threshold alerts (default 95%)
+    - Visual progress bars with color-coded status
+    - Budget alerts banner for over-budget categories
+  - **PDF Expense Reports** - Generate printable expense reports
+    - Customizable date range filtering
+    - Summary with totals by category
+    - Budget status inclusion when configured
+    - Detailed expense line items
+    - Print-optimized HTML output
+  - **Database Schema Updates**:
+    - `ExpenseApprovalStatus` enum (pending, approved, rejected, none)
+    - `RecurrenceFrequency` enum (weekly, biweekly, monthly, quarterly, yearly)
+    - `RecurringExpenseTemplate` model for template management
+    - `ProjectBudget` model for budget tracking
+    - Approval fields on `ProjectExpense` (approvedBy, approvedAt, rejectedBy, rejectedAt, rejectionReason)
+  - **UI Enhancements**:
+    - Tab navigation for Expenses, Templates, and Budget views
+    - Template management modal with frequency configuration
+    - Budget configuration modal with category-level limits
+    - PDF report generation modal with date filtering
+    - Budget progress bars and alerts
+
 - **Real-time Gallery Photo Updates** - Photos now appear automatically after upload without page refresh
   - Added `lastCompletedAt` timestamp to upload context to signal completion
   - Gallery pages watch for completion signal and trigger automatic refresh
@@ -40,6 +77,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Settings Page**: `/settings/walkthroughs` page to manage walkthrough visibility across all pages
   - **HelpCircleIcon**: New icon for walkthrough settings navigation
   - **Settings Navigation**: Added walkthroughs to account settings category
+- **Help & Support Center** - Comprehensive help documentation system at `/help`
+  - **Main Help Page**: Hero search, category grid, popular articles, getting started banner
+  - **Category Pages**: Dynamic `/help/[category]` pages with article listings
+  - **Article Pages**: Full markdown rendering with `/help/[category]/[slug]` routing
+  - **Contact Support**: Form-based support contact page at `/help/contact`
+  - **FAQ Page**: Categorized frequently asked questions with accordion UI at `/help/faq`
+  - **Help Components**: `HelpSearch`, `HelpCategoryCard`, `HelpArticleCard`, `HelpBreadcrumb`
+  - **Help Data**: 30+ help articles across 6 categories (Getting Started, Galleries, Clients, Payments, Bookings, Account)
+  - **Article Search**: Real-time search across titles, descriptions, and content
+  - **Related Articles**: Automatic related article suggestions on article pages
+  - **Responsive Design**: Mobile-friendly layouts with proper navigation
 - **Email Marketing Coming Soon Page** - Notion-style documentation page at `/features/email-marketing`
   - Planned features with priority badges (Launch vs Phase 2)
   - Pre-built email template previews (Gallery Delivery, Booking Confirmation, etc.)
