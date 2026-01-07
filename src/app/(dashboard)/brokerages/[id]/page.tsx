@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 
 import { PageHeader, Breadcrumb, RelatedItems } from "@/components/dashboard";
-import { prisma } from "@/lib/db";
 import { getBrokerage, getBrokerageAgents } from "@/lib/actions/brokerages";
 import { getBrokerageContracts } from "@/lib/actions/brokerage-contracts";
 import { notFound } from "next/navigation";

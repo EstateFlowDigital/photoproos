@@ -5,7 +5,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import type { ContractStatus } from "@prisma/client";
-import { Search, X, Plus, ChevronRight, FileText } from "lucide-react";
+import { Search, X, Plus, ChevronRight } from "lucide-react";
 import { BulkExportButton } from "@/components/contracts/bulk-export-button";
 import { PageHeader, PageContextNav, DocumentIcon } from "@/components/dashboard";
 

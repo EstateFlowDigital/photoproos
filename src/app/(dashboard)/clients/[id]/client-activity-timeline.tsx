@@ -89,7 +89,7 @@ export function ClientActivityTimeline({ activities }: ClientActivityTimelinePro
         <div className="absolute left-4 top-0 bottom-0 w-px bg-[var(--card-border)]" />
 
         <div className="space-y-4">
-          {sortedActivities.map((activity, index) => (
+          {sortedActivities.map((activity) => (
             <div key={activity.id} className="relative flex gap-4 pl-10">
               {/* Icon circle */}
               <div className={cn(

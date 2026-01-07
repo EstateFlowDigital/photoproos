@@ -191,7 +191,7 @@ export function GalleryEditForm({ gallery, clients, services }: GalleryEditFormP
       } else {
         showToast(result.error || "Failed to update gallery", "error");
       }
-    } catch (error) {
+    } catch {
       showToast("An unexpected error occurred", "error");
     } finally {
       setIsSubmitting(false);
@@ -212,7 +212,7 @@ export function GalleryEditForm({ gallery, clients, services }: GalleryEditFormP
         showToast(result.error || "Failed to delete gallery", "error");
         setShowDeleteConfirm(false);
       }
-    } catch (error) {
+    } catch {
       showToast("An unexpected error occurred", "error");
       setShowDeleteConfirm(false);
     } finally {

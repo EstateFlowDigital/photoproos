@@ -20,10 +20,10 @@ export function ClientImportClient() {
   const { showToast } = useToast();
   const [step, setStep] = useState<Step>("upload");
   const [csvContent, setCsvContent] = useState<string>("");
-  const [fileName, setFileName] = useState<string>("");
+  const [_fileName, setFileName] = useState<string>("");
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
   const [skipDuplicates, setSkipDuplicates] = useState(true);
   const [updateExisting, setUpdateExisting] = useState(false);
 

@@ -229,7 +229,7 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
     measureElement: (el) => el?.getBoundingClientRect().height ?? 0,
   });
 
-  const handleClientCreated = (client: { id: string }) => {
+  const handleClientCreated = (_client: { id: string }) => {
     router.refresh();
   };
 

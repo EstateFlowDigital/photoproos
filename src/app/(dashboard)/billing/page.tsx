@@ -25,7 +25,7 @@ export default async function BillingOverviewPage() {
     overdueInvoices,
     // Estimates
     pendingEstimates,
-    recentEstimates,
+    _recentEstimates,
     // Credit Notes
     activeCreditNotes,
     // Retainers

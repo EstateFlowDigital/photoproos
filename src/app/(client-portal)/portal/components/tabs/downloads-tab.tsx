@@ -151,7 +151,7 @@ interface FavoritesSectionProps {
   onDownload?: (galleryId: string, photoIds: string[]) => void;
 }
 
-function FavoritesSection({ photos, downloadingGallery, downloadType, onDownload }: FavoritesSectionProps) {
+function FavoritesSection({ photos, downloadingGallery: _downloadingGallery, downloadType: _downloadType, onDownload }: FavoritesSectionProps) {
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownloadAll = async () => {

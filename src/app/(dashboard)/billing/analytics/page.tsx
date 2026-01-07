@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { PageHeader, PageContextNav, DocumentIcon, CurrencyIcon } from "@/components/dashboard";
+import { PageHeader, PageContextNav, DocumentIcon } from "@/components/dashboard";
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";

@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
 import { createContract } from "@/lib/actions/contracts";
 

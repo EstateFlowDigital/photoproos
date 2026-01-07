@@ -192,7 +192,7 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
       } else {
         setError(result.error);
       }
-    } catch (err) {
+    } catch {
       setError("Failed to submit questionnaire. Please try again.");
     } finally {
       setIsSubmitting(false);

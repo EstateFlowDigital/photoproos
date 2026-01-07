@@ -192,7 +192,7 @@ export function CreateWizardClient({
       } else {
         showToast(result.error, "error");
       }
-    } catch (error) {
+    } catch {
       showToast("Failed to create project", "error");
     } finally {
       setIsLoading(false);

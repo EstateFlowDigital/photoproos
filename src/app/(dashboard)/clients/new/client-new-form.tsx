@@ -6,7 +6,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/actions/clients";
 import { Select } from "@/components/ui/select";
-import { Input, Textarea } from "@/components/ui/input";
+// Input/Textarea components available if needed
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ClientIndustry } from "@prisma/client";
 

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getClient, updateClient, deleteClient } from "@/lib/actions/clients";
+import { getClient, deleteClient } from "@/lib/actions/clients";
 import { ClientEditForm } from "./client-edit-form";
 
 interface ClientEditPageProps {

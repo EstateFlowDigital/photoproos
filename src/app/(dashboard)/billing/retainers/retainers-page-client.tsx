@@ -48,7 +48,7 @@ type ViewMode = "grid" | "table";
 
 const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100];
 
-export function RetainersPageClient({ retainers, filter }: RetainersPageClientProps) {
+export function RetainersPageClient({ retainers, filter: _filter }: RetainersPageClientProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");

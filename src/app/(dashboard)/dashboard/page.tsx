@@ -13,7 +13,7 @@ import { redirect } from "next/navigation";
 import type { DashboardCalendarEvent } from "@/components/dashboard/dashboard-calendar";
 import { getDashboardConfig } from "@/lib/actions/dashboard";
 import { getExpiringSoonGalleries } from "@/lib/actions/gallery-expiration";
-import { isSectionVisible, isSectionCollapsed, type DashboardConfig } from "@/lib/dashboard-types";
+import { isSectionVisible, isSectionCollapsed } from "@/lib/dashboard-types";
 import Link from "next/link";
 import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 

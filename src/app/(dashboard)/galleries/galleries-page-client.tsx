@@ -64,7 +64,7 @@ export function GalleriesPageClient({
   const router = useRouter();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const handleGalleryCreated = (gallery: { id: string; name: string }) => {
+  const handleGalleryCreated = (_gallery: { id: string; name: string }) => {
     router.refresh();
   };
 

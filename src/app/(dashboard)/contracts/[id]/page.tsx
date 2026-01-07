@@ -8,7 +8,6 @@ import { cancelContract } from "@/lib/actions/contract-signing";
 import { ContractDownloadButton } from "./contract-download-button";
 import { cn } from "@/lib/utils";
 import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
-import type { ContractStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 

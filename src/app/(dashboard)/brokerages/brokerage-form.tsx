@@ -68,7 +68,7 @@ export function BrokerageForm({ brokerage }: BrokerageFormProps) {
       } else {
         setError(result.error);
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);

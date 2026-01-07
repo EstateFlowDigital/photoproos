@@ -102,10 +102,10 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
   const industryInfo = industryLabels[client.industry] || industryLabels.other;
 
-  // Calculate totals
-  const totalGalleryRevenue = client.projects.reduce((sum, p) => sum + p.priceCents, 0);
-  const paidPayments = payments.filter((p) => p.status === "paid");
-  const pendingPayments = payments.filter((p) => p.status === "pending");
+  // Calculate totals (some used for future analytics)
+  const _totalGalleryRevenue = client.projects.reduce((sum, p) => sum + p.priceCents, 0);
+  const _paidPayments = payments.filter((p) => p.status === "paid");
+  const _pendingPayments = payments.filter((p) => p.status === "pending");
 
   // Calculate lifetime revenue from paid invoices
   const invoiceRevenue = invoices
@@ -628,7 +628,7 @@ function CreditCardIcon({ className }: { className?: string }) {
   );
 }
 
-function EmailIcon({ className }: { className?: string }) {
+function _EmailIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M3 4a2 2 0 0 0-2 2v1.161l8.441 4.221a1.25 1.25 0 0 0 1.118 0L19 7.162V6a2 2 0 0 0-2-2H3Z" />
@@ -637,7 +637,7 @@ function EmailIcon({ className }: { className?: string }) {
   );
 }
 
-function CalendarIcon({ className }: { className?: string }) {
+function _CalendarIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M5.75 2a.75.75 0 0 1 .75.75V4h7V2.75a.75.75 0 0 1 1.5 0V4h.25A2.75 2.75 0 0 1 18 6.75v8.5A2.75 2.75 0 0 1 15.25 18H4.75A2.75 2.75 0 0 1 2 15.25v-8.5A2.75 2.75 0 0 1 4.75 4H5V2.75A.75.75 0 0 1 5.75 2Zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75Z" clipRule="evenodd" />
@@ -645,7 +645,7 @@ function CalendarIcon({ className }: { className?: string }) {
   );
 }
 
-function PhoneIcon({ className }: { className?: string }) {
+function _PhoneIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 0 1 3.5 2h1.148a1.5 1.5 0 0 1 1.465 1.175l.716 3.223a1.5 1.5 0 0 1-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 0 0 6.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 0 1 1.767-1.052l3.223.716A1.5 1.5 0 0 1 18 15.352V16.5a1.5 1.5 0 0 1-1.5 1.5H15c-1.149 0-2.263-.15-3.326-.43A13.022 13.022 0 0 1 2.43 8.326 13.019 13.019 0 0 1 2 5V3.5Z" clipRule="evenodd" />
@@ -653,7 +653,7 @@ function PhoneIcon({ className }: { className?: string }) {
   );
 }
 
-function NoteIcon({ className }: { className?: string }) {
+function _NoteIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M3.505 2.365A41.369 41.369 0 0 1 9 2c1.863 0 3.697.124 5.495.365 1.247.167 2.18 1.108 2.435 2.268a4.45 4.45 0 0 0-.577-.069 43.141 43.141 0 0 0-4.706 0C9.229 4.696 7.5 6.727 7.5 8.998v2.24c0 1.413.67 2.735 1.76 3.562l-2.98 2.98A.75.75 0 0 1 5 17.25v-3.443c-.501-.048-1-.106-1.495-.172C2.033 13.438 1 12.162 1 10.72V5.28c0-1.441 1.033-2.717 2.505-2.914Z" />

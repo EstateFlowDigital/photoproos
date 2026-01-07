@@ -2,7 +2,6 @@ import { PageHeader } from "@/components/dashboard";
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "@/lib/actions/auth-helper";
 import { EstimateForm } from "./estimate-form";
-import Link from "next/link";
 
 export default async function NewEstimatePage() {
   const organizationId = await requireOrganizationId();

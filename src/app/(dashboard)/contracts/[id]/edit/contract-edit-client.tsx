@@ -70,7 +70,7 @@ interface ContractEditClientProps {
 export function ContractEditClient({
   contract,
   clients,
-  templates,
+  templates: _templates,
 }: ContractEditClientProps) {
   const router = useRouter();
   const { showToast } = useToast();

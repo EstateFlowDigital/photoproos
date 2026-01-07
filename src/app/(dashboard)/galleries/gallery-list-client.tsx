@@ -146,7 +146,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
           } else {
             showToast(result.error || "Failed to duplicate gallery", "error");
           }
-        } catch (error) {
+        } catch {
           showToast("Failed to duplicate gallery", "error");
         } finally {
           setIsLoading(false);
@@ -162,7 +162,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
           } else {
             showToast(result.error || "Failed to archive gallery", "error");
           }
-        } catch (error) {
+        } catch {
           showToast("Failed to archive gallery", "error");
         } finally {
           setIsLoading(false);
@@ -190,7 +190,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
       } else {
         showToast(result.error || "Failed to delete gallery", "error");
       }
-    } catch (error) {
+    } catch {
       showToast("Failed to delete gallery", "error");
     } finally {
       setIsLoading(false);
@@ -253,7 +253,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
       } else {
         showToast(result.error || "Failed to archive galleries", "error");
       }
-    } catch (error) {
+    } catch {
       showToast("Failed to archive galleries", "error");
     } finally {
       setIsLoading(false);
@@ -279,7 +279,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
       } else {
         showToast(result.error || "Failed to delete galleries", "error");
       }
-    } catch (error) {
+    } catch {
       showToast("Failed to delete galleries", "error");
     } finally {
       setIsLoading(false);
