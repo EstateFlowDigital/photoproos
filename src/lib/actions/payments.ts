@@ -12,6 +12,7 @@ import { PaymentReminderEmail } from "@/emails/payment-reminder";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
 import { perfStart, perfEnd } from "@/lib/utils/perf-logger";
+import { triggerPaymentReceived } from "@/lib/gamification/trigger";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -197,6 +198,11 @@ export async function markPaymentAsPaid(id: string) {
         currency: existing.currency,
       },
     });
+
+    // Fire gamification trigger (non-blocking)
+    if (auth?.userId) {
+      triggerPaymentReceived(auth.userId, organizationId, existing.amountCents);
+    }
 
     revalidatePath("/payments");
     revalidatePath(`/payments/${id}`);

@@ -58,6 +58,7 @@ export {
   ZapIcon,
   BookOpenIcon,
   StarIcon,
+  RocketIcon,
   // UI Icons
   EyeIcon,
   EyeOffIcon,

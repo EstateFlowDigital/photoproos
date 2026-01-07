@@ -21,6 +21,9 @@ import { sendGalleryDeliveredEmail } from "@/lib/email/send";
 import { perfStart, perfEnd } from "@/lib/utils/perf-logger";
 import { extractKeyFromUrl, generatePresignedDownloadUrl, deleteFiles } from "@/lib/storage";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
+import { getAuthContext } from "@/lib/auth/clerk";
+import { triggerGalleryCreated, triggerGalleryDelivered } from "@/lib/gamification/trigger";
+import { updateFastestDelivery } from "@/lib/actions/gamification";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -143,6 +146,12 @@ export async function createGallery(
       `Gallery "${validated.name}" was created`,
       { projectId: gallery.id, clientId: validated.clientId || undefined }
     );
+
+    // Fire gamification trigger (non-blocking)
+    const auth = await getAuthContext();
+    if (auth?.userId) {
+      triggerGalleryCreated(auth.userId, organizationId);
+    }
 
     revalidatePath("/galleries");
     revalidatePath("/dashboard");
@@ -560,6 +569,19 @@ export async function deliverGallery(
       `Gallery "${existing.name}" was delivered${existing.client ? ` to ${existing.client.fullName || existing.client.company || 'client'}` : ""}`,
       { projectId: id, clientId: existing.clientId || undefined }
     );
+
+    // Fire gamification trigger (non-blocking)
+    const auth = await getAuthContext();
+    if (auth?.userId) {
+      triggerGalleryDelivered(auth.userId, organizationId);
+
+      // Track fastest delivery time (from creation to delivery)
+      const deliveryTimeMs = deliveredAt.getTime() - existing.createdAt.getTime();
+      const deliveryTimeHours = Math.round(deliveryTimeMs / (1000 * 60 * 60));
+      if (deliveryTimeHours > 0) {
+        updateFastestDelivery(auth.userId, deliveryTimeHours);
+      }
+    }
 
     // Track email status to return to caller
     let emailSent = false;

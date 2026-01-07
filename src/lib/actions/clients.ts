@@ -11,6 +11,8 @@ import type {
   AcquisitionOverview,
 } from "@/lib/constants/acquisition-sources";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
+import { getAuthContext } from "@/lib/auth/clerk";
+import { triggerClientAdded } from "@/lib/gamification/trigger";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -223,6 +225,12 @@ export async function createClient(
       `Client "${input.fullName || input.email}" was created`,
       { clientId: client.id }
     );
+
+    // Fire gamification trigger (non-blocking)
+    const auth = await getAuthContext();
+    if (auth?.userId) {
+      triggerClientAdded(auth.userId, organizationId);
+    }
 
     revalidatePath("/clients");
     revalidatePath("/dashboard");

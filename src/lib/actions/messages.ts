@@ -5,6 +5,11 @@ import { prisma } from "@/lib/db";
 import type { MessageReactionType } from "@prisma/client";
 import { requireOrganizationId, requireUserId } from "./auth-helper";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
+import {
+  generatePresignedUploadUrl,
+  getPublicUrl,
+  type PresignedUrlResponse,
+} from "@/lib/storage/r2";
 
 // =============================================================================
 // Types
@@ -72,6 +77,15 @@ export interface MessageWithDetails {
     userId: string | null;
     clientId: string | null;
     readAt: Date;
+    user?: {
+      id: string;
+      fullName: string | null;
+      avatarUrl: string | null;
+    } | null;
+    client?: {
+      id: string;
+      fullName: string | null;
+    } | null;
   }[];
 }
 
@@ -190,6 +204,19 @@ export async function sendMessage(
             userId: true,
             clientId: true,
             readAt: true,
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+                avatarUrl: true,
+              },
+            },
+            client: {
+              select: {
+                id: true,
+                fullName: true,
+              },
+            },
           },
         },
       },
@@ -291,6 +318,19 @@ export async function getConversationMessages(
             userId: true,
             clientId: true,
             readAt: true,
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+                avatarUrl: true,
+              },
+            },
+            client: {
+              select: {
+                id: true,
+                fullName: true,
+              },
+            },
           },
         },
       },
@@ -392,6 +432,19 @@ export async function getThreadReplies(
             userId: true,
             clientId: true,
             readAt: true,
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+                avatarUrl: true,
+              },
+            },
+            client: {
+              select: {
+                id: true,
+                fullName: true,
+              },
+            },
           },
         },
       },
@@ -467,6 +520,19 @@ export async function editMessage(
             userId: true,
             clientId: true,
             readAt: true,
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+                avatarUrl: true,
+              },
+            },
+            client: {
+              select: {
+                id: true,
+                fullName: true,
+              },
+            },
           },
         },
       },
@@ -811,6 +877,19 @@ export async function getPinnedMessages(
             userId: true,
             clientId: true,
             readAt: true,
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+                avatarUrl: true,
+              },
+            },
+            client: {
+              select: {
+                id: true,
+                fullName: true,
+              },
+            },
           },
         },
       },
@@ -891,6 +970,19 @@ export async function searchMessages(
             userId: true,
             clientId: true,
             readAt: true,
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+                avatarUrl: true,
+              },
+            },
+            client: {
+              select: {
+                id: true,
+                fullName: true,
+              },
+            },
           },
         },
       },
@@ -902,5 +994,187 @@ export async function searchMessages(
   } catch (error) {
     console.error("[Messages] Error searching messages:", error);
     return fail("Failed to search messages");
+  }
+}
+
+// =============================================================================
+// Attachment Upload Actions
+// =============================================================================
+
+export interface AttachmentUploadRequest {
+  conversationId: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+}
+
+export interface AttachmentUploadResponse {
+  uploadUrl: string;
+  publicUrl: string;
+  key: string;
+}
+
+/**
+ * Generate a presigned URL for uploading a message attachment
+ */
+export async function getMessageAttachmentUploadUrl(
+  request: AttachmentUploadRequest
+): Promise<ActionResult<AttachmentUploadResponse>> {
+  try {
+    const organizationId = await requireOrganizationId();
+    const userId = await requireUserId();
+
+    // Verify user has access to conversation
+    const participant = await prisma.conversationParticipant.findFirst({
+      where: {
+        conversationId: request.conversationId,
+        userId,
+        leftAt: null,
+        conversation: {
+          organizationId,
+        },
+      },
+    });
+
+    if (!participant) {
+      return fail("You don't have access to this conversation");
+    }
+
+    // Validate file size (max 25MB for attachments)
+    const MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024;
+    if (request.size > MAX_ATTACHMENT_SIZE) {
+      return fail("File size exceeds 25MB limit");
+    }
+
+    // Validate content type
+    const ALLOWED_TYPES = [
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "text/plain",
+      "video/mp4",
+      "video/quicktime",
+    ];
+
+    if (!ALLOWED_TYPES.includes(request.contentType)) {
+      return fail("File type not allowed");
+    }
+
+    // Generate unique key
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 8);
+    const extension = request.fileName.split(".").pop()?.toLowerCase() || "";
+    const key = `${organizationId}/messages/${request.conversationId}/${timestamp}-${random}.${extension}`;
+
+    // Generate presigned URL
+    const presignedResult = await generatePresignedUploadUrl({
+      key,
+      contentType: request.contentType,
+      contentLength: request.size,
+      expiresIn: 3600, // 1 hour
+    });
+
+    return success({
+      uploadUrl: presignedResult.uploadUrl,
+      publicUrl: presignedResult.publicUrl,
+      key: presignedResult.key,
+    });
+  } catch (error) {
+    console.error("[Messages] Error generating upload URL:", error);
+    return fail("Failed to generate upload URL");
+  }
+}
+
+/**
+ * Generate presigned URLs for multiple attachments at once
+ */
+export async function getBatchAttachmentUploadUrls(
+  conversationId: string,
+  files: Array<{
+    fileName: string;
+    contentType: string;
+    size: number;
+  }>
+): Promise<ActionResult<AttachmentUploadResponse[]>> {
+  try {
+    const organizationId = await requireOrganizationId();
+    const userId = await requireUserId();
+
+    // Verify user has access to conversation
+    const participant = await prisma.conversationParticipant.findFirst({
+      where: {
+        conversationId,
+        userId,
+        leftAt: null,
+        conversation: {
+          organizationId,
+        },
+      },
+    });
+
+    if (!participant) {
+      return fail("You don't have access to this conversation");
+    }
+
+    // Validate all files
+    const MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024;
+    const ALLOWED_TYPES = [
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "text/plain",
+      "video/mp4",
+      "video/quicktime",
+    ];
+
+    for (const file of files) {
+      if (file.size > MAX_ATTACHMENT_SIZE) {
+        return fail(`File "${file.fileName}" exceeds 25MB limit`);
+      }
+      if (!ALLOWED_TYPES.includes(file.contentType)) {
+        return fail(`File type for "${file.fileName}" not allowed`);
+      }
+    }
+
+    // Generate presigned URLs for all files
+    const results: AttachmentUploadResponse[] = [];
+    const timestamp = Date.now();
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const random = Math.random().toString(36).substring(2, 8);
+      const extension = file.fileName.split(".").pop()?.toLowerCase() || "";
+      const key = `${organizationId}/messages/${conversationId}/${timestamp}-${i}-${random}.${extension}`;
+
+      const presignedResult = await generatePresignedUploadUrl({
+        key,
+        contentType: file.contentType,
+        contentLength: file.size,
+        expiresIn: 3600,
+      });
+
+      results.push({
+        uploadUrl: presignedResult.uploadUrl,
+        publicUrl: presignedResult.publicUrl,
+        key: presignedResult.key,
+      });
+    }
+
+    return success(results);
+  } catch (error) {
+    console.error("[Messages] Error generating batch upload URLs:", error);
+    return fail("Failed to generate upload URLs");
   }
 }

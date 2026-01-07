@@ -8,6 +8,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Messaging System Enhancements** - Advanced messaging features for conversations
+  - **Full Emoji Picker Component** (`/components/messaging/emoji-picker.tsx`)
+    - 7 emoji categories (Smileys, Gestures, Hearts, Objects, Activities, Symbols, Recent)
+    - 64+ emojis per category with search functionality
+    - Quick reaction bar with 8 most common emojis
+    - Category tabs with icons for easy navigation
+    - `ReactionPicker` compact component for inline message reactions
+    - Recent emojis tracking (persists across session)
+  - **Message Threading/Reply UI** (`/components/messaging/thread-view.tsx`)
+    - Thread panel showing parent message with all replies
+    - Reply input with send button
+    - Polling for new replies every 5 seconds
+    - Reply button on hover for messages (when threads enabled)
+    - Thread count indicator showing number of replies
+    - Click to open thread panel (40% width on desktop)
+    - Reaction support within threads
+  - **File Upload to R2 Storage** - Direct browser upload for message attachments
+    - Server action `getMessageAttachmentUploadUrl` for presigned URLs
+    - Server action `getBatchAttachmentUploadUrls` for multiple files
+    - Support for images, PDFs, documents, videos (25MB limit)
+    - Upload progress indicator with percentage
+    - Automatic content type detection (image/file/video)
+    - Secure validation on server side
+  - **Enhanced Read Receipts Display** (`/components/messaging/read-receipts.tsx`)
+    - Shows avatars of people who read the message
+    - Stacked avatar display (up to 3 with "+N" overflow)
+    - Clickable tooltip showing full reader list
+    - Reader names and read timestamps on hover/click
+    - Blue checkmark indicates message was read
+    - Updated all message queries to include user/client details in read receipts
+- **Roadmap Settings Page** (`/settings/roadmap`) - Central hub for upcoming features
+  - **Feature Categories** - Organized by Integrations, Marketing & Growth, Communication, and Workflow
+  - **Status Indicators** - Visual badges for In Progress, Planned, and Exploring states
+  - **Timeline Display** - Expected release quarters for planned features
+  - **Interactive Filtering** - Filter features by status with count badges
+  - **Hero Section** - Gradient banner with feature request email link
+  - **Status Legend** - Clear explanation of what each status means
+  - Added `RocketIcon` to icon library for roadmap branding
+  - Navigation item in "Business & Payments" section with "New" badge
+  - Features included: Google Drive, Notion, Adobe Lightroom, Capture One, Email Marketing, Social Media Manager, SMS Reminders, AI Photo Culling, Advanced Scheduling
 - **Customizable Onboarding Checklist System** - Complete system for managing setup steps
   - **Database-Driven Checklist** - Checklist items stored in database per organization
     - 12 default setup steps covering clients, services, galleries, payments, and more

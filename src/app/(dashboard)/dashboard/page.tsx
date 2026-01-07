@@ -21,6 +21,9 @@ import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 import { IconBadge } from "@/components/ui/icon-badge";
 import { DebugBanner } from "@/components/debug/debug-banner";
 import { ErrorBoundary } from "@/components/debug/error-boundary";
+import { triggerLoginStreak } from "@/lib/gamification/trigger";
+import { getDailyBonusState } from "@/lib/actions/gamification";
+import { DailyBonusCard } from "@/components/gamification";
 
 const OnboardingFallback = () => (
   <div className="h-[260px] rounded-xl border border-[var(--card-border)] bg-[var(--card)]" aria-hidden />
@@ -154,6 +157,9 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
+  // Fire login streak trigger (non-blocking)
+  triggerLoginStreak(auth.userId, auth.organizationId);
+
   const organization = await prisma.organization.findUnique({
     where: { id: auth.organizationId },
   });
@@ -201,6 +207,7 @@ export default async function DashboardPage() {
     overdueInvoicesResult,
     walkthroughPreferenceResult,
     checklistItemsResult,
+    dailyBonusResult,
   ] = await Promise.all([
     // This month's revenue - from paid invoices
     prisma.invoice.aggregate({
@@ -377,6 +384,9 @@ export default async function DashboardPage() {
 
     // Onboarding checklist items (database-driven)
     getChecklistItemsWithStatus(),
+
+    // Daily bonus state
+    getDailyBonusState(),
   ]);
 
   const thisMonthRevenueValue = thisMonthRevenue._sum.totalCents || 0;
@@ -393,6 +403,7 @@ export default async function DashboardPage() {
   const checklistItems = checklistItemsResult.success && checklistItemsResult.data
     ? checklistItemsResult.data
     : [];
+  const dailyBonusState = dailyBonusResult.success ? dailyBonusResult.data : null;
 
   // Calculate changes for stats
   const revenueChange = calculatePercentChange(thisMonthRevenueValue, lastMonthRevenueValue);
@@ -603,6 +614,11 @@ export default async function DashboardPage() {
             >
               <UpcomingBookings bookings={formattedBookings} />
             </CollapsibleSection>
+          )}
+
+          {/* Daily Login Bonus */}
+          {dailyBonusState && (
+            <DailyBonusCard initialState={dailyBonusState} />
           )}
 
           {/* Overdue Invoices */}

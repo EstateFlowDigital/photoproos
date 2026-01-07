@@ -29,6 +29,7 @@ import { logActivity } from "@/lib/utils/activity";
 import { sendSMSToClient } from "@/lib/sms/send";
 import { notifySlackNewBooking, notifySlackCancellation } from "@/lib/actions/slack";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
+import { triggerBookingConfirmed } from "@/lib/gamification/trigger";
 
 // Helper to get organization ID from auth context
 async function getOrganizationId(): Promise<string> {
@@ -702,6 +703,12 @@ export async function confirmBooking(
         },
       },
     });
+
+    // Fire gamification trigger (non-blocking)
+    const auth = await getAuthContext();
+    if (auth?.userId) {
+      triggerBookingConfirmed(auth.userId, organizationId);
+    }
 
     revalidatePath("/scheduling");
     revalidatePath(`/scheduling/${id}`);

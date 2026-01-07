@@ -58,7 +58,8 @@ export type SettingsIconName =
   | "image"
   | "helpCircle"
   | "zap"
-  | "star";
+  | "star"
+  | "rocket";
 
 export interface SettingsNavItemWithIconName {
   id: string;
@@ -121,6 +122,14 @@ export const SETTINGS_NAVIGATION: SettingsNavCategoryWithIconNames[] = [
     label: "Business & Payments",
     defaultOpen: true,
     items: [
+      {
+        id: "roadmap",
+        label: "Roadmap",
+        href: "/settings/roadmap",
+        iconName: "rocket",
+        description: "Upcoming features and improvements",
+        badge: "New",
+      },
       {
         id: "payments",
         label: "Payments",
@@ -428,6 +437,13 @@ export const SETTINGS_PAGE_CATEGORIES: SettingsPageCategory[] = [
     label: "Business",
     description: "Billing, payments, and financial settings",
     items: [
+      {
+        id: "roadmap",
+        label: "Roadmap",
+        description: "Explore upcoming features and improvements",
+        href: "/settings/roadmap",
+        iconName: "rocket",
+      },
       {
         id: "billing",
         label: "Billing",

@@ -1263,9 +1263,10 @@ model User {
   walkthroughPreferences UserWalkthroughPreference[]
 
   // Gamification System
-  gamificationProfile GamificationProfile?
-  userAchievements    UserAchievement[]
-  challengeProgress   ChallengeProgress[]
+  gamificationProfile    GamificationProfile?
+  userAchievements       UserAchievement[]
+  challengeProgress      ChallengeProgress[]
+  milestoneAchievements  MilestoneAchievement[]
 
   @@index([email])
   @@index([clerkUserId])
@@ -8585,4 +8586,25 @@ model ChallengeProgress {
   @@index([userId])
   @@index([challengeId])
   @@index([completed])
+}
+
+// Milestone achievements - tracks when users reach business milestones
+model MilestoneAchievement {
+  id        String @id @default(cuid())
+  userId    String
+  milestoneId String // e.g., "revenue-1k", "clients-10", etc.
+
+  // When the milestone was reached
+  reachedAt DateTime @default(now())
+
+  // Whether the user has seen/dismissed the celebration
+  celebrated Boolean @default(false)
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, milestoneId]) // Each user can only reach each milestone once
+  @@index([userId])
+  @@index([milestoneId])
+  @@index([celebrated])
 }

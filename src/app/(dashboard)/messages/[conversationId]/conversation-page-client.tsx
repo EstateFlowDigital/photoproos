@@ -32,8 +32,12 @@ import {
   AtSign,
   Link as LinkIcon,
   Zap,
+  Reply,
 } from "lucide-react";
 import { QuickReplyPicker } from "@/components/messaging/quick-reply-picker";
+import { EmojiPicker, ReactionPicker } from "@/components/messaging/emoji-picker";
+import { ThreadView } from "@/components/messaging/thread-view";
+import { ReadReceiptsDisplay } from "@/components/messaging/read-receipts";
 import type { ConversationWithDetails } from "@/lib/actions/conversations";
 import type { MessageWithDetails, MessageAttachment } from "@/lib/actions/messages";
 import {
@@ -44,6 +48,7 @@ import {
   editMessage,
   deleteMessage,
   searchMessages,
+  getBatchAttachmentUploadUrls,
 } from "@/lib/actions/messages";
 import {
   archiveConversation,
@@ -127,6 +132,17 @@ export function ConversationPageClient({
 
   // Quick reply state
   const [showQuickReplies, setShowQuickReplies] = useState(false);
+
+  // Thread state
+  const [activeThread, setActiveThread] = useState<MessageWithDetails | null>(null);
+
+  // Emoji picker state
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [recentEmojis, setRecentEmojis] = useState<string[]>([]);
+
+  // Upload progress state
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const displayName = getConversationDisplayName(conversation, currentUserId);
   const icon = TYPE_ICONS[conversation.type];
@@ -286,13 +302,7 @@ export function ConversationPageClient({
     if (!newMessage.trim() && attachments.length === 0) return;
 
     const messageContent = newMessage.trim();
-    const messageAttachments = attachments.map(file => ({
-      type: file.type.startsWith("image/") ? "image" as const : "file" as const,
-      url: "", // Would be uploaded URL in production
-      name: file.name,
-      size: file.size,
-      mimeType: file.type,
-    }));
+    const filesToUpload = [...attachments];
 
     // Extract mentions
     const mentionMatches = messageContent.match(/@(\w+\s\w+)/g);
@@ -301,6 +311,78 @@ export function ConversationPageClient({
     setNewMessage("");
     setAttachments([]);
     setAttachmentPreviews([]);
+
+    // Upload attachments to R2 if any
+    const messageAttachments: MessageAttachment[] = [];
+    if (filesToUpload.length > 0) {
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      try {
+        // Get presigned URLs for all files
+        const urlsResult = await getBatchAttachmentUploadUrls(
+          conversation.id,
+          filesToUpload.map(file => ({
+            fileName: file.name,
+            contentType: file.type,
+            size: file.size,
+          }))
+        );
+
+        if (!urlsResult.success) {
+          console.error("Failed to get upload URLs:", urlsResult.error);
+          setIsUploading(false);
+          return;
+        }
+
+        // Upload each file to R2
+        for (let i = 0; i < filesToUpload.length; i++) {
+          const file = filesToUpload[i];
+          const uploadInfo = urlsResult.data[i];
+
+          try {
+            const response = await fetch(uploadInfo.uploadUrl, {
+              method: "PUT",
+              body: file,
+              headers: {
+                "Content-Type": file.type,
+              },
+            });
+
+            if (!response.ok) {
+              console.error(`Failed to upload ${file.name}`);
+              continue;
+            }
+
+            // Determine attachment type
+            let attachmentType: "image" | "file" | "video" = "file";
+            if (file.type.startsWith("image/")) {
+              attachmentType = "image";
+            } else if (file.type.startsWith("video/")) {
+              attachmentType = "video";
+            }
+
+            messageAttachments.push({
+              type: attachmentType,
+              url: uploadInfo.publicUrl,
+              name: file.name,
+              size: file.size,
+              mimeType: file.type,
+            });
+
+            // Update progress
+            setUploadProgress(Math.round(((i + 1) / filesToUpload.length) * 100));
+          } catch (uploadError) {
+            console.error(`Error uploading ${file.name}:`, uploadError);
+          }
+        }
+      } catch (error) {
+        console.error("Error during upload:", error);
+      } finally {
+        setIsUploading(false);
+        setUploadProgress(0);
+      }
+    }
 
     startTransition(async () => {
       const result = await sendMessage({
@@ -446,8 +528,26 @@ export function ConversationPageClient({
   // Group messages by date
   const groupedMessages = groupMessagesByDate(messages);
 
+  // Handle emoji selection from picker
+  const handleEmojiSelect = (emoji: string) => {
+    setNewMessage(prev => prev + emoji);
+    setRecentEmojis(prev => {
+      const filtered = prev.filter(e => e !== emoji);
+      return [emoji, ...filtered].slice(0, 8);
+    });
+    setShowEmojiPicker(false);
+    inputRef.current?.focus();
+  };
+
+  // Handle opening a thread
+  const handleOpenThread = (message: MessageWithDetails) => {
+    setActiveThread(message);
+  };
+
   return (
-    <div className="chat-view flex flex-1 flex-col overflow-hidden">
+    <div className="flex flex-1 overflow-hidden">
+      {/* Main Chat View */}
+      <div className={`chat-view flex flex-1 flex-col overflow-hidden ${activeThread ? "hidden md:flex md:w-[60%]" : ""}`}>
       {/* Chat Header */}
       <header className="chat-header flex items-center justify-between border-b border-[var(--card-border)] bg-[var(--card)] px-4 py-3">
         <div className="flex items-center gap-3">
@@ -711,7 +811,9 @@ export function ConversationPageClient({
                         onDelete={() => handleDeleteMessage(message.id)}
                         onCopy={() => handleCopyMessage(message.content)}
                         onReaction={(type) => handleReaction(message.id, type)}
+                        onOpenThread={() => handleOpenThread(message)}
                         allowReactions={conversation.allowReactions}
+                        allowThreads={conversation.allowThreads}
                         currentUserId={currentUserId}
                       />
                     );
@@ -738,8 +840,28 @@ export function ConversationPageClient({
         )}
       </div>
 
+      {/* Upload Progress */}
+      {isUploading && (
+        <div className="border-t border-[var(--card-border)] bg-[var(--card)] p-3" role="status" aria-label="Uploading attachments">
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm text-[var(--foreground)]">Uploading attachments...</span>
+                <span className="text-sm text-[var(--foreground-muted)]">{uploadProgress}%</span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-[var(--background-tertiary)]">
+                <div
+                  className="h-2 rounded-full bg-[var(--primary)] transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Attachment Previews */}
-      {attachments.length > 0 && (
+      {attachments.length > 0 && !isUploading && (
         <div className="border-t border-[var(--card-border)] bg-[var(--card)] p-3" role="region" aria-label="Attachments to send">
           <div className="flex gap-2 overflow-x-auto">
             {attachments.map((file, index) => (
@@ -886,6 +1008,20 @@ export function ConversationPageClient({
           </button>
         </div>
       </div>
+      </div>
+
+      {/* Thread Panel */}
+      {activeThread && (
+        <div className="w-full md:w-[40%] border-l border-[var(--card-border)]">
+          <ThreadView
+            parentMessage={activeThread}
+            conversationId={conversation.id}
+            currentUserId={currentUserId}
+            onClose={() => setActiveThread(null)}
+            allowReactions={conversation.allowReactions}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -907,7 +1043,9 @@ function MessageBubble({
   onDelete,
   onCopy,
   onReaction,
+  onOpenThread,
   allowReactions,
+  allowThreads,
   currentUserId,
 }: {
   message: MessageWithDetails;
@@ -925,7 +1063,9 @@ function MessageBubble({
   onDelete: () => void;
   onCopy: () => void;
   onReaction: (type: MessageReactionType) => void;
+  onOpenThread: () => void;
   allowReactions: boolean;
+  allowThreads: boolean;
   currentUserId: string;
 }) {
   const [showReactionPicker, setShowReactionPicker] = useState(false);
@@ -1110,6 +1250,17 @@ function MessageBubble({
                     </button>
                   )}
 
+                  {/* Reply/Thread button */}
+                  {allowThreads && (
+                    <button
+                      onClick={onOpenThread}
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--background-hover)] transition-colors"
+                      aria-label="Reply in thread"
+                    >
+                      <Reply className="h-4 w-4 text-[var(--foreground-muted)]" aria-hidden="true" />
+                    </button>
+                  )}
+
                   {/* Copy button */}
                   <button
                     onClick={onCopy}
@@ -1198,14 +1349,28 @@ function MessageBubble({
               </div>
             )}
 
+            {/* Thread Count Indicator */}
+            {allowThreads && message.threadCount > 0 && (
+              <button
+                onClick={onOpenThread}
+                className={`mt-1 flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-[var(--primary)] hover:bg-[var(--primary)]/10 transition-colors ${isOwn ? "ml-auto" : ""}`}
+              >
+                <MessageSquare className="h-3.5 w-3.5" />
+                <span>{message.threadCount} {message.threadCount === 1 ? "reply" : "replies"}</span>
+              </button>
+            )}
+
             {/* Time & Read Status */}
             {showTime && (
-              <div className={`mt-1 flex items-center gap-1 ${isOwn ? "flex-row-reverse" : ""}`}>
+              <div className={`mt-1 flex items-center gap-1.5 ${isOwn ? "flex-row-reverse" : ""}`}>
                 <span className="text-[11px] text-[var(--foreground-muted)]">
                   {format(new Date(message.createdAt), "h:mm a")}
                 </span>
                 {isOwn && (
-                  <CheckCheck className="h-3.5 w-3.5 text-[var(--primary)]" />
+                  <ReadReceiptsDisplay
+                    receipts={message.readReceipts}
+                    isOwn={isOwn}
+                  />
                 )}
               </div>
             )}

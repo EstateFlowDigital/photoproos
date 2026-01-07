@@ -162,6 +162,10 @@ export interface ThemePreset {
     secondary: string;
     background: string;
   };
+  /** Level required to unlock this theme (0 = always available) */
+  unlockLevel?: number;
+  /** Whether this is a premium/exclusive theme */
+  isPremium?: boolean;
 }
 
 export const THEME_PRESETS: ThemePreset[] = [
@@ -274,6 +278,85 @@ export const THEME_PRESETS: ThemePreset[] = [
       secondary: "#38bdf8",
       background: "#0A0A0A",
     },
+  },
+  // Premium themes - unlocked at higher levels
+  {
+    id: "midnight-gold",
+    name: "Midnight Gold",
+    description: "Elegant dark theme with golden accents",
+    accent: "#c9a227",
+    preview: {
+      primary: "#c9a227",
+      secondary: "#d4af37",
+      background: "#0a0a0f",
+    },
+    unlockLevel: 5,
+    isPremium: true,
+  },
+  {
+    id: "aurora",
+    name: "Aurora",
+    description: "Inspired by the northern lights",
+    accent: "#00d4aa",
+    preview: {
+      primary: "#00d4aa",
+      secondary: "#7b68ee",
+      background: "#0a0a12",
+    },
+    unlockLevel: 8,
+    isPremium: true,
+  },
+  {
+    id: "cherry-blossom",
+    name: "Cherry Blossom",
+    description: "Soft pink with Japanese elegance",
+    accent: "#ffb7c5",
+    preview: {
+      primary: "#ffb7c5",
+      secondary: "#ffc8d7",
+      background: "#0d0a0c",
+    },
+    unlockLevel: 10,
+    isPremium: true,
+  },
+  {
+    id: "neon-pulse",
+    name: "Neon Pulse",
+    description: "Cyberpunk-inspired electric theme",
+    accent: "#ff00ff",
+    preview: {
+      primary: "#ff00ff",
+      secondary: "#00ffff",
+      background: "#0a0510",
+    },
+    unlockLevel: 12,
+    isPremium: true,
+  },
+  {
+    id: "platinum",
+    name: "Platinum",
+    description: "Premium silver and white theme",
+    accent: "#e5e4e2",
+    preview: {
+      primary: "#e5e4e2",
+      secondary: "#c0c0c0",
+      background: "#0e0e10",
+    },
+    unlockLevel: 15,
+    isPremium: true,
+  },
+  {
+    id: "legendary-gold",
+    name: "Legendary Gold",
+    description: "For true photography legends",
+    accent: "#ffd700",
+    preview: {
+      primary: "#ffd700",
+      secondary: "#ffed4a",
+      background: "#0f0d08",
+    },
+    unlockLevel: 20,
+    isPremium: true,
   },
 ];
 

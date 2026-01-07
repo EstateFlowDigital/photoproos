@@ -32,6 +32,7 @@ import {
   HelpCircleIcon,
   ZapIcon,
   StarIcon,
+  RocketIcon,
 } from "@/components/ui/settings-icons";
 import type { SettingsIconName } from "@/lib/constants/settings-navigation";
 
@@ -67,6 +68,7 @@ export const SETTINGS_ICON_MAP: Record<
   helpCircle: HelpCircleIcon,
   zap: ZapIcon,
   star: StarIcon,
+  rocket: RocketIcon,
 };
 
 /**
