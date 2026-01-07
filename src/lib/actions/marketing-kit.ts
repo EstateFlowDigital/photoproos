@@ -7,6 +7,7 @@ import {
   MarketingAssetType,
   MarketingAssetVariant,
   SocialTileStyle,
+  Prisma,
 } from "@prisma/client";
 
 // ============================================================================
@@ -107,12 +108,13 @@ export async function getMarketingKit(kitId: string) {
             headline: true,
             project: {
               select: {
-                gallery: {
+                assets: {
+                  take: 10,
+                  orderBy: { sortOrder: "asc" },
                   select: {
-                    photos: {
-                      take: 10,
-                      orderBy: { position: "asc" },
-                    },
+                    originalUrl: true,
+                    thumbnailUrl: true,
+                    mediumUrl: true,
                   },
                 },
               },
@@ -259,12 +261,13 @@ export async function generateMarketingAssets(
             features: true,
             project: {
               select: {
-                gallery: {
+                assets: {
+                  take: 20,
+                  orderBy: { sortOrder: "asc" },
                   select: {
-                    photos: {
-                      take: 20,
-                      orderBy: { position: "asc" },
-                    },
+                    originalUrl: true,
+                    thumbnailUrl: true,
+                    mediumUrl: true,
                   },
                 },
               },
@@ -291,7 +294,8 @@ export async function generateMarketingAssets(
     if (kit.includeCoBranded) variants.push("co_branded");
 
     const generatedAssets: string[] = [];
-    const property = kit.propertyWebsite;
+    // Get property website from the included relation
+    const property = "propertyWebsite" in kit ? (kit as { propertyWebsite?: { id: string; address: string; city: string; state: string; zipCode: string; price: number | null; beds: number | null; baths: number | null; sqft: number | null; headline: string | null; } }).propertyWebsite : null;
 
     // Generate assets for each type and variant
     for (const assetType of typesToGenerate as MarketingAssetType[]) {
@@ -299,14 +303,14 @@ export async function generateMarketingAssets(
         // Create the asset record
         const asset = await prisma.marketingAsset.create({
           data: {
-            organizationId: orgId,
             propertyWebsiteId: property?.id,
             marketingKitId: kit.id,
             name: generateAssetName(assetType, variant, property),
             type: assetType,
             variant,
             status: "pending",
-            metadata: {
+            fileUrl: "", // Placeholder until generated
+            settings: {
               propertyAddress: property
                 ? `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
                 : null,
@@ -362,9 +366,10 @@ export async function regenerateAsset(assetId: string) {
   try {
     const asset = await prisma.marketingAsset.findUnique({
       where: { id: assetId },
+      include: { marketingKit: { select: { organizationId: true } } },
     });
 
-    if (!asset || asset.organizationId !== orgId) {
+    if (!asset || asset.marketingKit?.organizationId !== orgId) {
       return { error: "Asset not found" };
     }
 
@@ -373,7 +378,7 @@ export async function regenerateAsset(assetId: string) {
       where: { id: assetId },
       data: {
         status: "pending",
-        fileUrl: null,
+        fileUrl: "", // Reset to empty placeholder
         thumbnailUrl: null,
       },
     });
@@ -432,8 +437,8 @@ export async function updateMarketingAsset(
   assetId: string,
   updates: {
     name?: string;
-    editorState?: Record<string, unknown>;
-    customizations?: Record<string, unknown>;
+    editData?: Record<string, unknown>;
+    settings?: Record<string, unknown>;
   }
 ) {
   const { orgId } = await auth();
@@ -442,9 +447,10 @@ export async function updateMarketingAsset(
   try {
     const asset = await prisma.marketingAsset.findUnique({
       where: { id: assetId },
+      include: { marketingKit: { select: { organizationId: true } } },
     });
 
-    if (!asset || asset.organizationId !== orgId) {
+    if (!asset || asset.marketingKit?.organizationId !== orgId) {
       return { error: "Asset not found" };
     }
 
@@ -452,8 +458,8 @@ export async function updateMarketingAsset(
       where: { id: assetId },
       data: {
         name: updates.name,
-        editorState: updates.editorState,
-        customizations: updates.customizations,
+        editData: updates.editData as Prisma.InputJsonValue | undefined,
+        settings: updates.settings as Prisma.InputJsonValue | undefined,
       },
     });
 
@@ -476,9 +482,10 @@ export async function deleteMarketingAsset(assetId: string) {
   try {
     const asset = await prisma.marketingAsset.findUnique({
       where: { id: assetId },
+      include: { marketingKit: { select: { organizationId: true } } },
     });
 
-    if (!asset || asset.organizationId !== orgId) {
+    if (!asset || asset.marketingKit?.organizationId !== orgId) {
       return { error: "Asset not found" };
     }
 
@@ -540,9 +547,10 @@ export async function createTemplateFromAsset(
   try {
     const asset = await prisma.marketingAsset.findUnique({
       where: { id: assetId },
+      include: { marketingKit: { select: { organizationId: true } } },
     });
 
-    if (!asset || asset.organizationId !== orgId) {
+    if (!asset || asset.marketingKit?.organizationId !== orgId) {
       return { error: "Asset not found" };
     }
 
@@ -554,7 +562,7 @@ export async function createTemplateFromAsset(
         type: asset.type,
         canvasWidth: getAssetDimensions(asset.type).width,
         canvasHeight: getAssetDimensions(asset.type).height,
-        templateData: asset.editorState || {},
+        templateData: asset.editData || {},
         thumbnailUrl: asset.thumbnailUrl,
       },
     });

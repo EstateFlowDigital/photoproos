@@ -58,7 +58,7 @@ describe("Helper Functions", () => {
     });
 
     it("can be typed for any result type", () => {
-      const result = fail<{ id: string }>("Not found");
+      const result: ActionResult<{ id: string }> = fail("Not found");
       expect(result.success).toBe(false);
     });
   });
@@ -133,19 +133,19 @@ describe("Utility Functions", () => {
     });
 
     it("returns default for failed results", () => {
-      const result = fail<{ count: number }>("Error");
+      const result: ActionResult<{ count: number }> = fail("Error");
       const data = getOrDefault(result, { count: 0 });
       expect(data).toEqual({ count: 0 });
     });
 
     it("works with array defaults", () => {
-      const result = fail<string[]>("Error");
+      const result: ActionResult<string[]> = fail("Error");
       const data = getOrDefault(result, []);
       expect(data).toEqual([]);
     });
 
     it("works with primitive defaults", () => {
-      const result = fail<number>("Error");
+      const result: ActionResult<number> = fail("Error");
       const data = getOrDefault(result, 0);
       expect(data).toBe(0);
     });
@@ -159,8 +159,9 @@ describe("Utility Functions", () => {
     });
 
     it("passes through error results unchanged", () => {
-      const result = fail<{ id: string; name: string }>("Not found");
-      const mapped = mapResult(result, (data) => data.name);
+      // Use explicit typing for the callback to avoid unknown data type
+      const result: ActionResult<{ id: string; name: string }> = fail("Not found");
+      const mapped = mapResult(result, (data: { id: string; name: string }) => data.name);
       expect(mapped).toEqual({ success: false, error: "Not found" });
     });
 
@@ -199,14 +200,19 @@ describe("Type Safety", () => {
 
   it("discriminated union works with ternary", () => {
     const successResult: ActionResult<string> = success("hello");
-    const errorResult: ActionResult<string> = fail("error");
 
     const successValue = successResult.success
       ? successResult.data
       : "fallback";
-    const errorValue = errorResult.success ? errorResult.data : "fallback";
 
     expect(successValue).toBe("hello");
+  });
+
+  it("error results return fallback via getOrDefault", () => {
+    const errorResult: ActionResult<string> = fail("error");
+    // Since fail() always returns success: false, use getOrDefault for fallback
+    const errorValue = getOrDefault(errorResult, "fallback");
+
     expect(errorValue).toBe("fallback");
   });
 });

@@ -48,6 +48,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Design System Compliance** - Replaced hardcoded colors with design tokens
+- **TypeScript Compilation** - Fixed all TypeScript errors across the codebase
+  - Fixed JSON type casting in `marketing-kit.ts` with `Prisma.InputJsonValue`
+  - Fixed schema mismatches (organizationId access via relations, editData/settings fields)
+  - Updated test file to properly type error results with `ActionResult<T>` annotations
   - `switch.tsx` - Changed `bg-white` to `bg-[var(--foreground)]`
   - `dialog.tsx` - Changed `bg-black/60` to `bg-[var(--overlay)]`
   - `alert-dialog.tsx` - Changed `bg-black/80` to `bg-[var(--overlay-heavy)]`
