@@ -5,6 +5,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { SETTINGS_PAGE_CATEGORIES, type SettingsIconName } from "@/lib/constants/settings-navigation";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 import {
   ChevronRightIcon,
   UserIcon,
@@ -30,6 +32,7 @@ import {
   PackageIcon,
   ImageIcon,
   HelpCircleIcon,
+  ZapIcon,
 } from "@/components/ui/settings-icons";
 import { SettingsPageClient } from "./settings-page-client";
 
@@ -61,6 +64,7 @@ const ICON_MAP: Record<SettingsIconName, React.FC<{ className?: string }>> = {
   package: PackageIcon,
   image: ImageIcon,
   helpCircle: HelpCircleIcon,
+  zap: ZapIcon,
 };
 
 // ============================================================================
@@ -135,8 +139,20 @@ export default async function SettingsPage() {
     }
   }
 
+  // Fetch walkthrough preference
+  const walkthroughPreferenceResult = await getWalkthroughPreference("settings");
+  const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data
+    ? walkthroughPreferenceResult.data.state
+    : "open";
+
   return (
     <div className="space-y-8">
+      {/* Page Walkthrough */}
+      <WalkthroughWrapper
+        pageId="settings"
+        initialState={walkthroughState}
+      />
+
       <PageHeader
         title="Settings"
         subtitle="Manage your account and preferences"

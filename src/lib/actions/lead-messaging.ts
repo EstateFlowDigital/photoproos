@@ -62,8 +62,9 @@ async function getLeadInfo(
       };
     }
     case "chat": {
+      // WebsiteChatInquiry is from marketing site - no org filter needed
       const inquiry = await prisma.websiteChatInquiry.findFirst({
-        where: { id: leadId, organizationId },
+        where: { id: leadId },
       });
       if (!inquiry) return null;
       return {
@@ -326,7 +327,7 @@ export async function messageLeadAction(
         });
         break;
       case "chat":
-        await prisma.chatInquiry.update({
+        await prisma.websiteChatInquiry.update({
           where: { id: input.leadId },
           data: { status: "contacted" },
         });

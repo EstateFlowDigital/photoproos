@@ -55,6 +55,7 @@ export {
   SparklesIcon,
   PackageIcon,
   ImageIcon,
+  ZapIcon,
   // UI Icons
   EyeIcon,
   EyeOffIcon,

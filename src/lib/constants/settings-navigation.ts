@@ -56,7 +56,8 @@ export type SettingsIconName =
   | "code"
   | "package"
   | "image"
-  | "helpCircle";
+  | "helpCircle"
+  | "zap";
 
 export interface SettingsNavItemWithIconName {
   id: string;
@@ -202,6 +203,13 @@ export const SETTINGS_NAVIGATION: SettingsNavCategoryWithIconNames[] = [
         href: "/settings/sms",
         iconName: "message",
         description: "Text message settings",
+      },
+      {
+        id: "canned-responses",
+        label: "Canned Responses",
+        href: "/settings/canned-responses",
+        iconName: "zap",
+        description: "Quick reply templates for messaging",
       },
       {
         id: "notifications",
@@ -502,6 +510,13 @@ export const SETTINGS_PAGE_CATEGORIES: SettingsPageCategory[] = [
         description: "Configure text message settings",
         href: "/settings/sms",
         iconName: "message",
+      },
+      {
+        id: "canned-responses",
+        label: "Canned Responses",
+        description: "Quick reply templates for faster messaging",
+        href: "/settings/canned-responses",
+        iconName: "zap",
       },
     ],
   },

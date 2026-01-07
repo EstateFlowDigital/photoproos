@@ -37,6 +37,7 @@ import {
   ImageIcon,
   SettingsIcon,
   HelpCircleIcon,
+  ZapIcon,
 } from "@/components/ui/settings-icons";
 
 // ============================================================================
@@ -67,6 +68,7 @@ const ICON_MAP: Record<SettingsIconName, React.FC<{ className?: string }>> = {
   package: PackageIcon,
   image: ImageIcon,
   helpCircle: HelpCircleIcon,
+  zap: ZapIcon,
 };
 
 // ============================================================================
