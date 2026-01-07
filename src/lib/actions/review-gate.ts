@@ -9,6 +9,8 @@ import type {
 } from "@prisma/client";
 import { requireOrganizationId } from "./auth-helper";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
+import { sendReviewRequestEmail } from "@/lib/email/send";
+import { createNotification } from "./notifications";
 
 // =============================================================================
 // Types
@@ -373,6 +375,126 @@ export async function createReviewRequest(
 }
 
 /**
+ * Send a manual review request email to a client
+ * Creates the review request and sends the email immediately
+ */
+export async function sendManualReviewRequest(input: {
+  clientId?: string;
+  projectId?: string;
+  clientEmail?: string;
+  clientName?: string;
+}): Promise<ActionResult<{ id: string; token: string; emailSent: boolean }>> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    // Get organization details for the email
+    const organization = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        name: true,
+        publicName: true,
+        logoUrl: true,
+        primaryColor: true,
+        reviewGateEnabled: true,
+      },
+    });
+
+    if (!organization) {
+      return fail("Organization not found");
+    }
+
+    if (!organization.reviewGateEnabled) {
+      return fail("Review gate is not enabled for this organization");
+    }
+
+    // Get client details
+    let clientEmail = input.clientEmail;
+    let clientName = input.clientName;
+    let projectName: string | undefined;
+
+    if (input.clientId && (!clientEmail || !clientName)) {
+      const client = await prisma.client.findFirst({
+        where: { id: input.clientId, organizationId },
+        select: { email: true, fullName: true },
+      });
+      if (client) {
+        clientEmail = clientEmail || client.email;
+        clientName = clientName || client.fullName || undefined;
+      }
+    }
+
+    if (input.projectId) {
+      const project = await prisma.project.findFirst({
+        where: { id: input.projectId, organizationId },
+        include: { client: { select: { id: true, email: true, fullName: true } } },
+      });
+      if (project) {
+        projectName = project.name;
+        if (!input.clientId && project.client) {
+          clientEmail = clientEmail || project.client.email;
+          clientName = clientName || project.client.fullName || undefined;
+        }
+      }
+    }
+
+    if (!clientEmail) {
+      return fail("Client email is required");
+    }
+
+    // Create the review request
+    const request = await prisma.reviewRequest.create({
+      data: {
+        organizationId,
+        projectId: input.projectId,
+        clientId: input.clientId,
+        clientEmail,
+        clientName,
+        source: "manual",
+        status: "pending",
+      },
+    });
+
+    // Build review URL
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://app.photoproos.com";
+    const reviewUrl = `${baseUrl}/review/${request.token}`;
+
+    // Send the email
+    const emailResult = await sendReviewRequestEmail({
+      to: clientEmail,
+      clientName: clientName || "there",
+      photographerName: organization.publicName || organization.name,
+      photographerLogo: organization.logoUrl,
+      reviewUrl,
+      projectName,
+      primaryColor: organization.primaryColor || undefined,
+    });
+
+    // Update request status based on email result
+    if (emailResult.success) {
+      await prisma.reviewRequest.update({
+        where: { id: request.id },
+        data: {
+          status: "sent",
+          emailSentAt: new Date(),
+        },
+      });
+    }
+
+    revalidatePath("/settings/reviews");
+    revalidatePath("/settings/reviews/requests");
+
+    return success({
+      id: request.id,
+      token: request.token,
+      emailSent: emailResult.success,
+    });
+  } catch (error) {
+    console.error("Failed to send manual review request:", error);
+    return fail("Failed to send review request");
+  }
+}
+
+/**
  * Get a review request by token (public - no auth required)
  */
 export async function getReviewRequestByToken(token: string): Promise<ActionResult<{
@@ -561,6 +683,24 @@ export async function submitReviewResponse(
         data: { status: "completed" },
       }),
     ]);
+
+    // Create a notification for the organization
+    const stars = "★".repeat(input.rating) + "☆".repeat(5 - input.rating);
+    const clientDisplay = request.clientName || request.clientEmail || "A client";
+    const notificationTitle = isHighRating
+      ? `${stars} New ${input.rating}-star review!`
+      : `${stars} New feedback received`;
+    const notificationMessage = isHighRating
+      ? `${clientDisplay} left a ${input.rating}-star review${input.feedback ? ` and said: "${input.feedback.substring(0, 100)}${input.feedback.length > 100 ? "..." : ""}"` : "."}`
+      : `${clientDisplay} left ${input.rating}-star feedback${input.feedback ? `: "${input.feedback.substring(0, 100)}${input.feedback.length > 100 ? "..." : ""}"` : "."}`;
+
+    await createNotification({
+      organizationId: request.organizationId,
+      type: "review_feedback_received",
+      title: notificationTitle,
+      message: notificationMessage,
+      linkUrl: "/settings/reviews/requests",
+    });
 
     return success({ isHighRating });
   } catch (error) {

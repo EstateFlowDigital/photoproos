@@ -190,8 +190,15 @@ enum NotificationType {
   referral_conversion
   // Messages
   message_received
+  chat_request_received
+  // Reviews
+  review_feedback_received
   // Automations
   task_automation
+  // Expenses
+  expense_approval_required
+  expense_approved
+  expense_rejected
   // System
   system
 }
@@ -777,6 +784,34 @@ enum ReviewRequestSource {
 }
 
 // ============================================================================
+// GAMIFICATION SYSTEM
+// ============================================================================
+
+enum AchievementCategory {
+  milestone // Count-based milestones (deliveries, clients, revenue)
+  streak // Consecutive activity streaks
+  revenue // Revenue-based achievements
+  engagement // Platform engagement (logins, feature usage)
+  onboarding // Onboarding completion badges
+  special // Special/seasonal achievements
+}
+
+enum AchievementRarity {
+  common
+  uncommon
+  rare
+  epic
+  legendary
+}
+
+enum ChallengeType {
+  daily
+  weekly
+  monthly
+  special
+}
+
+// ============================================================================
 // CORE MODELS
 // ============================================================================
 
@@ -1052,6 +1087,10 @@ model Organization {
   reviewPlatforms ReviewPlatform[]
   reviewRequests  ReviewRequest[]
 
+  // Gamification System
+  userAchievements  UserAchievement[]
+  challengeProgress ChallengeProgress[]
+
   @@index([slug])
   @@index([plan])
 }
@@ -1220,6 +1259,11 @@ model User {
 
   // Walkthrough System
   walkthroughPreferences UserWalkthroughPreference[]
+
+  // Gamification System
+  gamificationProfile GamificationProfile?
+  userAchievements    UserAchievement[]
+  challengeProgress   ChallengeProgress[]
 
   @@index([email])
   @@index([clerkUserId])
@@ -8369,4 +8413,160 @@ model CannedResponse {
   @@index([userId])
   @@index([category])
   @@index([isActive])
+}
+
+// ============================================================================
+// GAMIFICATION SYSTEM
+// ============================================================================
+
+// Achievement definitions - global templates for all organizations
+model Achievement {
+  id          String              @id @default(cuid())
+  slug        String              @unique // e.g., "first_gallery", "100_deliveries"
+  name        String // "First Gallery"
+  description String // "Create your first gallery"
+  category    AchievementCategory
+  rarity      AchievementRarity   @default(common)
+  icon        String // Icon name (e.g., "camera", "trophy", "flame")
+  xpReward    Int                 @default(0)
+
+  // Trigger configuration (JSON for flexibility)
+  // e.g., { "type": "gallery_count", "threshold": 1 }
+  // e.g., { "type": "revenue_cents", "threshold": 10000 }
+  triggerConfig Json
+
+  // Display settings
+  isHidden Boolean @default(false) // Secret achievements
+  order    Int     @default(0) // Display order within category
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userAchievements UserAchievement[]
+
+  @@index([category])
+  @@index([slug])
+  @@index([rarity])
+}
+
+// User achievement unlocks - tracks which achievements each user has earned
+model UserAchievement {
+  id             String @id @default(cuid())
+  organizationId String
+  userId         String
+  achievementId  String
+
+  // Progress tracking
+  unlockedAt DateTime @default(now())
+  progress   Int      @default(0) // For progressive achievements (current count)
+  notified   Boolean  @default(false) // Whether user has been notified
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement  Achievement  @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId]) // Each user can only unlock each achievement once
+  @@index([organizationId])
+  @@index([userId])
+  @@index([achievementId])
+  @@index([unlockedAt])
+}
+
+// Gamification profile - tracks XP, level, streaks per user
+model GamificationProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  // XP & Level
+  totalXp Int @default(0)
+  level   Int @default(1)
+
+  // Login Streak
+  currentLoginStreak Int       @default(0)
+  longestLoginStreak Int       @default(0)
+  lastLoginDate      DateTime?
+
+  // Delivery Streak
+  currentDeliveryStreak Int       @default(0)
+  longestDeliveryStreak Int       @default(0)
+  lastDeliveryDate      DateTime?
+
+  // Cached Stats (for performance - updated periodically)
+  totalDeliveries   Int    @default(0)
+  totalRevenueCents BigInt @default(0)
+  totalClients      Int    @default(0)
+  totalGalleries    Int    @default(0)
+  totalPayments     Int    @default(0)
+  totalBookings     Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([level])
+  @@index([totalXp])
+}
+
+// Challenge definitions - weekly/daily challenges
+model Challenge {
+  id          String        @id @default(cuid())
+  name        String // "Deliver 3 Galleries"
+  description String // "Deliver 3 galleries to clients this week"
+  type        ChallengeType @default(weekly)
+
+  // Challenge requirements
+  targetType  String // "gallery_deliveries", "payments_received", etc.
+  targetCount Int // How many to complete
+  xpReward    Int // XP reward for completion
+
+  // Time bounds
+  startsAt DateTime
+  endsAt   DateTime
+
+  // Status
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  progress ChallengeProgress[]
+
+  @@index([type])
+  @@index([isActive])
+  @@index([startsAt, endsAt])
+}
+
+// Challenge progress - tracks user progress on challenges
+model ChallengeProgress {
+  id             String @id @default(cuid())
+  organizationId String
+  userId         String
+  challengeId    String
+
+  // Progress tracking
+  currentCount Int       @default(0)
+  completed    Boolean   @default(false)
+  completedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge    Challenge    @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, challengeId]) // Each user can only have one progress per challenge
+  @@index([organizationId])
+  @@index([userId])
+  @@index([challengeId])
+  @@index([completed])
 }

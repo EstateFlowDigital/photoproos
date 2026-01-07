@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/toast";
 import { DeleteConfirmationModal } from "@/components/modals/delete-confirmation-modal";
 import { deleteClient, impersonateClientPortal } from "@/lib/actions/clients";
 import { createTaskFromClient } from "@/lib/actions/projects";
+import { sendManualReviewRequest } from "@/lib/actions/review-gate";
 
 interface ClientActionsProps {
   clientId: string;
@@ -24,6 +25,7 @@ export function ClientActions({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isAddingToProject, setIsAddingToProject] = useState(false);
   const [isImpersonating, setIsImpersonating] = useState(false);
+  const [isSendingReviewRequest, setIsSendingReviewRequest] = useState(false);
 
   const handleAddToProject = async () => {
     setIsAddingToProject(true);
@@ -72,6 +74,30 @@ export function ClientActions({
       showToast("Unable to open client portal", "error");
     } finally {
       setIsImpersonating(false);
+    }
+  };
+
+  const handleSendReviewRequest = async () => {
+    setIsSendingReviewRequest(true);
+    try {
+      const result = await sendManualReviewRequest({
+        clientId,
+        clientEmail,
+        clientName,
+      });
+      if (result.success) {
+        if (result.data.emailSent) {
+          showToast("Review request sent successfully", "success");
+        } else {
+          showToast("Review request created (email not sent)", "success");
+        }
+      } else {
+        showToast(result.error || "Failed to send review request", "error");
+      }
+    } catch {
+      showToast("Failed to send review request", "error");
+    } finally {
+      setIsSendingReviewRequest(false);
     }
   };
 
@@ -132,6 +158,15 @@ export function ClientActions({
           >
             <ProjectIcon className="h-4 w-4 text-foreground-muted" />
             {isAddingToProject ? "Adding..." : "Add to Project"}
+          </button>
+          <button
+            type="button"
+            onClick={handleSendReviewRequest}
+            disabled={isSendingReviewRequest}
+            className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+          >
+            <StarIcon className="h-4 w-4 text-foreground-muted" />
+            {isSendingReviewRequest ? "Sending..." : "Request Review"}
           </button>
           <hr className="border-[var(--card-border)] my-2" />
           <button
@@ -220,6 +255,14 @@ function ImpersonateIcon({ className }: { className?: string }) {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M10 10.75a3.25 3.25 0 1 0 0-6.5 3.25 3.25 0 0 0 0 6.5Z" />
       <path fillRule="evenodd" d="M2 10a8 8 0 1 1 16 0 8 8 0 0 1-16 0Zm8-6.5a5.5 5.5 0 0 0-4.313 9.02c.04.04.083.079.125.118A6.48 6.48 0 0 0 10 14.5a6.48 6.48 0 0 0 4.188-1.862c.043-.04.085-.078.125-.118A5.5 5.5 0 0 0 10 3.5Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function StarIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401Z" clipRule="evenodd" />
     </svg>
   );
 }

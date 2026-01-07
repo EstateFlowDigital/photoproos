@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
@@ -278,28 +279,39 @@ export function ReviewsSettingsClient({
     <div className="space-y-8">
       {/* Stats Overview */}
       {stats && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            label="Total Reviews"
-            value={stats.completedRequests}
-            icon={<Star className="h-4 w-4" />}
-          />
-          <StatCard
-            label="Average Rating"
-            value={stats.averageRating.toFixed(1)}
-            icon={<TrendingUp className="h-4 w-4" />}
-            suffix="/ 5"
-          />
-          <StatCard
-            label="Response Rate"
-            value={`${stats.responseRate}%`}
-            icon={<Users className="h-4 w-4" />}
-          />
-          <StatCard
-            label="Platform Clicks"
-            value={stats.platformClicks}
-            icon={<ExternalLink className="h-4 w-4" />}
-          />
+        <div className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              label="Total Reviews"
+              value={stats.completedRequests}
+              icon={<Star className="h-4 w-4" />}
+            />
+            <StatCard
+              label="Average Rating"
+              value={stats.averageRating.toFixed(1)}
+              icon={<TrendingUp className="h-4 w-4" />}
+              suffix="/ 5"
+            />
+            <StatCard
+              label="Response Rate"
+              value={`${stats.responseRate}%`}
+              icon={<Users className="h-4 w-4" />}
+            />
+            <StatCard
+              label="Platform Clicks"
+              value={stats.platformClicks}
+              icon={<ExternalLink className="h-4 w-4" />}
+            />
+          </div>
+          <div className="flex justify-end">
+            <Link
+              href="/settings/reviews/requests"
+              className="inline-flex items-center gap-2 text-sm font-medium text-[var(--primary)] hover:text-[var(--primary)]/80 transition-colors"
+            >
+              View all review requests
+              <ExternalLink className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       )}
 

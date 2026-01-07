@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - **Delivery Email CTA** - Optional review request in gallery delivery emails
     - **Automated Follow-up** - Cron job sends review requests X days after gallery delivery (configurable per organization)
     - **Gallery Page Prompt** - Optional modal prompt after 45 seconds of gallery viewing
+    - **Manual Send from Client Page** - "Request Review" button in client quick actions
   - **Database Models** - Three new models for comprehensive review tracking
     - `ReviewPlatform` - Organization's configured review platforms with URLs and priorities
     - `ReviewRequest` - Token-based review requests with source tracking (manual, delivery, followup, gallery, chat)
@@ -27,6 +28,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Touchpoint toggles (delivery email, follow-up, gallery prompt)
     - Follow-up delay configuration (1-30 days)
     - Real-time statistics (total, pending, completed, average rating)
+    - Link to review requests dashboard
+  - **Review Requests Dashboard** (`/settings/reviews/requests`) - View and manage all review requests
+    - Full list of review requests with status, source, and date grouping
+    - Search by client name, email, or project
+    - Filter by status (pending, sent, viewed, completed, expired) and source
+    - Summary statistics (total, pending, completed, average rating)
+    - Detail modal showing full response info (rating, feedback, platform clicks)
   - **Public Review Flow** (`/review/[token]`) - Client-facing review submission
     - Branded experience with organization logo and colors
     - Interactive 5-star rating selector
@@ -37,6 +45,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Star preview animation
     - Photographer branding (logo, colors)
     - Mobile-responsive design
+  - **In-App Notifications** - Real-time notifications for review feedback
+    - Notification when clients submit reviews (shows rating stars and preview of feedback)
+    - Different messaging for high ratings (4-5 stars) vs feedback (1-3 stars)
+    - Links directly to review requests dashboard
   - **API Endpoints**
     - `/api/cron/review-followups` - Daily cron for automated follow-up emails
     - `/api/reviews/create-gallery-request` - Create review request from gallery prompt
