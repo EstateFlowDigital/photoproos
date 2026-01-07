@@ -1673,11 +1673,11 @@ Charge one price for the entire gallery:
 
 ### Variable Pricing
 
-(Coming Soon) Different prices based on:
+Different pricing options available:
 
-- Number of photos
-- Photo resolution
-- Usage rights
+- **Per-photo pricing**: Charge per image downloaded
+- **Tiered packages**: Offer bundles with different photo counts
+- **Add-on services**: Include retouching, prints, or rush delivery
 
 ## Preview Options
 
@@ -1727,11 +1727,21 @@ You receive:
 
 ### Deposits
 
-(Coming Soon) Accept partial payments:
+Accept partial payments for galleries:
 
-- Set deposit amount
-- Client pays deposit first
-- Pays remaining balance to unlock
+- Set a deposit amount in gallery settings
+- Client pays the deposit first
+- Pays remaining balance to unlock full gallery
+- Track payment progress in the dashboard
+
+### Payment Plans
+
+Create structured payment plans:
+
+1. Go to **Invoices** → **Payment Plans**
+2. Set the number of installments
+3. Choose frequency (weekly, biweekly, monthly)
+4. Automatic reminders sent for each installment
 
 ## Handling Issues
 

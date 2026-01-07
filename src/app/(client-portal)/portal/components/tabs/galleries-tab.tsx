@@ -1,13 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import nextDynamic from "next/dynamic";
 import Image from "next/image";
 import { ImageIcon, DownloadIcon, LoadingSpinner } from "../icons";
-import { Lightbox } from "../lightbox";
 import { EmptyState } from "../empty-state";
 import { formatDate, BLUR_DATA_URL } from "../utils";
-import { PhotoComparisonModal } from "@/components/gallery/photo-comparison-modal";
 import type { GalleryData } from "../types";
+
+const Lightbox = nextDynamic(
+  () => import("../lightbox").then((m) => m.Lightbox),
+  { ssr: false, loading: () => null }
+);
+
+const PhotoComparisonModal = nextDynamic(
+  () => import("@/components/gallery/photo-comparison-modal").then((m) => m.PhotoComparisonModal),
+  { ssr: false, loading: () => null }
+);
 
 interface Photo {
   id: string;

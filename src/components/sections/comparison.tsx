@@ -30,7 +30,7 @@ const comparisonFeatures: ComparisonFeature[] = [
   { name: "Social Media Manager", category: "Advanced", photoproos: "Coming Soon", pixieset: false, pictime: false, honeybook: false },
 
   // Business Operations
-  { name: "Contracts & E-Signatures", category: "Business", photoproos: "Coming Soon", pixieset: false, pictime: false, honeybook: true },
+  { name: "Contracts & E-Signatures", category: "Business", photoproos: true, pixieset: false, pictime: false, honeybook: true },
   { name: "Analytics Dashboard", category: "Business", photoproos: true, pixieset: "Basic", pictime: "Basic", honeybook: "Basic" },
   { name: "Custom Branding", category: "Business", photoproos: true, pixieset: true, pictime: true, honeybook: true },
   { name: "Custom Domain", category: "Business", photoproos: true, pixieset: "Paid", pictime: "Paid", honeybook: false },

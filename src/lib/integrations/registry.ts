@@ -142,7 +142,6 @@ export const INTEGRATIONS: Integration[] = [
       },
     ],
     requiredEnvVars: ["CALENDLY_CLIENT_ID", "CALENDLY_CLIENT_SECRET"],
-    comingSoon: true,
   },
 
   // ============================================================================
@@ -375,7 +374,6 @@ export const INTEGRATIONS: Integration[] = [
       },
     ],
     requiredEnvVars: ["QUICKBOOKS_CLIENT_ID", "QUICKBOOKS_CLIENT_SECRET"],
-    comingSoon: true,
   },
 
   // ============================================================================
@@ -432,7 +430,6 @@ export const INTEGRATIONS: Integration[] = [
       },
     ],
     requiredEnvVars: ["MAILCHIMP_CLIENT_ID", "MAILCHIMP_CLIENT_SECRET"],
-    comingSoon: true,
   },
 
   // ============================================================================

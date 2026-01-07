@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   getGalleryZipDownload,
   getWebSizeDownload,
@@ -65,34 +65,33 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter data based on search query
-  const filteredProperties = properties.filter((p) => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      p.address.toLowerCase().includes(query) ||
-      p.city.toLowerCase().includes(query) ||
-      p.state.toLowerCase().includes(query)
-    );
-  });
+  const normalizedQuery = useMemo(() => searchQuery.trim().toLowerCase(), [searchQuery]);
 
-  const filteredGalleries = galleries.filter((g) => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      g.name.toLowerCase().includes(query) ||
-      (g.serviceName && g.serviceName.toLowerCase().includes(query))
-    );
-  });
+  const filteredProperties = useMemo(() => {
+    if (!normalizedQuery) return properties;
+    return properties.filter((p) => (
+      p.address.toLowerCase().includes(normalizedQuery) ||
+      p.city.toLowerCase().includes(normalizedQuery) ||
+      p.state.toLowerCase().includes(normalizedQuery)
+    ));
+  }, [properties, normalizedQuery]);
 
-  const filteredLeads = leads.filter((l) => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      l.name.toLowerCase().includes(query) ||
-      l.email.toLowerCase().includes(query) ||
-      l.propertyAddress.toLowerCase().includes(query)
-    );
-  });
+  const filteredGalleries = useMemo(() => {
+    if (!normalizedQuery) return galleries;
+    return galleries.filter((g) => (
+      g.name.toLowerCase().includes(normalizedQuery) ||
+      (g.serviceName && g.serviceName.toLowerCase().includes(normalizedQuery))
+    ));
+  }, [galleries, normalizedQuery]);
+
+  const filteredLeads = useMemo(() => {
+    if (!normalizedQuery) return leads;
+    return leads.filter((l) => (
+      l.name.toLowerCase().includes(normalizedQuery) ||
+      l.email.toLowerCase().includes(normalizedQuery) ||
+      l.propertyAddress.toLowerCase().includes(normalizedQuery)
+    ));
+  }, [leads, normalizedQuery]);
 
   // Favorites state (persisted to localStorage) - for photos
   const [favorites, setFavorites] = useState<Set<string>>(() => {
@@ -113,9 +112,9 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
   });
 
   // Calculate unpaid invoices count for mobile nav
-  const unpaidInvoicesCount = invoices.filter(
-    (inv) => inv.status !== "paid" && inv.status !== "draft"
-  ).length;
+  const unpaidInvoicesCount = useMemo(() => (
+    invoices.filter((inv) => inv.status !== "paid" && inv.status !== "draft").length
+  ), [invoices]);
 
   // Persist favorites to localStorage
   useEffect(() => {

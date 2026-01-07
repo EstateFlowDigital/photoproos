@@ -63,8 +63,8 @@ export default function ContractsFeaturePage() {
         </div>
         <div className="relative z-10 mx-auto max-w-[1512px] px-6 py-20 lg:px-[124px] lg:py-28">
           <div className="mx-auto max-w-3xl text-center">
-            <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--ai)]/20 bg-[var(--ai)]/5 px-4 py-1.5 text-sm font-medium text-[var(--ai)]">
-              Coming Soon
+            <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--success)]/20 bg-[var(--success)]/5 px-4 py-1.5 text-sm font-medium text-[var(--success)]">
+              Available Now
             </span>
             <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
               Contracts & E-Sign
@@ -77,45 +77,30 @@ export default function ContractsFeaturePage() {
                 href="/sign-up"
                 className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
               >
-                Join waitlist
+                Start free trial
               </Link>
               <Link
                 href="/features/galleries"
                 className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-8 py-3 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
               >
-                Explore available features
+                Explore all features
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Coming Soon Banner */}
-      <section className="py-12">
-        <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="rounded-2xl border border-[var(--ai)]/30 bg-[var(--ai)]/5 p-8 text-center">
-            <ClockIcon className="mx-auto mb-4 h-12 w-12 text-[var(--ai)]" />
-            <h3 className="mb-2 text-xl font-bold text-foreground">Under Development</h3>
-            <p className="text-foreground-secondary">
-              We&apos;re building a powerful contract and e-signature system designed specifically for photographers.
-              <br />
-              Join the waitlist to be notified when it launches.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Planned Features */}
+      {/* Features */}
       <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
-            What we&apos;re building
+            Everything you need
           </h2>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 opacity-80"
+                className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6"
               >
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--ai)]/10">
                   <feature.icon className="h-6 w-6 text-[var(--ai)]" />
@@ -133,16 +118,16 @@ export default function ContractsFeaturePage() {
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground">
-              Templates we&apos;ll include
+              Pre-built templates
             </h2>
             <p className="mb-12 text-foreground-secondary">
-              Professional contract templates reviewed by legal experts
+              Professional contract templates designed for photographers
             </p>
             <div className="grid gap-4 md:grid-cols-2">
               {templates.map((template) => (
                 <div
                   key={template}
-                  className="flex items-center gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4 opacity-80"
+                  className="flex items-center gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4"
                 >
                   <DocumentIcon className="h-5 w-5 text-[var(--ai)]" />
                   <span className="text-sm text-foreground">{template}</span>
@@ -153,42 +138,27 @@ export default function ContractsFeaturePage() {
         </div>
       </section>
 
-      {/* Timeline */}
+      {/* How it works */}
       <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <div className="mx-auto max-w-xl text-center">
             <h2 className="mb-8 text-3xl font-bold text-foreground">
-              Development timeline
+              How it works
             </h2>
             <div className="space-y-6">
               {[
-                { phase: "Phase 1", status: "Done", title: "Core platform", description: "Galleries, payments, clients, bookings" },
-                { phase: "Phase 2", status: "In Progress", title: "Property websites & client portal", description: "Single property websites, marketing kit" },
-                { phase: "Phase 3", status: "Planned", title: "Contracts & E-Sign", description: "This feature - coming soon!" },
+                { step: "1", title: "Choose a template", description: "Start with a professional template or create your own from scratch" },
+                { step: "2", title: "Customize & send", description: "Add your terms, client details, and send via email for signature" },
+                { step: "3", title: "Track & sign", description: "Get notified when clients view and sign. Everything is stored securely" },
               ].map((item) => (
                 <div
-                  key={item.phase}
-                  className={`flex items-start gap-4 rounded-lg border p-4 text-left ${
-                    item.status === "In Progress"
-                      ? "border-[var(--primary)] bg-[var(--primary)]/5"
-                      : "border-[var(--card-border)] bg-[var(--card)]"
-                  }`}
+                  key={item.step}
+                  className="flex items-start gap-4 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4 text-left"
                 >
-                  <div className={`mt-1 h-3 w-3 rounded-full ${
-                    item.status === "Done" ? "bg-[var(--success)]" :
-                    item.status === "In Progress" ? "bg-[var(--primary)]" : "bg-foreground-secondary/30"
-                  }`} />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-bold text-white">
+                    {item.step}
+                  </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-foreground-secondary">{item.phase}</span>
-                      <span className={`rounded-full px-2 py-0.5 text-xs ${
-                        item.status === "Done" ? "bg-[var(--success)]/10 text-[var(--success)]" :
-                        item.status === "In Progress" ? "bg-[var(--primary)]/10 text-[var(--primary)]" :
-                        "bg-foreground-secondary/10 text-foreground-secondary"
-                      }`}>
-                        {item.status}
-                      </span>
-                    </div>
                     <p className="font-medium text-foreground">{item.title}</p>
                     <p className="text-sm text-foreground-secondary">{item.description}</p>
                   </div>
@@ -203,16 +173,16 @@ export default function ContractsFeaturePage() {
       <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
         <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
           <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
-            Want early access?
+            Ready to streamline your contracts?
           </h2>
           <p className="mb-8 text-foreground-secondary">
-            Join the waitlist to be notified when Contracts & E-Sign launches.
+            Start sending professional contracts in minutes. No legal expertise required.
           </p>
           <Link
             href="/sign-up"
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
           >
-            Join waitlist
+            Start free trial
           </Link>
         </div>
       </section>
