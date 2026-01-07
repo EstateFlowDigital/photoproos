@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/toast";
 import { DeleteConfirmationModal } from "@/components/modals/delete-confirmation-modal";
 import { QRCodeModal } from "@/components/ui/qr-code";
 import { deleteGallery } from "@/lib/actions/galleries";
+import { getOrCreateProjectConversation } from "@/lib/actions/conversations";
 
 interface GalleryActionsProps {
   galleryId: string;
@@ -29,6 +30,7 @@ export function GalleryActions({
   const [isDownloadingProofSheet, setIsDownloadingProofSheet] = useState(false);
   const [showFavoritesMenu, setShowFavoritesMenu] = useState(false);
   const [isExportingFavorites, setIsExportingFavorites] = useState(false);
+  const [isOpeningChat, setIsOpeningChat] = useState(false);
 
   const handleDownloadProofSheet = useCallback(async () => {
     setIsDownloadingProofSheet(true);
@@ -90,6 +92,23 @@ export function GalleryActions({
     }
   }, [galleryId, galleryName, showToast]);
 
+  const handleOpenTeamChat = useCallback(async () => {
+    setIsOpeningChat(true);
+    try {
+      const result = await getOrCreateProjectConversation(galleryId);
+      if (result.success) {
+        router.push(`/messages/${result.data.id}`);
+      } else {
+        showToast(result.error || "Failed to open team chat", "error");
+      }
+    } catch (error) {
+      console.error("Error opening team chat:", error);
+      showToast("Failed to open team chat", "error");
+    } finally {
+      setIsOpeningChat(false);
+    }
+  }, [galleryId, router, showToast]);
+
   const handleDelete = async () => {
     const result = await deleteGallery(galleryId);
 
@@ -116,6 +135,17 @@ export function GalleryActions({
           <span className="hidden md:inline">QR Code</span>
         </button>
       )}
+
+      <button
+        type="button"
+        onClick={handleOpenTeamChat}
+        disabled={isOpeningChat}
+        className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-2.5 md:px-4 md:py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+        title="Team Chat"
+      >
+        <ChatIcon className="h-4 w-4" />
+        <span className="hidden md:inline">{isOpeningChat ? "Opening..." : "Team Chat"}</span>
+      </button>
 
       <button
         type="button"
@@ -297,6 +327,23 @@ function DownloadIcon({ className }: { className?: string }) {
     >
       <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
       <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
+    </svg>
+  );
+}
+
+function ChatIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+    >
+      <path
+        fillRule="evenodd"
+        d="M3.43 2.524A41.29 41.29 0 0 1 10 2c2.236 0 4.43.18 6.57.524 1.437.231 2.43 1.49 2.43 2.902v5.148c0 1.413-.993 2.67-2.43 2.902a41.102 41.102 0 0 1-3.55.414c-.28.02-.521.18-.643.413l-1.712 3.293a.75.75 0 0 1-1.33 0l-1.713-3.293a.783.783 0 0 0-.642-.413 41.108 41.108 0 0 1-3.55-.414C1.993 13.245 1 11.986 1 10.574V5.426c0-1.413.993-2.67 2.43-2.902Z"
+        clipRule="evenodd"
+      />
     </svg>
   );
 }

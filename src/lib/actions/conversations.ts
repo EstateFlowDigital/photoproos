@@ -642,3 +642,121 @@ async function findExistingDM(
 
   return dm || null;
 }
+
+/**
+ * Get or create a conversation linked to a specific project
+ * Creates a group conversation for team discussion about the project
+ */
+export async function getOrCreateProjectConversation(
+  projectId: string
+): Promise<ActionResult<ConversationWithDetails>> {
+  try {
+    const organizationId = await requireOrganizationId();
+    const userId = await requireUserId();
+
+    // Verify project belongs to organization
+    const project = await prisma.project.findFirst({
+      where: { id: projectId, organizationId },
+      select: { id: true, name: true },
+    });
+
+    if (!project) {
+      return fail("Project not found");
+    }
+
+    // Check if a conversation already exists for this project
+    const existingConversation = await prisma.conversation.findFirst({
+      where: {
+        organizationId,
+        projectId,
+        isArchived: false,
+      },
+      include: {
+        participants: {
+          where: { leftAt: null },
+          include: {
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                avatarUrl: true,
+              },
+            },
+            client: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: { messages: true },
+        },
+      },
+    });
+
+    if (existingConversation) {
+      // Check if user is already a participant
+      const isParticipant = existingConversation.participants.some(
+        (p) => p.userId === userId
+      );
+
+      if (!isParticipant) {
+        // Add user to the conversation
+        await prisma.conversationParticipant.create({
+          data: {
+            conversationId: existingConversation.id,
+            userId,
+            role: "member",
+          },
+        });
+      }
+
+      // Refetch with updated participants
+      const updated = await getConversationById(existingConversation.id);
+      if (!updated.success) {
+        return fail("Failed to fetch conversation");
+      }
+      return success(updated.data);
+    }
+
+    // Create new project conversation
+    const conversation = await prisma.$transaction(async (tx) => {
+      const conv = await tx.conversation.create({
+        data: {
+          organizationId,
+          type: "group",
+          name: `${project.name} Team`,
+          projectId,
+          description: `Team discussion for ${project.name}`,
+        },
+      });
+
+      // Add creator as owner
+      await tx.conversationParticipant.create({
+        data: {
+          conversationId: conv.id,
+          userId,
+          role: "owner",
+        },
+      });
+
+      return conv;
+    });
+
+    // Fetch full conversation details
+    const fullConversation = await getConversationById(conversation.id);
+    if (!fullConversation.success) {
+      return fail("Failed to fetch created conversation");
+    }
+
+    revalidatePath("/messages");
+    return success(fullConversation.data);
+  } catch (error) {
+    console.error("[Conversations] Error getting/creating project conversation:", error);
+    return fail("Failed to get or create project conversation");
+  }
+}

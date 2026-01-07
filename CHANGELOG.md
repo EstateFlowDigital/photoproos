@@ -64,6 +64,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Team admins notified when client submits chat request
     - Client notified when request is approved (with link to messages)
     - Client notified when request is declined (with reason if provided)
+  - **Project-Linked Conversations** - Team chat linked to galleries/projects
+    - "Team Chat" button on gallery detail page
+    - `getOrCreateProjectConversation()` server action
+    - Automatically creates or finds existing project conversation
+    - Team members added when they open the chat
 - **Expense Approval Workflow Notifications** - Email/SMS alerts for expense approvals
   - Email templates for approval required notifications (`expense-approval-required.tsx`)
   - Email templates for approval/rejection results (`expense-approval-result.tsx`)
