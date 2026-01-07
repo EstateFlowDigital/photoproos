@@ -59,7 +59,8 @@ export type SettingsIconName =
   | "helpCircle"
   | "zap"
   | "star"
-  | "rocket";
+  | "rocket"
+  | "clipboard";
 
 export interface SettingsNavItemWithIconName {
   id: string;
@@ -114,6 +115,13 @@ export const SETTINGS_NAVIGATION: SettingsNavCategoryWithIconNames[] = [
         href: "/settings/walkthroughs",
         iconName: "helpCircle",
         description: "Tutorial visibility settings",
+      },
+      {
+        id: "onboarding",
+        label: "Onboarding Checklist",
+        href: "/settings/onboarding",
+        iconName: "clipboard",
+        description: "Customize setup steps for your dashboard",
       },
     ],
   },
@@ -429,6 +437,13 @@ export const SETTINGS_PAGE_CATEGORIES: SettingsPageCategory[] = [
         description: "Control which tutorials appear throughout the app",
         href: "/settings/walkthroughs",
         iconName: "helpCircle",
+      },
+      {
+        id: "onboarding",
+        label: "Onboarding Checklist",
+        description: "Customize the setup steps shown on your dashboard",
+        href: "/settings/onboarding",
+        iconName: "clipboard",
       },
     ],
   },

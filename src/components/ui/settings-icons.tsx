@@ -59,6 +59,7 @@ export {
   BookOpenIcon,
   StarIcon,
   RocketIcon,
+  ClipboardIcon,
   // UI Icons
   EyeIcon,
   EyeOffIcon,

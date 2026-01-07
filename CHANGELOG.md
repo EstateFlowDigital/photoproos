@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Onboarding Checklist in Settings Navigation** - Added "Onboarding Checklist" to the settings sidebar under Account category
+  - Allows users to easily find and customize their dashboard onboarding steps
+  - Added clipboard icon to settings icon system
+  - Listed in both sidebar navigation and settings home page
 - **Messaging System Enhancements** - Advanced messaging features for conversations
   - **Full Emoji Picker Component** (`/components/messaging/emoji-picker.tsx`)
     - 7 emoji categories (Smileys, Gestures, Hearts, Objects, Activities, Symbols, Recent)
@@ -38,26 +42,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Reader names and read timestamps on hover/click
     - Blue checkmark indicates message was read
     - Updated all message queries to include user/client details in read receipts
-- **Roadmap Settings Page** (`/settings/roadmap`) - Central hub for upcoming features
-  - **25 Planned Features** across 5 categories with detailed descriptions and timelines
-  - **Feature Categories**:
-    - **Integrations (7)**: Google Drive, Notion, Adobe Lightroom, Capture One, iCloud Photos, Slack Notifications, WhatsApp Business
-    - **Marketing (5)**: Email Marketing, Social Media Manager, Referral Automation, Testimonial Collector, SEO Tools
-    - **Communication (4)**: SMS Reminders, Video Messaging, Voice Notes, Enhanced Client Chat
-    - **Workflow (6)**: AI Photo Culling, Advanced Scheduling, Native Mobile App, Batch Operations, Print Fulfillment, Offline Mode
-    - **Analytics (3)**: Advanced Business Analytics, Tax Preparation Exports, Client Lifetime Value
-  - **Feature Request Modal** - In-app form for users to submit feature requests with category selection
-  - **Status Indicators** - Visual badges for In Progress, Planned, and Exploring states
-  - **Interactive Filtering** - Filter features by status with count badges and feature counts per category
-  - **Accessibility Enhancements**:
-    - ARIA labels on all interactive elements
-    - Semantic HTML (article, section, nav, dl/dt/dd)
-    - Focus rings and keyboard navigation
-    - aria-pressed for toggle buttons
-    - aria-modal and role="dialog" for modal
-    - aria-live regions for dynamic content
-  - Added `RocketIcon` to icon library for roadmap branding
-  - Navigation item in "Business & Payments" section with "New" badge
+- **Roadmap Settings Page** (`/settings/roadmap`) - Complete Business OS roadmap with 65+ features
+  - **12 Feature Categories** representing the full business operating system:
+    - **Website & Hosting (7)**: Website Builder, Custom Domains, Blog CMS, Service Areas, SEO Toolkit, Landing Pages, Analytics
+    - **Social Media (6)**: Scheduler, Templates, Analytics, Content Calendar, Hashtag Manager, Auto-Post Gallery Highlights
+    - **Email Marketing (5)**: Campaign Builder, Automation Sequences, Templates, Analytics, Audience Segmentation
+    - **CRM & Clients (6)**: Sales Pipeline, Lead Capture, Enhanced Portal, Lifecycle Tracking, Referral Program, Testimonials
+    - **Communication Hub (6)**: Unified Inbox, SMS Marketing, Enhanced Chat, Video Messaging, Voicemail Drop, WhatsApp
+    - **Workflow & Booking (6)**: Workflow Automation, Task Templates, Advanced Scheduling, Online Booking, Proposals, Mobile App
+    - **Galleries & Delivery (6)**: AI Culling, Client Selections, Album Proofing, Print Fulfillment, Batch Operations, Slideshows
+    - **Finance & Payments (6)**: Recurring Invoices, Multi-Currency, Tax Reports, P&L Dashboard, Payment Plans, Commissions
+    - **Team & Operations (5)**: Team Scheduling, Contractor Portal, Time Tracking, Performance Metrics, Training Library
+    - **Integrations (8)**: Google Drive, Lightroom, Capture One, QuickBooks, Slack, Zapier, Public API, Migration Tools
+    - **AI & Automation (5)**: AI Assistant, Content Writer, Image Tagging, Smart Scheduling, Predictive Analytics
+    - **Analytics & Insights (5)**: BI Dashboard, Client Insights, Revenue Reports, Marketing Attribution, Benchmarks
+  - **Plan Tier Indicators** - Core (all plans), Growth (Pro+), Enterprise labels on each feature
+  - **Feature Request Modal** - In-app form for users to submit and prioritize feature requests
+  - **Stats Summary** - Real-time counts of total, in-progress, planned, and exploring features
+  - **Dual Filtering** - Filter by both category AND status simultaneously
+  - **Accessibility Enhancements** - ARIA labels, semantic HTML, focus states, keyboard navigation
+  - Added `RocketIcon` to icon library and navigation with "New" badge
 - **Customizable Onboarding Checklist System** - Complete system for managing setup steps
   - **Database-Driven Checklist** - Checklist items stored in database per organization
     - 12 default setup steps covering clients, services, galleries, payments, and more
@@ -179,6 +183,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Auto-generated highlights and fun facts
     - Personalized encouragement messages
     - Year selector for viewing previous years
+  - **Skill Trees System** - Three specialized skill trees (`/skills`)
+    - **Marketing Tree**: Brand Basics, Social Starter, Brand Pro, Review Boost, Referral Rewards, Social Pro, Marketing Master
+    - **Operations Tree**: Batch Basics, Template Starter, Batch Pro, Bulk Actions, Auto Backup, Template Pro, Operations Master
+    - **Client Relations Tree**: Portal Basics, Message Templates, Notifications Pro, Messages Pro, Feedback Pro, Portal Pro, Client Relations Master
+    - 4-tier progression with skill prerequisites
+    - Cost-based unlocking (1-4 skill points per skill)
+    - Perks unlock application features (batch limits, templates, branding)
+    - Skill points earned: 1 point per level
+    - Reset skill points option for re-speccing
+    - Visual skill tree with tier separators
+    - `SkillTree` and `SkillTreeWidget` components
+  - **Quest/Story Mode System** - Guided journey through the platform (`/quests`)
+    - **5 Quest Categories**: Onboarding, Gallery Master, Client Pro, Revenue Builder, Business Growth
+    - **13 Quests** with storylines, XP rewards, and multiple objectives
+    - **Sequential Unlocking**: Quests unlock as prerequisites are completed
+    - **Objective Types**: gallery creation, photo uploads, deliveries, client additions, invoices, payments, bookings, services, branding, reviews, daily login, achievement unlocking, level reaching
+    - **Quest Objectives**: Per-quest progress tracking with action URLs for navigation
+    - **XP Rewards**: 50-500 XP per quest based on difficulty
+    - **Achievement Integration**: Some quests unlock achievements on completion
+    - **Quest States**: Locked, Available, In Progress, Completed
+    - **Quest Card UI**: Interactive cards with storyline reveal, objective progress, start/abandon actions
+    - **Active Quest Widget**: Dashboard widget showing current quest progress
+    - **Category Progress**: Per-category completion tracking with progress bars
+    - **Overall Progress**: Track total quests completed and XP earned
+    - `QuestCard` and `ActiveQuestWidget` components
 - **Review Gate System** - Smart review collection that captures internal feedback first
   - **Rating-Based Routing** - 4-5 star ratings redirect to public review platforms, 1-3 stars collect private feedback
     - Configurable review platforms (Google Business, Yelp, TripAdvisor, Facebook, Thumbtack, WeddingWire, The Knot, custom)

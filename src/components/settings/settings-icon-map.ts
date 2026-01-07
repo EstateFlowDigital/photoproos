@@ -33,6 +33,7 @@ import {
   ZapIcon,
   StarIcon,
   RocketIcon,
+  ClipboardIcon,
 } from "@/components/ui/settings-icons";
 import type { SettingsIconName } from "@/lib/constants/settings-navigation";
 
@@ -69,6 +70,7 @@ export const SETTINGS_ICON_MAP: Record<
   zap: ZapIcon,
   star: StarIcon,
   rocket: RocketIcon,
+  clipboard: ClipboardIcon,
 };
 
 /**
