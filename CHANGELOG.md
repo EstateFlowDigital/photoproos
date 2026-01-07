@@ -69,6 +69,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `getOrCreateProjectConversation()` server action
     - Automatically creates or finds existing project conversation
     - Team members added when they open the chat
+  - **Brokerage Agent Management** - Broker can add agents from their brokerage
+    - `addBrokerageAgent()` server action for brokers with `hasBrokerAccess`
+    - `getAvailableBrokerageAgents()` returns agents not already in conversation
+    - `getParticipantsWithBrokerageInfo()` includes brokerage details for visibility
+    - Agents added by brokers don't automatically get broker-level access
+  - **Notification Preferences** - Per-conversation notification controls
+    - `updateNotificationPreferences()` for `notifyOnMessage` and `notifyOnMention`
+    - `getNotificationPreferences()` returns current settings and mute status
+    - Works for both team members and clients in portal
+    - `toggleMuteConversation()` now works for clients too
 - **Expense Approval Workflow Notifications** - Email/SMS alerts for expense approvals
   - Email templates for approval required notifications (`expense-approval-required.tsx`)
   - Email templates for approval/rejection results (`expense-approval-result.tsx`)
@@ -108,6 +118,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Auto-completion tracking based on organization data
   - Industry-based filtering (e.g., property website step only for real estate)
   - Dashboard integration uses database-driven checklist with calculated completion status
+  - **Progress Dashboard** - Visual progress card showing completion stats
+    - Progress bar with completion percentage
+    - Stats for total, enabled, and custom steps
+    - "Resume Setup" button linking to first incomplete step
+    - Success state when all steps completed
   - **12 Default Onboarding Steps:**
     1. Add your first client
     2. Create a service package

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { revalidatePath } from "next/cache";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
+import type { NotificationType as PrismaNotificationType } from "@prisma/client";
 
 export interface NotificationData {
   id: string;
@@ -139,35 +140,12 @@ export async function markAllNotificationsAsRead(): Promise<ActionResult> {
 }
 
 /**
- * Notification types that can be created
+ * Re-export the Prisma NotificationType for use in other modules
  */
-export type NotificationType =
-  | "payment_received"
-  | "payment_failed"
-  | "gallery_viewed"
-  | "gallery_delivered"
-  | "booking_created"
-  | "booking_confirmed"
-  | "booking_cancelled"
-  | "booking_reminder"
-  | "contract_sent"
-  | "contract_signed"
-  | "invoice_sent"
-  | "invoice_paid"
-  | "invoice_overdue"
-  | "questionnaire_assigned"
-  | "questionnaire_completed"
-  | "questionnaire_reminder"
-  | "lead_received"
-  | "client_added"
-  | "task_automation"
-  | "expense_approval_required"
-  | "expense_approved"
-  | "expense_rejected"
-  | "system";
+export type NotificationType = PrismaNotificationType;
 
 interface CreateNotificationInput {
-  type: NotificationType;
+  type: PrismaNotificationType;
   title: string;
   message: string;
   linkUrl?: string;

@@ -597,20 +597,38 @@ export async function transferOwnership(
 
 /**
  * Mute/unmute a conversation for the current user
+ * Works for both team members and clients
  */
 export async function toggleMuteConversation(
   conversationId: string
 ): Promise<ActionResult<boolean>> {
   try {
-    const userId = await requireUserId();
+    // Check for client session first
+    const { getClientSession } = await import("./client-auth");
+    const clientSession = await getClientSession();
 
-    const participant = await prisma.conversationParticipant.findFirst({
-      where: {
-        conversationId,
-        userId,
-        leftAt: null,
-      },
-    });
+    let participant;
+
+    if (clientSession) {
+      // Client caller
+      participant = await prisma.conversationParticipant.findFirst({
+        where: {
+          conversationId,
+          clientId: clientSession.clientId,
+          leftAt: null,
+        },
+      });
+    } else {
+      // Team member caller
+      const userId = await requireUserId();
+      participant = await prisma.conversationParticipant.findFirst({
+        where: {
+          conversationId,
+          userId,
+          leftAt: null,
+        },
+      });
+    }
 
     if (!participant) {
       return fail("You are not a participant of this conversation");
@@ -626,6 +644,129 @@ export async function toggleMuteConversation(
   } catch (error) {
     console.error("[Participants] Error toggling mute:", error);
     return fail("Failed to toggle mute");
+  }
+}
+
+/**
+ * Update notification preferences for a conversation
+ * Works for both team members and clients
+ */
+export async function updateNotificationPreferences(
+  conversationId: string,
+  preferences: {
+    notifyOnMessage?: boolean;
+    notifyOnMention?: boolean;
+  }
+): Promise<ActionResult<{ notifyOnMessage: boolean; notifyOnMention: boolean }>> {
+  try {
+    // Check for client session first
+    const { getClientSession } = await import("./client-auth");
+    const clientSession = await getClientSession();
+
+    let participant;
+
+    if (clientSession) {
+      // Client caller
+      participant = await prisma.conversationParticipant.findFirst({
+        where: {
+          conversationId,
+          clientId: clientSession.clientId,
+          leftAt: null,
+        },
+      });
+    } else {
+      // Team member caller
+      const userId = await requireUserId();
+      participant = await prisma.conversationParticipant.findFirst({
+        where: {
+          conversationId,
+          userId,
+          leftAt: null,
+        },
+      });
+    }
+
+    if (!participant) {
+      return fail("You are not a participant of this conversation");
+    }
+
+    const updated = await prisma.conversationParticipant.update({
+      where: { id: participant.id },
+      data: {
+        ...(preferences.notifyOnMessage !== undefined && {
+          notifyOnMessage: preferences.notifyOnMessage,
+        }),
+        ...(preferences.notifyOnMention !== undefined && {
+          notifyOnMention: preferences.notifyOnMention,
+        }),
+      },
+      select: {
+        notifyOnMessage: true,
+        notifyOnMention: true,
+      },
+    });
+
+    revalidatePath(`/messages/${conversationId}`);
+    return success(updated);
+  } catch (error) {
+    console.error("[Participants] Error updating notification preferences:", error);
+    return fail("Failed to update notification preferences");
+  }
+}
+
+/**
+ * Get notification preferences for a conversation
+ * Works for both team members and clients
+ */
+export async function getNotificationPreferences(
+  conversationId: string
+): Promise<ActionResult<{ notifyOnMessage: boolean; notifyOnMention: boolean; isMuted: boolean }>> {
+  try {
+    // Check for client session first
+    const { getClientSession } = await import("./client-auth");
+    const clientSession = await getClientSession();
+
+    let participant;
+
+    if (clientSession) {
+      // Client caller
+      participant = await prisma.conversationParticipant.findFirst({
+        where: {
+          conversationId,
+          clientId: clientSession.clientId,
+          leftAt: null,
+        },
+        select: {
+          notifyOnMessage: true,
+          notifyOnMention: true,
+          isMuted: true,
+        },
+      });
+    } else {
+      // Team member caller
+      const userId = await requireUserId();
+      participant = await prisma.conversationParticipant.findFirst({
+        where: {
+          conversationId,
+          userId,
+          leftAt: null,
+        },
+        select: {
+          notifyOnMessage: true,
+          notifyOnMention: true,
+          isMuted: true,
+        },
+      });
+    }
+
+    if (!participant) {
+      return fail("You are not a participant of this conversation");
+    }
+
+    return success(participant);
+  } catch (error) {
+    console.error("[Participants] Error getting notification preferences:", error);
+    return fail("Failed to get notification preferences");
   }
 }
 
@@ -737,6 +878,240 @@ export async function grantBrokerAccess(
 }
 
 /**
+ * Add an agent from the broker's brokerage to a conversation
+ * Only brokers with hasBrokerAccess can add their agents
+ */
+export async function addBrokerageAgent(
+  conversationId: string,
+  agentClientId: string
+): Promise<ActionResult<ParticipantWithDetails>> {
+  try {
+    // This is a client-side action - get client session
+    const { getClientSession } = await import("./client-auth");
+    const session = await getClientSession();
+
+    if (!session) {
+      return fail("You must be logged in to add agents");
+    }
+
+    // Verify caller has broker access in this conversation
+    const callerParticipant = await prisma.conversationParticipant.findFirst({
+      where: {
+        conversationId,
+        clientId: session.clientId,
+        leftAt: null,
+        hasBrokerAccess: true,
+      },
+      include: {
+        conversation: {
+          select: {
+            organizationId: true,
+            type: true,
+          },
+        },
+        client: {
+          select: {
+            brokerageId: true,
+          },
+        },
+      },
+    });
+
+    if (!callerParticipant) {
+      return fail("You don't have broker access to add agents");
+    }
+
+    const organizationId = callerParticipant.conversation.organizationId;
+
+    if (!callerParticipant.client?.brokerageId) {
+      return fail("You must belong to a brokerage to add agents");
+    }
+
+    // Verify the agent belongs to the same brokerage
+    const agent = await prisma.client.findFirst({
+      where: {
+        id: agentClientId,
+        organizationId,
+        brokerageId: callerParticipant.client.brokerageId,
+      },
+    });
+
+    if (!agent) {
+      return fail("Agent not found or not in your brokerage");
+    }
+
+    // Check if already a participant
+    const existingParticipant = await prisma.conversationParticipant.findFirst({
+      where: {
+        conversationId,
+        clientId: agentClientId,
+      },
+    });
+
+    if (existingParticipant && !existingParticipant.leftAt) {
+      return fail("Agent is already a participant");
+    }
+
+    if (existingParticipant?.leftAt) {
+      // Re-add participant
+      const updated = await prisma.conversationParticipant.update({
+        where: { id: existingParticipant.id },
+        data: {
+          leftAt: null,
+          joinedAt: new Date(),
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              avatarUrl: true,
+            },
+          },
+          client: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              brokerageId: true,
+            },
+          },
+        },
+      });
+
+      revalidatePath(`/messages/${conversationId}`);
+      return success(updated);
+    }
+
+    const participant = await prisma.conversationParticipant.create({
+      data: {
+        conversationId,
+        clientId: agentClientId,
+        role: "member",
+        hasBrokerAccess: false, // Agents don't automatically get broker access
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            avatarUrl: true,
+          },
+        },
+        client: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            brokerageId: true,
+          },
+        },
+      },
+    });
+
+    revalidatePath(`/messages/${conversationId}`);
+    return success(participant);
+  } catch (error) {
+    console.error("[Participants] Error adding brokerage agent:", error);
+    return fail("Failed to add agent to conversation");
+  }
+}
+
+/**
+ * Get available agents from the broker's brokerage that can be added
+ * Only returns agents not already in the conversation
+ */
+export async function getAvailableBrokerageAgents(
+  conversationId: string
+): Promise<
+  ActionResult<
+    {
+      id: string;
+      fullName: string | null;
+      email: string;
+    }[]
+  >
+> {
+  try {
+    // This is a client-side action - get client session
+    const { getClientSession } = await import("./client-auth");
+    const session = await getClientSession();
+
+    if (!session) {
+      return fail("You must be logged in");
+    }
+
+    // Verify caller has broker access
+    const callerParticipant = await prisma.conversationParticipant.findFirst({
+      where: {
+        conversationId,
+        clientId: session.clientId,
+        leftAt: null,
+        hasBrokerAccess: true,
+      },
+      include: {
+        conversation: {
+          select: {
+            organizationId: true,
+          },
+        },
+        client: {
+          select: {
+            brokerageId: true,
+          },
+        },
+      },
+    });
+
+    if (!callerParticipant) {
+      return fail("You don't have broker access");
+    }
+
+    const organizationId = callerParticipant.conversation.organizationId;
+
+    if (!callerParticipant.client?.brokerageId) {
+      return fail("You must belong to a brokerage");
+    }
+
+    // Get current client participants
+    const currentParticipants = await prisma.conversationParticipant.findMany({
+      where: {
+        conversationId,
+        leftAt: null,
+        clientId: { not: null },
+      },
+      select: { clientId: true },
+    });
+
+    const participantClientIds = new Set(
+      currentParticipants.map((p) => p.clientId).filter(Boolean)
+    );
+
+    // Get all agents from the brokerage not already in conversation
+    const availableAgents = await prisma.client.findMany({
+      where: {
+        organizationId,
+        brokerageId: callerParticipant.client.brokerageId,
+        id: { notIn: Array.from(participantClientIds) as string[] },
+      },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+      },
+      orderBy: { fullName: "asc" },
+    });
+
+    return success(availableAgents);
+  } catch (error) {
+    console.error("[Participants] Error fetching available agents:", error);
+    return fail("Failed to fetch available agents");
+  }
+}
+
+/**
  * Revoke broker access from a participant
  */
 export async function revokeBrokerAccess(
@@ -790,6 +1165,153 @@ export async function revokeBrokerAccess(
   } catch (error) {
     console.error("[Participants] Error revoking broker access:", error);
     return fail("Failed to revoke broker access");
+  }
+}
+
+// =============================================================================
+// Broker Visibility Functions
+// =============================================================================
+
+export interface ParticipantWithBrokerageDetails extends ParticipantWithDetails {
+  client: {
+    id: string;
+    fullName: string | null;
+    email: string;
+    brokerageId: string | null;
+    brokerage: {
+      id: string;
+      name: string;
+    } | null;
+  } | null;
+}
+
+/**
+ * Get participants with brokerage visibility for brokers
+ * Includes brokerage info so brokers can see which agents belong to their brokerage
+ */
+export async function getParticipantsWithBrokerageInfo(
+  conversationId: string
+): Promise<ActionResult<ParticipantWithBrokerageDetails[]>> {
+  try {
+    // This can be called by either team members or clients
+    const { getClientSession } = await import("./client-auth");
+    const clientSession = await getClientSession();
+
+    let callerBrokerageId: string | null = null;
+    let isTeamMember = false;
+
+    if (clientSession) {
+      // Client caller - check if they have broker access
+      const callerParticipant = await prisma.conversationParticipant.findFirst({
+        where: {
+          conversationId,
+          clientId: clientSession.clientId,
+          leftAt: null,
+        },
+        include: {
+          client: {
+            select: { brokerageId: true },
+          },
+        },
+      });
+
+      if (!callerParticipant) {
+        return fail("You don't have access to this conversation");
+      }
+
+      if (callerParticipant.hasBrokerAccess) {
+        callerBrokerageId = callerParticipant.client?.brokerageId || null;
+      }
+    } else {
+      // Team member caller
+      const organizationId = await requireOrganizationId();
+      const userId = await requireUserId();
+
+      const callerParticipant = await prisma.conversationParticipant.findFirst({
+        where: {
+          conversationId,
+          userId,
+          leftAt: null,
+        },
+        include: {
+          conversation: {
+            select: { organizationId: true },
+          },
+        },
+      });
+
+      if (!callerParticipant) {
+        return fail("You don't have access to this conversation");
+      }
+
+      if (callerParticipant.conversation.organizationId !== organizationId) {
+        return fail("Conversation not found");
+      }
+
+      isTeamMember = true;
+    }
+
+    const participants = await prisma.conversationParticipant.findMany({
+      where: {
+        conversationId,
+        leftAt: null,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            avatarUrl: true,
+          },
+        },
+        client: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            brokerageId: true,
+            brokerage: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: [{ role: "asc" }, { joinedAt: "asc" }],
+    });
+
+    // Filter brokerage info based on caller's permissions
+    const mappedParticipants = participants.map((p) => {
+      // Team members can see all brokerage info
+      if (isTeamMember) {
+        return p as ParticipantWithBrokerageDetails;
+      }
+
+      // Brokers can only see brokerage info for their own brokerage
+      if (p.client?.brokerageId && p.client.brokerageId === callerBrokerageId) {
+        return p as ParticipantWithBrokerageDetails;
+      }
+
+      // Hide brokerage info for other participants
+      return {
+        ...p,
+        client: p.client
+          ? {
+              ...p.client,
+              brokerageId: null,
+              brokerage: null,
+            }
+          : null,
+      } as ParticipantWithBrokerageDetails;
+    });
+
+    return success(mappedParticipants);
+  } catch (error) {
+    console.error("[Participants] Error fetching participants with brokerage info:", error);
+    return fail("Failed to fetch participants");
   }
 }
 
