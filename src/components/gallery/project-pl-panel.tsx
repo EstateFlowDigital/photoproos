@@ -1238,6 +1238,12 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
     return null;
   }, [plSummary, marginAlertThreshold]);
 
+  useEffect(() => {
+    if (marginAlertStatus) {
+      setDismissedMarginAlert(false);
+    }
+  }, [marginAlertStatus]);
+
   // Handle split expense submission
   async function handleSplitExpense() {
     if (!splittingExpense) return;
@@ -2366,6 +2372,132 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Profit Margin Alert */}
+      {marginAlertStatus && (
+        <div className="space-y-3">
+          <div
+            className={cn(
+              "p-4 rounded-xl border flex items-start gap-3",
+              marginAlertStatus.severity === "critical"
+                ? "bg-[var(--error)]/10 border-[var(--error)]/20"
+                : "bg-[var(--warning)]/10 border-[var(--warning)]/20"
+            )}
+            role="alert"
+          >
+            <div
+              className={cn(
+                "p-2 rounded-lg shrink-0",
+                marginAlertStatus.severity === "critical"
+                  ? "bg-[var(--error)]/20"
+                  : "bg-[var(--warning)]/20"
+              )}
+            >
+              {marginAlertStatus.type === "negative" ? (
+                <TrendDownIcon
+                  className={cn(
+                    "h-5 w-5",
+                    marginAlertStatus.severity === "critical" ? "text-[var(--error)]" : "text-[var(--warning)]"
+                  )}
+                />
+              ) : (
+                <AlertTriangleIcon
+                  className={cn(
+                    "h-5 w-5",
+                    marginAlertStatus.severity === "critical" ? "text-[var(--error)]" : "text-[var(--warning)]"
+                  )}
+                />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              {!dismissedMarginAlert ? (
+                <>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span
+                      className={cn(
+                        "font-semibold",
+                        marginAlertStatus.severity === "critical" ? "text-[var(--error)]" : "text-[var(--warning)]"
+                      )}
+                    >
+                      {marginAlertStatus.type === "negative" ? "Negative Profit" : "Low Profit Margin"}
+                    </span>
+                    <span
+                      className={cn(
+                        "text-xs px-1.5 py-0.5 rounded-full",
+                        marginAlertStatus.severity === "critical"
+                          ? "bg-[var(--error)]/20 text-[var(--error)]"
+                          : "bg-[var(--warning)]/20 text-[var(--warning)]"
+                      )}
+                    >
+                      {marginAlertStatus.margin}%
+                    </span>
+                  </div>
+                  <p
+                    className={cn(
+                      "text-sm",
+                      marginAlertStatus.severity === "critical" ? "text-[var(--error)]/80" : "text-[var(--warning)]/80"
+                    )}
+                  >
+                    {marginAlertStatus.message}. Current margin is {marginAlertStatus.margin}%
+                    {marginAlertStatus.type !== "negative" && ` (target: ${marginAlertThreshold}%)`}.
+                  </p>
+                </>
+              ) : (
+                <div className="space-y-1">
+                  <span className="font-semibold text-foreground-muted">Margin alert paused</span>
+                  <p className="text-sm text-foreground-muted">
+                    {marginAlertStatus.message}. Current margin remains at {marginAlertStatus.margin}%.
+                  </p>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => setDismissedMarginAlert(!dismissedMarginAlert)}
+              className="text-xs font-medium text-foreground-muted hover:text-foreground transition-colors whitespace-nowrap"
+            >
+              {dismissedMarginAlert ? "Show alert" : "Dismiss"}
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowMarginSettings((prev) => !prev)}
+              className="text-xs font-medium underline underline-offset-2 text-foreground hover:text-foreground"
+            >
+              Adjust threshold
+            </button>
+            <span className="text-xs text-foreground-muted">
+              Target threshold: {marginAlertThreshold}%
+            </span>
+          </div>
+
+          {showMarginSettings && (
+            <div className="mt-3 pt-3 border-t border-[var(--card-border)]">
+              <label className="block text-sm text-foreground mb-2">
+                Alert when margin falls below:
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="range"
+                  min="5"
+                  max="50"
+                  step="5"
+                  value={marginAlertThreshold}
+                  onChange={(e) => setMarginAlertThreshold(Number(e.target.value))}
+                  className="flex-1"
+                />
+                <span className="text-sm font-medium text-foreground w-12 text-center">
+                  {marginAlertThreshold}%
+                </span>
+              </div>
+              <div className="flex justify-between text-xs text-foreground-muted mt-1">
+                <span>5%</span>
+                <span>50%</span>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

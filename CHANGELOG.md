@@ -16,6 +16,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **TypeScript Errors** - Fixed type errors in settings search and breadcrumb components
 
 ### Added
+- **Premium Gallery Experience - Phase 2** - Advanced UI enhancements for galleries
+  - **Confetti Celebrations** - Animated confetti component with Framer Motion
+    - Payment success celebrations with customizable particle effects
+    - Multiple shape types (circles, squares, rectangles, stars)
+    - `useCelebration` hook for easy triggering from any component
+    - Pre-configured celebration presets (payment, delivery, milestone)
+  - **Enhanced Toast System** - Upgraded toasts with Framer Motion animations
+    - Spring-based entrance animations with slide-in effect
+    - Animated icons (checkmark draw-in, error shake, warning pulse)
+    - AnimatePresence for smooth exit animations
+    - Stacked toast layout with popLayout mode
+  - **Sparkline Component** - Mini trend charts for data visualization
+    - Bar, line, and area variants
+    - Trend indicator arrows (up/down)
+    - `ViewSparkline` convenience component for gallery cards
+    - `MetricSparkline` for compact metric displays
+  - **Enhanced Empty States** - Polished empty state component
+    - Animated floating icons with Framer Motion
+    - Gradient background circles
+    - Built-in preset icons (gallery, photos, clients, invoices, search, favorites, notifications)
+    - Size variants (sm, md, lg) and action button support
+  - **Masonry Grid Layout** - Pinterest-style photo grid option
+    - CSS columns-based implementation (no JS calculations)
+    - Responsive column configuration
+    - `LayoutToggle` component for grid/masonry switching
+    - `useLayoutPreference` hook for persisting user preference
+  - **Blur-Up Image Loading** - Smooth LQIP-based image loading
+    - `blurDataUrl` field added to Asset schema for storing blur placeholders
+    - Image processing now generates 10x10 blur thumbnails
+    - `R2BlurImage` component with Intersection Observer lazy loading
+    - Smooth transition from blur to full-resolution
+    - `GalleryImage` convenience wrapper for photo grids
+  - **Live Activity Indicator** - Real-time viewer presence
+    - Presence API route with in-memory store
+    - Polling-based presence tracking (30-second intervals)
+    - `LiveViewers` component with badge, inline, and compact variants
+    - `useGalleryPresence` hook for custom implementations
+    - Automatic cleanup of stale presence entries
 - **Settings Page Improvements** - Comprehensive settings UX overhaul
   - **Shared Settings Components** - Reusable components for consistent settings pages
     - `SettingsFormCard` - Card component with variants (default, danger, info, success) and sticky footer
@@ -57,6 +95,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Add/remove split parts dynamically
   - Preserves original expense metadata (vendor, payment method, billable status)
   - Visual feedback for fully allocated vs unallocated amounts
+- **Profit Margin Alerts** - Smart warnings for low profit margins
+  - Automatic detection of low/negative profit margins
+  - Three severity levels: warning (below threshold), critical (below half threshold), negative (loss)
+  - Configurable margin threshold (5-50% via slider)
+  - Dismissable alerts with "Dismiss" and "Adjust threshold" options
+  - Visual indicators using TrendDown icon for negative margins
+  - Alert shows current margin vs target
+  - Only appears when project has revenue
 - **Receipt Gallery View** - Visual gallery for browsing expense receipts
   - Dedicated "Receipts" tab in expense management
   - Grid layout with receipt thumbnails (responsive 2-5 columns)
