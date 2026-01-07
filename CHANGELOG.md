@@ -15,6 +15,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Documentation Updates** - Updated ROUTE_ACTION_ATLAS.md to reflect integration availability
   - Removed 🔜 (coming soon) flag from QuickBooks, Mailchimp, and Calendly routes
   - Updated status and feature descriptions for all three integrations
+- **Comparison Table** - Updated Contracts & E-Signatures from "Coming Soon" to available (was already built)
+- **Help Articles** - Removed "(Coming Soon)" labels from partial payments and tiered pricing sections
+
+### Added
+- **Calendly Webhook Handler** - `/api/webhooks/calendly/route.ts` for real-time booking sync
+  - Handles `invitee.created` and `invitee.canceled` events
+  - Creates/updates bookings automatically based on Calendly events
+  - Integration lookup by user URI for multi-organization support
+- **Calendly Settings UI** - Full client-side implementation in settings page
+  - Removed "Coming Soon" banner
+  - Connected to real server actions (connectCalendly, disconnectCalendly, updateCalendlySettings)
+  - Event type mapping with real Calendly event types from API
+  - Sync settings UI (auto-create bookings, notifications)
+  - Connected user status display with last sync time
+- **Mailchimp Settings UI** - Full client-side implementation in settings page
+  - Removed "Coming Soon" banner
+  - Connected to real server actions (connectMailchimp, disconnectMailchimp, updateMailchimpSettings, syncClientsToMailchimp)
+  - Real audience list fetching from Mailchimp API
+  - Sync history display with status indicators
+  - Tag mapping configuration for client segmentation
+- **Calendly API Client** - `/src/lib/integrations/calendly.ts` with full type definitions
+  - CalendlyClient class with methods for user, event types, scheduled events
+  - Webhook subscription management
+  - Helper functions for connection testing and signature verification
+- **ShieldIcon** - Added to centralized icons library for team role UI
+
+### Fixed
+- **Client Portal Page** - Fixed Next.js 15 build error with `ssr: false` in Server Components
+  - Removed unnecessary `next/dynamic` wrapper since PortalClient is already a client component
+- **Team Settings Icons** - Fixed missing icon imports (ShieldIcon, UserIcon, TrashIcon)
+  - Added ShieldIcon to icons.tsx
+  - Removed duplicate local icon definitions
+  - Updated imports to use centralized icon library
 
 ### Added
 - **Integration Backend Implementations** - Full backend for third-party integrations

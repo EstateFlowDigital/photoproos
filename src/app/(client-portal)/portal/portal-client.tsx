@@ -25,6 +25,7 @@ import {
   LeadsTab,
   QuestionnairesTab,
   SettingsTab,
+  MarketingKitModal,
   type ClientData,
   type PropertyData,
   type GalleryData,
@@ -35,6 +36,20 @@ import {
   type PortalTab,
   type DownloadType,
 } from "./components";
+
+// Marketing Kit data type
+interface MarketingKitData {
+  galleryId: string;
+  galleryName: string;
+  propertyAddress: string | null;
+  assets: {
+    id: string;
+    type: string;
+    name: string;
+    fileUrl: string;
+    thumbnailUrl: string | null;
+  }[];
+}
 
 interface PortalClientProps {
   client: ClientData;
@@ -64,6 +79,7 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
   const [payingInvoice, setPayingInvoice] = useState<string | null>(null);
   const [downloadingInvoicePdf, setDownloadingInvoicePdf] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [marketingKitModal, setMarketingKitModal] = useState<MarketingKitData | null>(null);
 
   // Filter data based on search query
   const normalizedQuery = useMemo(() => searchQuery.trim().toLowerCase(), [searchQuery]);
@@ -308,43 +324,16 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
 
       const { marketingKit } = result;
 
-      // Check if there are any marketing assets
-      if (marketingKit.assets.length === 0) {
-        showToast("No marketing materials available for this gallery yet.", "info");
-        return;
-      }
-
-      // Download the marketing kit via API
-      const response = await fetch("/api/download/marketing-kit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          galleryId: marketingKit.galleryId,
-          assetIds: marketingKit.assets.map((a) => a.id),
-        }),
+      // Open the modal with marketing kit data
+      setMarketingKitModal({
+        galleryId: marketingKit.galleryId,
+        galleryName: marketingKit.galleryName,
+        propertyAddress: marketingKit.propertyAddress,
+        assets: marketingKit.assets,
       });
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        const filename = marketingKit.propertyAddress
-          ? `${marketingKit.propertyAddress.replace(/[^a-zA-Z0-9]/g, "-")}-marketing-kit.zip`
-          : `${marketingKit.galleryName}-marketing-kit.zip`;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        showToast(`Downloaded ${marketingKit.assets.length} marketing materials`, "success");
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        showToast(errorData.error || "Failed to download marketing kit", "error");
-      }
     } catch (error) {
-      console.error("Download error:", error);
-      showToast("Download failed. Please try again.", "error");
+      console.error("Marketing kit error:", error);
+      showToast("Failed to load marketing kit. Please try again.", "error");
     } finally {
       setDownloadingGallery(null);
       setDownloadType(null);
@@ -612,6 +601,17 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
         unpaidInvoices={unpaidInvoicesCount}
         newLeads={stats.newLeads}
       />
+
+      {/* Marketing Kit Modal */}
+      {marketingKitModal && (
+        <MarketingKitModal
+          isOpen={!!marketingKitModal}
+          onClose={() => setMarketingKitModal(null)}
+          galleryName={marketingKitModal.galleryName}
+          propertyAddress={marketingKitModal.propertyAddress}
+          assets={marketingKitModal.assets}
+        />
+      )}
     </div>
   );
 }
