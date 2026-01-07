@@ -163,6 +163,8 @@ enum NotificationType {
   referral_conversion
   // Messages
   message_received
+  // Automations
+  task_automation
   // System
   system
 }

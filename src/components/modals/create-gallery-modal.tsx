@@ -122,6 +122,8 @@ export function CreateGalleryModal({
           allowFavorites: true,
           allowComments: false,
           sendNotifications: true,
+          allowSelections: false,
+          selectionLimit: null,
           services: selectedServices,
         });
 

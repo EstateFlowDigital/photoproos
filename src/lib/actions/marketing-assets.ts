@@ -8,13 +8,9 @@ import { FlyerPortrait } from "@/lib/marketing/templates/flyer-portrait";
 import { SocialSquare } from "@/lib/marketing/templates/social-square";
 import React from "react";
 import { createPdfElement } from "@/lib/pdf/utils";
+import type { MarketingAssetType as PrismaMarketingAssetType } from "@prisma/client";
 
-export type MarketingAssetType =
-  | "flyer_portrait"
-  | "flyer_landscape"
-  | "social_square"
-  | "social_story"
-  | "postcard";
+export type MarketingAssetType = PrismaMarketingAssetType;
 
 export type SocialVariant = "listing" | "just_listed" | "just_sold" | "open_house";
 
