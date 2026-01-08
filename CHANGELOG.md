@@ -439,6 +439,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Source tracking as "manual" for analytics
 
 ### Fixed
+- **Dashboard Widget Toast Error** - Fixed React error #31 when adding widgets
+  - Corrected `showToast` function calls from object syntax `{ type, message }` to positional args `(message, type)`
+  - Fixed in `add-widget-modal.tsx` and `widget-dashboard.tsx`
+  - Widgets now add without throwing "Objects are not valid as React child" error
+
+- **Date Serialization in Dashboard and Leads** - Fixed React Error #301 during navigation
+  - Updated `DashboardData` interface to use `SerializedDate = Date | string` type for all date fields
+  - Fixed `formatRelativeTime` in messages-widget.tsx to handle both Date objects and ISO strings
+  - Updated leads page client types to use `SerializedDate` for `createdAt`, `preferredDate`, `startTime`, etc.
+  - Date objects from server components are serialized as strings when passed to client components
+  - Prevents hydration mismatch errors during client-side navigation
+
 - **Recent Clients Icon Styling** - Improved avatar styling in gallery new page sidebar
   - Added border and background to client initial avatars
   - Better contrast with `bg-[var(--background-secondary)]` background

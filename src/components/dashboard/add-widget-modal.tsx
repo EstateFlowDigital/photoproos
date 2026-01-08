@@ -148,13 +148,13 @@ export function AddWidgetModal({ isOpen, onClose, config }: AddWidgetModalProps)
       const result = await addWidget(type);
 
       if (result.success) {
-        showToast({ type: "success", message: "Widget added!" });
+        showToast("Widget added!", "success");
         onClose();
       } else {
-        showToast({ type: "error", message: result.error || "Failed to add widget" });
+        showToast(result.error || "Failed to add widget", "error");
       }
     } catch {
-      showToast({ type: "error", message: "Failed to add widget" });
+      showToast("Failed to add widget", "error");
     } finally {
       setIsAdding(null);
     }

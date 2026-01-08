@@ -46,6 +46,9 @@ interface WidgetDashboardProps {
   className?: string;
 }
 
+// Date type that handles serialization from server to client
+type SerializedDate = Date | string;
+
 // Dashboard data passed to widgets
 export interface DashboardData {
   stats: {
@@ -58,38 +61,38 @@ export interface DashboardData {
     id: string;
     name: string;
     thumbnailUrl: string | null;
-    createdAt: Date;
+    createdAt: SerializedDate;
   }>;
   upcomingBookings: Array<{
     id: string;
     title: string;
-    startTime: Date;
+    startTime: SerializedDate;
     clientName: string | null;
   }>;
   recentActivity: Array<{
     id: string;
     type: string;
     description: string;
-    createdAt: Date;
+    createdAt: SerializedDate;
   }>;
   overdueInvoices: Array<{
     id: string;
     invoiceNumber: string;
     amount: number;
-    dueDate: Date;
+    dueDate: SerializedDate;
     clientName: string;
   }>;
   expiringGalleries: Array<{
     id: string;
     name: string;
-    expiresAt: Date;
+    expiresAt: SerializedDate;
     daysUntilExpiration: number;
   }>;
   calendarEvents: Array<{
     id: string;
     title: string;
-    start: Date;
-    end: Date;
+    start: SerializedDate;
+    end: SerializedDate;
     type: string;
   }>;
   gamification?: {
@@ -119,7 +122,7 @@ export interface DashboardData {
     content: string;
     senderName: string;
     senderAvatar: string | null;
-    createdAt: Date;
+    createdAt: SerializedDate;
     isUnread: boolean;
   }>;
 }
@@ -821,7 +824,7 @@ export function WidgetDashboard({
       setIsSaving(false);
 
       if (!result.success) {
-        showToast({ type: "error", message: result.error || "Failed to save layout" });
+        showToast(result.error || "Failed to save layout", "error");
         setWidgets(config.widgets); // Revert
       }
     }
@@ -833,7 +836,7 @@ export function WidgetDashboard({
 
     const result = await removeWidget(widgetId);
     if (!result.success) {
-      showToast({ type: "error", message: result.error || "Failed to remove widget" });
+      showToast(result.error || "Failed to remove widget", "error");
       setWidgets(config.widgets); // Revert
     }
   };
@@ -847,7 +850,7 @@ export function WidgetDashboard({
 
     const result = await updateWidgetSize(widgetId, newSize);
     if (!result.success) {
-      showToast({ type: "error", message: result.error || "Failed to resize widget" });
+      showToast(result.error || "Failed to resize widget", "error");
       setWidgets(config.widgets); // Revert
     }
   };

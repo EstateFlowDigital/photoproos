@@ -10,6 +10,9 @@ import { convertBookingSubmissionToClient } from "@/lib/actions/booking-forms";
 import type { LeadStatus, BookingFormSubmissionStatus } from "@prisma/client";
 import { VirtualList } from "@/components/ui/virtual-list";
 
+// Date type that handles serialization from server to client
+type SerializedDate = Date | string;
+
 interface PortfolioInquiry {
   id: string;
   portfolioWebsiteId: string;
@@ -20,7 +23,7 @@ interface PortfolioInquiry {
   status: LeadStatus;
   notes: string | null;
   source: string | null;
-  createdAt: Date;
+  createdAt: SerializedDate;
   portfolioWebsite: {
     name: string;
     slug: string;
@@ -38,7 +41,7 @@ interface ChatInquiry {
   notes: string | null;
   source: string | null;
   pageUrl: string | null;
-  createdAt: Date;
+  createdAt: SerializedDate;
 }
 
 interface BookingSubmission {
@@ -52,20 +55,20 @@ interface BookingSubmission {
   clientName: string | null;
   clientEmail: string | null;
   clientPhone: string | null;
-  preferredDate: Date | null;
+  preferredDate: SerializedDate | null;
   preferredTime: string | null;
   serviceId: string | null;
   status: BookingFormSubmissionStatus;
   booking: {
     id: string;
     title: string;
-    startTime: Date;
+    startTime: SerializedDate;
     status: string;
   } | null;
-  convertedAt: Date | null;
-  rejectedAt: Date | null;
+  convertedAt: SerializedDate | null;
+  rejectedAt: SerializedDate | null;
   rejectionNote: string | null;
-  createdAt: Date;
+  createdAt: SerializedDate;
 }
 
 interface PortfolioWebsite {
