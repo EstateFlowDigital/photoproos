@@ -61,3 +61,12 @@ export async function requireOwner(): Promise<AuthContext> {
 
   return auth;
 }
+
+/**
+ * Get the current organization ID without throwing.
+ * Returns null if the user is not authenticated or has no organization.
+ */
+export async function getOrganizationId(): Promise<string | null> {
+  const auth = await getAuthContext();
+  return auth?.organizationId ?? null;
+}

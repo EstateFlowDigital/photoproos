@@ -8,7 +8,7 @@
  */
 
 import { prisma } from "@/lib/db";
-import { requireOrganizationId, getOrganizationId } from "@/lib/auth";
+import { requireOrganizationId, getOrganizationId } from "@/lib/actions/auth-helper";
 import {
   checkLimit,
   canPerformAction,
