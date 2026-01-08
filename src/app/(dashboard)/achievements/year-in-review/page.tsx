@@ -5,7 +5,7 @@ import Link from "next/link";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { getYearInReview } from "@/lib/actions/gamification";
 import { PageHeader } from "@/components/dashboard";
-import { ArrowLeft, TrendingUp, TrendingDown, Calendar, Award } from "lucide-react";
+import { ArrowLeft, TrendingUp, TrendingDown, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { YearHighlight } from "@/lib/gamification/year-in-review";
 

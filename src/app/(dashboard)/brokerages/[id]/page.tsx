@@ -176,7 +176,7 @@ export default async function BrokerageDetailPage({ params }: BrokerageDetailPag
                   className="flex h-16 w-16 items-center justify-center rounded-lg text-2xl font-bold text-white"
                   style={{ backgroundColor: brokerage.primaryColor || "#3b82f6" }}
                 >
-                  {brokerage.name.charAt(0).toUpperCase()}
+                  {(brokerage.name || "B").charAt(0).toUpperCase()}
                 </div>
               )}
               <div>

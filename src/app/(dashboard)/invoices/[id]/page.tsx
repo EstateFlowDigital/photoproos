@@ -6,7 +6,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
-import type { InvoiceStatus, LineItemType } from "@prisma/client";
+import type { LineItemType } from "@prisma/client";
 import { InvoiceActions } from "./invoice-actions";
 import { InvoiceSplitSection } from "./invoice-split-section";
 import { formatCurrency } from "@/lib/utils/units";

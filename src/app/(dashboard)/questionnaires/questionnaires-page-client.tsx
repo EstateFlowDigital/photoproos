@@ -54,9 +54,9 @@ export function QuestionnairesPageClient({
     if (!searchQuery.trim()) return templates;
     const query = searchQuery.toLowerCase();
     return templates.filter((t) =>
-      t.name.toLowerCase().includes(query) ||
+      (t.name || "").toLowerCase().includes(query) ||
       t.description?.toLowerCase().includes(query) ||
-      t.industry.replace(/_/g, " ").toLowerCase().includes(query)
+      (t.industry || "").replace(/_/g, " ").toLowerCase().includes(query)
     );
   }, [templates, searchQuery]);
 
@@ -69,9 +69,9 @@ export function QuestionnairesPageClient({
       // Search filter
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
-        const clientName = q.client.fullName?.toLowerCase() || "";
-        const clientEmail = q.client.email.toLowerCase();
-        const templateName = q.template.name.toLowerCase();
+        const clientName = q.client?.fullName?.toLowerCase() || "";
+        const clientEmail = (q.client?.email || "").toLowerCase();
+        const templateName = (q.template?.name || "").toLowerCase();
         return clientName.includes(query) || clientEmail.includes(query) || templateName.includes(query);
       }
       return true;

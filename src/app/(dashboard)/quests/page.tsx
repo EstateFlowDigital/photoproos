@@ -6,7 +6,7 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { getQuestState, getGamificationState } from "@/lib/actions/gamification";
 import { PageHeader } from "@/components/dashboard";
 import { QuestCard, LevelProgress } from "@/components/gamification";
-import { ArrowLeft, Trophy, Sparkles, Target } from "lucide-react";
+import { ArrowLeft, Trophy, Target } from "lucide-react";
 
 export default async function QuestsPage() {
   const auth = await getAuthContext();

@@ -17,7 +17,7 @@ interface PortalHeaderProps {
 export function PortalHeader({ client, invoices = [], questionnaires = [], galleries = [] }: PortalHeaderProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const displayName = client.fullName || client.email.split("@")[0];
+  const displayName = client.fullName || (client.email || "Guest").split("@")[0];
   const firstLetter = displayName.charAt(0).toUpperCase();
 
   const handleLogout = async () => {

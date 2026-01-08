@@ -47,7 +47,7 @@ interface InvoicesPageClientProps {
 
 export function InvoicesPageClient({ invoices, statusFilter }: InvoicesPageClientProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [_isPending, _startTransition] = useTransition();
   const tableParentRef = useRef<HTMLDivElement | null>(null);
 
   // Search and filter state

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useTransition, useCallback } from "react";
+import { useState, useRef, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { format, isToday, isYesterday } from "date-fns";
 import {
@@ -20,7 +20,6 @@ import {
   Phone,
   Video,
   Info,
-  CheckCheck,
   X,
   FileText,
   Download,
@@ -35,10 +34,9 @@ import {
   Reply,
   Star,
   Forward,
-  Loader2,
 } from "lucide-react";
 import { QuickReplyPicker } from "@/components/messaging/quick-reply-picker";
-import { EmojiPicker, ReactionPicker } from "@/components/messaging/emoji-picker";
+import { EmojiPicker } from "@/components/messaging/emoji-picker";
 import { ThreadView } from "@/components/messaging/thread-view";
 import { ReadReceiptsDisplay } from "@/components/messaging/read-receipts";
 import { TypingIndicator, useTypingIndicator } from "@/components/messaging/typing-indicator";
@@ -146,9 +144,9 @@ export function ConversationPageClient({
   const {
     activeCall,
     incomingCall,
-    isStartingCall,
-    startVoiceCall,
-    startVideoCall,
+    isStartingCall: _isStartingCall,
+    startVoiceCall: _startVoiceCall,
+    startVideoCall: _startVideoCall,
     acceptCall,
     dismissIncomingCall,
     clearActiveCall,
@@ -1132,7 +1130,7 @@ function MessageBubble({
   isStarred,
   allowReactions,
   allowThreads,
-  currentUserId,
+  currentUserId: _currentUserId,
 }: {
   message: MessageWithDetails;
   isOwn: boolean;

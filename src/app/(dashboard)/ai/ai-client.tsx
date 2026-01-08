@@ -18,7 +18,6 @@ import {
   type ConversationMessage,
   type PendingAction,
 } from "@/lib/actions/ai";
-import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Icons

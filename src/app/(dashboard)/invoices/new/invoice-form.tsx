@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import { Select } from "@/components/ui/select";
 import { createInvoice } from "@/lib/actions/invoices";
-import { cn } from "@/lib/utils";
 import type { LineItemType } from "@prisma/client";
 
 interface Client {
@@ -211,7 +210,7 @@ export function InvoiceForm({ clients, services, fromOrder }: InvoiceFormProps) 
         </div>
 
         <div className="space-y-4">
-          {lineItems.map((item, index) => (
+          {lineItems.map((item) => (
             <div key={item.id} className="flex flex-col gap-3 lg:flex-row">
               <div className="flex-1 space-y-2">
                 <input

@@ -40,9 +40,9 @@ export function ServicesPageClient({ services }: ServicesPageClientProps) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (s) =>
-          s.name.toLowerCase().includes(query) ||
+          (s.name || "").toLowerCase().includes(query) ||
           s.description?.toLowerCase().includes(query) ||
-          s.deliverables.some((d) => d.toLowerCase().includes(query))
+          (s.deliverables || []).some((d) => d.toLowerCase().includes(query))
       );
     }
 

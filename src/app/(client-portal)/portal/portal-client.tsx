@@ -90,16 +90,16 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
   const filteredProperties = useMemo(() => {
     if (!normalizedQuery) return properties;
     return properties.filter((p) => (
-      p.address.toLowerCase().includes(normalizedQuery) ||
-      p.city.toLowerCase().includes(normalizedQuery) ||
-      p.state.toLowerCase().includes(normalizedQuery)
+      (p.address || "").toLowerCase().includes(normalizedQuery) ||
+      (p.city || "").toLowerCase().includes(normalizedQuery) ||
+      (p.state || "").toLowerCase().includes(normalizedQuery)
     ));
   }, [properties, normalizedQuery]);
 
   const filteredGalleries = useMemo(() => {
     if (!normalizedQuery) return galleries;
     return galleries.filter((g) => (
-      g.name.toLowerCase().includes(normalizedQuery) ||
+      (g.name || "").toLowerCase().includes(normalizedQuery) ||
       (g.serviceName && g.serviceName.toLowerCase().includes(normalizedQuery))
     ));
   }, [galleries, normalizedQuery]);
@@ -107,9 +107,9 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
   const filteredLeads = useMemo(() => {
     if (!normalizedQuery) return leads;
     return leads.filter((l) => (
-      l.name.toLowerCase().includes(normalizedQuery) ||
-      l.email.toLowerCase().includes(normalizedQuery) ||
-      l.propertyAddress.toLowerCase().includes(normalizedQuery)
+      (l.name || "").toLowerCase().includes(normalizedQuery) ||
+      (l.email || "").toLowerCase().includes(normalizedQuery) ||
+      (l.propertyAddress || "").toLowerCase().includes(normalizedQuery)
     ));
   }, [leads, normalizedQuery]);
 
@@ -168,7 +168,7 @@ export function PortalClient({ client, stats, properties, galleries, invoices, l
     );
   }, [savedProperties, client.id]);
 
-  const displayName = client.fullName || client.email.split("@")[0];
+  const displayName = client.fullName || (client.email || "Guest").split("@")[0];
   const firstName = displayName.split(" ")[0];
   const greeting = hydrated ? getGreeting() : "Welcome";
 

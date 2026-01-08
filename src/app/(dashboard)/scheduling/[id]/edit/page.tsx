@@ -174,10 +174,10 @@ export default async function BookingEditPage({ params }: BookingEditPageProps) 
               <h2 className="text-lg font-semibold text-foreground mb-4">Client</h2>
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-bold">
-                  {bookingForForm.client.name.charAt(0)}
+                  {(bookingForForm.client.name || "?").charAt(0)}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">{bookingForForm.client.name}</p>
+                  <p className="text-sm font-medium text-foreground">{bookingForForm.client.name || "Unknown"}</p>
                   <p className="text-xs text-foreground-muted">{bookingForForm.client.email}</p>
                 </div>
               </div>

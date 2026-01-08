@@ -73,11 +73,8 @@ import {
   TrashIcon,
   PhoneIcon,
   QRIcon,
-  CreateIcon,
   SendIcon,
   EyeIcon,
-  CreditCardIcon,
-  NoteIcon,
   ClockIcon,
   InvoiceIcon,
   AlertIcon,
@@ -85,12 +82,7 @@ import {
   StarIcon,
   CheckIcon,
   ExportIcon,
-  ChartIcon,
-  DesktopIcon,
-  MobileIcon,
-  TabletIcon,
   HeartIcon,
-  ArchiveIcon,
   FilterIcon,
   CommentIcon,
   CommentBubbleIcon,
@@ -98,10 +90,8 @@ import {
   ExpiredIcon,
   CalendarIcon,
   PreviewIcon,
-  WarningIcon,
   GripIcon,
   FolderPlusIcon,
-  SettingsIcon,
   LayersIcon,
   ListIcon,
 } from "./gallery-detail-icons";
@@ -269,8 +259,8 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const [isReorderMode, setIsReorderMode] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isDuplicating, setIsDuplicating] = useState(false);
-  const [isArchiving, setIsArchiving] = useState(false);
+  const [_isDuplicating, setIsDuplicating] = useState(false);
+  const [_isArchiving, setIsArchiving] = useState(false);
   const [isDelivering, setIsDelivering] = useState(false);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -299,7 +289,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   const [isExportingDownloads, setIsExportingDownloads] = useState(false);
 
   // Add-on requests state
-  const [addonRequestsCount, setAddonRequestsCount] = useState(0);
+  const [_addonRequestsCount, setAddonRequestsCount] = useState(0);
   const [pendingAddonRequests, setPendingAddonRequests] = useState(0);
 
   // Sync photos state when gallery prop changes (e.g., after router.refresh())
@@ -759,7 +749,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
   };
 
   const handleToggleWatermark = async (exclude: boolean) => {
-    const count = selectedPhotos.size;
+    const _count = selectedPhotos.size;
     const photoIds = Array.from(selectedPhotos);
 
     setIsTogglingWatermark(true);
@@ -856,7 +846,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     showToast(`${count} photo${count !== 1 ? "s" : ""} added to favorites`, "success");
   };
 
-  const handleArchiveGallery = async () => {
+  const _handleArchiveGallery = async () => {
     setIsArchiving(true);
     try {
       const result = await archiveGallery(gallery.id);
@@ -873,12 +863,12 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     }
   };
 
-  const handleDuplicateGallery = async () => {
+  const _handleDuplicateGallery = async () => {
     // This is an alias for handleDuplicate
     await handleDuplicate();
   };
 
-  const handleExportAnalytics = () => {
+  const _handleExportAnalytics = () => {
     if (!analytics) {
       showToast("No analytics data available", "error");
       return;
@@ -1067,7 +1057,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
     setShowQRModal(true);
   };
 
-  const formatRelativeTime = (timestamp: string) => {
+  const _formatRelativeTime = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
@@ -2564,10 +2554,10 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
             <h2 className="text-lg font-semibold text-foreground mb-4">Client</h2>
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
-                {gallery.client.name.charAt(0)}
+                {(gallery.client.name || "?").charAt(0)}
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">{gallery.client.name}</p>
+                <p className="text-sm font-medium text-foreground">{gallery.client.name || "Unknown"}</p>
                 <p className="text-xs text-foreground-muted">{gallery.client.email}</p>
                 {gallery.client.phone && (
                   <p className="text-xs text-foreground-muted">{gallery.client.phone}</p>

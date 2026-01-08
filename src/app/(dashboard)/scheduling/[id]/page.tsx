@@ -255,10 +255,10 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
             <h2 className="text-lg font-semibold text-foreground mb-4">Client</h2>
             <div className="flex items-center gap-3 mb-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-lg font-bold">
-                {clientInfo.name.charAt(0)}
+                {(clientInfo.name || "?").charAt(0)}
               </div>
               <div>
-                <p className="font-medium text-foreground">{clientInfo.name}</p>
+                <p className="font-medium text-foreground">{clientInfo.name || "Unknown"}</p>
                 <p className="text-sm text-foreground-muted">{clientInfo.email}</p>
               </div>
             </div>

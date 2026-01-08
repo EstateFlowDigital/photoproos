@@ -10,15 +10,12 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  Smile,
 } from "lucide-react";
 import {
   getClientConversations,
-  getClientConversationById,
   getClientMessages,
   sendClientMessage,
   markClientConversationAsRead,
-  getClientTotalUnreadCount,
   type ClientConversationWithDetails,
   type ClientMessageWithDetails,
 } from "@/lib/actions/client-messages";
@@ -34,14 +31,13 @@ interface MessagesTabProps {
   clientId: string;
 }
 
-export function MessagesTab({ clientId }: MessagesTabProps) {
+export function MessagesTab({ clientId: _clientId }: MessagesTabProps) {
   const [view, setView] = useState<"list" | "conversation" | "new-request">("list");
   const [conversations, setConversations] = useState<ClientConversationWithDetails[]>([]);
   const [chatRequests, setChatRequests] = useState<ChatRequestWithDetails[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<ClientConversationWithDetails | null>(null);
   const [messages, setMessages] = useState<ClientMessageWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isPending, startTransition] = useTransition();
 
   // Load conversations and chat requests on mount
   useEffect(() => {

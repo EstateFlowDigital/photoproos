@@ -56,9 +56,9 @@ export function FormsPageClient({ forms }: FormsPageClientProps) {
       // Search filter
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
-        const name = form.name.toLowerCase();
+        const name = (form.name || "").toLowerCase();
         const description = form.description?.toLowerCase() || "";
-        const portfolioName = form.portfolioWebsite?.name.toLowerCase() || "";
+        const portfolioName = form.portfolioWebsite?.name?.toLowerCase() || "";
         return name.includes(query) || description.includes(query) || portfolioName.includes(query);
       }
       return true;

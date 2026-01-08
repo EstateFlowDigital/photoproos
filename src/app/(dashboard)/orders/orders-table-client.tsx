@@ -61,7 +61,7 @@ function formatTimePreference(time: string | null) {
 }
 
 // Kanban column definitions
-const KANBAN_COLUMNS: { status: OrderStatus; label: string; color: string }[] = [
+const _KANBAN_COLUMNS: { status: OrderStatus; label: string; color: string }[] = [
   { status: "pending", label: "Pending", color: "var(--warning)" },
   { status: "paid", label: "Paid", color: "var(--success)" },
   { status: "processing", label: "Processing", color: "var(--primary)" },
@@ -78,7 +78,7 @@ export function OrdersTableClient({
 }) {
   const router = useRouter();
   const { showToast } = useToast();
-  const [isPending, startTransition] = useTransition();
+  const [_isPending, startTransition] = useTransition();
 
   // View mode state
   const [viewMode, setViewMode] = useState<ViewMode>("list");
@@ -93,7 +93,7 @@ export function OrdersTableClient({
 
   // Kanban drag state
   const [draggedOrder, setDraggedOrder] = useState<OrderRow | null>(null);
-  const [dragOverColumn, setDragOverColumn] = useState<OrderStatus | null>(null);
+  const [_dragOverColumn, setDragOverColumn] = useState<OrderStatus | null>(null);
 
   // Bulk selection helpers
   const toggleSelection = (id: string) => {
@@ -200,7 +200,7 @@ export function OrdersTableClient({
   const isAllSelected = filteredOrders.length > 0 && filteredOrders.every((o) => selectedIds.has(o.id));
 
   // Group orders by status for Kanban view
-  const ordersByStatus = useMemo(() => {
+  const _ordersByStatus = useMemo(() => {
     const grouped: Record<OrderStatus, OrderRow[]> = {
       cart: [],
       pending: [],
@@ -216,20 +216,20 @@ export function OrdersTableClient({
   }, [filteredOrders]);
 
   // Kanban drag handlers
-  const handleDragStart = (order: OrderRow) => {
+  const _handleDragStart = (order: OrderRow) => {
     setDraggedOrder(order);
   };
 
-  const handleDragOver = (e: React.DragEvent, status: OrderStatus) => {
+  const _handleDragOver = (e: React.DragEvent, status: OrderStatus) => {
     e.preventDefault();
     setDragOverColumn(status);
   };
 
-  const handleDragLeave = () => {
+  const _handleDragLeave = () => {
     setDragOverColumn(null);
   };
 
-  const handleDrop = (e: React.DragEvent, targetStatus: OrderStatus) => {
+  const _handleDrop = (e: React.DragEvent, targetStatus: OrderStatus) => {
     e.preventDefault();
     setDragOverColumn(null);
 

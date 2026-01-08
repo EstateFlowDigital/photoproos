@@ -11,10 +11,8 @@ import {
   Headphones,
   Plus,
   Search,
-  Filter,
   Pin,
   BellOff,
-  Archive,
 } from "lucide-react";
 import type { ConversationWithDetails } from "@/lib/actions/conversations";
 import type { ConversationType } from "@prisma/client";
@@ -351,7 +349,7 @@ function NewConversationModal({ onClose }: { onClose: () => void }) {
 }
 
 function TypeOption({
-  type,
+  type: _type,
   selected,
   onSelect,
   icon,

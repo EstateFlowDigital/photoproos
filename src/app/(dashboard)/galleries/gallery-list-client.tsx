@@ -353,9 +353,9 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
       const searchLower = search.toLowerCase().trim();
       result = result.filter(
         (g) =>
-          g.name.toLowerCase().includes(searchLower) ||
-          g.client.toLowerCase().includes(searchLower) ||
-          (g.services || []).some((s) => s.name.toLowerCase().includes(searchLower))
+          (g.name || "").toLowerCase().includes(searchLower) ||
+          (g.client || "").toLowerCase().includes(searchLower) ||
+          (g.services || []).some((s) => (s.name || "").toLowerCase().includes(searchLower))
       );
     }
 

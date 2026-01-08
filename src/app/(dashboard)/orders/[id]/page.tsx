@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import { getOrder } from "@/lib/actions/orders";
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";

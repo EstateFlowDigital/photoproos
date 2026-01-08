@@ -11,7 +11,6 @@ import {
   LevelProgress,
   StreakDisplay,
   XpDisplay,
-  PersonalBestsCard,
 } from "@/components/gamification";
 import { cn } from "@/lib/utils";
 import { RARITY_ORDER, CATEGORY_LABELS, CATEGORY_ICONS } from "@/lib/gamification/achievements";

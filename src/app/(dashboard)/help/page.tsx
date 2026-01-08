@@ -9,7 +9,6 @@ import {
 } from "@/components/help";
 import {
   helpCategories,
-  helpArticles,
   getArticlesByCategory,
 } from "@/lib/help/articles";
 

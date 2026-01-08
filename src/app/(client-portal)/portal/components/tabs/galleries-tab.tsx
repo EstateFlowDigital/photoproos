@@ -7,7 +7,6 @@ import { ImageIcon, DownloadIcon, LoadingSpinner } from "../icons";
 import { EmptyState } from "../empty-state";
 import { formatDate, BLUR_DATA_URL } from "../utils";
 import type { GalleryData } from "../types";
-import { useHydrated } from "@/hooks/use-hydrated";
 
 // View and sort options
 type ViewMode = "list" | "grid";
@@ -57,7 +56,6 @@ export function GalleriesTab({
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [sortOption, setSortOption] = useState<SortOption>("newest");
   const [filterOption, setFilterOption] = useState<FilterOption>("all");
-  const hydrated = useHydrated();
 
   const openLightbox = (gallery: GalleryData, photoIndex: number) => {
     setLightboxGallery(gallery);

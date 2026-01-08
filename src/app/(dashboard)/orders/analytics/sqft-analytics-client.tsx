@@ -59,7 +59,7 @@ export function SqftAnalyticsClient({ analytics, totalOrders }: SqftAnalyticsCli
     () => Math.max(...monthly.map((m) => m.sqft), 1),
     [monthly]
   );
-  const maxMonthlyRevenue = useMemo(
+  const _maxMonthlyRevenue = useMemo(
     () => Math.max(...monthly.map((m) => m.revenue), 1),
     [monthly]
   );

@@ -101,7 +101,7 @@ export function ReviewRequestsClient({ initialRequests, stats }: ReviewRequestsC
         const matchesClient =
           request.clientName?.toLowerCase().includes(query) ||
           request.clientEmail?.toLowerCase().includes(query);
-        const matchesProject = request.project?.name.toLowerCase().includes(query);
+        const matchesProject = (request.project?.name || "").toLowerCase().includes(query);
         if (!matchesClient && !matchesProject) return false;
       }
 

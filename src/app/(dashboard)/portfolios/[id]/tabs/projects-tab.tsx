@@ -39,7 +39,7 @@ export function ProjectsTab({
       (project) =>
         project.name.toLowerCase().includes(query) ||
         project.client?.fullName?.toLowerCase().includes(query) ||
-        project.client?.email.toLowerCase().includes(query)
+        (project.client?.email || "").toLowerCase().includes(query)
     );
   }, [availableProjects, searchQuery]);
 

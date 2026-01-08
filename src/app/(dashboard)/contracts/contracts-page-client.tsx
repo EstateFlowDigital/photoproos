@@ -69,11 +69,11 @@ export function ContractsPageClient({
     if (!searchQuery.trim()) return contracts;
     const query = searchQuery.toLowerCase();
     return contracts.filter((contract) => {
-      const contractName = contract.name.toLowerCase();
+      const contractName = (contract.name || "").toLowerCase();
       const clientName = contract.client?.fullName?.toLowerCase() || "";
       const clientCompany = contract.client?.company?.toLowerCase() || "";
       const clientEmail = contract.client?.email?.toLowerCase() || "";
-      const templateName = contract.template?.name.toLowerCase() || "";
+      const templateName = contract.template?.name?.toLowerCase() || "";
       return (
         contractName.includes(query) ||
         clientName.includes(query) ||

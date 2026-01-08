@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import { PageHeader } from "@/components/dashboard";
-import { HelpBreadcrumb, HelpArticleCard } from "@/components/help";
+import { HelpBreadcrumb } from "@/components/help";
 import {
   getHelpArticle,
   getHelpCategory,

@@ -39,9 +39,9 @@ export function ProductsClient({ catalogs }: ProductsClientProps) {
       // Search filter
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
-        const catalogName = catalog.name.toLowerCase();
+        const catalogName = (catalog.name || "").toLowerCase();
         const catalogDesc = catalog.description?.toLowerCase() || "";
-        const tags = catalog.tags.join(" ").toLowerCase();
+        const tags = (catalog.tags || []).join(" ").toLowerCase();
         return catalogName.includes(query) || catalogDesc.includes(query) || tags.includes(query);
       }
       return true;

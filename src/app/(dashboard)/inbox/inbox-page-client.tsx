@@ -25,21 +25,16 @@ import {
   Search,
   Star,
   Archive,
-  Trash2,
   RefreshCw,
   Plus,
   ChevronLeft,
   Paperclip,
   Send,
   MoreHorizontal,
-  Check,
   Link2,
   Settings,
   User,
-  Building,
-  Clock,
   Inbox,
-  StarOff,
   ArchiveRestore,
   Loader2,
 } from "lucide-react";
@@ -57,9 +52,9 @@ interface InboxPageClientProps {
 export function InboxPageClient({
   accounts,
   threads: initialThreads,
-  totalThreads,
+  totalThreads: _totalThreads,
   unreadCount: initialUnreadCount,
-  organizationId,
+  organizationId: _organizationId,
 }: InboxPageClientProps) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -556,7 +551,7 @@ function FilterButton({
 function ThreadItem({
   thread,
   isSelected,
-  isLoading,
+  isLoading: _isLoading,
   onClick,
   formatTimeAgo,
 }: {

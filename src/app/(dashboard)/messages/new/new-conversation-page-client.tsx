@@ -58,7 +58,7 @@ const TYPE_CONFIG = {
 export function NewConversationPageClient({
   type,
   teamMembers,
-  currentUserId,
+  currentUserId: _currentUserId,
 }: NewConversationPageClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
