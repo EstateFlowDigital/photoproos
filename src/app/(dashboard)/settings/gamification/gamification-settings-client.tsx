@@ -21,7 +21,10 @@ import {
   getSkillTreeState,
   getQuestState,
   resetSkillPoints,
+  getStreakFreezeState,
+  type StreakFreezeState,
 } from "@/lib/actions/gamification";
+import { StreakFreezeDisplay } from "@/components/gamification/streak-freeze-display";
 
 interface GamificationSettings {
   showXpNotifications: boolean;
@@ -106,14 +109,16 @@ export function GamificationSettingsClient() {
   const [questsCompleted, setQuestsCompleted] = useState(0);
   const [totalQuests, setTotalQuests] = useState(0);
   const [isResettingSkills, setIsResettingSkills] = useState(false);
+  const [streakFreezeState, setStreakFreezeState] = useState<StreakFreezeState | null>(null);
 
   const loadSettings = useCallback(async () => {
     try {
       // Load gamification state
-      const [stateResult, skillResult, questResult] = await Promise.all([
+      const [stateResult, skillResult, questResult, freezeResult] = await Promise.all([
         getGamificationState(),
         getSkillTreeState(),
         getQuestState(),
+        getStreakFreezeState(),
       ]);
 
       if (stateResult.success) {
@@ -135,6 +140,10 @@ export function GamificationSettingsClient() {
         setTotalQuests(
           questResult.data.categories.reduce((sum, c) => sum + c.totalCount, 0)
         );
+      }
+
+      if (freezeResult.success) {
+        setStreakFreezeState(freezeResult.data);
       }
 
       // Load settings from localStorage for now
@@ -229,6 +238,23 @@ export function GamificationSettingsClient() {
       setIsResettingSkills(false);
     }
   };
+
+  const handleStreakFreezePurchase = useCallback(
+    (result: { newFreezes: number; xpRemaining: number }) => {
+      setStreakFreezeState((prev) =>
+        prev
+          ? { ...prev, available: result.newFreezes }
+          : {
+              available: result.newFreezes,
+              totalUsed: 0,
+              maxFreezes: 5,
+              lastUsedDate: null,
+            }
+      );
+      setTotalXp(result.xpRemaining);
+    },
+    []
+  );
 
   if (isLoading) {
     return (
@@ -462,6 +488,15 @@ export function GamificationSettingsClient() {
           </Button>
         </div>
       </div>
+
+      {/* Streak Protection */}
+      {streakFreezeState && (
+        <StreakFreezeDisplay
+          freezeState={streakFreezeState}
+          userXp={totalXp}
+          onPurchase={handleStreakFreezePurchase}
+        />
+      )}
 
       {/* Save Button */}
       {hasChanges && (

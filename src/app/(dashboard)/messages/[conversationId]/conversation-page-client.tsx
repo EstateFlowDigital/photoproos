@@ -67,7 +67,7 @@ import {
   togglePinConversation,
 } from "@/lib/actions/conversation-participants";
 import { toggleStarMessage } from "@/lib/actions/starred-messages";
-import type { ConversationType, MessageReactionType } from "@prisma/client";
+import type { ConversationType } from "@prisma/client";
 
 interface ConversationPageClientProps {
   conversation: ConversationWithDetails;
@@ -82,23 +82,8 @@ const TYPE_ICONS: Record<ConversationType, React.ReactNode> = {
   client_support: <Headphones className="h-5 w-5" />,
 };
 
-const REACTION_TYPES: MessageReactionType[] = [
-  "thumbs_up",
-  "thumbs_down",
-  "heart",
-  "check",
-  "eyes",
-  "celebration",
-];
-
-const REACTION_EMOJIS: Record<MessageReactionType, string> = {
-  thumbs_up: "👍",
-  thumbs_down: "👎",
-  heart: "❤️",
-  check: "✅",
-  eyes: "👀",
-  celebration: "🎉",
-};
+// Available reaction emojis
+const REACTION_EMOJIS = ["👍", "👎", "❤️", "✅", "👀", "🎉"];
 
 // Link preview regex
 const URL_REGEX = /(https?:\/\/[^\s]+)/g;
@@ -518,9 +503,9 @@ export function ConversationPageClient({
     navigator.clipboard.writeText(content);
   };
 
-  const handleReaction = (messageId: string, type: MessageReactionType) => {
+  const handleReaction = (messageId: string, emoji: string) => {
     startTransition(async () => {
-      await addReaction(messageId, type);
+      await addReaction(messageId, emoji);
       const result = await getConversationMessages(conversation.id, {
         limit: 50,
         parentId: null,
@@ -1163,7 +1148,7 @@ function MessageBubble({
   onCancelEdit: () => void;
   onDelete: () => void;
   onCopy: () => void;
-  onReaction: (type: MessageReactionType) => void;
+  onReaction: (emoji: string) => void;
   onOpenThread: () => void;
   onStar: () => void;
   onForward: () => void;
@@ -1177,13 +1162,13 @@ function MessageBubble({
   const senderName = message.senderUser?.fullName || message.senderClient?.fullName || message.senderName;
   const senderInitials = (senderName || "?").split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
 
-  // Group reactions by type
+  // Group reactions by emoji
   const reactionCounts = message.reactions.reduce(
     (acc, reaction) => {
-      acc[reaction.type] = (acc[reaction.type] || 0) + 1;
+      acc[reaction.emoji] = (acc[reaction.emoji] || 0) + 1;
       return acc;
     },
-    {} as Record<MessageReactionType, number>
+    {} as Record<string, number>
   );
 
   // Detect links for preview
@@ -1426,18 +1411,18 @@ function MessageBubble({
                       role="menu"
                       aria-label="Reaction options"
                     >
-                      {REACTION_TYPES.map((type) => (
+                      {REACTION_EMOJIS.map((emoji) => (
                         <button
-                          key={type}
+                          key={emoji}
                           onClick={() => {
-                            onReaction(type);
+                            onReaction(emoji);
                             setShowReactionPicker(false);
                           }}
                           className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[var(--background-hover)] transition-colors text-lg"
                           role="menuitem"
-                          aria-label={`React with ${type.replace('_', ' ')}`}
+                          aria-label={`React with ${emoji}`}
                         >
-                          {REACTION_EMOJIS[type]}
+                          {emoji}
                         </button>
                       ))}
                     </div>
@@ -1459,14 +1444,14 @@ function MessageBubble({
             {/* Reactions Display */}
             {Object.keys(reactionCounts).length > 0 && (
               <div className={`mt-1 flex gap-1 ${isOwn ? "flex-row-reverse" : ""}`}>
-                {(Object.entries(reactionCounts) as [MessageReactionType, number][]).map(
-                  ([type, count]) => (
+                {Object.entries(reactionCounts).map(
+                  ([emoji, count]) => (
                     <button
-                      key={type}
-                      onClick={() => onReaction(type)}
+                      key={emoji}
+                      onClick={() => onReaction(emoji)}
                       className="inline-flex items-center gap-1 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-2 py-0.5 text-xs hover:bg-[var(--background-hover)] shadow-sm"
                     >
-                      <span>{REACTION_EMOJIS[type]}</span>
+                      <span>{emoji}</span>
                       <span className="text-[var(--foreground-muted)]">{count}</span>
                     </button>
                   )

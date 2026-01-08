@@ -277,10 +277,16 @@ function AchievementCard({
     progress?: number;
     isHidden: boolean;
     order: number;
+    progressHint?: {
+      current: number;
+      target: number;
+      percentComplete: number;
+    };
   };
 }) {
   // Hide details of hidden achievements that aren't unlocked
   const showDetails = !achievement.isHidden || achievement.unlocked;
+  const showProgressHint = !achievement.unlocked && showDetails && achievement.progressHint;
 
   return (
     <div
@@ -310,11 +316,42 @@ function AchievementCard({
           <p className="mt-1 text-sm text-[var(--foreground-muted)] line-clamp-2">
             {showDetails ? achievement.description : "Keep playing to discover this achievement!"}
           </p>
+
+          {/* Progress hint for locked achievements */}
+          {showProgressHint && (
+            <div className="mt-2">
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className="text-[var(--foreground-muted)]">Progress</span>
+                <span className="text-[var(--foreground-secondary)]">
+                  {achievement.progressHint!.current.toLocaleString()} / {achievement.progressHint!.target.toLocaleString()}
+                </span>
+              </div>
+              <div
+                className="h-1.5 w-full rounded-full bg-[var(--background-secondary)] overflow-hidden"
+                role="progressbar"
+                aria-valuenow={achievement.progressHint!.percentComplete}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`${achievement.progressHint!.percentComplete}% progress toward ${achievement.name}`}
+              >
+                <div
+                  className="h-full rounded-full bg-[var(--foreground-muted)] transition-all duration-300"
+                  style={{ width: `${achievement.progressHint!.percentComplete}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           <div className="mt-2 flex items-center gap-3">
             <XpDisplay xp={achievement.xpReward} size="sm" />
             {achievement.unlocked && achievement.unlockedAt && (
               <span className="text-xs text-[var(--foreground-muted)]">
                 Unlocked {new Date(achievement.unlockedAt).toLocaleDateString()}
+              </span>
+            )}
+            {showProgressHint && achievement.progressHint!.percentComplete >= 75 && (
+              <span className="text-xs font-medium text-[var(--warning)]">
+                Almost there!
               </span>
             )}
           </div>

@@ -153,7 +153,7 @@ export default async function NewGalleryPage() {
               <div className="space-y-3">
                 {clients.slice(0, 4).map((client) => (
                   <div key={client.id} className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--card-border)] bg-[var(--background-secondary)] text-foreground-muted text-xs font-medium uppercase">
                       {client.name.charAt(0)}
                     </div>
                     <div className="min-w-0 flex-1">

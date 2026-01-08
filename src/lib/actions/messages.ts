@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import type { MessageReactionType } from "@prisma/client";
+// Note: MessageReaction now uses String emoji instead of enum
 import { requireOrganizationId, requireUserId } from "./auth-helper";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import {
@@ -67,7 +67,7 @@ export interface MessageWithDetails {
   } | null;
   reactions: {
     id: string;
-    type: MessageReactionType;
+    emoji: string;
     userId: string | null;
     clientId: string | null;
     user: {
@@ -636,7 +636,7 @@ export async function deleteMessage(
  */
 export async function addReaction(
   messageId: string,
-  type: MessageReactionType
+  emoji: string
 ): Promise<ActionResult<void>> {
   try {
     const organizationId = await requireOrganizationId();
@@ -676,7 +676,7 @@ export async function addReaction(
       where: {
         messageId,
         userId,
-        type,
+        emoji,
       },
     });
 
@@ -691,7 +691,7 @@ export async function addReaction(
         data: {
           messageId,
           userId,
-          type,
+          emoji,
         },
       });
     }
@@ -1474,5 +1474,169 @@ async function sendMessageEmailNotifications(params: {
   } catch (error) {
     // Log but don't throw - email notifications shouldn't break message sending
     console.error("[Messages] Error sending email notifications:", error);
+  }
+}
+
+// =============================================================================
+// Dashboard Widget Functions
+// =============================================================================
+
+/**
+ * Widget message summary for dashboard display
+ */
+export interface WidgetMessage {
+  id: string;
+  conversationId: string;
+  conversationName: string | null;
+  conversationType: string;
+  content: string;
+  senderName: string;
+  senderAvatar: string | null;
+  createdAt: Date;
+  isUnread: boolean;
+}
+
+/**
+ * Get recent messages across all conversations for the dashboard widget
+ */
+export async function getRecentMessagesForWidget(
+  limit: number = 5
+): Promise<ActionResult<WidgetMessage[]>> {
+  try {
+    const organizationId = await requireOrganizationId();
+    const userId = await requireUserId();
+
+    // Get conversations the user is part of
+    const participations = await prisma.conversationParticipant.findMany({
+      where: {
+        userId,
+        leftAt: null,
+        conversation: {
+          organizationId,
+          isArchived: false,
+        },
+      },
+      select: {
+        conversationId: true,
+        lastReadAt: true,
+        conversation: {
+          select: {
+            name: true,
+            type: true,
+          },
+        },
+      },
+    });
+
+    if (participations.length === 0) {
+      return success([]);
+    }
+
+    const conversationIds = participations.map((p) => p.conversationId);
+    const lastReadMap = new Map(
+      participations.map((p) => [p.conversationId, p.lastReadAt])
+    );
+    const conversationInfoMap = new Map(
+      participations.map((p) => [
+        p.conversationId,
+        { name: p.conversation.name, type: p.conversation.type },
+      ])
+    );
+
+    // Get recent messages from these conversations
+    const messages = await prisma.message.findMany({
+      where: {
+        conversationId: { in: conversationIds },
+        isDeleted: false,
+        parentId: null, // Only top-level messages
+      },
+      select: {
+        id: true,
+        conversationId: true,
+        content: true,
+        senderName: true,
+        senderAvatar: true,
+        createdAt: true,
+        senderUserId: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    });
+
+    const widgetMessages: WidgetMessage[] = messages.map((msg) => {
+      const conversationInfo = conversationInfoMap.get(msg.conversationId);
+      const lastRead = lastReadMap.get(msg.conversationId);
+      const isUnread =
+        msg.senderUserId !== userId &&
+        (!lastRead || msg.createdAt > lastRead);
+
+      return {
+        id: msg.id,
+        conversationId: msg.conversationId,
+        conversationName: conversationInfo?.name || null,
+        conversationType: conversationInfo?.type || "direct",
+        content: msg.content.slice(0, 100) + (msg.content.length > 100 ? "..." : ""),
+        senderName: msg.senderName,
+        senderAvatar: msg.senderAvatar,
+        createdAt: msg.createdAt,
+        isUnread,
+      };
+    });
+
+    return success(widgetMessages);
+  } catch (error) {
+    console.error("[Messages] Error fetching widget messages:", error);
+    return fail("Failed to fetch recent messages");
+  }
+}
+
+/**
+ * Get total unread message count for the current user
+ */
+export async function getUnreadMessageCount(): Promise<ActionResult<number>> {
+  try {
+    const organizationId = await requireOrganizationId();
+    const userId = await requireUserId();
+
+    // Get all participations with their last read time
+    const participations = await prisma.conversationParticipant.findMany({
+      where: {
+        userId,
+        leftAt: null,
+        conversation: {
+          organizationId,
+          isArchived: false,
+        },
+      },
+      select: {
+        conversationId: true,
+        lastReadAt: true,
+      },
+    });
+
+    if (participations.length === 0) {
+      return success(0);
+    }
+
+    // Count unread messages across all conversations
+    let totalUnread = 0;
+    for (const participation of participations) {
+      const unreadCount = await prisma.message.count({
+        where: {
+          conversationId: participation.conversationId,
+          isDeleted: false,
+          senderUserId: { not: userId },
+          ...(participation.lastReadAt && {
+            createdAt: { gt: participation.lastReadAt },
+          }),
+        },
+      });
+      totalUnread += unreadCount;
+    }
+
+    return success(totalUnread);
+  } catch (error) {
+    console.error("[Messages] Error counting unread messages:", error);
+    return fail("Failed to count unread messages");
   }
 }

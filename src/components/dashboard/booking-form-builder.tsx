@@ -134,6 +134,9 @@ export function BookingFormBuilder({
 }: BookingFormBuilderProps) {
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [showPalette, setShowPalette] = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
+  const [mobileView, setMobileView] = useState<"palette" | "canvas" | "editor">("canvas");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -287,30 +290,73 @@ export function BookingFormBuilder({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-6 h-[calc(100vh-280px)] min-h-[500px]">
+      {/* Mobile View Toggle */}
+      <div className="lg:hidden mb-4 flex gap-2">
+        <button
+          type="button"
+          onClick={() => setMobileView("palette")}
+          className={cn(
+            "flex-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+            mobileView === "palette"
+              ? "bg-[var(--primary)] text-white"
+              : "bg-[var(--card)] text-foreground-muted border border-[var(--card-border)]"
+          )}
+        >
+          Add Fields
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileView("canvas")}
+          className={cn(
+            "flex-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+            mobileView === "canvas"
+              ? "bg-[var(--primary)] text-white"
+              : "bg-[var(--card)] text-foreground-muted border border-[var(--card-border)]"
+          )}
+        >
+          Form ({fields.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileView("editor")}
+          className={cn(
+            "flex-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+            mobileView === "editor"
+              ? "bg-[var(--primary)] text-white"
+              : "bg-[var(--card)] text-foreground-muted border border-[var(--card-border)]",
+            !selectedField && "opacity-50"
+          )}
+          disabled={!selectedField}
+        >
+          Edit Field
+        </button>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 lg:h-[calc(100vh-280px)] lg:min-h-[500px]">
         {/* Left Panel - Field Palette */}
-        <div className="w-64 shrink-0 overflow-y-auto">
+        <div className={cn(
+          "lg:w-64 lg:shrink-0 lg:overflow-y-auto",
+          mobileView !== "palette" && "hidden lg:block"
+        )}>
           <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4">
             <h3 className="text-sm font-semibold text-foreground mb-4">Add Fields</h3>
 
-            {/* Industry Templates */}
-            {organizationIndustries.length > 0 && (
-              <div className="mb-4 pb-4 border-b border-[var(--card-border)]">
-                <p className="text-xs text-foreground-muted mb-2">Load Template</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {organizationIndustries.map((ind) => (
-                    <button
-                      key={ind}
-                      type="button"
-                      onClick={() => handleLoadTemplate(ind)}
-                      className="inline-flex items-center px-2 py-1 text-xs rounded-md bg-[var(--background-secondary)] text-foreground-muted hover:text-foreground hover:bg-[var(--background-hover)] transition-colors"
-                    >
-                      {ind.replace("_", " ")}
-                    </button>
-                  ))}
-                </div>
+            {/* Industry Templates - Always show if organization has any industries */}
+            <div className="mb-4 pb-4 border-b border-[var(--card-border)]">
+              <p className="text-xs text-foreground-muted mb-2">Load Template</p>
+              <div className="flex flex-wrap gap-1.5">
+                {(organizationIndustries.length > 0 ? organizationIndustries : Object.keys(industryTemplates) as Industry[]).slice(0, 6).map((ind) => (
+                  <button
+                    key={ind}
+                    type="button"
+                    onClick={() => handleLoadTemplate(ind)}
+                    className="inline-flex items-center px-2 py-1 text-xs rounded-md bg-[var(--background-secondary)] text-foreground-muted hover:text-foreground hover:bg-[var(--background-hover)] transition-colors capitalize"
+                  >
+                    {ind.replace("_", " ")}
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
 
             {/* Field Types by Category */}
             <div className="space-y-4">
@@ -324,7 +370,10 @@ export function BookingFormBuilder({
                         <PaletteField
                           key={fieldType.type}
                           fieldType={fieldType}
-                          onAdd={() => handleAddField(fieldType.type)}
+                          onAdd={() => {
+                            handleAddField(fieldType.type);
+                            setMobileView("canvas");
+                          }}
                         />
                       ))}
                   </div>
@@ -335,19 +384,33 @@ export function BookingFormBuilder({
         </div>
 
         {/* Center Panel - Form Canvas */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-6 min-h-full">
+        <div className={cn(
+          "flex-1 lg:overflow-y-auto min-h-[300px] lg:min-h-0",
+          mobileView !== "canvas" && "hidden lg:block"
+        )}>
+          <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4 lg:p-6 min-h-full">
             <h3 className="text-sm font-semibold text-foreground mb-4">Form Fields</h3>
 
             {fields.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="flex flex-col items-center justify-center py-8 lg:py-12 text-center">
                 <div className="w-12 h-12 rounded-lg bg-[var(--background-secondary)] flex items-center justify-center mb-4">
                   <FormIcon className="w-6 h-6 text-foreground-muted" />
                 </div>
                 <p className="text-foreground-muted mb-2">No fields added yet</p>
-                <p className="text-sm text-foreground-muted">
-                  Click a field type on the left to add it, or load an industry template.
+                <p className="text-sm text-foreground-muted px-4">
+                  {mobileView === "canvas" ? (
+                    <>Tap &quot;Add Fields&quot; above to get started, or load an industry template.</>
+                  ) : (
+                    <>Click a field type on the left to add it, or load an industry template.</>
+                  )}
                 </p>
+                <button
+                  type="button"
+                  onClick={() => setMobileView("palette")}
+                  className="lg:hidden mt-4 px-4 py-2 text-sm font-medium bg-[var(--primary)] text-white rounded-lg"
+                >
+                  Add Your First Field
+                </button>
               </div>
             ) : (
               <SortableContext
@@ -360,7 +423,10 @@ export function BookingFormBuilder({
                       key={field.id}
                       field={field}
                       isSelected={field.id === selectedFieldId}
-                      onSelect={() => setSelectedFieldId(field.id!)}
+                      onSelect={() => {
+                        setSelectedFieldId(field.id!);
+                        setMobileView("editor");
+                      }}
                       onDelete={() => handleDeleteField(field.id!)}
                       onDuplicate={() => handleDuplicateField(field.id!)}
                     />
@@ -372,13 +438,19 @@ export function BookingFormBuilder({
         </div>
 
         {/* Right Panel - Field Editor */}
-        <div className="w-80 shrink-0 overflow-y-auto">
-          <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4 sticky top-0">
+        <div className={cn(
+          "lg:w-80 lg:shrink-0 lg:overflow-y-auto",
+          mobileView !== "editor" && "hidden lg:block"
+        )}>
+          <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4 lg:sticky lg:top-0">
             {selectedField ? (
               <FieldEditor
                 field={selectedField}
                 onUpdate={(updates) => handleUpdateField(selectedField.id!, updates)}
-                onClose={() => setSelectedFieldId(null)}
+                onClose={() => {
+                  setSelectedFieldId(null);
+                  setMobileView("canvas");
+                }}
                 organizationIndustries={organizationIndustries}
               />
             ) : (
@@ -386,6 +458,13 @@ export function BookingFormBuilder({
                 <p className="text-foreground-muted text-sm">
                   Select a field to edit its properties
                 </p>
+                <button
+                  type="button"
+                  onClick={() => setMobileView("canvas")}
+                  className="lg:hidden mt-4 px-4 py-2 text-sm font-medium bg-[var(--card-border)] text-foreground rounded-lg"
+                >
+                  Back to Form
+                </button>
               </div>
             )}
           </div>

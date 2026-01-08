@@ -76,3 +76,5 @@ export { ReferralWidget } from "./referral-widget";
 export { CollapsibleSection } from "./collapsible-section";
 export { DashboardCustomizePanel } from "./dashboard-customize-panel";
 export { OverdueInvoicesWidget } from "./overdue-invoices-widget";
+export { WidgetDashboard, type DashboardData } from "./widget-dashboard";
+export { AddWidgetModal } from "./add-widget-modal";

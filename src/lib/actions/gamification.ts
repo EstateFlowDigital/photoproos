@@ -4,7 +4,6 @@ import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { fail, success, type ActionResult } from "@/lib/types/action-result";
 import {
-  ACHIEVEMENTS,
   calculateLevel,
   getXpProgress,
   getLevelTitle,
@@ -25,16 +24,14 @@ import {
   MAX_PRESTIGE,
   type PrestigeTier,
 } from "@/lib/gamification/prestige";
-import { DAILY_BONUS_XP } from "@/lib/gamification/constants";
+import { DAILY_BONUS_XP, STREAK_FREEZE_CONFIG } from "@/lib/gamification/constants";
 import {
   generateHighlights,
   getFunFacts,
   getEncouragementMessage,
   type YearInReviewStats,
-  type YearHighlight,
 } from "@/lib/gamification/year-in-review";
 import {
-  SKILLS,
   SKILL_TREE_INFO,
   getSkillById,
   getSkillsByCategory,
@@ -241,6 +238,11 @@ export interface AchievementWithStatus {
   unlocked: boolean;
   unlockedAt?: Date;
   progress?: number;
+  progressHint?: {
+    current: number;
+    target: number;
+    percentComplete: number;
+  };
 }
 
 /**
@@ -250,8 +252,8 @@ export async function getAllAchievements(): Promise<ActionResult<AchievementWith
   try {
     const { userId } = await requireAuth();
 
-    // Parallelize both queries for better performance
-    const [achievements, userAchievements] = await Promise.all([
+    // Parallelize all queries for better performance
+    const [achievements, userAchievements, profile] = await Promise.all([
       // Get all achievements
       prisma.achievement.findMany({
         orderBy: [{ category: "asc" }, { order: "asc" }],
@@ -260,6 +262,10 @@ export async function getAllAchievements(): Promise<ActionResult<AchievementWith
       prisma.userAchievement.findMany({
         where: { userId },
         select: { achievementId: true, unlockedAt: true, progress: true },
+      }),
+      // Get user's gamification profile for progress hints
+      prisma.gamificationProfile.findUnique({
+        where: { userId },
       }),
     ]);
 
@@ -273,6 +279,16 @@ export async function getAllAchievements(): Promise<ActionResult<AchievementWith
     return success(
       achievements.map((a) => {
         const unlockInfo = unlockedMap.get(a.id);
+        const isUnlocked = !!unlockInfo;
+
+        // Calculate progress hint for locked achievements
+        let progressHint: { current: number; target: number; percentComplete: number } | undefined;
+
+        if (!isUnlocked && profile && a.triggerConfig) {
+          const trigger = a.triggerConfig as AchievementTrigger;
+          progressHint = getAchievementProgressHint(trigger, profile);
+        }
+
         return {
           id: a.id,
           slug: a.slug,
@@ -284,9 +300,10 @@ export async function getAllAchievements(): Promise<ActionResult<AchievementWith
           xpReward: a.xpReward,
           isHidden: a.isHidden,
           order: a.order,
-          unlocked: !!unlockInfo,
+          unlocked: isUnlocked,
           unlockedAt: unlockInfo?.unlockedAt,
           progress: unlockInfo?.progress,
+          progressHint,
         };
       })
     );
@@ -294,6 +311,84 @@ export async function getAllAchievements(): Promise<ActionResult<AchievementWith
     console.error("[Gamification] Error fetching achievements:", error);
     return fail("Failed to fetch achievements");
   }
+}
+
+/**
+ * Calculate progress hint for a locked achievement
+ */
+function getAchievementProgressHint(
+  trigger: AchievementTrigger,
+  profile: {
+    totalGalleries: number;
+    totalDeliveries: number;
+    totalClients: number;
+    totalRevenueCents: bigint;
+    currentLoginStreak: number;
+    currentDeliveryStreak: number;
+    totalPayments: number;
+    totalBookings: number;
+    totalXp: number;
+    onboardingProgress?: number | null;
+    totalIntegrations?: number;
+    totalEmailsSent?: number;
+    totalSmsSent?: number;
+  }
+): { current: number; target: number; percentComplete: number } | undefined {
+  let currentValue = 0;
+  const target = trigger.threshold;
+
+  switch (trigger.type) {
+    case "gallery_count":
+      currentValue = profile.totalGalleries;
+      break;
+    case "delivery_count":
+      currentValue = profile.totalDeliveries;
+      break;
+    case "client_count":
+      currentValue = profile.totalClients;
+      break;
+    case "revenue_cents":
+      currentValue = Number(profile.totalRevenueCents);
+      break;
+    case "streak_login":
+      currentValue = profile.currentLoginStreak;
+      break;
+    case "streak_delivery":
+      currentValue = profile.currentDeliveryStreak;
+      break;
+    case "payment_count":
+      currentValue = profile.totalPayments;
+      break;
+    case "booking_count":
+      currentValue = profile.totalBookings;
+      break;
+    case "level_reached":
+      currentValue = calculateLevel(profile.totalXp);
+      break;
+    case "onboarding_progress":
+      currentValue = profile.onboardingProgress ?? 0;
+      break;
+    case "integration_count":
+      currentValue = profile.totalIntegrations ?? 0;
+      break;
+    case "email_count":
+      currentValue = profile.totalEmailsSent ?? 0;
+      break;
+    case "sms_count":
+      currentValue = profile.totalSmsSent ?? 0;
+      break;
+    default:
+      // For triggers we can't calculate progress for, return undefined
+      return undefined;
+  }
+
+  const percentComplete = Math.min(Math.round((currentValue / target) * 100), 100);
+
+  return {
+    current: currentValue,
+    target,
+    percentComplete,
+  };
 }
 
 // ============================================================================
@@ -592,8 +687,6 @@ export async function updateDeliveryStreak(userId: string): Promise<void> {
 // STREAK FREEZE MANAGEMENT
 // ============================================================================
 
-import { STREAK_FREEZE_CONFIG } from "@/lib/gamification/constants";
-
 export type StreakFreezeState = {
   available: number;
   totalUsed: number;
@@ -602,9 +695,9 @@ export type StreakFreezeState = {
 };
 
 /**
- * Get streak freeze state for a user
+ * Get streak freeze state for a user (internal use)
  */
-export async function getStreakFreezeState(userId: string): Promise<StreakFreezeState> {
+export async function getStreakFreezeStateInternal(userId: string): Promise<StreakFreezeState> {
   const profile = await prisma.gamificationProfile.findUnique({
     where: { userId },
     select: {
@@ -620,6 +713,20 @@ export async function getStreakFreezeState(userId: string): Promise<StreakFreeze
     maxFreezes: STREAK_FREEZE_CONFIG.maxFreezes,
     lastUsedDate: profile?.lastStreakFreezeDate ?? null,
   };
+}
+
+/**
+ * Get streak freeze state for the current user (server action)
+ */
+export async function getStreakFreezeState(): Promise<ActionResult<StreakFreezeState>> {
+  try {
+    const { userId } = await requireAuth();
+    const state = await getStreakFreezeStateInternal(userId);
+    return success(state);
+  } catch (error) {
+    console.error("[Gamification] Error getting streak freeze state:", error);
+    return fail("Failed to get streak freeze state");
+  }
 }
 
 /**
@@ -674,10 +781,11 @@ export async function awardStreakFreezes(
  * Purchase a streak freeze with XP
  */
 export async function purchaseStreakFreeze(
-  userId: string,
-  organizationId: string
+  _organizationId?: string
 ): Promise<ActionResult<{ newFreezes: number; xpRemaining: number }>> {
   try {
+    const { userId } = await requireAuth();
+
     const profile = await prisma.gamificationProfile.findUnique({
       where: { userId },
       select: {
@@ -858,6 +966,187 @@ export async function getLeaderboard(): Promise<ActionResult<LeaderboardEntry[]>
 }
 
 // ============================================================================
+// ENHANCED LEADERBOARD WITH FILTERS
+// ============================================================================
+
+export type LeaderboardTimeFilter = "all_time" | "this_week" | "this_month";
+export type LeaderboardRankBy = "xp" | "achievements" | "login_streak" | "delivery_streak" | "deliveries";
+
+export interface LeaderboardFilters {
+  timeFilter?: LeaderboardTimeFilter;
+  rankBy?: LeaderboardRankBy;
+  limit?: number;
+}
+
+export interface EnhancedLeaderboardEntry extends LeaderboardEntry {
+  achievementsCount: number;
+  deliveriesThisPeriod?: number;
+  changeFromPrevious?: number; // Rank change from previous period
+}
+
+/**
+ * Get enhanced leaderboard with filters
+ */
+export async function getEnhancedLeaderboard(
+  filters: LeaderboardFilters = {}
+): Promise<ActionResult<EnhancedLeaderboardEntry[]>> {
+  try {
+    const { userId: currentUserId } = await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const { timeFilter = "all_time", rankBy = "xp", limit = 50 } = filters;
+
+    // Calculate date range based on filter
+    let startDate: Date | null = null;
+    if (timeFilter === "this_week") {
+      startDate = new Date();
+      startDate.setDate(startDate.getDate() - 7);
+      startDate.setHours(0, 0, 0, 0);
+    } else if (timeFilter === "this_month") {
+      startDate = new Date();
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+    }
+
+    // Get all members with their gamification profiles
+    const members = await prisma.organizationMember.findMany({
+      where: { organizationId },
+      include: {
+        user: {
+          include: {
+            gamificationProfile: true,
+            userAchievements: {
+              where: startDate
+                ? { unlockedAt: { gte: startDate } }
+                : undefined,
+            },
+          },
+        },
+      },
+    });
+
+    // Build enhanced entries
+    const entries: EnhancedLeaderboardEntry[] = members
+      .filter((m) => m.user.gamificationProfile)
+      .map((m) => {
+        const profile = m.user.gamificationProfile!;
+        return {
+          userId: m.userId,
+          userName: m.user.fullName || m.user.firstName || "Unknown",
+          userAvatar: m.user.avatarUrl,
+          level: profile.level,
+          totalXp: profile.totalXp,
+          rank: 0,
+          currentLoginStreak: profile.currentLoginStreak,
+          currentDeliveryStreak: profile.currentDeliveryStreak,
+          isCurrentUser: m.userId === currentUserId,
+          achievementsCount: m.user.userAchievements.length,
+          deliveriesThisPeriod: startDate
+            ? profile.totalDeliveries // Note: Would need period-specific tracking
+            : profile.totalDeliveries,
+        };
+      });
+
+    // Sort by the selected ranking metric
+    switch (rankBy) {
+      case "achievements":
+        entries.sort((a, b) => b.achievementsCount - a.achievementsCount);
+        break;
+      case "login_streak":
+        entries.sort((a, b) => b.currentLoginStreak - a.currentLoginStreak);
+        break;
+      case "delivery_streak":
+        entries.sort((a, b) => b.currentDeliveryStreak - a.currentDeliveryStreak);
+        break;
+      case "deliveries":
+        entries.sort((a, b) => (b.deliveriesThisPeriod || 0) - (a.deliveriesThisPeriod || 0));
+        break;
+      case "xp":
+      default:
+        entries.sort((a, b) => b.totalXp - a.totalXp);
+    }
+
+    // Assign ranks and apply limit
+    const limitedEntries = entries.slice(0, limit);
+    limitedEntries.forEach((entry, index) => {
+      entry.rank = index + 1;
+    });
+
+    return success(limitedEntries);
+  } catch (error) {
+    console.error("[Gamification] Error fetching enhanced leaderboard:", error);
+    return fail("Failed to fetch leaderboard");
+  }
+}
+
+/**
+ * Get current user's rank for a specific metric
+ */
+export async function getMyRank(
+  rankBy: LeaderboardRankBy = "xp"
+): Promise<ActionResult<{ rank: number; total: number; percentile: number }>> {
+  try {
+    const { userId } = await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // Get all profiles in organization
+    const members = await prisma.organizationMember.findMany({
+      where: { organizationId },
+      include: {
+        user: {
+          include: {
+            gamificationProfile: true,
+            userAchievements: true,
+          },
+        },
+      },
+    });
+
+    const profiles = members
+      .filter((m) => m.user.gamificationProfile)
+      .map((m) => ({
+        userId: m.userId,
+        xp: m.user.gamificationProfile!.totalXp,
+        achievements: m.user.userAchievements.length,
+        loginStreak: m.user.gamificationProfile!.currentLoginStreak,
+        deliveryStreak: m.user.gamificationProfile!.currentDeliveryStreak,
+        deliveries: m.user.gamificationProfile!.totalDeliveries,
+      }));
+
+    // Sort by metric
+    let sortKey: keyof typeof profiles[0];
+    switch (rankBy) {
+      case "achievements":
+        sortKey = "achievements";
+        break;
+      case "login_streak":
+        sortKey = "loginStreak";
+        break;
+      case "delivery_streak":
+        sortKey = "deliveryStreak";
+        break;
+      case "deliveries":
+        sortKey = "deliveries";
+        break;
+      case "xp":
+      default:
+        sortKey = "xp";
+    }
+
+    profiles.sort((a, b) => (b[sortKey] as number) - (a[sortKey] as number));
+
+    const rank = profiles.findIndex((p) => p.userId === userId) + 1;
+    const total = profiles.length;
+    const percentile = total > 0 ? Math.round(((total - rank + 1) / total) * 100) : 0;
+
+    return success({ rank, total, percentile });
+  } catch (error) {
+    console.error("[Gamification] Error fetching rank:", error);
+    return fail("Failed to fetch rank");
+  }
+}
+
+// ============================================================================
 // MARK ACHIEVEMENT AS NOTIFIED
 // ============================================================================
 
@@ -992,6 +1281,8 @@ export interface DailyBonusClaimResult {
   leveledUp: boolean;
   dayNumber: number;
   isWeekComplete: boolean;
+  streakFreezeAwarded?: boolean; // True if a streak freeze was awarded (day 7)
+  totalStreakFreezes?: number;   // Updated total streak freezes
 }
 
 /**
@@ -1059,7 +1350,7 @@ export async function claimDailyBonus(): Promise<ActionResult<DailyBonusClaimRes
     const isWeekComplete = newConsecutiveDays === 7;
 
     // Update profile
-    await prisma.gamificationProfile.update({
+    const updatedProfile = await prisma.gamificationProfile.update({
       where: { userId },
       data: {
         totalXp: newXp,
@@ -1070,6 +1361,18 @@ export async function claimDailyBonus(): Promise<ActionResult<DailyBonusClaimRes
       },
     });
 
+    // Award streak freeze on day 7 completion
+    let streakFreezeAwarded = false;
+    let totalStreakFreezes = updatedProfile.availableStreakFreezes;
+
+    if (isWeekComplete) {
+      const freezeResult = await awardStreakFreezes(userId, 1, "daily_bonus");
+      if (freezeResult.success) {
+        streakFreezeAwarded = true;
+        totalStreakFreezes = freezeResult.newTotal;
+      }
+    }
+
     return success({
       xpAwarded: xpReward,
       newTotal: newXp,
@@ -1077,6 +1380,8 @@ export async function claimDailyBonus(): Promise<ActionResult<DailyBonusClaimRes
       leveledUp: newLevel > oldLevel,
       dayNumber: newConsecutiveDays,
       isWeekComplete,
+      streakFreezeAwarded,
+      totalStreakFreezes,
     });
   } catch (error) {
     console.error("[Gamification] Error claiming daily bonus:", error);
@@ -1136,6 +1441,239 @@ export async function getPersonalBests(): Promise<ActionResult<PersonalBests>> {
   } catch (error) {
     console.error("[Gamification] Error fetching personal bests:", error);
     return fail("Failed to fetch personal bests");
+  }
+}
+
+// ============================================================================
+// STREAK STATUS CHECK
+// ============================================================================
+
+export interface StreakStatus {
+  loginStreak: {
+    current: number;
+    isAtRisk: boolean;
+    hoursUntilReset: number;
+    hasFreezesAvailable: boolean;
+    freezesAvailable: number;
+  };
+  deliveryStreak: {
+    current: number;
+    isAtRisk: boolean;
+    hoursUntilReset: number;
+  };
+  lastLoginWasToday: boolean;
+  lastDeliveryWasToday: boolean;
+}
+
+/**
+ * Check if user's streaks are at risk
+ */
+export async function getStreakStatus(): Promise<ActionResult<StreakStatus>> {
+  try {
+    const { userId } = await requireAuth();
+
+    const profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      return success({
+        loginStreak: {
+          current: 0,
+          isAtRisk: false,
+          hoursUntilReset: 24,
+          hasFreezesAvailable: false,
+          freezesAvailable: 0,
+        },
+        deliveryStreak: {
+          current: 0,
+          isAtRisk: false,
+          hoursUntilReset: 24,
+        },
+        lastLoginWasToday: false,
+        lastDeliveryWasToday: false,
+      });
+    }
+
+    const now = new Date();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Calculate hours until reset (midnight)
+    const hoursUntilReset = Math.floor((tomorrow.getTime() - now.getTime()) / (1000 * 60 * 60));
+
+    // Check login streak
+    let loginIsAtRisk = false;
+    let lastLoginWasToday = false;
+
+    if (profile.lastLoginDate) {
+      const lastLogin = new Date(profile.lastLoginDate);
+      lastLogin.setHours(0, 0, 0, 0);
+      lastLoginWasToday = lastLogin.getTime() === today.getTime();
+
+      // At risk if they haven't logged in today AND have a streak to lose
+      loginIsAtRisk = !lastLoginWasToday && profile.currentLoginStreak > 0;
+    }
+
+    // Check delivery streak
+    let deliveryIsAtRisk = false;
+    let lastDeliveryWasToday = false;
+
+    if (profile.lastDeliveryDate) {
+      const lastDelivery = new Date(profile.lastDeliveryDate);
+      lastDelivery.setHours(0, 0, 0, 0);
+      lastDeliveryWasToday = lastDelivery.getTime() === today.getTime();
+
+      // At risk if they haven't delivered today AND have a streak to lose
+      deliveryIsAtRisk = !lastDeliveryWasToday && profile.currentDeliveryStreak > 0;
+    }
+
+    return success({
+      loginStreak: {
+        current: profile.currentLoginStreak,
+        isAtRisk: loginIsAtRisk,
+        hoursUntilReset,
+        hasFreezesAvailable: profile.availableStreakFreezes > 0,
+        freezesAvailable: profile.availableStreakFreezes,
+      },
+      deliveryStreak: {
+        current: profile.currentDeliveryStreak,
+        isAtRisk: deliveryIsAtRisk,
+        hoursUntilReset,
+      },
+      lastLoginWasToday,
+      lastDeliveryWasToday,
+    });
+  } catch (error) {
+    console.error("[Gamification] Error checking streak status:", error);
+    return fail("Failed to check streak status");
+  }
+}
+
+// Statistics Dashboard types
+export interface GamificationStatistics {
+  level: number;
+  totalXp: number;
+  xpToNextLevel: number;
+  xpProgress: number;
+  prestigeLevel?: number;
+  currentLoginStreak: number;
+  longestLoginStreak: number;
+  currentDeliveryStreak: number;
+  longestDeliveryStreak: number;
+  totalAchievements: number;
+  unlockedAchievements: number;
+  achievementsByRarity: Record<AchievementRarity, { total: number; unlocked: number }>;
+  achievementsByCategory: Record<AchievementCategory, { total: number; unlocked: number }>;
+  totalGalleries: number;
+  totalDeliveries: number;
+  totalClients: number;
+  totalBookings: number;
+  totalPayments: number;
+  bestMonthRevenueCents: number;
+  fastestDeliveryHours: number | null;
+  bestWeekDeliveries: number;
+  memberSinceDays: number;
+  totalBonusesClaimed: number;
+  consecutiveBonusDays: number;
+}
+
+/**
+ * Get comprehensive gamification statistics for the statistics dashboard
+ */
+export async function getGamificationStatistics(): Promise<ActionResult<GamificationStatistics>> {
+  try {
+    const { userId } = await requireAuth();
+
+    // Get user profile and achievements in parallel
+    const [profile, achievements, userAchievements] = await Promise.all([
+      prisma.gamificationProfile.findUnique({
+        where: { userId },
+      }),
+      prisma.achievement.findMany(),
+      prisma.userAchievement.findMany({
+        where: { userId },
+        select: { achievementId: true },
+      }),
+    ]);
+
+    if (!profile) {
+      return fail("Profile not found");
+    }
+
+    // Calculate level and XP progress
+    const level = calculateLevel(profile.totalXp);
+    const xpProgress = getXpProgress(profile.totalXp);
+
+    // Build set of unlocked achievement IDs
+    const unlockedIds = new Set(userAchievements.map((ua) => ua.achievementId));
+
+    // Calculate achievements by rarity
+    const achievementsByRarity: Record<AchievementRarity, { total: number; unlocked: number }> = {
+      common: { total: 0, unlocked: 0 },
+      uncommon: { total: 0, unlocked: 0 },
+      rare: { total: 0, unlocked: 0 },
+      epic: { total: 0, unlocked: 0 },
+      legendary: { total: 0, unlocked: 0 },
+    };
+
+    // Calculate achievements by category
+    const achievementsByCategory: Record<AchievementCategory, { total: number; unlocked: number }> = {} as Record<AchievementCategory, { total: number; unlocked: number }>;
+
+    for (const achievement of achievements) {
+      // By rarity
+      achievementsByRarity[achievement.rarity].total++;
+      if (unlockedIds.has(achievement.id)) {
+        achievementsByRarity[achievement.rarity].unlocked++;
+      }
+
+      // By category
+      if (!achievementsByCategory[achievement.category]) {
+        achievementsByCategory[achievement.category] = { total: 0, unlocked: 0 };
+      }
+      achievementsByCategory[achievement.category].total++;
+      if (unlockedIds.has(achievement.id)) {
+        achievementsByCategory[achievement.category].unlocked++;
+      }
+    }
+
+    // Calculate days since member joined
+    const memberSinceDays = Math.floor(
+      (Date.now() - profile.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    return success({
+      level,
+      totalXp: profile.totalXp,
+      xpToNextLevel: xpProgress.xpToNext,
+      xpProgress: xpProgress.progress,
+      prestigeLevel: profile.prestigeLevel > 0 ? profile.prestigeLevel : undefined,
+      currentLoginStreak: profile.currentLoginStreak,
+      longestLoginStreak: profile.longestLoginStreak,
+      currentDeliveryStreak: profile.currentDeliveryStreak,
+      longestDeliveryStreak: profile.longestDeliveryStreak,
+      totalAchievements: achievements.length,
+      unlockedAchievements: unlockedIds.size,
+      achievementsByRarity,
+      achievementsByCategory,
+      totalGalleries: profile.totalGalleries,
+      totalDeliveries: profile.totalDeliveries,
+      totalClients: profile.totalClients,
+      totalBookings: profile.totalBookings,
+      totalPayments: profile.totalPayments,
+      bestMonthRevenueCents: Number(profile.bestMonthRevenueCents),
+      fastestDeliveryHours: profile.fastestDeliveryHours,
+      bestWeekDeliveries: profile.bestWeekDeliveries,
+      memberSinceDays,
+      totalBonusesClaimed: profile.totalBonusesClaimed,
+      consecutiveBonusDays: profile.consecutiveBonusDays,
+    });
+  } catch (error) {
+    console.error("[Gamification] Error fetching statistics:", error);
+    return fail("Failed to fetch statistics");
   }
 }
 
@@ -1914,19 +2452,15 @@ export async function checkPerk(perkType: SkillPerkType): Promise<ActionResult<{
 // ============================================================================
 
 import {
-  QUESTS,
   QUEST_CATEGORY_INFO,
   getQuestById,
   getQuestsByCategory,
   getQuestStatus,
-  getNextAvailableQuest,
-  getQuestsByStatus,
   getQuestProgress,
   getTotalQuestXp,
   type Quest,
   type QuestCategory,
   type QuestStatus,
-  type QuestObjective,
 } from "@/lib/gamification/quests";
 
 export interface QuestState {
@@ -2193,3 +2727,1260 @@ export async function abandonQuest(): Promise<ActionResult<{ success: boolean }>
 
 // NOTE: To use quest types in components, import directly from:
 // import { QUESTS, QUEST_CATEGORY_INFO, type Quest, type QuestCategory, type QuestStatus, type QuestObjective } from "@/lib/gamification/quests";
+
+// ============================================================================
+// WEEKLY/MONTHLY RECAPS
+// ============================================================================
+
+export type RecapPeriod = "week" | "month";
+
+export interface RecapSummary {
+  period: RecapPeriod;
+  startDate: Date;
+  endDate: Date;
+
+  // XP & Level Progress
+  xpEarned: number;
+  levelStart: number;
+  levelEnd: number;
+  levelsGained: number;
+
+  // Achievements
+  achievementsUnlocked: number;
+  achievementHighlight?: {
+    name: string;
+    description: string;
+    rarity: AchievementRarity;
+    icon: string;
+  };
+
+  // Streaks
+  loginStreakMaintained: boolean;
+  deliveryStreakMaintained: boolean;
+  longestLoginStreakThisPeriod: number;
+  longestDeliveryStreakThisPeriod: number;
+
+  // Activity
+  galleriesCreated: number;
+  deliveriesCompleted: number;
+  clientsAdded: number;
+
+  // Daily Bonus
+  dailyBonusesClaimed: number;
+
+  // Comparison to previous period
+  xpChange: number; // Positive = more than last period
+  activityChange: number; // % change in activity
+
+  // Motivational message
+  message: string;
+  emoji: string;
+}
+
+/**
+ * Get recap summary for a specific period
+ */
+export async function getRecapSummary(
+  period: RecapPeriod
+): Promise<ActionResult<RecapSummary>> {
+  try {
+    const { userId } = await requireAuth();
+
+    // Calculate date range
+    const now = new Date();
+    let startDate: Date;
+    let previousStartDate: Date;
+
+    if (period === "week") {
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 7);
+      previousStartDate = new Date(startDate);
+      previousStartDate.setDate(previousStartDate.getDate() - 7);
+    } else {
+      startDate = new Date(now);
+      startDate.setMonth(startDate.getMonth() - 1);
+      previousStartDate = new Date(startDate);
+      previousStartDate.setMonth(previousStartDate.getMonth() - 1);
+    }
+    startDate.setHours(0, 0, 0, 0);
+    previousStartDate.setHours(0, 0, 0, 0);
+
+    // Get current profile
+    const profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      return fail("Gamification profile not found");
+    }
+
+    // Get achievements unlocked this period
+    const achievements = await prisma.userAchievement.findMany({
+      where: {
+        userId,
+        unlockedAt: { gte: startDate },
+      },
+      include: { achievement: true },
+      orderBy: { unlockedAt: "desc" },
+    });
+
+    // Get highest rarity achievement as highlight
+    const achievementHighlight = achievements.length > 0
+      ? achievements.reduce((best, current) => {
+          const rarityOrder = ["common", "uncommon", "rare", "epic", "legendary"];
+          const currentOrder = rarityOrder.indexOf(current.achievement.rarity);
+          const bestOrder = rarityOrder.indexOf(best.achievement.rarity);
+          return currentOrder > bestOrder ? current : best;
+        })
+      : null;
+
+    // Get activity counts this period (from galleries, etc.)
+    const [galleries, deliveries, clients] = await Promise.all([
+      prisma.gallery.count({
+        where: {
+          userId,
+          createdAt: { gte: startDate },
+        },
+      }),
+      prisma.delivery.count({
+        where: {
+          gallery: { userId },
+          createdAt: { gte: startDate },
+          status: "COMPLETED",
+        },
+      }),
+      prisma.client.count({
+        where: {
+          organizationMembers: {
+            some: {
+              user: { id: userId },
+            },
+          },
+          createdAt: { gte: startDate },
+        },
+      }),
+    ]);
+
+    // Get previous period activity for comparison
+    const [prevGalleries, prevDeliveries] = await Promise.all([
+      prisma.gallery.count({
+        where: {
+          userId,
+          createdAt: { gte: previousStartDate, lt: startDate },
+        },
+      }),
+      prisma.delivery.count({
+        where: {
+          gallery: { userId },
+          createdAt: { gte: previousStartDate, lt: startDate },
+          status: "COMPLETED",
+        },
+      }),
+    ]);
+
+    // Calculate XP earned (estimate based on achievements)
+    const xpEarned = achievements.reduce((sum, a) => sum + a.achievement.xpReward, 0);
+
+    // Calculate previous period XP for comparison
+    const prevAchievements = await prisma.userAchievement.findMany({
+      where: {
+        userId,
+        unlockedAt: { gte: previousStartDate, lt: startDate },
+      },
+      include: { achievement: true },
+    });
+    const prevXpEarned = prevAchievements.reduce((sum, a) => sum + a.achievement.xpReward, 0);
+
+    // Calculate activity change percentage
+    const currentActivity = galleries + deliveries;
+    const prevActivity = prevGalleries + prevDeliveries;
+    const activityChange = prevActivity > 0
+      ? Math.round(((currentActivity - prevActivity) / prevActivity) * 100)
+      : currentActivity > 0 ? 100 : 0;
+
+    // Generate motivational message based on performance
+    let message: string;
+    let emoji: string;
+
+    if (achievements.length >= 5) {
+      message = "Incredible progress! You're on fire!";
+      emoji = "🔥";
+    } else if (achievements.length >= 3) {
+      message = "Great work this period! Keep it up!";
+      emoji = "⭐";
+    } else if (deliveries >= 5) {
+      message = "You've been crushing those deliveries!";
+      emoji = "🚀";
+    } else if (activityChange > 0) {
+      message = "Nice improvement from last period!";
+      emoji = "📈";
+    } else if (profile.currentLoginStreak >= 7) {
+      message = "Your consistency is paying off!";
+      emoji = "💪";
+    } else {
+      message = "Every day is a chance to grow!";
+      emoji = "🌱";
+    }
+
+    const summary: RecapSummary = {
+      period,
+      startDate,
+      endDate: now,
+
+      xpEarned,
+      levelStart: calculateLevel(profile.totalXp - xpEarned),
+      levelEnd: profile.level,
+      levelsGained: profile.level - calculateLevel(profile.totalXp - xpEarned),
+
+      achievementsUnlocked: achievements.length,
+      achievementHighlight: achievementHighlight
+        ? {
+            name: achievementHighlight.achievement.name,
+            description: achievementHighlight.achievement.description,
+            rarity: achievementHighlight.achievement.rarity,
+            icon: achievementHighlight.achievement.icon,
+          }
+        : undefined,
+
+      loginStreakMaintained: profile.currentLoginStreak > 0,
+      deliveryStreakMaintained: profile.currentDeliveryStreak > 0,
+      longestLoginStreakThisPeriod: profile.longestLoginStreak,
+      longestDeliveryStreakThisPeriod: profile.longestDeliveryStreak,
+
+      galleriesCreated: galleries,
+      deliveriesCompleted: deliveries,
+      clientsAdded: clients,
+
+      dailyBonusesClaimed: profile.consecutiveBonusDays,
+
+      xpChange: xpEarned - prevXpEarned,
+      activityChange,
+
+      message,
+      emoji,
+    };
+
+    return success(summary);
+  } catch (error) {
+    console.error("[Gamification] Error generating recap:", error);
+    return fail("Failed to generate recap");
+  }
+}
+
+/**
+ * Get available recaps for the user
+ */
+export async function getAvailableRecaps(): Promise<
+  ActionResult<{ hasWeeklyRecap: boolean; hasMonthlyRecap: boolean }>
+> {
+  try {
+    const { userId } = await requireAuth();
+
+    const profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      return success({ hasWeeklyRecap: false, hasMonthlyRecap: false });
+    }
+
+    // Check if they have enough history for recaps
+    const memberSinceDays = Math.floor(
+      (Date.now() - profile.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    return success({
+      hasWeeklyRecap: memberSinceDays >= 7,
+      hasMonthlyRecap: memberSinceDays >= 30,
+    });
+  } catch (error) {
+    console.error("[Gamification] Error checking available recaps:", error);
+    return fail("Failed to check available recaps");
+  }
+}
+
+// ============================================================================
+// TEAM CHALLENGES
+// ============================================================================
+
+export type TeamChallengeType =
+  | "total_deliveries"
+  | "total_galleries"
+  | "total_xp"
+  | "most_achievements"
+  | "longest_streak";
+
+export type TeamChallengeStatus = "upcoming" | "active" | "completed";
+
+export interface TeamChallenge {
+  id: string;
+  name: string;
+  description: string;
+  type: TeamChallengeType;
+  targetValue: number;
+  startDate: Date;
+  endDate: Date;
+  status: TeamChallengeStatus;
+  xpReward: number;
+  participants: TeamChallengeParticipant[];
+  currentProgress: number;
+  isTeamGoal: boolean; // true = collaborative, false = competitive
+}
+
+export interface TeamChallengeParticipant {
+  userId: string;
+  userName: string;
+  userAvatar?: string | null;
+  contribution: number;
+  rank?: number;
+}
+
+// Pre-defined team challenges that rotate
+const TEAM_CHALLENGE_TEMPLATES: Omit<TeamChallenge, "id" | "startDate" | "endDate" | "status" | "participants" | "currentProgress">[] = [
+  {
+    name: "Delivery Sprint",
+    description: "Complete as many deliveries as possible as a team",
+    type: "total_deliveries",
+    targetValue: 50,
+    xpReward: 500,
+    isTeamGoal: true,
+  },
+  {
+    name: "Gallery Blitz",
+    description: "Create the most galleries this week",
+    type: "total_galleries",
+    targetValue: 30,
+    xpReward: 400,
+    isTeamGoal: true,
+  },
+  {
+    name: "XP Race",
+    description: "Who can earn the most XP?",
+    type: "total_xp",
+    targetValue: 5000,
+    xpReward: 300,
+    isTeamGoal: false,
+  },
+  {
+    name: "Achievement Hunter",
+    description: "Unlock the most achievements this week",
+    type: "most_achievements",
+    targetValue: 10,
+    xpReward: 400,
+    isTeamGoal: false,
+  },
+  {
+    name: "Streak Masters",
+    description: "Maintain the longest combined streak",
+    type: "longest_streak",
+    targetValue: 100,
+    xpReward: 350,
+    isTeamGoal: true,
+  },
+];
+
+/**
+ * Get active team challenges for the organization
+ */
+export async function getTeamChallenges(): Promise<ActionResult<TeamChallenge[]>> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    const now = new Date();
+
+    // Get the current week's start (Monday)
+    const weekStart = new Date(now);
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+    weekStart.setHours(0, 0, 0, 0);
+
+    // Week end (Sunday)
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
+
+    // Get all organization members
+    const members = await prisma.organizationMember.findMany({
+      where: { organizationId },
+      include: {
+        user: {
+          include: {
+            gamificationProfile: true,
+            userAchievements: {
+              where: {
+                unlockedAt: { gte: weekStart },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Create challenges based on templates (rotating weekly)
+    const weekOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000));
+
+    // Pick 2-3 challenges for this week based on week number
+    const selectedIndices = [
+      weekOfYear % TEAM_CHALLENGE_TEMPLATES.length,
+      (weekOfYear + 2) % TEAM_CHALLENGE_TEMPLATES.length,
+    ];
+
+    const challenges: TeamChallenge[] = selectedIndices.map((index, i) => {
+      const template = TEAM_CHALLENGE_TEMPLATES[index];
+
+      // Calculate current progress based on challenge type
+      const participants: TeamChallengeParticipant[] = [];
+      let totalProgress = 0;
+
+      members.forEach((m) => {
+        if (!m.user.gamificationProfile) return;
+
+        const profile = m.user.gamificationProfile;
+        let contribution = 0;
+
+        switch (template.type) {
+          case "total_deliveries":
+            contribution = profile.totalDeliveries;
+            break;
+          case "total_galleries":
+            contribution = profile.totalGalleries;
+            break;
+          case "total_xp":
+            contribution = profile.totalXp;
+            break;
+          case "most_achievements":
+            contribution = m.user.userAchievements.length;
+            break;
+          case "longest_streak":
+            contribution = profile.currentLoginStreak + profile.currentDeliveryStreak;
+            break;
+        }
+
+        participants.push({
+          userId: m.userId,
+          userName: m.user.fullName || m.user.firstName || "Unknown",
+          userAvatar: m.user.avatarUrl,
+          contribution,
+        });
+
+        totalProgress += contribution;
+      });
+
+      // Sort and rank participants for competitive challenges
+      if (!template.isTeamGoal) {
+        participants.sort((a, b) => b.contribution - a.contribution);
+        participants.forEach((p, idx) => {
+          p.rank = idx + 1;
+        });
+      }
+
+      // Determine status
+      let status: TeamChallengeStatus = "active";
+      if (now < weekStart) status = "upcoming";
+      if (now > weekEnd) status = "completed";
+
+      return {
+        ...template,
+        id: `challenge-${weekOfYear}-${i}`,
+        startDate: weekStart,
+        endDate: weekEnd,
+        status,
+        participants,
+        currentProgress: template.isTeamGoal ? totalProgress : Math.max(...participants.map(p => p.contribution), 0),
+      };
+    });
+
+    return success(challenges);
+  } catch (error) {
+    console.error("[Gamification] Error fetching team challenges:", error);
+    return fail("Failed to fetch team challenges");
+  }
+}
+
+/**
+ * Get user's contribution to current challenges
+ */
+export async function getMyChallengContributions(): Promise<
+  ActionResult<Record<string, number>>
+> {
+  try {
+    const { userId } = await requireAuth();
+
+    const profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      return success({});
+    }
+
+    const now = new Date();
+    const weekStart = new Date(now);
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+    weekStart.setHours(0, 0, 0, 0);
+
+    const achievements = await prisma.userAchievement.count({
+      where: {
+        userId,
+        unlockedAt: { gte: weekStart },
+      },
+    });
+
+    return success({
+      total_deliveries: profile.totalDeliveries,
+      total_galleries: profile.totalGalleries,
+      total_xp: profile.totalXp,
+      most_achievements: achievements,
+      longest_streak: profile.currentLoginStreak + profile.currentDeliveryStreak,
+    });
+  } catch (error) {
+    console.error("[Gamification] Error fetching challenge contributions:", error);
+    return fail("Failed to fetch contributions");
+  }
+}
+
+// ============================================================================
+// XP ACTIVITY LOG
+// ============================================================================
+
+export type XpActivityType =
+  | "achievement"
+  | "daily_bonus"
+  | "level_up"
+  | "streak_milestone"
+  | "delivery"
+  | "gallery"
+  | "quest"
+  | "challenge"
+  | "referral";
+
+export interface XpActivityEntry {
+  id: string;
+  type: XpActivityType;
+  amount: number;
+  description: string;
+  timestamp: Date;
+  metadata?: {
+    achievementName?: string;
+    achievementRarity?: string;
+    streakType?: string;
+    streakCount?: number;
+    level?: number;
+  };
+}
+
+/**
+ * Log an XP activity (internal helper)
+ */
+export async function logXpActivity(
+  userId: string,
+  type: XpActivityType,
+  amount: number,
+  description: string,
+  metadata?: {
+    achievementSlug?: string;
+    achievementName?: string;
+    rarity?: AchievementRarity;
+    questId?: string;
+    challengeId?: string;
+    eventId?: string;
+  }
+): Promise<void> {
+  try {
+    await prisma.xpActivityLog.create({
+      data: {
+        userId,
+        type,
+        amount,
+        description,
+        achievementSlug: metadata?.achievementSlug,
+        achievementName: metadata?.achievementName,
+        rarity: metadata?.rarity,
+        questId: metadata?.questId,
+        challengeId: metadata?.challengeId,
+        eventId: metadata?.eventId,
+      },
+    });
+  } catch (error) {
+    console.error("[Gamification] Error logging XP activity:", error);
+  }
+}
+
+/**
+ * Get XP activity history for current user
+ */
+export async function getXpActivityLog(
+  limit: number = 50
+): Promise<ActionResult<XpActivityEntry[]>> {
+  try {
+    const { userId } = await requireAuth();
+
+    // Get from XP activity log table
+    const activities = await prisma.xpActivityLog.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    });
+
+    // Convert to XpActivityEntry format
+    const entries: XpActivityEntry[] = activities.map((activity) => ({
+      id: activity.id,
+      type: activity.type as XpActivityType,
+      amount: activity.amount,
+      description: activity.description,
+      timestamp: activity.createdAt,
+      metadata: activity.achievementName
+        ? {
+            achievementName: activity.achievementName,
+            achievementRarity: activity.rarity || undefined,
+          }
+        : undefined,
+    }));
+
+    return success(entries);
+  } catch (error) {
+    console.error("[Gamification] Error fetching XP activity log:", error);
+    return fail("Failed to fetch activity log");
+  }
+}
+
+/**
+ * Get XP summary by type
+ */
+export async function getXpSummaryByType(): Promise<
+  ActionResult<Record<XpActivityType, number>>
+> {
+  try {
+    const { userId } = await requireAuth();
+
+    // Aggregate XP by type from activity log
+    const activities = await prisma.xpActivityLog.groupBy({
+      by: ["type"],
+      where: { userId },
+      _sum: { amount: true },
+    });
+
+    // Build summary with all types initialized to 0
+    const summary: Record<XpActivityType, number> = {
+      achievement: 0,
+      daily_bonus: 0,
+      level_up: 0,
+      streak_milestone: 0,
+      delivery: 0,
+      gallery: 0,
+      quest: 0,
+      challenge: 0,
+      referral: 0,
+      seasonal_event: 0,
+      admin_award: 0,
+    };
+
+    // Fill in actual values
+    for (const activity of activities) {
+      const type = activity.type as XpActivityType;
+      summary[type] = activity._sum.amount || 0;
+    }
+
+    return success(summary);
+  } catch (error) {
+    console.error("[Gamification] Error fetching XP summary:", error);
+    return fail("Failed to fetch XP summary");
+  }
+}
+
+// ============================================================================
+// BADGE SHOWCASE
+// ============================================================================
+
+export interface BadgeShowcase {
+  featuredAchievementIds: string[];
+  maxSlots: number;
+}
+
+/**
+ * Get user's badge showcase
+ */
+export async function getBadgeShowcase(): Promise<ActionResult<BadgeShowcase>> {
+  try {
+    const { userId } = await requireAuth();
+
+    // Get showcase and profile in parallel
+    const [showcase, profile] = await Promise.all([
+      prisma.badgeShowcase.findUnique({
+        where: { userId },
+      }),
+      prisma.gamificationProfile.findUnique({
+        where: { userId },
+        select: { level: true },
+      }),
+    ]);
+
+    // Max slots based on level (3 base + 1 per 10 levels, max 6)
+    const maxSlots = Math.min(3 + Math.floor((profile?.level || 1) / 10), 6);
+
+    return success({
+      featuredAchievementIds: showcase?.featuredSlugs || [],
+      maxSlots,
+    });
+  } catch (error) {
+    console.error("[Gamification] Error fetching badge showcase:", error);
+    return fail("Failed to fetch badge showcase");
+  }
+}
+
+/**
+ * Update user's badge showcase
+ */
+export async function updateBadgeShowcase(
+  featuredSlugs: string[]
+): Promise<ActionResult<BadgeShowcase>> {
+  try {
+    const { userId } = await requireAuth();
+
+    // Get profile for max slots validation
+    const profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+      select: { level: true },
+    });
+
+    const maxSlots = Math.min(3 + Math.floor((profile?.level || 1) / 10), 6);
+
+    // Validate number of slots
+    if (featuredSlugs.length > maxSlots) {
+      return fail(`You can only feature up to ${maxSlots} achievements`);
+    }
+
+    // Validate that user owns all the achievements
+    const userAchievements = await prisma.userAchievement.findMany({
+      where: { userId },
+      include: { achievement: { select: { slug: true } } },
+    });
+
+    const ownedSlugs = new Set(userAchievements.map((ua) => ua.achievement.slug));
+    const invalidSlugs = featuredSlugs.filter((slug) => !ownedSlugs.has(slug));
+
+    if (invalidSlugs.length > 0) {
+      return fail("Cannot feature achievements you haven't unlocked");
+    }
+
+    // Upsert the showcase
+    await prisma.badgeShowcase.upsert({
+      where: { userId },
+      create: {
+        userId,
+        featuredSlugs,
+      },
+      update: {
+        featuredSlugs,
+      },
+    });
+
+    return success({
+      featuredAchievementIds: featuredSlugs,
+      maxSlots,
+    });
+  } catch (error) {
+    console.error("[Gamification] Error updating badge showcase:", error);
+    return fail("Failed to update badge showcase");
+  }
+}
+
+/**
+ * Get user's unlocked achievements for showcase selection
+ */
+export async function getShowcaseableAchievements(): Promise<
+  ActionResult<UnlockedAchievement[]>
+> {
+  try {
+    const { userId } = await requireAuth();
+
+    const achievements = await prisma.userAchievement.findMany({
+      where: { userId },
+      include: { achievement: true },
+      orderBy: { unlockedAt: "desc" },
+    });
+
+    return success(
+      achievements.map((ua) => ({
+        id: ua.id,
+        slug: ua.achievement.slug,
+        name: ua.achievement.name,
+        description: ua.achievement.description,
+        icon: ua.achievement.icon,
+        category: ua.achievement.category,
+        rarity: ua.achievement.rarity,
+        xpReward: ua.achievement.xpReward,
+        unlockedAt: ua.unlockedAt,
+      }))
+    );
+  } catch (error) {
+    console.error("[Gamification] Error fetching showcaseable achievements:", error);
+    return fail("Failed to fetch achievements");
+  }
+}
+
+// ============================================================================
+// SEASONAL EVENTS
+// ============================================================================
+
+export type SeasonalEventType =
+  | "new_year"
+  | "spring"
+  | "summer"
+  | "fall"
+  | "winter"
+  | "anniversary"
+  | "special";
+
+export interface SeasonalEvent {
+  id: string;
+  name: string;
+  description: string;
+  type: SeasonalEventType;
+  startDate: Date;
+  endDate: Date;
+  isActive: boolean;
+  xpMultiplier: number;
+  specialRewards: {
+    type: string;
+    name: string;
+    description: string;
+  }[];
+  challenges: {
+    id: string;
+    name: string;
+    description: string;
+    targetValue: number;
+    currentProgress: number;
+    xpReward: number;
+  }[];
+  theme: {
+    primaryColor: string;
+    secondaryColor: string;
+    icon: string;
+  };
+}
+
+// Pre-defined seasonal events
+const SEASONAL_EVENTS: Omit<SeasonalEvent, "isActive" | "challenges">[] = [
+  {
+    id: "new-year-2025",
+    name: "New Year Sprint",
+    description: "Start the year strong with bonus XP and special challenges!",
+    type: "new_year",
+    startDate: new Date("2025-01-01"),
+    endDate: new Date("2025-01-15"),
+    xpMultiplier: 1.5,
+    specialRewards: [
+      {
+        type: "badge",
+        name: "Fresh Start",
+        description: "Complete the New Year Sprint event",
+      },
+    ],
+    theme: {
+      primaryColor: "#FFD700",
+      secondaryColor: "#FFA500",
+      icon: "sparkles",
+    },
+  },
+  {
+    id: "summer-2025",
+    name: "Summer Photo Festival",
+    description: "Capture the season with special summer challenges!",
+    type: "summer",
+    startDate: new Date("2025-06-21"),
+    endDate: new Date("2025-07-21"),
+    xpMultiplier: 1.25,
+    specialRewards: [
+      {
+        type: "badge",
+        name: "Summer Champion",
+        description: "Complete the Summer Photo Festival",
+      },
+    ],
+    theme: {
+      primaryColor: "#FF6B6B",
+      secondaryColor: "#4ECDC4",
+      icon: "sun",
+    },
+  },
+];
+
+/**
+ * Get active seasonal events
+ */
+export async function getSeasonalEvents(): Promise<ActionResult<SeasonalEvent[]>> {
+  try {
+    await requireAuth();
+
+    const now = new Date();
+
+    const activeEvents: SeasonalEvent[] = SEASONAL_EVENTS
+      .filter((event) => {
+        const start = new Date(event.startDate);
+        const end = new Date(event.endDate);
+        return now >= start && now <= end;
+      })
+      .map((event) => ({
+        ...event,
+        isActive: true,
+        challenges: [
+          {
+            id: `${event.id}-deliveries`,
+            name: "Delivery Dash",
+            description: "Complete 10 deliveries during the event",
+            targetValue: 10,
+            currentProgress: 0,
+            xpReward: 500,
+          },
+          {
+            id: `${event.id}-galleries`,
+            name: "Gallery Rush",
+            description: "Create 5 galleries during the event",
+            targetValue: 5,
+            currentProgress: 0,
+            xpReward: 300,
+          },
+        ],
+      }));
+
+    return success(activeEvents);
+  } catch (error) {
+    console.error("[Gamification] Error fetching seasonal events:", error);
+    return fail("Failed to fetch seasonal events");
+  }
+}
+
+/**
+ * Get upcoming seasonal events
+ */
+export async function getUpcomingEvents(): Promise<ActionResult<SeasonalEvent[]>> {
+  try {
+    await requireAuth();
+
+    const now = new Date();
+
+    const upcomingEvents: SeasonalEvent[] = SEASONAL_EVENTS
+      .filter((event) => new Date(event.startDate) > now)
+      .map((event) => ({
+        ...event,
+        isActive: false,
+        challenges: [],
+      }))
+      .slice(0, 3);
+
+    return success(upcomingEvents);
+  } catch (error) {
+    console.error("[Gamification] Error fetching upcoming events:", error);
+    return fail("Failed to fetch upcoming events");
+  }
+}
+
+// ============================================================================
+// DAILY QUESTS
+// ============================================================================
+
+export interface DailyQuest {
+  id: string;
+  name: string;
+  description: string;
+  type: "upload" | "message" | "delivery" | "login" | "review";
+  targetValue: number;
+  currentProgress: number;
+  xpReward: number;
+  isCompleted: boolean;
+  expiresAt: Date;
+}
+
+// Daily quest templates
+const DAILY_QUEST_TEMPLATES: Omit<DailyQuest, "currentProgress" | "isCompleted" | "expiresAt">[] = [
+  {
+    id: "upload-photos",
+    name: "Photo Upload",
+    description: "Upload at least 10 photos to a gallery",
+    type: "upload",
+    targetValue: 10,
+    xpReward: 50,
+  },
+  {
+    id: "send-message",
+    name: "Stay Connected",
+    description: "Send a message to a client",
+    type: "message",
+    targetValue: 1,
+    xpReward: 25,
+  },
+  {
+    id: "complete-delivery",
+    name: "Quick Delivery",
+    description: "Complete a gallery delivery",
+    type: "delivery",
+    targetValue: 1,
+    xpReward: 75,
+  },
+  {
+    id: "daily-login",
+    name: "Check In",
+    description: "Log in to the platform",
+    type: "login",
+    targetValue: 1,
+    xpReward: 15,
+  },
+];
+
+/**
+ * Get today's daily quests
+ */
+export async function getDailyQuests(): Promise<ActionResult<DailyQuest[]>> {
+  try {
+    const { userId } = await requireAuth();
+
+    const now = new Date();
+    const endOfDay = new Date(now);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // Get profile for checking progress
+    const profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+    });
+
+    // Rotate quests based on day of year
+    const dayOfYear = Math.floor(
+      (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    // Pick 3 quests for today
+    const selectedQuests = [
+      DAILY_QUEST_TEMPLATES[dayOfYear % DAILY_QUEST_TEMPLATES.length],
+      DAILY_QUEST_TEMPLATES[(dayOfYear + 1) % DAILY_QUEST_TEMPLATES.length],
+      DAILY_QUEST_TEMPLATES[(dayOfYear + 2) % DAILY_QUEST_TEMPLATES.length],
+    ].filter((q, i, arr) => arr.findIndex((x) => x.id === q.id) === i); // Remove duplicates
+
+    const quests: DailyQuest[] = selectedQuests.map((template) => {
+      let currentProgress = 0;
+      let isCompleted = false;
+
+      // Check completion based on quest type
+      if (template.type === "login" && profile?.lastLoginDate) {
+        const lastLogin = new Date(profile.lastLoginDate);
+        if (lastLogin.toDateString() === now.toDateString()) {
+          currentProgress = 1;
+          isCompleted = true;
+        }
+      }
+
+      return {
+        ...template,
+        currentProgress,
+        isCompleted,
+        expiresAt: endOfDay,
+      };
+    });
+
+    return success(quests);
+  } catch (error) {
+    console.error("[Gamification] Error fetching daily quests:", error);
+    return fail("Failed to fetch daily quests");
+  }
+}
+
+// ============================================================================
+// NOTIFICATION PREFERENCES
+// ============================================================================
+
+export interface GamificationNotificationPrefs {
+  achievementUnlocks: boolean;
+  levelUps: boolean;
+  streakReminders: boolean;
+  dailyBonusReminders: boolean;
+  leaderboardChanges: boolean;
+  challengeUpdates: boolean;
+  weeklyRecaps: boolean;
+  seasonalEvents: boolean;
+}
+
+const DEFAULT_NOTIFICATION_PREFS: GamificationNotificationPrefs = {
+  achievementUnlocks: true,
+  levelUps: true,
+  streakReminders: true,
+  dailyBonusReminders: true,
+  leaderboardChanges: false,
+  challengeUpdates: true,
+  weeklyRecaps: true,
+  seasonalEvents: true,
+};
+
+/**
+ * Get gamification notification preferences
+ */
+export async function getGamificationNotificationPrefs(): Promise<
+  ActionResult<GamificationNotificationPrefs>
+> {
+  try {
+    const { userId } = await requireAuth();
+
+    // Get user's preferences or create with defaults
+    const prefs = await prisma.gamificationNotificationPrefs.findUnique({
+      where: { userId },
+    });
+
+    if (!prefs) {
+      // Return defaults if no preferences saved yet
+      return success(DEFAULT_NOTIFICATION_PREFS);
+    }
+
+    return success({
+      achievementUnlocks: prefs.achievementUnlocks,
+      levelUps: prefs.levelUps,
+      streakReminders: prefs.streakReminders,
+      dailyBonusReminders: prefs.dailyBonusReminders,
+      leaderboardChanges: prefs.leaderboardChanges,
+      challengeUpdates: prefs.challengeUpdates,
+      weeklyRecaps: prefs.weeklyRecaps,
+      seasonalEvents: prefs.seasonalEvents,
+    });
+  } catch (error) {
+    console.error("[Gamification] Error fetching notification prefs:", error);
+    return fail("Failed to fetch notification preferences");
+  }
+}
+
+/**
+ * Update gamification notification preferences
+ */
+export async function updateGamificationNotificationPrefs(
+  prefs: Partial<GamificationNotificationPrefs>
+): Promise<ActionResult<GamificationNotificationPrefs>> {
+  try {
+    const { userId } = await requireAuth();
+
+    // Upsert the preferences
+    const updated = await prisma.gamificationNotificationPrefs.upsert({
+      where: { userId },
+      create: {
+        userId,
+        ...DEFAULT_NOTIFICATION_PREFS,
+        ...prefs,
+      },
+      update: prefs,
+    });
+
+    return success({
+      achievementUnlocks: updated.achievementUnlocks,
+      levelUps: updated.levelUps,
+      streakReminders: updated.streakReminders,
+      dailyBonusReminders: updated.dailyBonusReminders,
+      leaderboardChanges: updated.leaderboardChanges,
+      challengeUpdates: updated.challengeUpdates,
+      weeklyRecaps: updated.weeklyRecaps,
+      seasonalEvents: updated.seasonalEvents,
+    });
+  } catch (error) {
+    console.error("[Gamification] Error updating notification prefs:", error);
+    return fail("Failed to update notification preferences");
+  }
+}
+
+// ============================================================================
+// ACHIEVEMENT CATEGORIES
+// ============================================================================
+
+export interface AchievementCategoryInfo {
+  category: AchievementCategory;
+  name: string;
+  description: string;
+  icon: string;
+  totalCount: number;
+  unlockedCount: number;
+  totalXp: number;
+  earnedXp: number;
+}
+
+/**
+ * Get achievement statistics by category
+ */
+export async function getAchievementsByCategory(): Promise<
+  ActionResult<AchievementCategoryInfo[]>
+> {
+  try {
+    const { userId } = await requireAuth();
+
+    // Get all achievements
+    const allAchievements = await prisma.achievement.findMany();
+
+    // Get user's unlocked achievements
+    const userAchievements = await prisma.userAchievement.findMany({
+      where: { userId },
+      select: { achievementId: true },
+    });
+
+    const unlockedIds = new Set(userAchievements.map((ua) => ua.achievementId));
+
+    // Group by category
+    const categoryMap = new Map<AchievementCategory, {
+      total: number;
+      unlocked: number;
+      totalXp: number;
+      earnedXp: number;
+    }>();
+
+    const categories: AchievementCategory[] = [
+      "general",
+      "gallery",
+      "delivery",
+      "client",
+      "revenue",
+      "streak",
+      "social",
+      "milestone",
+    ];
+
+    categories.forEach((cat) => {
+      categoryMap.set(cat, { total: 0, unlocked: 0, totalXp: 0, earnedXp: 0 });
+    });
+
+    allAchievements.forEach((achievement) => {
+      const stats = categoryMap.get(achievement.category);
+      if (stats) {
+        stats.total++;
+        stats.totalXp += achievement.xpReward;
+        if (unlockedIds.has(achievement.id)) {
+          stats.unlocked++;
+          stats.earnedXp += achievement.xpReward;
+        }
+      }
+    });
+
+    const categoryNames: Record<AchievementCategory, { name: string; description: string; icon: string }> = {
+      general: { name: "General", description: "General platform achievements", icon: "star" },
+      gallery: { name: "Gallery", description: "Gallery creation achievements", icon: "image" },
+      delivery: { name: "Delivery", description: "Delivery milestones", icon: "send" },
+      client: { name: "Clients", description: "Client relationship achievements", icon: "users" },
+      revenue: { name: "Revenue", description: "Business growth achievements", icon: "dollar-sign" },
+      streak: { name: "Streaks", description: "Consistency achievements", icon: "flame" },
+      social: { name: "Social", description: "Community achievements", icon: "heart" },
+      milestone: { name: "Milestones", description: "Major milestone achievements", icon: "trophy" },
+    };
+
+    const result: AchievementCategoryInfo[] = categories.map((category) => {
+      const stats = categoryMap.get(category)!;
+      const info = categoryNames[category];
+      return {
+        category,
+        name: info.name,
+        description: info.description,
+        icon: info.icon,
+        totalCount: stats.total,
+        unlockedCount: stats.unlocked,
+        totalXp: stats.totalXp,
+        earnedXp: stats.earnedXp,
+      };
+    });
+
+    return success(result);
+  } catch (error) {
+    console.error("[Gamification] Error fetching achievements by category:", error);
+    return fail("Failed to fetch achievement categories");
+  }
+}

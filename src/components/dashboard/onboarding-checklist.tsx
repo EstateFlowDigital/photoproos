@@ -520,29 +520,29 @@ export function OnboardingChecklist({
   return (
     <div
       className={cn(
-        "rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6",
+        "rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 sm:p-6",
         "shadow-sm",
         className
       )}
     >
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
-            <Sparkles className="h-5 w-5" />
+      <div className="flex items-start justify-between gap-2 sm:gap-4">
+        <div className="flex items-start gap-2 sm:gap-3 min-w-0">
+          <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
-          <div>
-            <h3 className="text-base font-semibold text-foreground">
+          <div className="min-w-0">
+            <h3 className="text-sm sm:text-base font-semibold text-foreground truncate">
               Finish setting up {organizationName}
             </h3>
-            <p className="mt-0.5 text-sm text-foreground-muted">
+            <p className="mt-0.5 text-xs sm:text-sm text-foreground-muted">
               Complete these steps to get the most out of your account
             </p>
           </div>
         </div>
         <button
           onClick={handleDismiss}
-          className="shrink-0 rounded-lg p-1.5 bg-[var(--background-hover)] text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground transition-colors"
+          className="shrink-0 rounded-lg p-1 sm:p-1.5 bg-[var(--background-hover)] text-foreground-muted hover:bg-[var(--background-secondary)] hover:text-foreground transition-colors"
           aria-label="Dismiss checklist"
         >
           <X className="h-4 w-4" />
@@ -550,10 +550,10 @@ export function OnboardingChecklist({
       </div>
 
       {/* Enhanced Progress Section */}
-      <div className="mt-4 rounded-lg bg-[var(--background-secondary)]/50 p-4">
+      <div className="mt-4 rounded-lg bg-[var(--background-secondary)]/50 p-3 sm:p-4">
         {/* Progress Stats */}
-        <div className="flex items-center justify-between text-sm mb-3">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-sm mb-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
             <span className="text-foreground-muted">
               {completedCount} of {totalCount} completed
             </span>
@@ -681,7 +681,7 @@ export function OnboardingChecklist({
                       <div key={item.id}>
                         <div
                           className={cn(
-                            "group flex items-center gap-3 rounded-lg p-3 transition-all",
+                            "group flex items-start sm:items-center gap-2 sm:gap-3 rounded-lg p-2 sm:p-3 transition-all",
                             item.completed
                               ? "opacity-60"
                               : isLocked
@@ -692,7 +692,7 @@ export function OnboardingChecklist({
                           {/* Checkbox */}
                           <div
                             className={cn(
-                              "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                              "flex h-5 w-5 sm:h-6 sm:w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors mt-0.5 sm:mt-0",
                               isActuallyCompleted
                                 ? "border-[var(--success)] bg-[var(--success)] text-white"
                                 : item.skipped
@@ -702,15 +702,15 @@ export function OnboardingChecklist({
                                 : "border-[var(--border)] group-hover:border-[var(--primary)]"
                             )}
                           >
-                            {isActuallyCompleted && <Check className="h-3.5 w-3.5" />}
-                            {item.skipped && <SkipForward className="h-3.5 w-3.5" />}
-                            {isLocked && <Lock className="h-3 w-3 text-foreground-muted" />}
+                            {isActuallyCompleted && <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5" />}
+                            {item.skipped && <SkipForward className="h-3 w-3 sm:h-3.5 sm:w-3.5" />}
+                            {isLocked && <Lock className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-foreground-muted" />}
                           </div>
 
                           {/* Icon */}
                           <div
                             className={cn(
-                              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                              "hidden sm:flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
                               item.completed
                                 ? "bg-[var(--background-secondary)] text-foreground-muted"
                                 : isLocked
@@ -772,9 +772,9 @@ export function OnboardingChecklist({
 
                           {/* XP Reward Badge */}
                           {!item.completed && !isLocked && (
-                            <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--warning)]/10 text-[var(--warning)] text-xs font-medium">
-                              <Zap className="h-3 w-3" />
-                              +{item.xpReward}
+                            <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-[var(--warning)]/10 text-[var(--warning)] text-[10px] sm:text-xs font-medium shrink-0">
+                              <Zap className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                              <span className="hidden xs:inline">+</span>{item.xpReward}
                             </div>
                           )}
 

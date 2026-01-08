@@ -16,8 +16,6 @@ import {
   getThreadReplies,
   addReaction,
 } from "@/lib/actions/messages";
-import type { MessageReactionType } from "@prisma/client";
-
 interface ThreadViewProps {
   parentMessage: MessageWithDetails;
   conversationId: string;
@@ -26,14 +24,8 @@ interface ThreadViewProps {
   allowReactions?: boolean;
 }
 
-const REACTION_EMOJIS: Record<MessageReactionType, string> = {
-  thumbs_up: "👍",
-  thumbs_down: "👎",
-  heart: "❤️",
-  check: "✅",
-  eyes: "👀",
-  celebration: "🎉",
-};
+// Available reaction emojis
+const REACTION_EMOJIS = ["👍", "👎", "❤️", "✅", "👀", "🎉"];
 
 export function ThreadView({
   parentMessage,
@@ -110,9 +102,9 @@ export function ThreadView({
     }
   };
 
-  const handleReaction = (messageId: string, type: MessageReactionType) => {
+  const handleReaction = (messageId: string, emoji: string) => {
     startTransition(async () => {
-      await addReaction(messageId, type);
+      await addReaction(messageId, emoji);
       // Refresh replies
       const result = await getThreadReplies(parentMessage.id);
       if (result.success) {
@@ -236,7 +228,7 @@ function ThreadReply({
 }: {
   message: MessageWithDetails;
   currentUserId: string;
-  onReaction: (type: MessageReactionType) => void;
+  onReaction: (emoji: string) => void;
   allowReactions: boolean;
 }) {
   const [showReactionPicker, setShowReactionPicker] = useState(false);
@@ -244,13 +236,13 @@ function ThreadReply({
   const senderName = message.senderUser?.fullName || message.senderClient?.fullName || message.senderName;
   const senderInitials = (senderName || "?").split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 
-  // Group reactions by type
+  // Group reactions by emoji
   const reactionCounts = message.reactions.reduce(
     (acc, reaction) => {
-      acc[reaction.type] = (acc[reaction.type] || 0) + 1;
+      acc[reaction.emoji] = (acc[reaction.emoji] || 0) + 1;
       return acc;
     },
-    {} as Record<MessageReactionType, number>
+    {} as Record<string, number>
   );
 
   return (
@@ -301,11 +293,7 @@ function ThreadReply({
                     isOpen={showReactionPicker}
                     onClose={() => setShowReactionPicker(false)}
                     onSelect={(emoji) => {
-                      // Map emoji back to type
-                      const typeEntry = Object.entries(REACTION_EMOJIS).find(([, e]) => e === emoji);
-                      if (typeEntry) {
-                        onReaction(typeEntry[0] as MessageReactionType);
-                      }
+                      onReaction(emoji);
                       setShowReactionPicker(false);
                     }}
                   />
@@ -318,14 +306,14 @@ function ThreadReply({
         {/* Reactions Display */}
         {Object.keys(reactionCounts).length > 0 && (
           <div className={`mt-1 flex gap-1 ${isOwn ? "justify-end" : ""}`}>
-            {(Object.entries(reactionCounts) as [MessageReactionType, number][]).map(
-              ([type, count]) => (
+            {Object.entries(reactionCounts).map(
+              ([emoji, count]) => (
                 <button
-                  key={type}
-                  onClick={() => onReaction(type)}
+                  key={emoji}
+                  onClick={() => onReaction(emoji)}
                   className="inline-flex items-center gap-1 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-2 py-0.5 text-xs hover:bg-[var(--background-hover)] shadow-sm"
                 >
-                  <span>{REACTION_EMOJIS[type]}</span>
+                  <span>{emoji}</span>
                   <span className="text-[var(--foreground-muted)]">{count}</span>
                 </button>
               )

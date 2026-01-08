@@ -708,35 +708,26 @@ enum MessageVisibility {
   client // Visible to client and team
 }
 
-// Messaging system enums
+// Messaging System Enums
 enum ConversationType {
   direct // 1:1 between team members
-  group // Multiple team members
-  channel // Organization-wide topic channel
-  client_support // Client-to-team conversation
+  group // Multi-member team chat
+  channel // Organization-wide or topic-based
+  client_support // Client-to-team support chat
 }
 
 enum ConversationParticipantRole {
-  owner // Can delete conversation, manage all settings
-  admin // Can add/remove members, change settings
-  member // Can send/receive messages
-  observer // Read-only access
+  owner // Created the conversation, full control
+  admin // Can manage members, settings
+  member // Regular participant
+  observer // Can read but not write
 }
 
 enum ChatRequestStatus {
-  pending // Client requested, awaiting approval
-  approved // Team approved, conversation active
-  rejected // Team rejected the request
-  expired // Request timed out
-}
-
-enum MessageReactionType {
-  thumbs_up
-  thumbs_down
-  heart
-  check
-  eyes
-  celebration
+  pending // Awaiting team response
+  approved // Approved, conversation created
+  rejected // Rejected by team
+  expired // Timed out without response
 }
 
 // CannedResponseCategory - Categories for quick reply templates
@@ -809,6 +800,146 @@ enum ChallengeType {
   weekly
   monthly
   special
+}
+
+// ============================================================================
+// TAX PREPARATION SYSTEM
+// ============================================================================
+
+enum TaxEntityType {
+  sole_proprietor
+  llc_single_member
+  llc_multi_member
+  s_corp
+  c_corp
+  partnership
+}
+
+enum TaxPrepStatus {
+  not_started
+  in_progress
+  review_pending
+  completed
+  exported
+}
+
+enum TaxDocumentType {
+  receipt
+  invoice
+  bank_statement
+  form_1099
+  form_w9
+  mileage_log
+  equipment_receipt
+  software_subscription
+  insurance_document
+  other
+}
+
+enum TaxDocumentExtractionStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+// ============================================================================
+// SUPPORT TICKET SYSTEM
+// ============================================================================
+
+enum SupportTicketCategory {
+  support_request
+  report_issue
+  billing
+  questions
+  feature_request
+  other
+}
+
+enum SupportTicketStatus {
+  open
+  in_progress
+  resolved
+  closed
+}
+
+enum SupportTicketPriority {
+  low
+  medium
+  high
+  urgent
+}
+
+// ============================================================================
+// FEATURE ROADMAP & VOTING SYSTEM
+// ============================================================================
+
+enum FeatureRequestStatus {
+  pending
+  approved
+  rejected
+  planned
+  in_progress
+  completed
+}
+
+enum FeatureRequestCategory {
+  galleries
+  payments
+  scheduling
+  clients
+  marketing
+  analytics
+  integrations
+  mobile
+  other
+}
+
+// ============================================================================
+// AI AGENT SYSTEM
+// ============================================================================
+
+enum AIConversationStatus {
+  active
+  archived
+  deleted
+}
+
+enum AIActionStatus {
+  pending
+  confirmed
+  executing
+  completed
+  failed
+  cancelled
+}
+
+enum AIActionType {
+  // Read-only
+  list_galleries
+  list_clients
+  get_revenue_summary
+  list_bookings
+  list_invoices
+  get_expense_summary
+  search_everything
+  // Create (requires confirmation)
+  create_gallery
+  create_client
+  create_booking
+  create_invoice
+  deliver_gallery
+  // Update (requires confirmation)
+  update_settings
+  update_gallery
+  update_client
+  // Analysis
+  analyze_client_value
+  forecast_revenue
+  // Tax
+  extract_receipt
+  categorize_expense
+  generate_tax_summary
 }
 
 // ============================================================================
@@ -909,6 +1040,11 @@ model Organization {
   trialStartedAt     DateTime?
   trialEndsAt        DateTime?
   paymentMethodAdded Boolean   @default(false)
+
+  // Super Admin & Engagement Features
+  hasLifetimeLicense    Boolean   @default(false) // Granted by super admin
+  activeDiscountPercent Int? // Active discount percentage (e.g., 50 for 50% off)
+  discountExpiresAt     DateTime? // When the discount expires
 
   // ============================================================================
   // PHASE 3: SMS & FIELD OPERATIONS SETTINGS
@@ -1079,9 +1215,8 @@ model Organization {
   audioTracks        AudioTrack[]
 
   // Messaging System
-  conversations   Conversation[]
-  chatRequests    ChatRequest[]
-  cannedResponses CannedResponse[]
+  conversations Conversation[]
+  chatRequests  ChatRequest[]
 
   // Expense/Vendor Management
   vendors Vendor[]
@@ -1093,6 +1228,19 @@ model Organization {
   // Gamification System
   userAchievements  UserAchievement[]
   challengeProgress ChallengeProgress[]
+  seasonalEvents    SeasonalEvent[]     @relation("SeasonalEvents")
+
+  // Tax Preparation System
+  taxPrepSessions TaxPrepSession[]
+
+  // Support & Feedback System
+  supportTickets   SupportTicket[]
+  platformFeedback PlatformFeedback[]
+
+  // AI Agent System
+  aiConversations AIConversation[]
+  aiUsageLogs     AIUsageLog[]
+  cannedResponses CannedResponse[]
 
   @@index([slug])
   @@index([plan])
@@ -1228,6 +1376,10 @@ model User {
   stripeConnectAccountId String? @unique
   stripeConnectOnboarded Boolean @default(false)
 
+  // Super Admin & Engagement Features
+  hasLifetimeLicense Boolean @default(false) // Granted by super admin
+  totalSessions      Int     @default(0) // Track logins for feedback modal trigger
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1253,26 +1405,48 @@ model User {
   taskTimeEntries TaskTimeEntry[]
 
   // Messaging System
-  conversationParticipants ConversationParticipant[]
-  messagesSent             Message[]                 @relation("MessageSender")
+  conversationParticipants ConversationParticipant[] @relation("ConversationParticipantUser")
+  messagesSent             Message[]                 @relation("MessageSenderUser")
   messageReactions         MessageReaction[]
   messageReadReceipts      MessageReadReceipt[]
-  chatRequestResponses     ChatRequest[]             @relation("ChatRequestResponder")
-  cannedResponses          CannedResponse[]
+  chatRequestResponses     ChatRequest[]             @relation("ChatRequestRespondedBy")
   typingIndicators         TypingIndicator[]
   starredMessages          StarredMessage[]
   scheduledMessages        ScheduledMessage[]
-  initiatedCalls           Call[]              @relation("CallInitiator")
+  initiatedCalls           Call[]                    @relation("CallInitiator")
   callParticipations       CallParticipant[]
 
   // Walkthrough System
   walkthroughPreferences UserWalkthroughPreference[]
 
   // Gamification System
-  gamificationProfile   GamificationProfile?
-  userAchievements      UserAchievement[]
-  challengeProgress     ChallengeProgress[]
-  milestoneAchievements MilestoneAchievement[]
+  gamificationProfile           GamificationProfile?
+  userAchievements              UserAchievement[]
+  challengeProgress             ChallengeProgress[]
+  milestoneAchievements         MilestoneAchievement[]
+  xpActivityLogs                XpActivityLog[]                @relation("XpActivityLogs")
+  badgeShowcase                 BadgeShowcase?                 @relation("BadgeShowcase")
+  gamificationNotificationPrefs GamificationNotificationPrefs? @relation("GamificationNotificationPrefs")
+  dailyQuestProgress            DailyQuestProgress[]           @relation("DailyQuestProgress")
+  seasonalEventParticipation    SeasonalEventParticipation[]   @relation("SeasonalEventParticipation")
+
+  // Support & Feedback System
+  supportTickets   SupportTicket[]
+  supportMessages  SupportMessage[]   @relation("SupportMessageSender")
+  platformFeedback PlatformFeedback[]
+  adminXpAwards    AdminXpAward[]
+  customChallenges CustomChallenge[]
+
+  // AI Agent System
+  aiConversations AIConversation[]
+  aiMessages      AIMessage[]      @relation("AIMessageUser")
+  aiActions       AIAction[]       @relation("AIActionUser")
+  aiUsageLogs     AIUsageLog[]
+
+  // Feature Voting
+  featureRequests FeatureRequest[] @relation("FeatureSubmittedByUser")
+  featureVotes    FeatureVote[]    @relation("UserFeatureVotes")
+  cannedResponses CannedResponse[]
 
   @@index([email])
   @@index([clerkUserId])
@@ -1423,16 +1597,16 @@ model Client {
   mlsPresetOverrides   MlsPresetOverride[]
 
   // Messaging System
-  conversations            Conversation[]            @relation("ConversationClient")
-  conversationParticipants ConversationParticipant[] @relation("ParticipantClient")
+  conversations            Conversation[]
+  conversationParticipants ConversationParticipant[] @relation("ConversationParticipantClient")
   messagesSent             Message[]                 @relation("MessageSenderClient")
-  messageReactions         MessageReaction[]         @relation("ReactionClient")
-  messageReadReceipts      MessageReadReceipt[]      @relation("ReadReceiptClient")
+  messageReactions         MessageReaction[]
+  messageReadReceipts      MessageReadReceipt[]
   chatRequests             ChatRequest[]
-  callParticipations       CallParticipant[]
 
   // Review Gate System
-  reviewRequests ReviewRequest[]
+  reviewRequests   ReviewRequest[]
+  callParticipants CallParticipant[]
 
   @@unique([organizationId, email])
   @@index([organizationId])
@@ -2985,13 +3159,13 @@ model OnboardingChecklistItem {
 
   // Enhanced UX features
   estimatedMinutes Int      @default(2) // Time estimate to complete
-  videoUrl         String?  // Link to tutorial video
-  tip              String?  // Contextual tip/hint for this step
+  videoUrl         String? // Link to tutorial video
+  tip              String? // Contextual tip/hint for this step
   dependencies     String[] @default([]) // completionTypes that must be done first
 
   // Gamification
-  xpReward         Int      @default(50) // XP awarded for completing this step
-  xpAwarded        Boolean  @default(false) // Whether XP has been awarded
+  xpReward  Int     @default(50) // XP awarded for completing this step
+  xpAwarded Boolean @default(false) // Whether XP has been awarded
 
   // Completion tracking
   completionType  String? // "hasClients", "hasGalleries", "hasExpenses", "custom", etc.
@@ -8181,9 +8355,9 @@ model Conversation {
   archivedAt DateTime?
 
   // Relations
-  organization     Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  client           Client?                   @relation("ConversationClient", fields: [clientId], references: [id], onDelete: SetNull)
-  project          Project?                  @relation("ConversationProject", fields: [projectId], references: [id], onDelete: SetNull)
+  organization      Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client            Client?                   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  project           Project?                  @relation("ConversationProject", fields: [projectId], references: [id], onDelete: SetNull)
   participants      ConversationParticipant[]
   messages          Message[]
   chatRequest       ChatRequest?
@@ -8231,8 +8405,8 @@ model ConversationParticipant {
 
   // Relations
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  user         User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client       Client?      @relation("ParticipantClient", fields: [clientId], references: [id], onDelete: Cascade)
+  user         User?        @relation("ConversationParticipantUser", fields: [userId], references: [id], onDelete: Cascade)
+  client       Client?      @relation("ConversationParticipantClient", fields: [clientId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, userId])
   @@unique([conversationId, clientId])
@@ -8288,7 +8462,7 @@ model Message {
 
   // Relations
   conversation Conversation         @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  senderUser   User?                @relation("MessageSender", fields: [senderUserId], references: [id], onDelete: SetNull)
+  senderUser   User?                @relation("MessageSenderUser", fields: [senderUserId], references: [id], onDelete: SetNull)
   senderClient Client?              @relation("MessageSenderClient", fields: [senderClientId], references: [id], onDelete: SetNull)
   parent       Message?             @relation("MessageThread", fields: [parentId], references: [id], onDelete: SetNull)
   replies      Message[]            @relation("MessageThread")
@@ -8306,21 +8480,21 @@ model Message {
 
 // MessageReaction - Emoji reactions on messages
 model MessageReaction {
-  id        String              @id @default(cuid())
+  id        String  @id @default(cuid())
   messageId String
   userId    String? // Team member
   clientId  String? // Or client
-  type      MessageReactionType
+  emoji     String // Unicode emoji or shortcode
 
   createdAt DateTime @default(now())
 
   // Relations
   message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
   user    User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client  Client? @relation("ReactionClient", fields: [clientId], references: [id], onDelete: Cascade)
+  client  Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
-  @@unique([messageId, userId, type])
-  @@unique([messageId, clientId, type])
+  @@unique([messageId, userId, emoji])
+  @@unique([messageId, clientId, emoji])
   @@index([messageId])
 }
 
@@ -8335,7 +8509,7 @@ model MessageReadReceipt {
   // Relations
   message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
   user    User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  client  Client? @relation("ReadReceiptClient", fields: [clientId], references: [id], onDelete: Cascade)
+  client  Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@unique([messageId, userId])
   @@unique([messageId, clientId])
@@ -8371,7 +8545,7 @@ model ChatRequest {
   organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
   conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
-  respondedBy  User?         @relation("ChatRequestResponder", fields: [respondedByUserId], references: [id], onDelete: SetNull)
+  respondedBy  User?         @relation("ChatRequestRespondedBy", fields: [respondedByUserId], references: [id], onDelete: SetNull)
 
   @@index([organizationId])
   @@index([clientId])
@@ -8422,16 +8596,16 @@ model ScheduledMessage {
   userId         String
 
   // Message content (will be used when sending)
-  content      String  @db.Text
-  contentHtml  String? @db.Text
-  attachments  Json? // MessageAttachment[]
-  mentions     Json? // String[]
-  parentId     String? // For scheduled thread replies
+  content     String  @db.Text
+  contentHtml String? @db.Text
+  attachments Json? // MessageAttachment[]
+  mentions    Json? // String[]
+  parentId    String? // For scheduled thread replies
 
   // Scheduling
-  scheduledFor  DateTime
-  timezone      String                 @default("UTC")
-  status        ScheduledMessageStatus @default(pending)
+  scheduledFor DateTime
+  timezone     String                 @default("UTC")
+  status       ScheduledMessageStatus @default(pending)
 
   // Tracking
   sentAt        DateTime?
@@ -8453,9 +8627,9 @@ model ScheduledMessage {
 }
 
 enum ScheduledMessageStatus {
-  pending   // Waiting to be sent
-  sent      // Successfully sent
-  failed    // Failed to send
+  pending // Waiting to be sent
+  sent // Successfully sent
+  failed // Failed to send
   cancelled // Cancelled by user
 }
 
@@ -8543,20 +8717,20 @@ enum CallType {
 }
 
 enum CallStatus {
-  pending  // Call initiated, waiting for others
-  ringing  // Call is ringing
-  active   // Call in progress
-  ended    // Call ended normally
-  missed   // Call was not answered
+  pending // Call initiated, waiting for others
+  ringing // Call is ringing
+  active // Call in progress
+  ended // Call ended normally
+  missed // Call was not answered
   declined // Call was declined
-  failed   // Technical failure
+  failed // Technical failure
 }
 
 enum CallParticipantStatus {
-  invited  // Invited but not yet joined
-  joining  // Currently joining
-  joined   // In the call
-  left     // Left the call
+  invited // Invited but not yet joined
+  joining // Currently joining
+  joined // In the call
+  left // Left the call
   declined // Declined the call
 }
 
@@ -8830,4 +9004,676 @@ model MilestoneAchievement {
   @@index([userId])
   @@index([milestoneId])
   @@index([celebrated])
+}
+
+// ============================================================================
+// TAX PREPARATION SYSTEM
+// ============================================================================
+
+// Tax prep session - tracks a user's tax preparation for a given year
+model TaxPrepSession {
+  id             String @id @default(cuid())
+  organizationId String
+  taxYear        Int // e.g., 2024
+
+  // Progress tracking
+  status     TaxPrepStatus  @default(not_started)
+  entityType TaxEntityType?
+
+  // Completion flags
+  expensesReviewed  Boolean @default(false)
+  documentsUploaded Boolean @default(false)
+  summaryGenerated  Boolean @default(false)
+
+  // Legal & compliance
+  disclaimerAcceptedAt DateTime?
+
+  // Feedback
+  rating   Int? // 1-5 star rating
+  feedback String? @db.Text
+
+  // Reminders
+  reminderDate      DateTime?
+  reminderDismissed Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  documents    TaxDocument[]
+
+  @@unique([organizationId, taxYear]) // One session per org per year
+  @@index([organizationId])
+  @@index([taxYear])
+  @@index([status])
+}
+
+// Tax documents - uploaded documents for tax prep with AI extraction
+model TaxDocument {
+  id               String @id @default(cuid())
+  taxPrepSessionId String
+
+  // Document info
+  type     TaxDocumentType @default(receipt)
+  filename String
+  fileUrl  String // R2 URL
+
+  // AI Extraction
+  extractedData    Json? // AI extraction results { vendor, amount, date, category, etc. }
+  extractionStatus TaxDocumentExtractionStatus @default(pending)
+  extractionError  String? // Error message if extraction failed
+
+  // User confirmation
+  confirmed     Boolean @default(false)
+  confirmedData Json? // User-confirmed/edited data
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  taxPrepSession TaxPrepSession @relation(fields: [taxPrepSessionId], references: [id], onDelete: Cascade)
+
+  @@index([taxPrepSessionId])
+  @@index([type])
+  @@index([extractionStatus])
+}
+
+// ============================================================================
+// SUPPORT TICKET SYSTEM
+// ============================================================================
+
+// Support tickets - user-initiated support requests
+model SupportTicket {
+  id             String @id @default(cuid())
+  organizationId String
+  userId         String
+
+  // Ticket details
+  subject  String
+  category SupportTicketCategory
+  status   SupportTicketStatus   @default(open)
+  priority SupportTicketPriority @default(medium)
+
+  // Resolution
+  resolvedAt DateTime?
+  xpAwarded  Int       @default(0) // XP awarded when ticket resolved
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages     SupportMessage[]
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+}
+
+// Support messages - messages within a support ticket
+model SupportMessage {
+  id           String  @id @default(cuid())
+  ticketId     String
+  senderUserId String? // Null if from admin
+  isFromAdmin  Boolean @default(false)
+
+  // Message content
+  content     String @db.Text
+  attachments Json? // Array of { filename, url }
+
+  // Read tracking
+  readAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  sender User?         @relation("SupportMessageSender", fields: [senderUserId], references: [id], onDelete: SetNull)
+
+  @@index([ticketId])
+  @@index([createdAt])
+}
+
+// Platform feedback - session-based rating modals
+model PlatformFeedback {
+  id             String  @id @default(cuid())
+  organizationId String?
+  userId         String?
+
+  // Source
+  source String // "session_modal", "support_chat", "manual"
+
+  // Feedback content
+  rating           Int? // 1-5 star rating
+  likedFeatures    String[] @default([]) // Tags of liked features
+  dislikedFeatures String[] @default([]) // Tags of disliked features
+  comment          String?  @db.Text
+
+  // Context
+  sessionCount Int? // User's session count at time of feedback
+
+  // Rewards
+  xpAwarded Int @default(0)
+
+  // Admin review
+  isReviewed Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([rating])
+  @@index([createdAt])
+}
+
+// Admin XP awards - track XP awarded by super admin
+model AdminXpAward {
+  id     String @id @default(cuid())
+  userId String
+
+  // Award details
+  amount   Int
+  reason   String? // Why the XP was awarded
+  ticketId String? // Optional: linked support ticket
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// Custom challenges - admin-created challenges for specific users
+model CustomChallenge {
+  id     String @id @default(cuid())
+  userId String
+
+  // Challenge details
+  title       String
+  description String @db.Text
+  objectives  Json // Array of { id, description, target, current }
+  xpReward    Int    @default(0)
+
+  // Time bounds
+  expiresAt DateTime?
+
+  // Completion
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isCompleted])
+  @@index([expiresAt])
+}
+
+// ============================================================================
+// FEATURE ROADMAP & VOTING SYSTEM
+// ============================================================================
+
+// Feature requests - user-submitted feature ideas
+model FeatureRequest {
+  id          String @id @default(cuid())
+  title       String
+  description String @db.Text
+
+  // Categorization
+  category FeatureRequestCategory
+  status   FeatureRequestStatus   @default(pending)
+
+  // Who submitted
+  submittedByUserId  String? // Authenticated user
+  submittedByVoterId String? // Verified community voter
+  submittedByEmail   String // Email of submitter
+
+  // Admin review
+  reviewedAt      DateTime?
+  rejectionReason String? // If rejected
+
+  // Roadmap integration
+  roadmapPhase String? // Which roadmap phase this is planned for
+
+  // Vote counts (cached for performance)
+  userVoteCount      Int @default(0) // Votes from authenticated users
+  communityVoteCount Int @default(0) // Votes from verified community
+  totalVoteCount     Int @default(0) // Combined total
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  submittedByUser  User?          @relation("FeatureSubmittedByUser", fields: [submittedByUserId], references: [id], onDelete: SetNull)
+  submittedByVoter VerifiedVoter? @relation("VoterFeatureRequests", fields: [submittedByVoterId], references: [id], onDelete: SetNull)
+  votes            FeatureVote[]
+  roadmapItem      RoadmapItem?
+
+  @@index([category])
+  @@index([status])
+  @@index([totalVoteCount])
+  @@index([createdAt])
+}
+
+// Feature votes - tracks who voted for what
+model FeatureVote {
+  id               String @id @default(cuid())
+  featureRequestId String
+
+  // Who voted (one of these will be set)
+  userId  String? // Authenticated user
+  voterId String? // Verified community voter
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  featureRequest FeatureRequest @relation(fields: [featureRequestId], references: [id], onDelete: Cascade)
+  user           User?          @relation("UserFeatureVotes", fields: [userId], references: [id], onDelete: Cascade)
+  voter          VerifiedVoter? @relation(fields: [voterId], references: [id], onDelete: Cascade)
+
+  @@unique([featureRequestId, userId]) // One vote per user per feature
+  @@unique([featureRequestId, voterId]) // One vote per voter per feature
+  @@index([featureRequestId])
+  @@index([userId])
+  @@index([voterId])
+}
+
+// Verified voters - non-users who verified email to vote
+model VerifiedVoter {
+  id    String @id @default(cuid())
+  email String @unique
+
+  // Verification
+  isVerified              Boolean   @default(false)
+  verifiedAt              DateTime?
+  verificationToken       String?   @unique
+  verificationTokenExpiry DateTime?
+
+  // Rate limiting
+  dailyVoteCount Int       @default(0)
+  lastVoteDate   DateTime?
+  isBlocked      Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  votes           FeatureVote[]
+  featureRequests FeatureRequest[] @relation("VoterFeatureRequests")
+
+  @@index([email])
+  @@index([verificationToken])
+}
+
+// Roadmap phases - major phases in the product roadmap
+model RoadmapPhase {
+  id          String @id @default(cuid())
+  name        String // Internal name like "q1-2025"
+  title       String // Display title like "Q1 2025"
+  description String @db.Text
+
+  // Status
+  status String @default("planned") // "planned", "in_progress", "completed"
+
+  // Ordering
+  order Int @default(0)
+
+  // Timeline
+  targetStartDate DateTime?
+  targetEndDate   DateTime?
+
+  // Visibility
+  isVisible Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  items RoadmapItem[]
+
+  @@index([status])
+  @@index([order])
+  @@index([isVisible])
+}
+
+// Roadmap items - individual features/items within a phase
+model RoadmapItem {
+  id      String @id @default(cuid())
+  phaseId String
+
+  // Item details
+  name        String
+  description String? @db.Text
+  status      String  @default("planned") // "planned", "in_progress", "completed"
+
+  // Ordering
+  order Int @default(0)
+
+  // Link to feature request if applicable
+  featureRequestId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  phase          RoadmapPhase    @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+  featureRequest FeatureRequest? @relation(fields: [featureRequestId], references: [id], onDelete: SetNull)
+
+  @@index([phaseId])
+  @@index([status])
+  @@index([order])
+}
+
+// ============================================================================
+// AI AGENT SYSTEM
+// ============================================================================
+
+// AI conversations - tracks conversation sessions with the AI agent
+model AIConversation {
+  id             String @id @default(cuid())
+  organizationId String
+  userId         String
+
+  // Conversation metadata
+  title  String?
+  status AIConversationStatus @default(active)
+
+  // Usage tracking
+  totalTokens   Int   @default(0)
+  estimatedCost Float @default(0) // In dollars
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages     AIMessage[]
+  actions      AIAction[]
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// AI messages - individual messages in a conversation
+model AIMessage {
+  id             String  @id @default(cuid())
+  conversationId String
+  userId         String?
+
+  // Message content
+  role    String // "user", "assistant", "tool"
+  content String @db.Text
+
+  // Tool calls (if role is "tool" or "assistant" with tool use)
+  toolName   String?
+  toolInput  Json?
+  toolOutput Json?
+
+  // Token tracking
+  tokenCount Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  conversation AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User?          @relation("AIMessageUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+// AI actions - pending/executed actions that modify data
+model AIAction {
+  id             String  @id @default(cuid())
+  conversationId String
+  userId         String?
+
+  // Action details
+  type        AIActionType
+  status      AIActionStatus @default(pending)
+  description String // Human-readable description
+
+  // Parameters & results
+  parameters           Json // Input parameters for the action
+  requiresConfirmation Boolean   @default(true)
+  confirmedAt          DateTime?
+  executedAt           DateTime?
+  resultData           Json? // Result of the action
+  errorMessage         String? // Error if failed
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  conversation AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User?          @relation("AIActionUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// AI usage logs - tracks API usage for billing/monitoring
+model AIUsageLog {
+  id             String @id @default(cuid())
+  organizationId String
+  userId         String
+
+  // Request details
+  endpoint String // e.g., "claude-3-sonnet"
+  model    String // e.g., "claude-3-sonnet-20240229"
+
+  // Token usage
+  inputTokens  Int
+  outputTokens Int
+  costCents    Int // Cost in cents
+
+  // Performance
+  latencyMs Int
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([model])
+}
+
+// ============================================================================
+// GAMIFICATION - EXTENDED MODELS
+// ============================================================================
+
+// XP Activity Type - tracks where XP comes from
+enum XpActivityType {
+  achievement // Unlocked an achievement
+  daily_bonus // Daily login bonus
+  level_up // Bonus XP for leveling up
+  streak_milestone // Reached a streak milestone
+  delivery // Delivered a gallery
+  gallery // Created a gallery
+  quest // Completed a quest objective
+  challenge // Completed a challenge
+  referral // Referred a new user
+  seasonal_event // Seasonal event bonus
+  admin_award // Admin awarded XP
+}
+
+// XP Activity Log - detailed tracking of all XP gains
+model XpActivityLog {
+  id     String @id @default(cuid())
+  userId String
+
+  // Activity details
+  type        XpActivityType
+  amount      Int // XP amount (can be negative for deductions)
+  description String // Human-readable description
+
+  // Optional metadata
+  achievementSlug String? // If from achievement
+  achievementName String? // Achievement name for display
+  rarity          AchievementRarity? // Achievement rarity
+  questId         String? // If from quest
+  challengeId     String? // If from challenge
+  eventId         String? // If from seasonal event
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation("XpActivityLogs", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// Badge Showcase - user's featured achievements
+model BadgeShowcase {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  // Featured achievement slugs (ordered by display position)
+  featuredSlugs String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation("BadgeShowcase", fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Gamification Notification Preferences
+model GamificationNotificationPrefs {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  // Notification toggles
+  achievementUnlocks  Boolean @default(true)
+  levelUps            Boolean @default(true)
+  streakReminders     Boolean @default(true)
+  dailyBonusReminders Boolean @default(true)
+  leaderboardChanges  Boolean @default(true)
+  challengeUpdates    Boolean @default(true)
+  weeklyRecaps        Boolean @default(true)
+  seasonalEvents      Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation("GamificationNotificationPrefs", fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Daily Quest Progress - tracks daily quest completion
+model DailyQuestProgress {
+  id     String @id @default(cuid())
+  userId String
+
+  // Quest identification
+  questDate DateTime @db.Date // Date the quest is for (no time)
+  questType String // upload, message, delivery, login, review
+  questId   String // Unique ID for the specific quest
+
+  // Progress
+  targetValue  Int       @default(1)
+  currentValue Int       @default(0)
+  xpReward     Int       @default(50)
+  isCompleted  Boolean   @default(false)
+  completedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation("DailyQuestProgress", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questDate, questId])
+  @@index([userId])
+  @@index([questDate])
+  @@index([isCompleted])
+}
+
+// Seasonal Event - time-limited special events
+model SeasonalEvent {
+  id             String  @id @default(cuid())
+  organizationId String? // null = global event
+
+  // Event details
+  name        String
+  description String
+  type        String // new_year, spring, summer, fall, winter, anniversary, special
+
+  // Timing
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean  @default(true)
+
+  // Rewards
+  xpMultiplier Float @default(1.0) // e.g., 1.5 for 50% bonus
+
+  // Theme
+  themeColor String? // Primary color
+  themeIcon  String? // Icon name
+
+  // Event-specific challenges (JSON array)
+  challenges Json? // Array of { id, name, description, targetValue, xpReward }
+
+  // Special rewards (JSON array)
+  specialRewards Json? // Array of { type, name, description }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization  Organization?                @relation("SeasonalEvents", fields: [organizationId], references: [id], onDelete: Cascade)
+  participation SeasonalEventParticipation[]
+
+  @@index([organizationId])
+  @@index([startDate, endDate])
+  @@index([isActive])
+}
+
+// Seasonal Event Participation - tracks user participation in events
+model SeasonalEventParticipation {
+  id      String @id @default(cuid())
+  userId  String
+  eventId String
+
+  // Participation tracking
+  joinedAt           DateTime @default(now())
+  challengesComplete Int      @default(0)
+  totalXpEarned      Int      @default(0)
+
+  // Challenge progress (JSON object)
+  challengeProgress Json? // { challengeId: { current: number, completed: boolean } }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user  User          @relation("SeasonalEventParticipation", fields: [userId], references: [id], onDelete: Cascade)
+  event SeasonalEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@index([userId])
+  @@index([eventId])
 }

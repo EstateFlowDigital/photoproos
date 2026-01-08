@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import type { MessageReactionType } from "@prisma/client";
+// Note: MessageReaction now uses String emoji instead of enum
 import { getClientSession } from "./client-auth";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
@@ -66,7 +66,7 @@ export interface ClientMessageWithDetails {
   } | null;
   reactions: {
     id: string;
-    type: MessageReactionType;
+    emoji: string;
     userId: string | null;
     clientId: string | null;
   }[];
@@ -518,7 +518,7 @@ export async function markClientConversationAsRead(
  */
 export async function addClientReaction(
   messageId: string,
-  type: MessageReactionType
+  emoji: string
 ): Promise<ActionResult<void>> {
   try {
     const session = await getClientSession();
@@ -561,7 +561,7 @@ export async function addClientReaction(
       where: {
         messageId,
         clientId,
-        type,
+        emoji,
       },
     });
 
@@ -576,7 +576,7 @@ export async function addClientReaction(
         data: {
           messageId,
           clientId,
-          type,
+          emoji,
         },
       });
     }

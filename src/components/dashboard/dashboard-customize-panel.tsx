@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect, useLayoutEffect, type CSSProperties } from "react";
+import { useState, useTransition, useRef, useEffect, useLayoutEffect, useCallback, type CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import {
   toggleSectionVisibility,
   resetDashboardConfig,
+  reorderDashboardSections,
 } from "@/lib/actions/dashboard";
 import {
   type DashboardConfig,
@@ -69,6 +70,39 @@ function EyeSlashIcon({ className }: { className?: string }) {
   );
 }
 
+function DragHandleIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+    >
+      <path
+        fillRule="evenodd"
+        d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 5A.75.75 0 012.75 9h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 9.75zm0 5a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function ChevronUpIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M14.77 12.79a.75.75 0 01-1.06-.02L10 8.832 6.29 12.77a.75.75 0 11-1.08-1.04l4.25-4.5a.75.75 0 011.08 0l4.25 4.5a.75.75 0 01-.02 1.06z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
 function getSectionIcon(iconName: string) {
   switch (iconName) {
     case "chart-bar":
@@ -125,6 +159,8 @@ export function DashboardCustomizePanel({
   const [isOpen, setIsOpen] = useState(false);
   const [localConfig, setLocalConfig] = useState(config);
   const [isPending, startTransition] = useTransition();
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -198,6 +234,12 @@ export function DashboardCustomizePanel({
     setLocalConfig(config);
   }, [config]);
 
+  // Get sections in the order defined by config
+  const orderedSections = localConfig.sections.map((sectionConfig) => {
+    const meta = DASHBOARD_SECTIONS.find((s) => s.id === sectionConfig.id);
+    return { ...sectionConfig, meta };
+  }).filter((s) => s.meta);
+
   const handleToggleVisibility = (sectionId: DashboardSectionId) => {
     const section = DASHBOARD_SECTIONS.find((s) => s.id === sectionId);
     if (!section?.canHide) return;
@@ -229,10 +271,70 @@ export function DashboardCustomizePanel({
     });
   };
 
+  // Move section up or down
+  const handleMove = useCallback((index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= orderedSections.length) return;
+
+    const newSections = [...localConfig.sections];
+    const [movedSection] = newSections.splice(index, 1);
+    newSections.splice(newIndex, 0, movedSection);
+
+    setLocalConfig((prev) => ({
+      ...prev,
+      sections: newSections,
+    }));
+
+    startTransition(async () => {
+      const result = await reorderDashboardSections(newSections.map((s) => s.id));
+      if (!result.success) {
+        setLocalConfig(config);
+        console.error("Failed to reorder sections:", result.error);
+      }
+    });
+  }, [localConfig.sections, orderedSections.length, config]);
+
+  // Drag and drop handlers
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    setDragOverIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    if (draggedIndex !== null && dragOverIndex !== null && draggedIndex !== dragOverIndex) {
+      const newSections = [...localConfig.sections];
+      const [movedSection] = newSections.splice(draggedIndex, 1);
+      newSections.splice(dragOverIndex, 0, movedSection);
+
+      setLocalConfig((prev) => ({
+        ...prev,
+        sections: newSections,
+      }));
+
+      startTransition(async () => {
+        const result = await reorderDashboardSections(newSections.map((s) => s.id));
+        if (!result.success) {
+          setLocalConfig(config);
+          console.error("Failed to reorder sections:", result.error);
+        }
+      });
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
   const getSectionVisibility = (sectionId: DashboardSectionId) => {
     const section = localConfig.sections.find((s) => s.id === sectionId);
     return section?.visible ?? true;
   };
+
+  // Count visible and hidden sections
+  const visibleCount = orderedSections.filter((s) => s.visible).length;
+  const hiddenCount = orderedSections.filter((s) => !s.visible).length;
 
   return (
     <div className="relative" ref={panelRef}>
@@ -251,13 +353,16 @@ export function DashboardCustomizePanel({
       >
         <SettingsIcon className="h-4 w-4" />
         <span className="hidden sm:inline">Customize</span>
+        <span className="hidden sm:inline text-xs text-foreground-muted">
+          ({visibleCount} sections)
+        </span>
       </button>
 
       {isOpen && (
         <div
           ref={popoverRef}
           className={cn(
-            "absolute right-0 top-full z-50 mt-2 w-72",
+            "absolute right-0 top-full z-50 mt-2 w-80",
             "max-w-[calc(100vw-2rem)]",
             "rounded-xl border border-[var(--card-border)] bg-[var(--card)]",
             "shadow-lg"
@@ -269,60 +374,133 @@ export function DashboardCustomizePanel({
               Customize Dashboard
             </h3>
             <p className="mt-0.5 text-xs text-foreground-muted">
-              Show or hide dashboard sections
+              Drag to reorder · Click eye to show/hide
             </p>
           </div>
 
-          <div className="max-h-80 overflow-y-auto p-2">
-            {DASHBOARD_SECTIONS.map((section) => {
-              const isVisible = getSectionVisibility(section.id);
-              const canHide = section.canHide;
+          {/* Section counts */}
+          <div className="border-b border-[var(--card-border)] px-4 py-2 flex gap-3">
+            <span className="text-xs text-foreground-muted">
+              <span className="font-medium text-[var(--success)]">{visibleCount}</span> visible
+            </span>
+            {hiddenCount > 0 && (
+              <span className="text-xs text-foreground-muted">
+                <span className="font-medium text-foreground-secondary">{hiddenCount}</span> hidden
+              </span>
+            )}
+          </div>
+
+          <div className="max-h-96 overflow-y-auto p-2">
+            {orderedSections.map((section, index) => {
+              const isVisible = section.visible;
+              const canHide = section.meta?.canHide ?? false;
+              const isDragging = draggedIndex === index;
+              const isDragOver = dragOverIndex === index;
 
               return (
-                <button
+                <div
                   key={section.id}
-                  type="button"
-                  onClick={() => handleToggleVisibility(section.id)}
-                  disabled={!canHide || isPending}
+                  draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragEnd={handleDragEnd}
                   className={cn(
-                    "flex w-full items-center gap-3 rounded-lg px-3 py-2.5",
-                    "text-left transition-colors",
-                    canHide
-                      ? "hover:bg-[var(--background-hover)] cursor-pointer"
-                      : "opacity-60 cursor-not-allowed",
-                    isPending && "opacity-50"
+                    "flex w-full items-center gap-2 rounded-lg px-2 py-2",
+                    "transition-all duration-150",
+                    isDragging && "opacity-50 scale-95",
+                    isDragOver && "bg-[var(--primary)]/10 ring-1 ring-[var(--primary)]/30",
+                    !isDragging && !isDragOver && "hover:bg-[var(--background-hover)]",
+                    isPending && "opacity-50",
+                    !isVisible && "opacity-60"
                   )}
                 >
+                  {/* Drag handle */}
+                  <div className="cursor-grab active:cursor-grabbing p-1 text-foreground-muted hover:text-foreground">
+                    <DragHandleIcon className="h-4 w-4" />
+                  </div>
+
+                  {/* Section icon */}
                   <div
                     className={cn(
-                      "flex h-8 w-8 items-center justify-center rounded-lg",
+                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
                       isVisible
                         ? "bg-[var(--primary)]/10 text-[var(--primary)]"
                         : "bg-[var(--background-secondary)] text-foreground-muted"
                     )}
                   >
-                    {getSectionIcon(section.icon)}
+                    {getSectionIcon(section.meta?.icon || "")}
                   </div>
+
+                  {/* Section info */}
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-foreground">
-                      {section.label}
+                    <div className={cn(
+                      "text-sm font-medium",
+                      isVisible ? "text-foreground" : "text-foreground-muted"
+                    )}>
+                      {section.meta?.label}
                     </div>
                     <div className="text-xs text-foreground-muted truncate">
-                      {section.description}
+                      {section.meta?.description}
                     </div>
                   </div>
-                  <div className="flex-shrink-0">
+
+                  {/* Move buttons */}
+                  <div className="flex flex-col shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handleMove(index, "up")}
+                      disabled={index === 0 || isPending}
+                      className={cn(
+                        "p-0.5 rounded text-foreground-muted hover:text-foreground",
+                        "disabled:opacity-30 disabled:cursor-not-allowed"
+                      )}
+                      title="Move up"
+                    >
+                      <ChevronUpIcon className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleMove(index, "down")}
+                      disabled={index === orderedSections.length - 1 || isPending}
+                      className={cn(
+                        "p-0.5 rounded text-foreground-muted hover:text-foreground",
+                        "disabled:opacity-30 disabled:cursor-not-allowed"
+                      )}
+                      title="Move down"
+                    >
+                      <ChevronDownIcon className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Visibility toggle */}
+                  <button
+                    type="button"
+                    onClick={() => handleToggleVisibility(section.id)}
+                    disabled={!canHide || isPending}
+                    className={cn(
+                      "p-1.5 rounded-lg shrink-0",
+                      canHide
+                        ? "hover:bg-[var(--background-secondary)] cursor-pointer"
+                        : "opacity-40 cursor-not-allowed",
+                      isVisible
+                        ? "text-[var(--primary)]"
+                        : "text-foreground-muted"
+                    )}
+                    title={canHide ? (isVisible ? "Hide section" : "Show section") : "Required section"}
+                  >
                     {canHide ? (
                       isVisible ? (
-                        <EyeIcon className="h-4 w-4 text-foreground-muted" />
+                        <EyeIcon className="h-4 w-4" />
                       ) : (
-                        <EyeSlashIcon className="h-4 w-4 text-foreground-muted" />
+                        <EyeSlashIcon className="h-4 w-4" />
                       )
                     ) : (
-                      <span className="text-xs text-foreground-muted">Required</span>
+                      <div className="h-4 w-4 flex items-center justify-center">
+                        <div className="w-1.5 h-1.5 rounded-full bg-foreground-muted" />
+                      </div>
                     )}
-                  </div>
-                </button>
+                  </button>
+                </div>
               );
             })}
           </div>

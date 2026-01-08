@@ -8,6 +8,346 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Dashboard Widget System** - Drag-and-drop customizable widget dashboard
+  - New widget types system with 20+ widget types across 5 categories (Core, Content, Analytics, Productivity, Engagement)
+  - Widget sizes: 1x1, 2x1, 2x2, 3x1, 3x2, 4x1, 4x2 with per-widget allowed sizes
+  - `widget-registry.ts` - Central registry with widget definitions, metadata, and constraints
+  - `dashboard-types.ts` - Updated with WidgetInstance, WidgetSize, DashboardWidgetConfig types
+  - Automatic migration from legacy section-based config to widget-based config
+  - `WidgetDashboard` - Main client component with @dnd-kit drag-and-drop
+  - `AddWidgetModal` - Category-based widget picker with max instance enforcement
+  - `DashboardClient` - Client wrapper combining widgets and add modal
+  - `DashboardData` interface for passing server data to widget renderers
+  - Server actions: `getDashboardWidgets`, `saveDashboardLayout`, `addWidget`, `removeWidget`, `updateWidgetSize`, `updateWidgetPosition`, `resetDashboardWidgets`
+  - Widget content renderers for stats, bookings, galleries, activity, calendar, gamification, overdue invoices, expiring galleries, messages
+  - Edit mode with widget resize dropdown and remove button
+  - Position recalculation on drag-end for grid layout
+  - Backward compatibility with legacy dashboard config
+  - Refactored dashboard page from 704 lines to 430 lines with clean separation of concerns
+  - Accessibility improvements: aria-labels on interactive elements, role="status" on loading indicators, aria-hidden on decorative icons
+  - Quick Actions widget with actual navigation links
+  - Recent Galleries widget using Next.js Image component for optimization
+
+- **Messaging System Enhancements** - Updated schema and fixed type consistency
+  - Added messaging system enums to Prisma schema: `ConversationType`, `ConversationParticipantRole`, `ChatRequestStatus`
+  - Updated `MessageReaction` model to use String emoji instead of enum type
+  - Fixed relation names between messaging models and User/Client models
+  - Added reverse relations for messaging models to User, Client, Organization, Project models
+  - Updated all server actions and components to use emoji strings instead of enum types
+
+- **Messages Dashboard Widget** - Live message feed for dashboard
+  - New `messages` widget type added to widget system (content category, 2x2 default size)
+  - `MessagesWidget` component showing recent messages with unread indicators
+  - Conversation type icons (direct, group, channel, client support)
+  - Click-through navigation to full messaging interface (`/messages`)
+  - Unread message badge with pulse animation
+  - Server action `getRecentMessagesForWidget` for efficient widget data fetching
+  - Server action `getUnreadMessageCount` for badge counts
+
+- **Support Chat System** - In-app support ticket management
+  - `SupportButton` - Floating action button for quick access
+  - `SupportDialog` - Multi-step ticket creation with category selection
+  - `SupportChat` - Real-time chat interface for ticket conversations
+  - `TicketHistory` - View and manage all support tickets
+  - Support tickets page at `/settings/support`
+  - Server actions: `getSupportTickets`, `getSupportTicket`, `createSupportTicket`, `sendSupportMessage`, `closeSupportTicket`, `markMessagesAsRead`
+  - Admin actions: `getAllSupportTickets`, `sendAdminReply`, `resolveTicket`, `updateTicketPriority`
+  - Slack webhook integration for real-time notifications on new tickets and messages
+
+- **Public Roadmap & Feature Voting** - Community-driven product development
+  - Public roadmap page at `/roadmap` with phase timeline visualization
+  - Feature voting system with upvote/downvote functionality
+  - Email verification for non-authenticated community voters
+  - Separate vote pools for authenticated users vs verified community
+  - Feature request submission with category selection
+  - Server actions: `getPublicRoadmap`, `getApprovedFeatureRequests`, `castVoteAsUser`, `submitFeatureRequestAsUser`
+  - Verified voter flow: `sendVoterVerificationEmail`, `verifyVoterEmail`, `castVoteAsVoter`
+  - Admin moderation: `getPendingFeatureRequests`, `approveFeatureRequest`, `rejectFeatureRequest`, `markFeatureImplemented`
+  - XP rewards for voting and feature submissions
+
+- **Super Admin Dashboard** - Platform-wide management interface
+  - Super admin authentication via Clerk `publicMetadata.isSuperAdmin`
+  - Dashboard overview with platform stats (users, organizations, revenue, tickets)
+  - User management with search, pagination, and grid view
+  - Quick actions: Award XP, Grant lifetime license, View user details
+  - Server actions: `getSuperAdminDashboardStats`, `getAllUsers`, `getUserDetails`, `awardXp`, `grantLifetimeLicense`, `revokeLifetimeLicense`, `applyDiscount`, `createCustomChallenge`, `startImpersonation`
+  - Super admin layout with sidebar navigation
+  - Routes: `/super-admin`, `/super-admin/users`, `/super-admin/support`, `/super-admin/feedback`, `/super-admin/roadmap`
+
+- **Super Admin User Detail Page** - Comprehensive user management
+  - Full user profile with avatar, organization, and plan info
+  - Gamification stats: Level, XP, Login Streak, Sessions
+  - Business stats: Galleries, Clients, Revenue
+  - Recent achievements with rarity colors
+  - Recent support tickets with status
+  - Custom challenges list
+  - Actions: Award XP dialog, Grant/Revoke Lifetime License, Create Custom Challenge dialog
+  - Route: `/super-admin/users/[userId]`
+
+- **Super Admin Support Management** - Admin support ticket handling
+  - Support tickets table with filters (status, priority, category)
+  - Stats overview: Total, Open, In Progress, Urgent
+  - Ticket detail page with full chat history
+  - Admin reply functionality
+  - Priority management dropdown
+  - Resolve ticket with XP award option
+  - Server action: `getAdminSupportTicket` for admin ticket viewing
+  - Routes: `/super-admin/support`, `/super-admin/support/[ticketId]`
+
+- **Super Admin Feedback Dashboard** - Platform feedback analysis
+  - Feedback statistics: Total, Average Rating, Pending Review, This Week
+  - Most Liked Features bar chart
+  - Areas for Improvement bar chart
+  - Feedback list with filters (All, Pending, Reviewed)
+  - Individual feedback cards with rating stars, liked/disliked feature badges
+  - Mark as Reviewed action
+  - Award bonus XP dialog for valuable feedback
+  - Server actions: `getAllPlatformFeedback`, `getFeedbackStats`, `markFeedbackReviewed`, `awardFeedbackXp`
+  - Route: `/super-admin/feedback`
+
+- **Super Admin Roadmap Admin** - Feature request moderation
+  - Stats overview: Pending Review, Approved Features, Roadmap Phases
+  - Tabbed interface: Pending, Approved, Roadmap
+  - Pending features moderation queue
+  - Approve to roadmap phase selector
+  - Reject with reason dialog
+  - Mark as Implemented action
+  - Roadmap phase visualization with status indicators
+  - Route: `/super-admin/roadmap`
+
+- **Feedback Collection Modal** - Session-based user feedback collection
+  - Automatic display after 10+ sessions (every 10 sessions)
+  - Multi-step flow: Rating → Features → Comment → Success
+  - 1-5 star rating with contextual messages
+  - Feature like/dislike tags (Easy to use, Fast delivery, etc.)
+  - Optional comment textarea
+  - XP rewards for feedback (50-100 XP based on completeness)
+  - Animated transitions with Framer Motion
+  - Session-based dismissal tracking
+  - Server actions: `submitPlatformFeedback`, `shouldShowFeedbackModal`
+
+- **AI Business Assistant** - Claude-powered business automation
+  - AI conversation management with persistent history
+  - Tool registry with 18 tools across 4 categories:
+    - Read tools: list_galleries, list_clients, get_revenue_summary, list_upcoming_bookings, list_pending_invoices, get_expense_summary, search_everything, get_gallery_details, get_client_details
+    - Create tools: create_gallery, create_client, create_booking, create_invoice, deliver_gallery
+    - Update tools: update_gallery, update_settings
+    - Analysis tools: analyze_client_value, forecast_revenue
+  - Tool execution system with confirmation for create/update actions
+  - Pending action approval/cancel workflow
+  - Usage tracking: tokens, cost estimates
+  - Chat interface with conversation sidebar
+  - Example prompts for new users
+  - Server actions: `getConversations`, `getConversation`, `createConversation`, `sendMessage`, `approveAction`, `cancelAction`, `deleteConversation`, `getAIUsageStats`
+  - Route: `/ai`
+
+- **User Engagement System - Database Foundation**
+  - Tax Preparation System: `TaxPrepSession`, `TaxDocument` models with entity types and extraction status tracking
+  - Support Ticket System: `SupportTicket`, `SupportMessage`, `PlatformFeedback`, `AdminXpAward`, `CustomChallenge` models
+  - Feature Roadmap & Voting: `FeatureRequest`, `FeatureVote`, `VerifiedVoter`, `RoadmapPhase`, `RoadmapItem` models
+  - AI Agent System: `AIConversation`, `AIMessage`, `AIAction`, `AIUsageLog` models
+  - New enums for tax entities, document types, support categories, feature request statuses, AI action types
+  - New fields on User (`hasLifetimeLicense`, `totalSessions`) and Organization (`hasLifetimeLicense`, `activeDiscountPercent`, `discountExpiresAt`)
+
+- **Tax Preparation Server Actions** - Complete tax prep workflow
+  - `getOrCreateTaxPrepSession` - Create/retrieve tax prep sessions by year
+  - `getTaxPrepSessions` - List all tax prep sessions
+  - `updateTaxEntityType` - Set business entity type
+  - `markExpensesReviewed` - Track expense review completion
+  - `acceptTaxDisclaimer` - Record legal disclaimer acceptance
+  - `submitTaxPrepFeedback` - Collect user feedback and rating
+  - `getTaxYearExpenseSummary` - Aggregate expenses by category and month
+  - `getTaxYearRevenueSummary` - Aggregate revenue from payments and invoices
+  - `getTaxDocuments` - List uploaded tax documents
+  - `createTaxDocument` - Create document records after upload
+  - `confirmTaxDocumentData` - Confirm AI-extracted data
+  - `generateTaxSummary` - Generate complete tax summary with calculations
+  - `shouldShowTaxSeasonModal` - Check if seasonal modal should display
+
+- **AI Document Extraction Service** - Claude Vision-powered document analysis
+  - `extractDocumentData` - Extract structured data from document images
+  - Support for receipts, invoices, 1099 forms, bank statements, mileage logs
+  - Automatic category suggestion based on extracted content
+  - Confidence scoring for extracted data
+  - `processTaxDocumentWithAI` - Server action to process documents
+  - `processAllPendingDocuments` - Batch processing for multiple documents
+
+- **Tax Preparation Wizard UI** - Multi-step wizard at `/settings/tax-prep`
+  - Entity type selection (Sole Proprietor, LLC, S-Corp, etc.)
+  - Expense review with category breakdown
+  - Document upload with AI extraction preview
+  - Tax summary generation with net income calculation
+  - Legal disclaimer acceptance
+  - Completion rating and feedback collection
+  - Progress indicator with animated transitions
+
+- **Dashboard Customize Panel Enhancements** - Improved section management
+  - Drag-and-drop reordering of dashboard sections
+  - Up/down arrow buttons for accessibility
+  - Visual section count indicators (visible/hidden)
+  - Server action `reorderDashboardSections` for persisting order
+
+- **Form Builder Mobile Responsiveness** - Full mobile support for booking form builder
+  - Mobile view toggle between Add Fields, Form, and Edit Field panels
+  - Responsive stacking layout with tab navigation
+  - Templates always visible (shows organization industries or defaults)
+  - Automatic view switching on field add/select/close
+  - Touch-friendly interface with proper spacing
+
+- **Streak Protection System** - Protect your login and delivery streaks
+  - New Prisma fields: `availableStreakFreezes`, `totalStreakFreezesUsed`, `lastStreakFreezeDate` on GamificationProfile
+  - Streak freezes automatically used when missing exactly one day
+  - Earn freezes by completing 7-day daily bonus cycles
+  - Purchase freezes with XP (500 XP per freeze, max 5)
+  - Streak freeze rewards at milestone streaks (7, 30, 100 days)
+  - `StreakFreezeDisplay` component for viewing and purchasing freezes
+  - `StreakFreezeIndicator` compact badge component
+  - Server actions: `getStreakFreezeState`, `awardStreakFreezes`, `purchaseStreakFreeze`
+
+- **Gamification Settings Page Enhancement** - New streak freeze management section
+  - Display current streak freeze count with visual indicators
+  - Purchase streak freezes with XP
+  - View total freezes used and last usage date
+
+- **Achievement Progress Hints** - See how close you are to unlocking achievements
+  - Progress bars on locked achievements showing current vs target
+  - "Almost there!" indicator when 75%+ complete
+  - Progress hints for all trackable achievement types (galleries, deliveries, streaks, etc.)
+  - Updated `AchievementWithStatus` type to include `progressHint`
+
+- **Statistics Dashboard Component** - Comprehensive gamification analytics
+  - Level and XP overview with average XP per day
+  - Achievement breakdown by rarity with progress bars
+  - Streak statistics with personal best comparisons
+  - Activity overview (galleries, deliveries, clients, bookings, payments)
+  - Personal records display
+  - Daily bonus progress tracking
+  - `getGamificationStatistics` server action for fetching all data
+
+- **Streak Break Notifications** - Stay informed about your streaks
+  - `StreakNotification` component for warning/broken/saved/protected states
+  - `StreakNotificationContainer` for displaying multiple notifications
+  - `StreakWarningBanner` inline component for dashboard warnings
+  - `useStreakNotifications` hook for managing notification state
+  - `getStreakStatus` server action to check streak risk status
+  - Hours until reset countdown
+
+- **Level-Up Rewards System** - Celebrate leveling up with rewards
+  - `LevelUpModal` full-screen celebration with confetti
+  - `LevelUpToast` compact notification variant
+  - Level titles progression (Newcomer → Immortal)
+  - Rewards per level: skill points, streak freezes (every 10 levels), milestone bonuses
+  - `LEVEL_MILESTONES` and `LEVEL_TITLES` configurations
+  - `useLevelUpRewards` hook for managing level-up state
+
+- **Enhanced Leaderboard System** - Compare your progress with team members
+  - Time-based filtering: All Time, This Week, This Month
+  - Multiple ranking metrics: XP, Achievements, Login Streak, Delivery Streak, Deliveries
+  - `EnhancedLeaderboard` component with dropdown filters
+  - `LeaderboardWidget` compact widget for dashboard
+  - `getEnhancedLeaderboard` server action with filtering support
+  - `getMyRank` server action for user's current rank and percentile
+  - Animated row transitions with top 3 badge styling
+
+- **Weekly/Monthly Recaps** - Review your progress over time
+  - `RecapCard` detailed summary of achievements, XP, and activity
+  - `RecapModal` full-screen recap experience
+  - `RecapWidget` for dashboard quick access
+  - Period comparison showing improvement vs previous period
+  - Achievement highlights showing best unlock per period
+  - Motivational messages based on performance
+  - `getRecapSummary` and `getAvailableRecaps` server actions
+  - `useRecaps` hook for managing recap state
+
+- **Team Challenges System** - Compete or collaborate with your team
+  - Weekly rotating challenges with different objectives
+  - Collaborative (team goal) and competitive modes
+  - Challenge types: Deliveries, Galleries, XP, Achievements, Streaks
+  - `TeamChallengeCard` with progress bars and participant rankings
+  - `TeamChallengeList` grouped by active/completed status
+  - `TeamChallengeWidget` compact dashboard widget
+  - XP rewards for completing challenges
+  - `getTeamChallenges` and `getMyChallengContributions` server actions
+
+- **Achievement Sharing** - Share your accomplishments
+  - `AchievementShareButton` with modal for sharing options
+  - `AchievementShareModal` with preview and platform selection
+  - `AchievementShareIcons` inline sharing buttons
+  - Twitter/X and LinkedIn sharing integration
+  - Copy link functionality with visual feedback
+  - Native Web Share API support on mobile
+  - `useAchievementShare` hook for programmatic sharing
+  - Customizable share text with rarity emojis
+
+- **XP Activity Log** - Track where your XP comes from
+  - `XpActivityLog` component with full history view
+  - `XpActivityWidget` compact recent activity display
+  - `getXpActivityLog` server action for fetching history
+  - `getXpSummaryByType` for XP breakdown by source
+  - Activity types: achievements, daily bonus, level up, streaks, etc.
+  - Rarity-based color coding for achievement XP
+
+- **Badge Showcase** - Feature your favorite achievements
+  - `BadgeShowcaseDisplay` component for viewing selected badges
+  - `BadgeShowcaseEditor` modal for selecting featured achievements
+  - Level-based slot unlocking (3 base + 1 per 10 levels, max 6)
+  - `useBadgeShowcase` hook for managing selection state
+  - `getBadgeShowcase` and `getShowcaseableAchievements` server actions
+
+- **Seasonal Events** - Time-limited special challenges
+  - `SeasonalEventCard` full event display with challenges
+  - `SeasonalEventBanner` compact notification banner
+  - `SeasonalEventWidget` dashboard widget
+  - XP multiplier bonuses during events
+  - Event-specific challenges with exclusive rewards
+  - Themed colors and icons per event type
+  - `getSeasonalEvents` and `getUpcomingEvents` server actions
+
+- **Daily Quests** - Quick daily tasks for bonus XP
+  - `DailyQuestCard` individual quest display with progress
+  - `DailyQuestList` full daily quest view
+  - `DailyQuestWidget` compact dashboard widget
+  - Rotating quest selection (3 per day)
+  - Quest types: upload, message, delivery, login, review
+  - Daily reset with countdown timer
+  - `getDailyQuests` server action
+
+- **Gamification Hub** - Unified dashboard widget
+  - `GamificationHub` comprehensive progress display
+  - `GamificationHubCompact` minimal version
+  - Level, XP progress, streaks in one view
+  - Quick stats for achievements and challenges
+  - Daily bonus call-to-action when available
+  - Links to detailed achievement pages
+
+- **Achievement Categories Browser** - Explore achievements by category
+  - `AchievementCategories` full category grid
+  - `CategoryFilter` pill-style category selector
+  - Progress tracking per category
+  - XP earned vs total XP display
+  - Category icons and color coding
+  - `getAchievementsByCategory` server action
+
+- **Gamification Notification Preferences** - Customize your notifications
+  - `NotificationPrefs` full settings panel
+  - `NotificationPrefsCompact` quick toggle display
+  - 8 notification types: achievements, level ups, streaks, daily bonus, leaderboard, challenges, recaps, events
+  - Toggle switches with instant feedback
+  - `getGamificationNotificationPrefs` and `updateGamificationNotificationPrefs` server actions
+
+- **Review Gate System** - Capture internal feedback and route happy clients to public reviews
+  - Prisma models: ReviewPlatform, ReviewRequest, ReviewResponse with full relations
+  - Review enums: ReviewPlatformType (Google, Yelp, etc.), ReviewRequestStatus, ReviewRequestSource
+  - Organization settings for review gate toggles and follow-up configuration
+  - Server actions for platform CRUD, review requests, responses, and analytics
+  - Settings page at `/settings/reviews` with platform configuration and touchpoint toggles
+  - Public review pages at `/review/[token]` with star rating and feedback/redirect flow
+  - Thank you page after submission
+  - Email template for review requests with branded styling
+  - Gallery delivery integration - auto-creates review request when delivering galleries
+  - Middleware updated to allow public access to review routes
+  - Rating logic: 1-3 stars → private feedback form, 4-5 stars → platform selector
+
 - **Manual Lead Creation** - Add leads manually from the leads page
   - "Add Lead" button on leads page (appears when portfolio websites exist)
   - Modal form with name, email, phone, message, and internal notes fields
@@ -16,6 +356,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Source tracking as "manual" for analytics
 
 ### Fixed
+- **Recent Clients Icon Styling** - Improved avatar styling in gallery new page sidebar
+  - Added border and background to client initial avatars
+  - Better contrast with `bg-[var(--background-secondary)]` background
+  - Consistent styling with design system tokens
+
 - **Galleries Password Edit** - Allow changing password for password-protected galleries
   - Added password field with show/hide toggle in gallery edit form
   - Validation for new password-protected galleries

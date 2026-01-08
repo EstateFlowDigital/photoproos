@@ -9,6 +9,8 @@ import { KeyboardShortcutsProvider } from "@/components/keyboard-shortcuts-provi
 import { ReferralProcessor } from "@/components/dashboard/referral-processor";
 import { UploadProvider } from "@/contexts/upload-context";
 import { GlobalUploadModal } from "@/components/upload/global-upload-modal";
+import { SupportButton } from "@/components/support";
+import { FeedbackModal } from "@/components/feedback";
 import { prisma } from "@/lib/db";
 import { getDefaultModulesForIndustries } from "@/lib/constants/industries";
 import { getUnreadNotificationCount } from "@/lib/actions/notifications";
@@ -237,6 +239,8 @@ export default async function DashboardLayout({
           >
             {children}
           </DashboardLayoutClient>
+          <SupportButton />
+          <FeedbackModal />
           </KeyboardShortcutsProvider>
           </CommandPaletteProvider>
         </TourProvider>
