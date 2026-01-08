@@ -221,6 +221,13 @@ export async function createClient(
   try {
     const organizationId = await getOrganizationId();
 
+    // Check plan limit for total clients
+    const { enforcePlanLimit } = await import("./plan-enforcement");
+    const limitCheck = await enforcePlanLimit("clients_total");
+    if (!limitCheck.success) {
+      return fail(limitCheck.error);
+    }
+
     // Validate required fields
     if (!input.email?.trim()) {
       return fail("Email is required");

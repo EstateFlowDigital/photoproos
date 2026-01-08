@@ -61,6 +61,13 @@ export async function createInvitation(
     const auth = await requireAuth();
     const organizationId = await requireOrganizationId();
 
+    // Check plan limit for team members
+    const { enforcePlanLimit } = await import("./plan-enforcement");
+    const limitCheck = await enforcePlanLimit("team_members");
+    if (!limitCheck.success) {
+      return fail(limitCheck.error);
+    }
+
     // Check if the current user is an owner or admin
     const currentMembership = await prisma.organizationMember.findFirst({
       where: {

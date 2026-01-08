@@ -88,6 +88,13 @@ export async function createGallery(
     const validated = createGallerySchema.parse(input);
     const organizationId = await getOrganizationId();
 
+    // Check plan limit for active galleries
+    const { enforcePlanLimit } = await import("./plan-enforcement");
+    const limitCheck = await enforcePlanLimit("galleries_active");
+    if (!limitCheck.success) {
+      return fail(limitCheck.error);
+    }
+
     // Create gallery with services using transaction
     const slug = generateSlug();
     const gallery = await prisma.$transaction(async (tx) => {

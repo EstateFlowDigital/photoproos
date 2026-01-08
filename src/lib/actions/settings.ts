@@ -749,52 +749,72 @@ export async function deleteAccount(confirmationText: string) {
 
 /**
  * Get billing and usage stats
+ * Uses the centralized plan-limits system for consistent limit enforcement
  */
 export async function getBillingStats() {
   try {
     const organizationId = await getOrganizationId();
 
-    const [org, galleryCount, clientCount, memberCount, storageUsage] = await Promise.all([
+    // Import plan limits
+    const { getLimit, isUnlimited } = await import("@/lib/plan-limits");
+    const { PlanName } = await import("@prisma/client");
+
+    const [org, galleryCount, clientCount, memberCount, storageResult] = await Promise.all([
       prisma.organization.findUnique({
         where: { id: organizationId },
         select: {
           plan: true,
+          hasLifetimeLicense: true,
           stripeCustomerId: true,
           stripeSubscriptionId: true,
           createdAt: true,
         },
       }),
-      prisma.project.count({ where: { organizationId } }),
+      prisma.gallery.count({
+        where: {
+          project: { organizationId },
+          status: { in: ["draft", "published"] },
+        },
+      }),
       prisma.client.count({ where: { organizationId } }),
       prisma.organizationMember.count({ where: { organizationId } }),
-      // In production, this would query actual storage usage from S3/etc
-      Promise.resolve(0),
+      // Calculate actual storage usage from gallery photos
+      prisma.galleryPhoto.aggregate({
+        where: {
+          gallery: { project: { organizationId } },
+        },
+        _sum: { fileSize: true },
+      }),
     ]);
 
     if (!org) {
       return null;
     }
 
-    // Plan limits (in production, these would come from a config or Stripe)
-    const planLimits = {
-      free: { storage: 2, galleries: 5, clients: 25, members: 1 },
-      pro: { storage: 50, galleries: -1, clients: -1, members: 3 },
-      studio: { storage: 500, galleries: -1, clients: -1, members: -1 },
-      enterprise: { storage: -1, galleries: -1, clients: -1, members: -1 },
-    };
+    // Lifetime license holders get enterprise-level access
+    const effectivePlan = (org.hasLifetimeLicense ? "enterprise" : org.plan) as typeof PlanName[keyof typeof PlanName];
 
-    const limits = planLimits[org.plan] || planLimits.free;
+    // Calculate storage in GB
+    const storageBytes = storageResult._sum.fileSize || 0;
+    const storageGB = Math.ceil(Number(storageBytes) / (1024 * 1024 * 1024));
+
+    // Get limits from centralized system
+    const storageLimit = getLimit(effectivePlan, "storage_gb");
+    const galleriesLimit = getLimit(effectivePlan, "galleries_active");
+    const clientsLimit = getLimit(effectivePlan, "clients_total");
+    const membersLimit = getLimit(effectivePlan, "team_members");
 
     return {
-      plan: org.plan,
+      plan: effectivePlan,
+      hasLifetimeLicense: org.hasLifetimeLicense,
       stripeCustomerId: org.stripeCustomerId,
       stripeSubscriptionId: org.stripeSubscriptionId,
       memberSince: org.createdAt,
       usage: {
-        storage: { used: storageUsage, limit: limits.storage },
-        galleries: { used: galleryCount, limit: limits.galleries },
-        clients: { used: clientCount, limit: limits.clients },
-        members: { used: memberCount, limit: limits.members },
+        storage: { used: storageGB, limit: storageLimit },
+        galleries: { used: galleryCount, limit: galleriesLimit },
+        clients: { used: clientCount, limit: clientsLimit },
+        members: { used: memberCount, limit: membersLimit },
       },
     };
   } catch (error) {

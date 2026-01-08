@@ -1746,6 +1746,9 @@ export async function updatePropertyWebsiteSettings(
     enableMortgageCalc?: boolean;
     enableScheduleTour?: boolean;
     enableFavorite?: boolean;
+  },
+  options?: {
+    bypassPurchaseCheck?: boolean; // Set to true after payment is confirmed
   }
 ): Promise<VoidActionResult> {
   try {
@@ -1754,8 +1757,24 @@ export async function updatePropertyWebsiteSettings(
       return fail("Property website not found");
     }
 
-    // If custom domain is being set, verify it's unique
+    // If custom domain is being set, check plan access
     if (data.customDomain && data.customDomain !== existing.customDomain) {
+      const { checkPropertyDomainAccess } = await import("./plan-enforcement");
+      const domainAccess = await checkPropertyDomainAccess(id);
+
+      if (!domainAccess.success) {
+        return fail(domainAccess.error);
+      }
+
+      // If purchase is required and not bypassed, return info about purchase
+      if (domainAccess.data.requiresPurchase && !options?.bypassPurchaseCheck) {
+        return fail(
+          "PURCHASE_REQUIRED:Custom domains for property websites require a one-time purchase. " +
+            "Click 'Purchase Domain' to continue."
+        );
+      }
+
+      // Verify domain is unique
       const domainExists = await prisma.propertyWebsite.findUnique({
         where: { customDomain: data.customDomain },
       });

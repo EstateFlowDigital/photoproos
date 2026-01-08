@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Comprehensive Plan Limits System** - Freemium model with usage-based limits
+  - Created `src/lib/plan-limits.ts` with centralized limit definitions
+  - Created `src/lib/actions/plan-enforcement.ts` with server-side enforcement
+  - Defined 25+ limit keys (storage, galleries, clients, invoices, AI credits, etc.)
+  - Defined 17+ feature flags (white label, API access, SSO, etc.)
+  - Plan tiers with progressive limits:
+    - **Free**: 2GB storage, 5 galleries, 25 clients, 10 invoices/mo, 10 AI credits/mo
+    - **Pro** ($49/mo): 50GB, unlimited galleries, 3 team members, 100 AI credits/mo
+    - **Studio** ($99/mo): 500GB, 10 team members, advanced analytics, white-label
+    - **Enterprise** ($249/mo): Unlimited everything, SSO/SAML, dedicated support
+  - Limit enforcement on: gallery creation, client creation, team invitations, invoices
+  - Property website custom domains: Free users can purchase per-property domains
+  - Lifetime license holders get enterprise-level access automatically
+  - Updated `getBillingStats()` to use centralized limit system
+  - Added usage tracking with `UsageMeter` increments
+
 - **Announcements & Broadcast System** - New Super Admin feature for platform-wide messaging
   - New database models: Announcement, AnnouncementRead with full schema
   - Support for 7 announcement types: info, feature, maintenance, warning, success, update, promotion

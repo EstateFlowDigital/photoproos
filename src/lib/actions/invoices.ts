@@ -94,6 +94,13 @@ export async function createInvoice(
   try {
     const organizationId = await requireOrganizationId();
 
+    // Check plan limit for monthly invoices
+    const { enforcePlanLimit } = await import("./plan-enforcement");
+    const limitCheck = await enforcePlanLimit("invoices_per_month");
+    if (!limitCheck.success) {
+      return fail(limitCheck.error);
+    }
+
     // Verify client belongs to organization
     const client = await prisma.client.findFirst({
       where: {
