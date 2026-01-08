@@ -409,6 +409,22 @@ enum WatermarkPosition {
 enum DiscountType {
   percentage
   fixed_amount
+  free_trial // Extended free trial period
+  free_months // Free subscription months
+}
+
+enum DiscountScope {
+  platform // Platform-to-photographer (subscription discounts)
+  organization // Photographer-to-client (service/gallery discounts)
+}
+
+enum DiscountAppliesTo {
+  subscription // Platform subscription plans
+  all_services // All photographer services
+  specific_services // Specific service types only
+  gallery // Gallery delivery fees
+  booking // Booking fees
+  all // Everything applicable
 }
 
 enum PaymentPlanStatus {
@@ -1108,6 +1124,7 @@ model Organization {
   invitations              Invitation[]
   projects                 Project[]
   portfolioWebsites        PortfolioWebsite[]
+  domainPurchases          DomainPurchase[]
   portfolioInquiries       PortfolioInquiry[]
   portfolioLeads           PortfolioLead[]
   portfolioComments        PortfolioComment[]
@@ -1377,8 +1394,8 @@ model User {
   stripeConnectOnboarded Boolean @default(false)
 
   // Super Admin & Engagement Features
-  hasLifetimeLicense Boolean @default(false) // Granted by super admin
-  totalSessions      Int     @default(0) // Track logins for feedback modal trigger
+  hasLifetimeLicense Boolean   @default(false) // Granted by super admin
+  totalSessions      Int       @default(0) // Track logins for feedback modal trigger
   lastLoginAt        DateTime? // Track last login time for activity stats
 
   createdAt DateTime @default(now())
@@ -3491,10 +3508,77 @@ model PropertyWebsite {
   views            PropertyWebsiteView[]
   marketingKit     MarketingKit?
   neighborhoodData NeighborhoodData?
+  domainPurchase   DomainPurchase?
 
   @@index([slug])
   @@index([isPublished])
   @@index([customDomain])
+}
+
+// ============================================================================
+// DOMAIN PURCHASES
+// ============================================================================
+
+// Track domains purchased through the platform
+model DomainPurchase {
+  id             String @id @default(cuid())
+  organizationId String
+
+  // Domain details
+  domain             String  @unique // e.g., "123mainstreet.com"
+  tld                String  @default(".com") // Top-level domain
+  registrar          String  @default("cloudflare") // Domain registrar used
+  registrarDomainId  String? // ID from registrar (Cloudflare domain ID)
+  registrarAccountId String? // Cloudflare account ID
+
+  // Ownership & Connection
+  connectedToType    String? // "property" or "portfolio"
+  propertyWebsiteId  String? @unique // Connected property website
+  portfolioWebsiteId String? @unique // Connected portfolio website
+
+  // Status
+  status         DomainStatus @default(pending_payment)
+  dnsConfigured  Boolean      @default(false)
+  sslProvisioned Boolean      @default(false)
+  sslExpiresAt   DateTime?
+
+  // Registration details
+  registrationDate DateTime?
+  expirationDate   DateTime?
+  autoRenew        Boolean   @default(true)
+
+  // Payment
+  priceCents       Int       @default(3000) // $30.00
+  stripePaymentId  String? // Stripe Payment Intent ID
+  stripeCheckoutId String? // Stripe Checkout Session ID
+  paidAt           DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization     Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  propertyWebsite  PropertyWebsite?  @relation(fields: [propertyWebsiteId], references: [id], onDelete: SetNull)
+  portfolioWebsite PortfolioWebsite? @relation(fields: [portfolioWebsiteId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([domain])
+  @@index([status])
+  @@index([propertyWebsiteId])
+  @@index([portfolioWebsiteId])
+}
+
+enum DomainStatus {
+  pending_payment // Waiting for Stripe checkout completion
+  payment_processing // Payment received, processing with registrar
+  registering // Registering with Cloudflare
+  configuring_dns // Setting up DNS records
+  provisioning_ssl // Waiting for SSL certificate
+  active // Domain is live and working
+  expired // Domain has expired
+  failed // Registration failed
+  cancelled // User cancelled
 }
 
 // Property Website Section (like Portfolio sections but for properties)
@@ -4043,15 +4127,16 @@ model PortfolioWebsite {
   publishedAt DateTime?
 
   // Relations
-  organization Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  projects     PortfolioWebsiteProject[]
-  sections     PortfolioWebsiteSection[]
-  views        PortfolioWebsiteView[]
-  inquiries    PortfolioInquiry[]
-  leads        PortfolioLead[]
-  comments     PortfolioComment[]
-  abTests      PortfolioABTest[]
-  customForms  CustomForm[]
+  organization   Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projects       PortfolioWebsiteProject[]
+  sections       PortfolioWebsiteSection[]
+  views          PortfolioWebsiteView[]
+  inquiries      PortfolioInquiry[]
+  leads          PortfolioLead[]
+  comments       PortfolioComment[]
+  abTests        PortfolioABTest[]
+  customForms    CustomForm[]
+  domainPurchase DomainPurchase?
 
   @@index([organizationId])
   @@index([slug])
@@ -4868,18 +4953,24 @@ model ProductPhoto {
 // ============================================================================
 
 model DiscountCode {
-  id             String       @id @default(cuid())
-  organizationId String
-  code           String // The actual code (e.g., "SUMMER20")
-  description    String? // Internal description
-  discountType   DiscountType @default(percentage)
-  discountValue  Int // Percentage (0-100) or cents for fixed_amount
+  id              String       @id @default(cuid())
+  organizationId  String? // null = platform-level discount
+  createdByUserId String? // User who created the discount
+  code            String // The actual code (e.g., "SUMMER20")
+  name            String? // Internal name for reference
+  description     String? // Internal description
+  discountType    DiscountType @default(percentage)
+  discountValue   Int // Percentage (0-100) or cents for fixed_amount
+
+  // Scope - platform vs organization
+  scope DiscountScope @default(organization)
 
   // Limits
-  maxUses     Int? @default(0) // 0 = unlimited
-  usedCount   Int  @default(0)
-  minPurchase Int? @default(0) // Minimum purchase in cents
-  maxDiscount Int? // Maximum discount in cents (for percentage discounts)
+  maxUses      Int? @default(0) // 0 = unlimited
+  usedCount    Int  @default(0)
+  usagePerUser Int  @default(1) // Max uses per user/client
+  minPurchase  Int? @default(0) // Minimum purchase in cents
+  maxDiscount  Int? // Maximum discount in cents (for percentage discounts)
 
   // Validity
   validFrom  DateTime  @default(now())
@@ -4887,14 +4978,23 @@ model DiscountCode {
   isActive   Boolean   @default(true)
 
   // Scope - which things this code applies to
-  applicableServices String[] @default([]) // Empty = all services
-  applicableClients  String[] @default([]) // Empty = all clients
+  applicableServices String[]          @default([]) // Empty = all services
+  applicableClients  String[]          @default([]) // Empty = all clients
+  appliesTo          DiscountAppliesTo @default(all)
+
+  // Sharing & Discovery
+  shareableSlug String? @unique // For shareable URLs: /discount/[slug]
+  qrCodeUrl     String? // Generated QR code image URL
+  isPublic      Boolean @default(false) // Show in public listings
+
+  // Tracking
+  totalSavings Int @default(0) // Total cents saved by users
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  organization Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization?       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   usages       DiscountCodeUsage[]
 
   // Phase 1: Ordering System relations
@@ -4904,6 +5004,8 @@ model DiscountCode {
   @@index([organizationId])
   @@index([code])
   @@index([isActive])
+  @@index([scope])
+  @@index([shareableSlug])
 }
 
 model DiscountCodeUsage {
@@ -4912,8 +5014,20 @@ model DiscountCodeUsage {
   invoiceId      String?
   paymentId      String?
   clientEmail    String?
+  userId         String? // Clerk user ID (for platform discounts)
+  clientId       String? // Client ID (for org discounts)
 
+  // What it was applied to
+  appliedTo     String? // Description: "Pro Plan Subscription", "Gallery #123", etc.
+  appliedToType String? // Type: subscription, invoice, gallery, booking
+
+  // Value tracking
+  originalAmount Int? // Original price in cents before discount
   discountAmount Int // Amount discounted in cents
+  finalAmount    Int? // Final price paid in cents
+
+  // Tracking
+  source String? // How they found the code: "qr", "link", "manual", "referral"
 
   createdAt DateTime @default(now())
 
@@ -4922,6 +5036,8 @@ model DiscountCodeUsage {
 
   @@index([discountCodeId])
   @@index([invoiceId])
+  @@index([userId])
+  @@index([clientId])
 }
 
 // ============================================================================
@@ -9703,14 +9819,14 @@ model FeatureFlag {
   enabled     Boolean             @default(false)
 
   // Rollout configuration
-  rolloutPercentage Int       @default(100) // 0-100, for gradual rollouts
-  enabledForOrgs    String[]  @default([]) // Specific org IDs with access
-  disabledForOrgs   String[]  @default([]) // Specific org IDs without access
+  rolloutPercentage Int      @default(100) // 0-100, for gradual rollouts
+  enabledForOrgs    String[] @default([]) // Specific org IDs with access
+  disabledForOrgs   String[] @default([]) // Specific org IDs without access
 
   // Metadata
-  icon      String? // Icon name for UI
-  order     Int     @default(0) // Display order within category
-  isSystem  Boolean @default(false) // System flags can't be deleted
+  icon     String? // Icon name for UI
+  order    Int     @default(0) // Display order within category
+  isSystem Boolean @default(false) // System flags can't be deleted
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -9739,21 +9855,21 @@ enum AdminActionType {
 
 // Admin Audit Log - Tracks all super admin actions
 model AdminAuditLog {
-  id            String          @id @default(cuid())
-  adminUserId   String // The super admin who performed the action
-  actionType    AdminActionType
-  description   String // Human-readable description
+  id          String          @id @default(cuid())
+  adminUserId String // The super admin who performed the action
+  actionType  AdminActionType
+  description String // Human-readable description
 
   // Target information
-  targetUserId  String? // User affected (if applicable)
-  targetOrgId   String? // Organization affected (if applicable)
-  targetId      String? // Generic target ID (ticket, flag, etc.)
-  targetType    String? // Type of target (user, org, feature_flag, etc.)
+  targetUserId String? // User affected (if applicable)
+  targetOrgId  String? // Organization affected (if applicable)
+  targetId     String? // Generic target ID (ticket, flag, etc.)
+  targetType   String? // Type of target (user, org, feature_flag, etc.)
 
   // Additional context
-  metadata      Json?   // Additional action-specific data
-  ipAddress     String? // IP address of admin
-  userAgent     String? // Browser/client info
+  metadata  Json? // Additional action-specific data
+  ipAddress String? // IP address of admin
+  userAgent String? // Browser/client info
 
   // Before/after for changes
   previousValue Json?
@@ -9787,14 +9903,14 @@ model SystemSetting {
 
 // Impersonation Session - Track admin impersonation
 model ImpersonationSession {
-  id            String    @id @default(cuid())
-  adminUserId   String // Super admin who is impersonating
-  targetUserId  String // User being impersonated
-  reason        String? // Why impersonating
+  id           String  @id @default(cuid())
+  adminUserId  String // Super admin who is impersonating
+  targetUserId String // User being impersonated
+  reason       String? // Why impersonating
 
-  startedAt     DateTime  @default(now())
-  endedAt       DateTime?
-  isActive      Boolean   @default(true)
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  isActive  Boolean   @default(true)
 
   // Actions performed during impersonation
   actionsPerformed Int @default(0)
@@ -9807,13 +9923,13 @@ model ImpersonationSession {
 // ==================== ANNOUNCEMENTS & BROADCASTS ====================
 
 enum AnnouncementType {
-  info           // General information
-  feature        // New feature announcement
-  maintenance    // Scheduled maintenance notice
-  warning        // Important warning
-  success        // Positive news/celebration
-  update         // Platform update
-  promotion      // Marketing promotion
+  info // General information
+  feature // New feature announcement
+  maintenance // Scheduled maintenance notice
+  warning // Important warning
+  success // Positive news/celebration
+  update // Platform update
+  promotion // Marketing promotion
 }
 
 enum AnnouncementPriority {
@@ -9824,49 +9940,49 @@ enum AnnouncementPriority {
 }
 
 enum AnnouncementAudience {
-  all            // All users
-  free_users     // Free plan only
-  paid_users     // Any paid plan
-  starter_users  // Starter plan only
-  pro_users      // Pro plan only
-  enterprise     // Enterprise only
-  specific_orgs  // Specific organizations (via targetOrgIds)
+  all // All users
+  free_users // Free plan only
+  paid_users // Any paid plan
+  starter_users // Starter plan only
+  pro_users // Pro plan only
+  enterprise // Enterprise only
+  specific_orgs // Specific organizations (via targetOrgIds)
 }
 
 // Platform Announcement - Admin broadcasts to users
 model Announcement {
-  id              String               @id @default(cuid())
+  id String @id @default(cuid())
 
   // Content
-  title           String
-  content         String               @db.Text
-  type            AnnouncementType     @default(info)
-  priority        AnnouncementPriority @default(medium)
+  title    String
+  content  String               @db.Text
+  type     AnnouncementType     @default(info)
+  priority AnnouncementPriority @default(medium)
 
   // Targeting
-  audience        AnnouncementAudience @default(all)
-  targetOrgIds    String[]             @default([]) // For specific_orgs audience
+  audience     AnnouncementAudience @default(all)
+  targetOrgIds String[]             @default([]) // For specific_orgs audience
 
   // Display options
-  dismissible     Boolean              @default(true)  // Can users dismiss this?
-  showBanner      Boolean              @default(true)  // Show as banner at top of page?
-  bannerColor     String?                              // Custom banner color
-  ctaLabel        String?                              // Call-to-action button text
-  ctaUrl          String?                              // Call-to-action URL
+  dismissible Boolean @default(true) // Can users dismiss this?
+  showBanner  Boolean @default(true) // Show as banner at top of page?
+  bannerColor String? // Custom banner color
+  ctaLabel    String? // Call-to-action button text
+  ctaUrl      String? // Call-to-action URL
 
   // Scheduling
-  publishedAt     DateTime             @default(now())
-  expiresAt       DateTime?                            // Auto-expire after this time
-  isActive        Boolean              @default(true)
+  publishedAt DateTime  @default(now())
+  expiresAt   DateTime? // Auto-expire after this time
+  isActive    Boolean   @default(true)
 
   // Admin tracking
-  createdByUserId String                               // Clerk user ID of admin
+  createdByUserId String // Clerk user ID of admin
 
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  readStatuses    AnnouncementRead[]
+  readStatuses AnnouncementRead[]
 
   @@index([isActive])
   @@index([publishedAt])
@@ -9876,205 +9992,19 @@ model Announcement {
 
 // Track which users have read/dismissed announcements
 model AnnouncementRead {
-  id              String      @id @default(cuid())
-  announcementId  String
-  userId          String      // Clerk user ID
-  organizationId  String?     // Organization ID at time of reading
+  id             String  @id @default(cuid())
+  announcementId String
+  userId         String // Clerk user ID
+  organizationId String? // Organization ID at time of reading
 
-  readAt          DateTime    @default(now())
-  isDismissed     Boolean     @default(false) // User explicitly dismissed
-  dismissedAt     DateTime?
+  readAt      DateTime  @default(now())
+  isDismissed Boolean   @default(false) // User explicitly dismissed
+  dismissedAt DateTime?
 
   // Relations
-  announcement    Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
 
   @@unique([announcementId, userId])
   @@index([userId])
   @@index([announcementId])
-}
-
-// ==================== DISCOUNT & COUPON SYSTEM ====================
-
-enum DiscountScope {
-  platform       // Platform-to-photographer (subscription discounts)
-  organization   // Photographer-to-client (service/gallery discounts)
-}
-
-enum DiscountType {
-  percentage     // Percentage off (e.g., 20% off)
-  fixed_amount   // Fixed dollar amount off (e.g., $50 off)
-  free_trial     // Extended free trial period
-  free_months    // Free subscription months
-}
-
-enum DiscountAppliesTo {
-  subscription   // Platform subscription plans
-  all_services   // All photographer services
-  specific_services // Specific service types only
-  gallery        // Gallery delivery fees
-  booking        // Booking fees
-  all            // Everything applicable
-}
-
-enum DiscountStatus {
-  active
-  paused
-  expired
-  depleted       // Usage limit reached
-  scheduled      // Not yet active
-}
-
-// Master discount/coupon code
-model DiscountCode {
-  id              String           @id @default(cuid())
-
-  // Ownership
-  scope           DiscountScope    @default(platform)
-  organizationId  String?          // null = platform-level, set = org-level
-  createdByUserId String           // User who created the discount
-
-  // Code details
-  code            String           // The actual discount code (e.g., "SUMMER20")
-  name            String           // Internal name for reference
-  description     String?          // Public description shown to users
-
-  // Discount configuration
-  discountType    DiscountType     @default(percentage)
-  discountValue   Float            // Value based on type (20 for 20%, 50 for $50)
-  appliesTo       DiscountAppliesTo @default(all)
-  specificIds     String[]         @default([]) // For specific_services: service IDs
-
-  // Limits
-  usageLimit      Int?             // Max total uses (null = unlimited)
-  usagePerUser    Int              @default(1) // Max uses per user/client
-  minPurchase     Float?           // Minimum purchase amount required
-  maxDiscount     Float?           // Cap on discount amount (for percentage)
-
-  // Scheduling
-  startsAt        DateTime         @default(now())
-  expiresAt       DateTime?        // null = never expires
-
-  // Status
-  status          DiscountStatus   @default(active)
-  isPublic        Boolean          @default(false) // Show in public listings
-  requiresEmail   Boolean          @default(false) // Require email to claim
-
-  // Sharing
-  shareableSlug   String?          @unique // For shareable URLs: /discount/[slug]
-  qrCodeUrl       String?          // Generated QR code image URL
-
-  // Tracking
-  totalUsageCount Int              @default(0)
-  totalSavings    Float            @default(0) // Total $ saved by users
-
-  // Metadata
-  metadata        Json?            // Additional custom data
-
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-
-  // Relations
-  organization    Organization?    @relation("OrganizationDiscounts", fields: [organizationId], references: [id], onDelete: Cascade)
-  usages          DiscountUsage[]
-  campaigns       DiscountCampaign[]
-
-  @@unique([code, organizationId]) // Same code can exist for different orgs
-  @@index([scope])
-  @@index([status])
-  @@index([organizationId])
-  @@index([code])
-  @@index([shareableSlug])
-  @@index([startsAt, expiresAt])
-}
-
-// Track discount code usage
-model DiscountUsage {
-  id              String       @id @default(cuid())
-  discountCodeId  String
-
-  // Who used it
-  userId          String?      // Clerk user ID (for platform discounts)
-  clientId        String?      // Client ID (for org discounts)
-  email           String?      // Email used to claim (for tracking)
-
-  // What it was applied to
-  appliedTo       String       // Description: "Pro Plan Subscription", "Gallery #123", etc.
-  appliedToId     String?      // Reference ID (subscription, invoice, gallery, etc.)
-  appliedToType   String?      // Type: subscription, invoice, gallery, booking
-
-  // Value
-  originalAmount  Float        // Original price before discount
-  discountAmount  Float        // Amount discounted
-  finalAmount     Float        // Final price paid
-
-  // Tracking
-  source          String?      // How they found the code: "qr", "link", "manual", "referral"
-  ipAddress       String?
-  userAgent       String?
-
-  usedAt          DateTime     @default(now())
-
-  // Relations
-  discountCode    DiscountCode @relation(fields: [discountCodeId], references: [id], onDelete: Cascade)
-
-  @@index([discountCodeId])
-  @@index([userId])
-  @@index([clientId])
-  @@index([email])
-  @@index([usedAt])
-}
-
-// Group discounts into campaigns for organization
-model DiscountCampaign {
-  id              String       @id @default(cuid())
-  organizationId  String?      // null = platform campaign
-  createdByUserId String
-
-  // Campaign details
-  name            String
-  description     String?
-  isActive        Boolean      @default(true)
-
-  // Timing
-  startsAt        DateTime     @default(now())
-  endsAt          DateTime?
-
-  // Goals & tracking
-  goalUsageCount  Int?         // Target number of redemptions
-  goalRevenue     Float?       // Target revenue from campaign
-
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-
-  // Relations
-  organization    Organization? @relation("OrganizationDiscountCampaigns", fields: [organizationId], references: [id], onDelete: Cascade)
-  discountCodes   DiscountCode[]
-
-  @@index([organizationId])
-  @@index([isActive])
-}
-
-// Referral bonuses tied to discount system
-model ReferralDiscount {
-  id                String       @id @default(cuid())
-  referrerId        String       // User who referred
-  referredId        String       // User who was referred
-
-  // Discount awarded to referrer
-  referrerDiscountId String?
-  referrerBonus     Float        @default(0) // Direct cash/credit bonus
-
-  // Discount awarded to referred user
-  referredDiscountId String?
-  referredBonus     Float        @default(0)
-
-  // Status
-  isRedeemed        Boolean      @default(false)
-  redeemedAt        DateTime?
-
-  createdAt         DateTime     @default(now())
-
-  @@unique([referrerId, referredId])
-  @@index([referrerId])
-  @@index([referredId])
 }
