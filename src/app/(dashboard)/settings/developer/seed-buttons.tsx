@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { seedDatabase, clearSeededData } from "@/lib/actions/seed";
+import { seedDatabase, clearSeededData, enableLifetimeLicense } from "@/lib/actions/seed";
 import { Button } from "@/components/ui/button";
 
 export function SeedDatabaseButton() {
@@ -176,6 +176,85 @@ export function ClearDataButton() {
         </div>
       )}
     </div>
+  );
+}
+
+export function LifetimeLicenseButton() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
+  const router = useRouter();
+
+  const handleEnable = async () => {
+    setIsLoading(true);
+    setResult(null);
+
+    try {
+      const response = await enableLifetimeLicense();
+
+      if (response.success) {
+        setResult({
+          success: true,
+          message: `Upgraded to ${response.data.plan} plan with ${response.data.modulesEnabled} modules enabled!`,
+        });
+        router.refresh();
+      } else {
+        setResult({ success: false, message: response.error });
+      }
+    } catch (error) {
+      setResult({ success: false, message: "An unexpected error occurred" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <Button
+        variant="primary"
+        onClick={handleEnable}
+        disabled={isLoading}
+        className="w-full bg-gradient-to-r from-[var(--ai)] to-[var(--primary)] hover:opacity-90"
+      >
+        {isLoading ? (
+          <span className="flex items-center justify-center gap-2">
+            <LoadingSpinner />
+            Enabling Lifetime License...
+          </span>
+        ) : (
+          <span className="flex items-center justify-center gap-2">
+            <CrownIcon className="h-4 w-4" />
+            Enable Lifetime License
+          </span>
+        )}
+      </Button>
+
+      {result && (
+        <div
+          className={`rounded-lg px-4 py-3 text-sm ${
+            result.success
+              ? "bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/30"
+              : "bg-[var(--error)]/10 text-[var(--error)] border border-[var(--error)]/30"
+          }`}
+        >
+          {result.success ? (
+            <>
+              <p className="font-medium mb-1">Lifetime License Activated!</p>
+              <p className="text-xs opacity-80">{result.message}</p>
+            </>
+          ) : (
+            <p>{result.message}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CrownIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+    </svg>
   );
 }
 

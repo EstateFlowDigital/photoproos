@@ -252,42 +252,32 @@ export function ContractEditClient({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-3 text-sm text-foreground-muted mb-1">
-            <Link href="/contracts" className="hover:text-foreground">
-              Contracts
-            </Link>
-            <span>/</span>
-            <Link
-              href={`/contracts/${contract.id}`}
-              className="hover:text-foreground"
-            >
-              {contract.name}
-            </Link>
-            <span>/</span>
-            <span className="text-foreground">Edit</span>
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">Edit Contract</h1>
+      {/* Action Bar */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+        <div className="flex flex-wrap items-center gap-2">
+          {hasUnsavedChanges && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full bg-yellow-500/10 text-yellow-500">
+              <span className="h-1.5 w-1.5 rounded-full bg-yellow-500" />
+              Unsaved changes
+            </span>
+          )}
+          <span className={cn(
+            "inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full",
+            contract.status === "draft" && "bg-[var(--background-tertiary)] text-foreground-muted",
+            contract.status === "sent" && "bg-[var(--primary)]/10 text-[var(--primary)]",
+            contract.status === "signed" && "bg-[var(--success)]/10 text-[var(--success)]"
+          )}>
+            {contract.status === "draft" && "Draft"}
+            {contract.status === "sent" && "Awaiting Signatures"}
+            {contract.status === "signed" && "Signed"}
+          </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {hasUnsavedChanges && (
-            <span className="text-sm text-yellow-400">Unsaved changes</span>
-          )}
-
-          <Link
-            href={`/contracts/${contract.id}`}
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-          >
-            Cancel
-          </Link>
-
           <button
             onClick={handleSave}
             disabled={isPending || !hasUnsavedChanges}
-            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
           >
             {isPending ? "Saving..." : "Save"}
           </button>
@@ -343,110 +333,80 @@ export function ContractEditClient({
 
       {/* Content Tab */}
       {activeTab === "content" && (
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-6">
-            {/* Details Card */}
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
-                Contract Details
-              </h2>
+        <div className="space-y-6">
+          {/* Details Card */}
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">
+              Contract Details
+            </h2>
 
-              <div className="space-y-4">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1.5">
+                  Contract Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1.5">
-                    Contract Name
+                    Client
+                  </label>
+                  <select
+                    value={clientId}
+                    onChange={(e) => setClientId(e.target.value)}
+                    disabled={isSent}
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none disabled:opacity-50"
+                  >
+                    <option value="">No client</option>
+                    {clients.map((client) => (
+                      <option key={client.id} value={client.id}>
+                        {client.fullName || client.company || client.email}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">
+                    Expires On
                   </label>
                   <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
+                    type="date"
+                    value={expiresAt}
+                    onChange={(e) => setExpiresAt(e.target.value)}
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
                   />
                 </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">
-                      Client
-                    </label>
-                    <select
-                      value={clientId}
-                      onChange={(e) => setClientId(e.target.value)}
-                      disabled={isSent}
-                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none disabled:opacity-50"
-                    >
-                      <option value="">No client</option>
-                      {clients.map((client) => (
-                        <option key={client.id} value={client.id}>
-                          {client.fullName || client.company || client.email}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">
-                      Expires On
-                    </label>
-                    <input
-                      type="date"
-                      value={expiresAt}
-                      onChange={(e) => setExpiresAt(e.target.value)}
-                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
-                    />
-                  </div>
-                </div>
               </div>
-            </div>
-
-            {/* Content Card */}
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
-                Contract Content
-              </h2>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                disabled={isSent}
-                rows={20}
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-3 text-sm text-foreground font-mono focus:border-[var(--primary)] focus:outline-none disabled:opacity-50"
-              />
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-              <h3 className="text-sm font-semibold text-foreground mb-3">
-                Status
-              </h3>
-              <p className="text-sm text-foreground-muted">
-                {contract.status === "draft" && "Draft - not yet sent"}
-                {contract.status === "sent" && "Sent - awaiting signatures"}
-                {contract.status === "signed" && "Fully signed"}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-              <h3 className="text-sm font-semibold text-foreground mb-3">
-                Quick Actions
-              </h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => setActiveTab("signers")}
-                  className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-[var(--background-hover)] transition-colors text-foreground-muted hover:text-foreground"
-                >
-                  Manage Signers ({signers.length})
-                </button>
-              </div>
-            </div>
+          {/* Content Card */}
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+            <h2 className="text-lg font-semibold text-foreground mb-4">
+              Contract Content
+            </h2>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              disabled={isSent}
+              rows={16}
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-3 text-sm text-foreground font-mono focus:border-[var(--primary)] focus:outline-none disabled:opacity-50"
+            />
           </div>
         </div>
       )}
 
       {/* Signers Tab */}
       {activeTab === "signers" && (
-        <div className="max-w-2xl space-y-6">
+        <div className="space-y-6">
           {/* Add Signer Card */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <div className="flex items-center justify-between mb-4">
@@ -479,7 +439,7 @@ export function ContractEditClient({
                       value={newSignerEmail}
                       onChange={(e) => setNewSignerEmail(e.target.value)}
                       placeholder="signer@example.com"
-                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
                     />
                   </div>
                   <div>
@@ -491,7 +451,7 @@ export function ContractEditClient({
                       value={newSignerName}
                       onChange={(e) => setNewSignerName(e.target.value)}
                       placeholder="John Smith"
-                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
+                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none"
                     />
                   </div>
                   <div className="flex items-center gap-3 pt-2">
@@ -634,7 +594,7 @@ export function ContractEditClient({
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[var(--primary)] shrink-0" />
-                You'll be notified when all parties have signed
+                You&apos;ll be notified when all parties have signed
               </li>
             </ul>
           </div>

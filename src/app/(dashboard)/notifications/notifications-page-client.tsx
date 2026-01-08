@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard";
 import type { NotificationData } from "@/lib/actions/notifications";
-import type { ActivityData } from "@/lib/utils/activity";
+import type { ActivityData } from "@/lib/types/activity";
 import { VirtualList } from "@/components/ui/virtual-list";
 import {
   markNotificationAsRead,

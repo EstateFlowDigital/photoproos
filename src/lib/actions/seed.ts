@@ -1302,6 +1302,81 @@ By signing below, both parties agree to the terms outlined in this agreement.`,
 }
 
 /**
+ * Upgrades the organization to lifetime/enterprise plan with all modules enabled
+ */
+export async function enableLifetimeLicense(): Promise<ActionResult<{ plan: string; modulesEnabled: number }>> {
+  try {
+    const organizationId = await requireOrganizationId();
+
+    // Get all available module IDs (excluding core modules which are always enabled)
+    const ALL_MODULES = [
+      // Operations
+      "galleries",
+      "scheduling",
+      "invoices",
+      "services",
+      "analytics",
+      "orders",
+      "payments",
+      "expenses",
+      "team_management",
+      "product_catalogs",
+      // Client
+      "inbox",
+      "leads",
+      "clients",
+      "contracts",
+      "questionnaires",
+      "reviews",
+      // Advanced
+      "properties",
+      "portfolio_websites",
+      "mini_sessions",
+      "online_booking",
+      "licensing",
+      "batch_processing",
+      "ai_assistant",
+      "marketing_kit",
+      "referrals",
+      "integrations",
+      "tax_prep",
+      "brokerages",
+    ];
+
+    // Update organization with enterprise plan and all modules
+    await prisma.organization.update({
+      where: { id: organizationId },
+      data: {
+        plan: "enterprise",
+        enabledModules: ALL_MODULES,
+        // Set generous limits
+        storageLimit: BigInt(1000 * 1024 * 1024 * 1024), // 1TB
+        galleryLimit: 999999,
+        monthlyEmailLimit: 999999,
+      },
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/settings");
+    revalidatePath("/settings/features");
+
+    return {
+      success: true,
+      data: {
+        plan: "enterprise",
+        modulesEnabled: ALL_MODULES.length,
+      },
+    };
+  } catch (error) {
+    console.error("[Seed] Error enabling lifetime license:", error);
+    if (error instanceof Error) {
+      return fail(error.message);
+    }
+    return fail("Failed to enable lifetime license");
+  }
+}
+
+/**
  * Clears all seeded data (for testing/reset purposes)
  */
 export async function clearSeededData(): Promise<ActionResult> {

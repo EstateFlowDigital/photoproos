@@ -34,6 +34,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Links to property websites for kit creation
   - Coming soon notice for planned AI features
 
+### Changed
+- **Standardized Form Page Layouts** - Updated form pages to follow consistent design pattern
+  - All form pages now use `lg:grid-cols-3` layout with form in `lg:col-span-2` and sidebar
+  - Added Tips cards with numbered steps to guide users
+  - Added Quick Stats cards showing relevant metrics
+  - Added Quick Links cards for easy navigation
+  - Updated pages:
+    - `/properties/new` - Property website creation form
+    - `/questionnaires/templates/new` - Questionnaire template creation form
+    - `/contracts/[id]/edit` - Contract editing form with tabs
+    - `/settings/marketing` - Marketing settings page
+  - Improved mobile responsiveness with proper flex-wrap and responsive grids
+  - Consistent styling using design system tokens (--card, --card-border, --primary, etc.)
+  - PageHeader component used consistently for page titles and back navigation
+
 - **Add Widget Modal Multi-Selection** - Enhanced widget management
   - Multi-select checkboxes on widget cards in Add Widget modal
   - "Add Selected (X)" button for batch widget addition

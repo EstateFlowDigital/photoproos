@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
-import { SeedDatabaseButton, ClearDataButton } from "./seed-buttons";
+import { SeedDatabaseButton, ClearDataButton, LifetimeLicenseButton } from "./seed-buttons";
 import { StripeProductsSection } from "./stripe-products";
 import { SubscriptionPlansSection } from "./subscription-plans";
 import { requireOrganizationId } from "@/lib/actions/auth-helper";
@@ -91,6 +91,53 @@ export default async function DeveloperSettingsPage() {
         <p className="text-sm text-[var(--warning)]">
           <strong>Warning:</strong> These tools modify your database. Use with caution in production environments.
         </p>
+      </div>
+
+      {/* Lifetime License */}
+      <div className="rounded-xl border border-[var(--ai)]/30 bg-gradient-to-br from-[var(--ai)]/5 to-[var(--primary)]/5 p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--ai)]/30 bg-[var(--ai)]/10 text-[var(--ai)]">
+            <CrownIcon className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Lifetime License</h2>
+            <p className="text-sm text-foreground-muted">Unlock all features and modules</p>
+          </div>
+        </div>
+
+        <div className="space-y-3 mb-6">
+          <p className="text-sm text-foreground-secondary">
+            This will upgrade your account to the Enterprise plan with:
+          </p>
+          <div className="grid gap-x-4 gap-y-1.5 text-sm text-foreground-muted sm:grid-cols-2">
+            <div className="flex items-center gap-2">
+              <CheckIcon className="h-4 w-4 text-[var(--ai)]" />
+              All 28+ modules enabled
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckIcon className="h-4 w-4 text-[var(--ai)]" />
+              Enterprise plan tier
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckIcon className="h-4 w-4 text-[var(--ai)]" />
+              1TB storage limit
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckIcon className="h-4 w-4 text-[var(--ai)]" />
+              Unlimited galleries
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckIcon className="h-4 w-4 text-[var(--ai)]" />
+              Unlimited emails
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckIcon className="h-4 w-4 text-[var(--ai)]" />
+              All advanced features
+            </div>
+          </div>
+        </div>
+
+        <LifetimeLicenseButton />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -326,6 +373,14 @@ function BookOpenIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M10.75 16.82A7.462 7.462 0 0 1 15 15.5c.71 0 1.396.098 2.046.282A.75.75 0 0 0 18 15.06v-11a.75.75 0 0 0-.546-.721A9.006 9.006 0 0 0 15 3a8.963 8.963 0 0 0-4.25 1.065V16.82ZM9.25 4.065A8.963 8.963 0 0 0 5 3c-.85 0-1.673.118-2.454.339A.75.75 0 0 0 2 4.06v11a.75.75 0 0 0 .954.721A7.463 7.463 0 0 1 5 15.5c1.579 0 3.042.487 4.25 1.32V4.065Z" />
+    </svg>
+  );
+}
+
+function CrownIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
     </svg>
   );
 }
