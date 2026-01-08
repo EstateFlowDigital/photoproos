@@ -14,6 +14,7 @@ import {
 import { updatePropertyWebsite } from "@/lib/actions/property-websites";
 import type { PropertyWebsiteWithRelations } from "@/lib/actions/property-websites";
 import type { PropertyType, PropertyWebsiteTemplate } from "@prisma/client";
+import { DomainPurchaseModal } from "@/components/domain/domain-purchase-modal";
 
 interface PropertyEditFormProps {
   website: PropertyWebsiteWithRelations;
@@ -193,6 +194,9 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
   // Preview Modal
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewKey, setPreviewKey] = useState(0);
+
+  // Domain Purchase Modal
+  const [isDomainModalOpen, setIsDomainModalOpen] = useState(false);
 
   const handlePreview = () => {
     setPreviewKey(prev => prev + 1); // Force iframe refresh
@@ -827,6 +831,61 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
             </div>
           </div>
 
+          {/* Custom Domain */}
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-foreground">Custom Domain</h2>
+              {website.customDomain && (
+                <span className="text-xs font-medium text-[var(--success)] bg-[var(--success)]/10 px-2 py-1 rounded">
+                  Active
+                </span>
+              )}
+            </div>
+
+            {website.customDomain ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <GlobeIcon className="h-4 w-4 text-[var(--primary)]" />
+                  <a
+                    href={`https://${website.customDomain}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-[var(--primary)] hover:underline"
+                  >
+                    {website.customDomain}
+                  </a>
+                </div>
+                <p className="text-xs text-foreground-muted">
+                  Your property website is accessible at this custom domain.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsDomainModalOpen(true)}
+                  className="text-sm text-foreground-muted hover:text-foreground"
+                >
+                  Manage domain settings
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-foreground-muted">
+                  Stand out with a custom domain like <strong>{website.address.toLowerCase().replace(/\s+/g, "")}.com</strong>
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsDomainModalOpen(true)}
+                  className="w-full rounded-lg border border-[var(--primary)] bg-[var(--primary)]/10 px-4 py-2.5 text-sm font-medium text-[var(--primary)] transition-colors hover:bg-[var(--primary)]/20 flex items-center justify-center gap-2"
+                >
+                  <GlobeIcon className="h-4 w-4" />
+                  Get Custom Domain - $30/year
+                </button>
+                <p className="text-xs text-foreground-muted text-center">
+                  SSL included • Instant activation
+                </p>
+              </div>
+            )}
+          </div>
+
           {/* Gallery Preview */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Gallery Photos</h2>
@@ -890,6 +949,16 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
       >
         <PreviewIcon className="h-6 w-6" />
       </button>
+
+      {/* Domain Purchase Modal */}
+      <DomainPurchaseModal
+        isOpen={isDomainModalOpen}
+        onClose={() => setIsDomainModalOpen(false)}
+        type="property"
+        websiteId={website.id}
+        suggestFrom={website.address}
+        currentDomain={website.customDomain}
+      />
 
       {/* Preview Modal */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
@@ -987,6 +1056,14 @@ function RefreshIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V2.929a.75.75 0 0 0-1.5 0v2.43l-.31-.31A7 7 0 0 0 3.239 8.188a.75.75 0 1 0 1.448.389A5.5 5.5 0 0 1 13.89 6.11l.311.31h-2.432a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.219Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function GlobeIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM4.332 8.027a6.012 6.012 0 0 1 1.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 0 1 9 7.5V8a2 2 0 0 0 4 0 2 2 0 0 1 1.523-1.943A5.977 5.977 0 0 1 16 10c0 .34-.028.675-.083 1H15a2 2 0 0 0-2 2v2.197A5.973 5.973 0 0 1 10 16v-2a2 2 0 0 0-2-2 2 2 0 0 1-2-2 2 2 0 0 0-1.668-1.973Z" clipRule="evenodd" />
     </svg>
   );
 }

@@ -19,6 +19,7 @@ import {
   removeCustomDomain,
 } from "@/lib/actions/portfolio-websites";
 import { SOCIAL_PLATFORMS } from "@/lib/portfolio-templates";
+import { DomainPurchaseModal } from "@/components/domain/domain-purchase-modal";
 
 interface SettingsTabProps {
   website: PortfolioWebsite;
@@ -89,6 +90,7 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
   // Custom Domain
   const [customDomain, setCustomDomain] = useState(website.customDomain || "");
   const [isVerifyingDomain, setIsVerifyingDomain] = useState(false);
+  const [isDomainPurchaseModalOpen, setIsDomainPurchaseModalOpen] = useState(false);
 
   const loading = isPending || parentPending;
 
@@ -995,34 +997,96 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
               </div>
             </div>
           ) : (
-            // Domain input for new domain
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-foreground">
-                  Your Domain
-                </label>
-                <input
-                  value={customDomain}
-                  onChange={(e) => setCustomDomain(e.target.value)}
-                  placeholder="portfolio.yourdomain.com"
-                  className="mt-2 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground outline-none focus:border-[var(--primary)]"
-                />
-                <p className="mt-1 text-xs text-foreground-muted">
-                  Enter your domain without https:// or www
-                </p>
+            // Domain options for new domain
+            <div className="space-y-6">
+              {/* Purchase Domain Option */}
+              <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/5 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 rounded-lg bg-[var(--primary)]/10 p-2">
+                    <ShoppingCartIcon className="h-5 w-5 text-[var(--primary)]" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-foreground">Purchase a Domain</h4>
+                    <p className="mt-1 text-sm text-foreground-muted">
+                      Get a custom domain like <strong>{website.name.toLowerCase().replace(/\s+/g, "")}.com</strong> for your portfolio.
+                    </p>
+                    <ul className="mt-2 space-y-1 text-xs text-foreground-muted">
+                      <li className="flex items-center gap-1.5">
+                        <CheckCircleIcon className="h-3.5 w-3.5 text-[var(--success)]" />
+                        SSL certificate included
+                      </li>
+                      <li className="flex items-center gap-1.5">
+                        <CheckCircleIcon className="h-3.5 w-3.5 text-[var(--success)]" />
+                        Automatic DNS setup
+                      </li>
+                      <li className="flex items-center gap-1.5">
+                        <CheckCircleIcon className="h-3.5 w-3.5 text-[var(--success)]" />
+                        Instant activation
+                      </li>
+                    </ul>
+                    <button
+                      onClick={() => setIsDomainPurchaseModalOpen(true)}
+                      className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+                    >
+                      Search Domains - $30/year
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              <button
-                onClick={handleAddCustomDomain}
-                disabled={loading || !customDomain.trim()}
-                className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
-              >
-                Add Domain
-              </button>
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-[var(--card-border)]" />
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="bg-[var(--background)] px-3 text-xs text-foreground-muted">OR</span>
+                </div>
+              </div>
+
+              {/* BYOD Option */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-foreground">Connect Your Own Domain</h4>
+                <p className="text-sm text-foreground-muted">
+                  Already have a domain? Connect it to your portfolio.
+                </p>
+                <div>
+                  <label className="text-sm font-medium text-foreground">
+                    Your Domain
+                  </label>
+                  <input
+                    value={customDomain}
+                    onChange={(e) => setCustomDomain(e.target.value)}
+                    placeholder="portfolio.yourdomain.com"
+                    className="mt-2 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground outline-none focus:border-[var(--primary)]"
+                  />
+                  <p className="mt-1 text-xs text-foreground-muted">
+                    Enter your domain without https:// or www
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleAddCustomDomain}
+                  disabled={loading || !customDomain.trim()}
+                  className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] disabled:opacity-50"
+                >
+                  Connect Domain
+                </button>
+              </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Domain Purchase Modal */}
+      <DomainPurchaseModal
+        isOpen={isDomainPurchaseModalOpen}
+        onClose={() => setIsDomainPurchaseModalOpen(false)}
+        type="portfolio"
+        websiteId={website.id}
+        suggestFrom={website.name}
+        currentDomain={website.customDomain}
+      />
 
       {/* Danger Zone */}
       <div className="rounded-xl border border-[var(--error)]/30 bg-[var(--error)]/5 p-6">
@@ -1167,6 +1231,16 @@ function LoadingIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+    </svg>
+  );
+}
+
+function ShoppingCartIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="8" cy="21" r="1" />
+      <circle cx="19" cy="21" r="1" />
+      <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
     </svg>
   );
 }
