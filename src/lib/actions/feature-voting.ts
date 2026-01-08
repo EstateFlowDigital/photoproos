@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import { requireAuth } from "./auth-helper";
+import { isSuperAdmin } from "@/lib/auth/super-admin";
+import { getResend, DEFAULT_FROM_EMAIL } from "@/lib/email/resend";
 import { randomBytes } from "crypto";
 import type {
   FeatureRequestStatus,
@@ -323,11 +325,70 @@ export async function sendVoterVerificationEmail(
       },
     });
 
-    // Send email (using your email service)
+    // Build verification URL
     const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/roadmap/verify?token=${token}`;
 
-    // TODO: Implement email sending
-    console.log(`Verification email to ${email}: ${verifyUrl}`);
+    // Send verification email using Resend
+    try {
+      const { error } = await getResend().emails.send({
+        from: DEFAULT_FROM_EMAIL,
+        to: email,
+        subject: "Verify your email to vote on PhotoProOS features",
+        html: `
+          <!DOCTYPE html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Verify Your Email</title>
+            </head>
+            <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #0a0a0a; color: #ffffff; margin: 0; padding: 40px 20px;">
+              <div style="max-width: 560px; margin: 0 auto;">
+                <div style="text-align: center; margin-bottom: 32px;">
+                  <h1 style="font-size: 24px; font-weight: 600; margin: 0; color: #ffffff;">
+                    Verify Your Email
+                  </h1>
+                </div>
+
+                <div style="background-color: #141414; border-radius: 12px; padding: 32px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                  <p style="color: #a7a7a7; line-height: 1.6; margin: 0 0 24px 0;">
+                    Hi there! Click the button below to verify your email address and start voting on PhotoProOS feature requests.
+                  </p>
+
+                  <div style="text-align: center; margin: 32px 0;">
+                    <a href="${verifyUrl}"
+                       style="display: inline-block; background-color: #3b82f6; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 500; font-size: 16px;"
+                       role="button"
+                       aria-label="Verify your email address">
+                      Verify Email Address
+                    </a>
+                  </div>
+
+                  <p style="color: #7c7c7c; font-size: 14px; line-height: 1.6; margin: 0;">
+                    This link will expire in 24 hours. If you didn't request this verification, you can safely ignore this email.
+                  </p>
+                </div>
+
+                <div style="text-align: center; margin-top: 32px;">
+                  <p style="color: #7c7c7c; font-size: 12px; margin: 0;">
+                    &copy; ${new Date().getFullYear()} PhotoProOS. All rights reserved.
+                  </p>
+                </div>
+              </div>
+            </body>
+          </html>
+        `,
+        text: `Verify your email to vote on PhotoProOS features.\n\nClick here to verify: ${verifyUrl}\n\nThis link expires in 24 hours.`,
+      });
+
+      if (error) {
+        console.error("Failed to send verification email:", error);
+        return fail("Failed to send verification email. Please try again.");
+      }
+    } catch (emailError) {
+      console.error("Error sending verification email:", emailError);
+      return fail("Failed to send verification email. Please try again.");
+    }
 
     return success();
   } catch (error) {
@@ -523,12 +584,18 @@ export async function submitFeatureRequestAsVoter(
 
 /**
  * Get pending feature requests for moderation
+ * @requires Super Admin authorization
  */
 export async function getPendingFeatureRequests(): Promise<
   ActionResult<PublicFeatureRequest[]>
 > {
   try {
-    // TODO: Add super admin auth check
+    // Verify super admin authorization
+    const isAdmin = await isSuperAdmin();
+    if (!isAdmin) {
+      return fail("Unauthorized: Super admin access required");
+    }
+
     const features = await prisma.featureRequest.findMany({
       where: { status: "pending" },
       orderBy: { createdAt: "desc" },
@@ -556,13 +623,19 @@ export async function getPendingFeatureRequests(): Promise<
 
 /**
  * Approve a feature request
+ * @requires Super Admin authorization
  */
 export async function approveFeatureRequest(
   featureId: string,
   roadmapPhase?: string
 ): Promise<ActionResult<void>> {
   try {
-    // TODO: Add super admin auth check
+    // Verify super admin authorization
+    const isAdmin = await isSuperAdmin();
+    if (!isAdmin) {
+      return fail("Unauthorized: Super admin access required");
+    }
+
     const feature = await prisma.featureRequest.update({
       where: { id: featureId },
       data: {
@@ -592,13 +665,19 @@ export async function approveFeatureRequest(
 
 /**
  * Reject a feature request
+ * @requires Super Admin authorization
  */
 export async function rejectFeatureRequest(
   featureId: string,
   reason: string
 ): Promise<ActionResult<void>> {
   try {
-    // TODO: Add super admin auth check
+    // Verify super admin authorization
+    const isAdmin = await isSuperAdmin();
+    if (!isAdmin) {
+      return fail("Unauthorized: Super admin access required");
+    }
+
     await prisma.featureRequest.update({
       where: { id: featureId },
       data: {
@@ -618,12 +697,18 @@ export async function rejectFeatureRequest(
 
 /**
  * Mark a feature as implemented
+ * @requires Super Admin authorization
  */
 export async function markFeatureImplemented(
   featureId: string
 ): Promise<ActionResult<void>> {
   try {
-    // TODO: Add super admin auth check
+    // Verify super admin authorization
+    const isAdmin = await isSuperAdmin();
+    if (!isAdmin) {
+      return fail("Unauthorized: Super admin access required");
+    }
+
     const feature = await prisma.featureRequest.update({
       where: { id: featureId },
       data: { status: "completed" },

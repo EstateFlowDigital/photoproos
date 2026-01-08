@@ -7,8 +7,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Comprehensive Messaging System** - Full-featured team and client communication platform
+  - **Database Models** (6 new models):
+    - `Conversation` - Container for all message threads with type (direct/group/channel/client_support)
+    - `ConversationParticipant` - Member management with roles (owner/admin/member/observer)
+    - `Message` - Individual messages with threading, attachments, mentions support
+    - `MessageReaction` - Emoji reactions on messages
+    - `MessageReadReceipt` - Track who read each message for read receipts
+    - `ChatRequest` - Client approval workflow for support conversations
+  - **Server Actions** (~40+ functions across 3,043 lines):
+    - `conversations.ts` - Full CRUD, permissions, member management
+    - `messages.ts` - Send, edit, delete, react, pin, thread replies
+    - `client-messages.ts` - Client portal messaging actions
+  - **Dashboard Pages**:
+    - `/messages` - Main conversation list with sidebar layout
+    - `/messages/[conversationId]` - Conversation detail view with real-time messages
+    - `/messages/new` - Create new DM, group, or channel
+    - `/messages/requests` - Chat request approval management for admins
+  - **Components** (8+ specialized):
+    - Conversation sidebar with search and filters
+    - Message list with virtualization for performance
+    - Message input with emoji picker and attachments
+    - Thread view for nested conversations
+    - Call interface placeholder for future video/audio
+    - Read receipts and typing indicators
+  - **Client Portal Integration**:
+    - Messages tab in client portal navigation
+    - Client conversation list and message thread views
+    - Chat request form for clients to initiate support conversations
+  - **Polling System** (WebSocket-ready):
+    - Active conversation: 3s interval for near real-time feel
+    - Conversation list: 15s interval for background refresh
+    - Inactive browser tab: 60s interval for battery savings
+  - **Permission Matrix**:
+    - Owner/Admin: Full access, create channels, approve chat requests
+    - Member: Send messages, create DMs/groups
+    - Client: Request support chats (requires approval), participate in approved conversations
+  - **Brokerage Access**:
+    - `hasBrokerAccess` flag on participants
+    - Brokers must be explicitly added, then have elevated visibility
+
 ### Fixed
 - Property and portfolio pages crashing with "Cannot read properties of undefined (reading 'toLowerCase')" when address/name is undefined in domain purchase feature
+
+- **Feature Voting Security** - Added missing super admin authentication to moderation functions
+  - `getPendingFeatureRequests()` - Now requires super admin authorization
+  - `approveFeatureRequest()` - Now requires super admin authorization
+  - `rejectFeatureRequest()` - Now requires super admin authorization
+  - `markFeatureImplemented()` - Now requires super admin authorization
+  - Previously these functions had TODO comments and no auth checks
+
+- **AI Action Execution** - Implemented missing action execution in `approveAction()`
+  - Added `executeConfirmedAction()` function to executors.ts with 7 action handlers:
+    - `create_gallery` - Creates new gallery with name, description, client
+    - `create_client` - Creates client with duplicate email checking
+    - `create_booking` - Schedules booking with date/time parsing
+    - `create_invoice` - Creates invoice with auto-generated number
+    - `deliver_gallery` - Marks gallery as delivered
+    - `update_gallery` - Updates gallery name, description, status
+    - `update_settings` - Updates organization settings (branding, notifications, etc.)
+  - Actions now execute on approval instead of just marking as approved
+  - Failed actions stored with error details
+  - Success messages added to conversation history
+
+- **Voter Email Verification** - Implemented actual email sending in `sendVoterVerificationEmail()`
+  - Previously just logged to console with TODO comment
+  - Now uses Resend API with professional HTML email template
+  - Includes plain text fallback for email clients
+  - Accessible email markup with proper ARIA labels
+  - 24-hour token expiration with clear messaging
 
 ### Added
 - **Super Admin Revenue & Billing Dashboard** - Comprehensive payment analytics at `/super-admin/revenue`

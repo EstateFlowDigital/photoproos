@@ -1,8 +1,10 @@
 import type { ComponentType } from "react";
 import { Bell, Settings } from "lucide-react";
 import { getFilteredNavigation, type GatingContext } from "@/lib/modules/gating";
+import { INDUSTRIES, type IndustryDefinition } from "@/lib/constants/industries";
+import { MODULES } from "@/lib/constants/modules";
 
-export type DashboardNavCategory = "core" | "operations" | "client" | "advanced" | "admin";
+export type DashboardNavCategory = "core" | "operations" | "client" | "advanced" | "admin" | "industry";
 
 export type DashboardNavSubItem = {
   label: string;
@@ -20,9 +22,12 @@ export type DashboardNavItem = {
 };
 
 export type DashboardNavSection = {
-  id: DashboardNavCategory;
+  id: string;
   label: string;
   items: DashboardNavItem[];
+  industryId?: string;
+  industryColor?: string;
+  isIndustrySection?: boolean;
 };
 
 export type DashboardNavData = {
@@ -36,15 +41,44 @@ export type DashboardNavContext = GatingContext & {
   badgeCounts?: Partial<Record<string, number>>;
 };
 
-export const DASHBOARD_SECTION_LABELS: Array<{
-  id: DashboardNavCategory;
-  label: string;
-}> = [
-  { id: "core", label: "Workspace" },
-  { id: "operations", label: "Operations" },
-  { id: "client", label: "Clients" },
-  { id: "advanced", label: "Advanced" },
-  { id: "admin", label: "Admin" },
+/**
+ * Core workspace modules that appear in the main Workspace section
+ */
+const WORKSPACE_MODULES = ["dashboard", "projects", "forms", "messages", "achievements"];
+
+/**
+ * Client-facing modules that appear in the Clients section
+ */
+const CLIENT_MODULES = ["inbox", "leads", "clients", "questionnaires", "reviews"];
+
+/**
+ * Modules that should appear under each industry (operations + industry-specific)
+ * These are the non-core, non-client modules that relate to actual work
+ */
+const INDUSTRY_OPERATION_MODULES = [
+  "galleries",
+  "scheduling",
+  "invoices",
+  "services",
+  "analytics",
+  "orders",
+  "payments",
+  "contracts",
+  "properties",
+  "brokerages",
+  "portfolio_websites",
+  "mini_sessions",
+  "online_booking",
+  "licensing",
+  "batch_processing",
+  "product_catalogs",
+  "ai_assistant",
+  "marketing_kit",
+  "referrals",
+  "integrations",
+  "team_management",
+  "tax_prep",
+  "expenses",
 ];
 
 export const DASHBOARD_SUB_NAV: Record<string, DashboardNavSubItem[]> = {
@@ -134,7 +168,7 @@ export function buildDashboardNav({
   notificationCount = 0,
   badgeCounts = {},
 }: DashboardNavContext): DashboardNavData {
-  const primaryItems = (getFilteredNavigation({ enabledModules, industries }) as DashboardNavItem[])
+  const allItems = (getFilteredNavigation({ enabledModules, industries }) as DashboardNavItem[])
     .map((item) => ({
       ...item,
       badge: badgeCounts[item.id],
@@ -165,18 +199,75 @@ export function buildDashboardNav({
         ]
       : [];
 
-  const sections = DASHBOARD_SECTION_LABELS.map((section) => ({
-    ...section,
-    items:
-      section.id === "admin"
-        ? adminItems
-        : primaryItems.filter((item) => item.category === section.id),
-  })).filter((section) => section.items.length > 0);
+  // Build sections based on new structure:
+  // 1. Workspace (core modules)
+  // 2. Clients (client-facing modules)
+  // 3. Industry sections (one per selected industry)
+  // 4. Settings
+
+  const sections: DashboardNavSection[] = [];
+
+  // 1. Workspace Section
+  const workspaceItems = allItems.filter((item) => WORKSPACE_MODULES.includes(item.id));
+  if (workspaceItems.length > 0) {
+    sections.push({
+      id: "workspace",
+      label: "Workspace",
+      items: workspaceItems.sort((a, b) => WORKSPACE_MODULES.indexOf(a.id) - WORKSPACE_MODULES.indexOf(b.id)),
+    });
+  }
+
+  // 2. Clients Section
+  const clientItems = allItems.filter((item) => CLIENT_MODULES.includes(item.id));
+  if (clientItems.length > 0) {
+    sections.push({
+      id: "clients",
+      label: "Clients",
+      items: clientItems.sort((a, b) => CLIENT_MODULES.indexOf(a.id) - CLIENT_MODULES.indexOf(b.id)),
+    });
+  }
+
+  // 3. Industry Sections (one dropdown per selected industry)
+  const selectedIndustries = industries
+    .map((id) => INDUSTRIES[id])
+    .filter((ind): ind is IndustryDefinition => ind !== undefined)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+
+  for (const industry of selectedIndustries) {
+    // Get modules that are both enabled AND available for this industry
+    const industryModules = industry.modules.filter(
+      (moduleId) =>
+        INDUSTRY_OPERATION_MODULES.includes(moduleId) &&
+        allItems.some((item) => item.id === moduleId)
+    );
+
+    const industryItems = industryModules
+      .map((moduleId) => allItems.find((item) => item.id === moduleId))
+      .filter((item): item is DashboardNavItem => item !== undefined);
+
+    if (industryItems.length > 0) {
+      sections.push({
+        id: `industry-${industry.id}`,
+        label: industry.name,
+        items: industryItems,
+        industryId: industry.id,
+        industryColor: industry.color,
+        isIndustrySection: true,
+      });
+    }
+  }
+
+  // 4. Settings Section
+  sections.push({
+    id: "admin",
+    label: "Settings",
+    items: adminItems,
+  });
 
   return {
     topItems,
     sections,
-    items: [...primaryItems, ...adminItems],
+    items: [...allItems, ...adminItems],
   };
 }
 

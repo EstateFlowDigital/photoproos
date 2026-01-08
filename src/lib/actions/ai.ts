@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
 import { runAgent, calculateCost } from "@/lib/ai/agent";
+import { executeConfirmedAction } from "@/lib/ai/tools/executors";
 
 // ============================================================================
 // TYPES
@@ -341,11 +342,11 @@ export async function sendMessage(
 }
 
 /**
- * Approve a pending action
+ * Approve a pending action and execute it
  */
 export async function approveAction(
   actionId: string
-): Promise<ActionResult<{ success: boolean }>> {
+): Promise<ActionResult<{ success: boolean; result?: unknown }>> {
   try {
     const { userId } = await requireAuth();
     const organizationId = await requireOrganizationId();
@@ -365,18 +366,53 @@ export async function approveAction(
       return fail("Action not found");
     }
 
-    // TODO: Execute the action based on type
-    // For now, mark as approved
+    // Execute the action
+    const executionResult = await executeConfirmedAction(
+      action.type,
+      action.parameters as Record<string, unknown>,
+      { organizationId, userId }
+    );
+
+    if (!executionResult.success) {
+      // Mark as failed with error
+      await prisma.aIAction.update({
+        where: { id: actionId },
+        data: {
+          status: "failed",
+          result: { error: executionResult.error },
+        },
+      });
+
+      return fail(executionResult.error || "Action execution failed");
+    }
+
+    // Mark as completed with result
     await prisma.aIAction.update({
       where: { id: actionId },
       data: {
-        status: "approved",
+        status: "completed",
         confirmedAt: new Date(),
+        result: executionResult.data as Record<string, unknown> | null,
+      },
+    });
+
+    // Add a message to the conversation about the completed action
+    await prisma.aIMessage.create({
+      data: {
+        conversationId: action.conversationId,
+        role: "assistant",
+        content: typeof executionResult.data === "object" &&
+                 executionResult.data !== null &&
+                 "message" in executionResult.data
+          ? (executionResult.data as { message: string }).message
+          : `Action "${action.type}" completed successfully.`,
+        toolName: action.type,
+        toolOutput: executionResult.data as Record<string, unknown> | null,
       },
     });
 
     revalidatePath("/ai");
-    return ok({ success: true });
+    return ok({ success: true, result: executionResult.data });
   } catch (error) {
     console.error("Error approving action:", error);
     return fail("Failed to approve action");

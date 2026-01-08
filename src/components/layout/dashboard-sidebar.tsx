@@ -229,14 +229,24 @@ export function DashboardSidebar({
           {sections.map((section) => {
             const items = section.items;
             if (!items.length) return null;
+            const isIndustrySection = section.isIndustrySection;
             return (
               <div
                 key={section.id}
                 className={cn("space-y-2", section.id === "admin" ? "pb-4" : null)}
               >
-                <p className="sidebar-section-title px-2 text-xs font-semibold uppercase tracking-[0.18em] text-foreground-muted">
-                  {section.label}
-                </p>
+                <div className="sidebar-section-title flex items-center gap-2 px-2">
+                  {isIndustrySection && section.industryColor && (
+                    <span
+                      className="h-2 w-2 rounded-full shrink-0"
+                      style={{ backgroundColor: section.industryColor }}
+                      aria-hidden="true"
+                    />
+                  )}
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground-muted">
+                    {section.label}
+                  </p>
+                </div>
                 <div className="space-y-1">
                   {items.map((item) => {
                     const children = item.subNav ?? [];

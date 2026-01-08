@@ -573,6 +573,431 @@ export async function executeForecastRevenue(
 }
 
 // ============================================================================
+// CONFIRMED ACTION EXECUTORS
+// These functions execute actions that have been approved by the user
+// ============================================================================
+
+/**
+ * Execute a confirmed action after user approval
+ */
+export async function executeConfirmedAction(
+  actionType: string,
+  params: Record<string, unknown>,
+  ctx: ToolContext
+): Promise<ToolResult> {
+  switch (actionType) {
+    case "create_gallery":
+      return executeCreateGallery(ctx, params);
+    case "create_client":
+      return executeCreateClient(ctx, params);
+    case "create_booking":
+      return executeCreateBooking(ctx, params);
+    case "create_invoice":
+      return executeCreateInvoice(ctx, params);
+    case "deliver_gallery":
+      return executeDeliverGallery(ctx, params);
+    case "update_gallery":
+      return executeUpdateGallery(ctx, params);
+    case "update_settings":
+      return executeUpdateSettings(ctx, params);
+    default:
+      return { success: false, error: `Unknown action type: ${actionType}` };
+  }
+}
+
+/**
+ * Create a new gallery
+ */
+async function executeCreateGallery(
+  ctx: ToolContext,
+  params: Record<string, unknown>
+): Promise<ToolResult> {
+  try {
+    const name = params.name as string;
+    const description = params.description as string | undefined;
+    const clientId = params.clientId as string | undefined;
+
+    if (!name) {
+      return { success: false, error: "Gallery name is required" };
+    }
+
+    const gallery = await prisma.gallery.create({
+      data: {
+        organizationId: ctx.organizationId,
+        name,
+        description: description || null,
+        clientId: clientId || null,
+        status: "draft",
+      },
+    });
+
+    return {
+      success: true,
+      data: {
+        id: gallery.id,
+        name: gallery.name,
+        status: gallery.status,
+        message: `Gallery "${gallery.name}" created successfully.`,
+      },
+    };
+  } catch (error) {
+    console.error("Error creating gallery:", error);
+    return { success: false, error: "Failed to create gallery" };
+  }
+}
+
+/**
+ * Create a new client
+ */
+async function executeCreateClient(
+  ctx: ToolContext,
+  params: Record<string, unknown>
+): Promise<ToolResult> {
+  try {
+    const name = params.name as string;
+    const email = params.email as string;
+    const phone = params.phone as string | undefined;
+    const company = params.company as string | undefined;
+
+    if (!name || !email) {
+      return { success: false, error: "Client name and email are required" };
+    }
+
+    // Check for existing client with same email
+    const existing = await prisma.client.findFirst({
+      where: { organizationId: ctx.organizationId, email },
+    });
+
+    if (existing) {
+      return { success: false, error: `A client with email ${email} already exists` };
+    }
+
+    const client = await prisma.client.create({
+      data: {
+        organizationId: ctx.organizationId,
+        name,
+        email,
+        phone: phone || null,
+        company: company || null,
+      },
+    });
+
+    return {
+      success: true,
+      data: {
+        id: client.id,
+        name: client.name,
+        email: client.email,
+        message: `Client "${client.name}" created successfully.`,
+      },
+    };
+  } catch (error) {
+    console.error("Error creating client:", error);
+    return { success: false, error: "Failed to create client" };
+  }
+}
+
+/**
+ * Create a new booking
+ */
+async function executeCreateBooking(
+  ctx: ToolContext,
+  params: Record<string, unknown>
+): Promise<ToolResult> {
+  try {
+    const clientId = params.clientId as string | undefined;
+    const date = params.date as string;
+    const startTime = params.startTime as string | undefined;
+    const endTime = params.endTime as string | undefined;
+    const notes = params.notes as string | undefined;
+
+    if (!date) {
+      return { success: false, error: "Booking date is required" };
+    }
+
+    // Parse date and times
+    const startDateTime = new Date(date);
+    if (startTime) {
+      const [hours, minutes] = startTime.split(":").map(Number);
+      startDateTime.setHours(hours, minutes, 0, 0);
+    }
+
+    const endDateTime = new Date(startDateTime);
+    if (endTime) {
+      const [hours, minutes] = endTime.split(":").map(Number);
+      endDateTime.setHours(hours, minutes, 0, 0);
+    } else {
+      endDateTime.setHours(endDateTime.getHours() + 2); // Default 2-hour booking
+    }
+
+    const booking = await prisma.booking.create({
+      data: {
+        organizationId: ctx.organizationId,
+        clientId: clientId || null,
+        startDateTime,
+        endDateTime,
+        status: "confirmed",
+        notes: notes || null,
+      },
+    });
+
+    return {
+      success: true,
+      data: {
+        id: booking.id,
+        startDateTime: booking.startDateTime,
+        endDateTime: booking.endDateTime,
+        status: booking.status,
+        message: `Booking scheduled for ${booking.startDateTime.toLocaleDateString()}.`,
+      },
+    };
+  } catch (error) {
+    console.error("Error creating booking:", error);
+    return { success: false, error: "Failed to create booking" };
+  }
+}
+
+/**
+ * Create a new invoice
+ */
+async function executeCreateInvoice(
+  ctx: ToolContext,
+  params: Record<string, unknown>
+): Promise<ToolResult> {
+  try {
+    const clientId = params.clientId as string;
+    const items = params.items as Array<{ description: string; amountCents: number }> | undefined;
+    const dueDate = params.dueDate as string | undefined;
+
+    if (!clientId) {
+      return { success: false, error: "Client ID is required for invoice" };
+    }
+
+    // Verify client exists
+    const client = await prisma.client.findFirst({
+      where: { id: clientId, organizationId: ctx.organizationId },
+    });
+
+    if (!client) {
+      return { success: false, error: "Client not found" };
+    }
+
+    // Generate invoice number
+    const invoiceCount = await prisma.invoice.count({
+      where: { organizationId: ctx.organizationId },
+    });
+    const invoiceNumber = `INV-${String(invoiceCount + 1).padStart(5, "0")}`;
+
+    // Calculate total from items
+    const totalCents = items?.reduce((sum, item) => sum + item.amountCents, 0) || 0;
+
+    // Parse due date or default to 30 days from now
+    const parsedDueDate = dueDate ? new Date(dueDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    const invoice = await prisma.invoice.create({
+      data: {
+        organizationId: ctx.organizationId,
+        clientId,
+        invoiceNumber,
+        status: "draft",
+        totalCents,
+        dueDate: parsedDueDate,
+      },
+    });
+
+    return {
+      success: true,
+      data: {
+        id: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        totalCents: invoice.totalCents,
+        status: invoice.status,
+        message: `Invoice ${invoice.invoiceNumber} created for ${client.name}.`,
+      },
+    };
+  } catch (error) {
+    console.error("Error creating invoice:", error);
+    return { success: false, error: "Failed to create invoice" };
+  }
+}
+
+/**
+ * Deliver a gallery to the client
+ */
+async function executeDeliverGallery(
+  ctx: ToolContext,
+  params: Record<string, unknown>
+): Promise<ToolResult> {
+  try {
+    const galleryId = params.galleryId as string;
+
+    if (!galleryId) {
+      return { success: false, error: "Gallery ID is required" };
+    }
+
+    // Verify gallery exists and belongs to organization
+    const gallery = await prisma.gallery.findFirst({
+      where: { id: galleryId, organizationId: ctx.organizationId },
+      include: { client: true },
+    });
+
+    if (!gallery) {
+      return { success: false, error: "Gallery not found" };
+    }
+
+    if (gallery.status === "delivered") {
+      return { success: false, error: "Gallery has already been delivered" };
+    }
+
+    // Update gallery status
+    const updated = await prisma.gallery.update({
+      where: { id: galleryId },
+      data: {
+        status: "delivered",
+        deliveredAt: new Date(),
+      },
+    });
+
+    return {
+      success: true,
+      data: {
+        id: updated.id,
+        name: updated.name,
+        status: updated.status,
+        deliveredAt: updated.deliveredAt,
+        message: `Gallery "${updated.name}" has been delivered${gallery.client ? ` to ${gallery.client.name}` : ""}.`,
+      },
+    };
+  } catch (error) {
+    console.error("Error delivering gallery:", error);
+    return { success: false, error: "Failed to deliver gallery" };
+  }
+}
+
+/**
+ * Update gallery settings
+ */
+async function executeUpdateGallery(
+  ctx: ToolContext,
+  params: Record<string, unknown>
+): Promise<ToolResult> {
+  try {
+    const galleryId = params.galleryId as string;
+    const name = params.name as string | undefined;
+    const description = params.description as string | undefined;
+    const status = params.status as string | undefined;
+
+    if (!galleryId) {
+      return { success: false, error: "Gallery ID is required" };
+    }
+
+    // Verify gallery exists
+    const existing = await prisma.gallery.findFirst({
+      where: { id: galleryId, organizationId: ctx.organizationId },
+    });
+
+    if (!existing) {
+      return { success: false, error: "Gallery not found" };
+    }
+
+    const updateData: Record<string, unknown> = {};
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (status !== undefined) updateData.status = status;
+
+    const updated = await prisma.gallery.update({
+      where: { id: galleryId },
+      data: updateData,
+    });
+
+    return {
+      success: true,
+      data: {
+        id: updated.id,
+        name: updated.name,
+        status: updated.status,
+        message: `Gallery "${updated.name}" has been updated.`,
+      },
+    };
+  } catch (error) {
+    console.error("Error updating gallery:", error);
+    return { success: false, error: "Failed to update gallery" };
+  }
+}
+
+/**
+ * Update organization settings
+ */
+async function executeUpdateSettings(
+  ctx: ToolContext,
+  params: Record<string, unknown>
+): Promise<ToolResult> {
+  try {
+    const settingType = params.settingType as string;
+    const settings = params.settings as Record<string, unknown>;
+
+    if (!settingType || !settings) {
+      return { success: false, error: "Setting type and settings are required" };
+    }
+
+    // Different setting types might update different tables/fields
+    switch (settingType) {
+      case "branding":
+        await prisma.organization.update({
+          where: { id: ctx.organizationId },
+          data: {
+            brandColor: settings.brandColor as string | undefined,
+            logoUrl: settings.logoUrl as string | undefined,
+          },
+        });
+        break;
+
+      case "notifications":
+        // Update notification preferences
+        await prisma.organization.update({
+          where: { id: ctx.organizationId },
+          data: {
+            settings: {
+              ...(await prisma.organization.findUnique({
+                where: { id: ctx.organizationId },
+                select: { settings: true },
+              }))?.settings as Record<string, unknown> || {},
+              notifications: settings,
+            },
+          },
+        });
+        break;
+
+      default:
+        // Generic settings update
+        await prisma.organization.update({
+          where: { id: ctx.organizationId },
+          data: {
+            settings: {
+              ...(await prisma.organization.findUnique({
+                where: { id: ctx.organizationId },
+                select: { settings: true },
+              }))?.settings as Record<string, unknown> || {},
+              [settingType]: settings,
+            },
+          },
+        });
+    }
+
+    return {
+      success: true,
+      data: {
+        settingType,
+        message: `${settingType} settings have been updated.`,
+      },
+    };
+  } catch (error) {
+    console.error("Error updating settings:", error);
+    return { success: false, error: "Failed to update settings" };
+  }
+}
+
+// ============================================================================
 // MAIN EXECUTOR
 // ============================================================================
 
