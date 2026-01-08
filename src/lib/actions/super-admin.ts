@@ -891,14 +891,18 @@ export async function logAdminAction(input: AuditLogInput): Promise<ActionResult
 export async function getAuditLogs(options?: {
   limit?: number;
   offset?: number;
-  actionType?: AdminActionType;
+  actionType?: AdminActionType | string;
 }): Promise<ActionResult<{ logs: unknown[]; total: number }>> {
   try {
     if (!(await isSuperAdmin())) {
       return fail("Unauthorized");
     }
 
-    const where = options?.actionType ? { actionType: options.actionType } : {};
+    // Build where clause
+    const where: { actionType?: AdminActionType } = {};
+    if (options?.actionType && options.actionType !== "all") {
+      where.actionType = options.actionType as AdminActionType;
+    }
 
     const [logs, total] = await Promise.all([
       prisma.adminAuditLog.findMany({
@@ -910,7 +914,25 @@ export async function getAuditLogs(options?: {
       prisma.adminAuditLog.count({ where }),
     ]);
 
-    return ok({ logs, total });
+    // Fetch admin user info for each log
+    const adminUserIds = [...new Set(logs.map((log) => log.adminUserId))];
+    const adminUsers = await prisma.user.findMany({
+      where: { clerkUserId: { in: adminUserIds } },
+      select: {
+        clerkUserId: true,
+        email: true,
+        fullName: true,
+      },
+    });
+
+    const adminUserMap = new Map(adminUsers.map((u) => [u.clerkUserId, u]));
+
+    const logsWithAdminInfo = logs.map((log) => ({
+      ...log,
+      adminUser: adminUserMap.get(log.adminUserId) || null,
+    }));
+
+    return ok({ logs: logsWithAdminInfo, total });
   } catch (error) {
     console.error("[SuperAdmin] Error fetching audit logs:", error);
     return fail("Failed to fetch audit logs");

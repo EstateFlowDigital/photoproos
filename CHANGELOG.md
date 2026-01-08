@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **System Logs & Monitoring Page** - New Super Admin page for audit logs and system health
+  - Real-time system health stats display (total users, galleries, activity, errors)
+  - Comprehensive audit log table with admin action tracking
+  - Filterable by action type (user management, XP awards, impersonation, etc.)
+  - Search functionality across log descriptions
+  - Pagination with 50 entries per page
+  - Color-coded action type badges for quick identification
+  - Displays admin user info for each logged action
+  - Updated getAuditLogs server action to include admin user details
+
 - **Messages Widget** - New dashboard widget for recent messages
   - Added "messages" to WidgetType in dashboard-types.ts
   - Added widget definition to WIDGET_REGISTRY with 2x2 default size
