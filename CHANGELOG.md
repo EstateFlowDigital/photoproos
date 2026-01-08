@@ -22,6 +22,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Revenue breakdown by plan type
   - Server actions: getRevenueStats, getRecentPayments, getRecentInvoices
 
+- **Super Admin User Engagement & Churn Tracking** - Analytics dashboard at `/super-admin/engagement`
+  - Daily/Weekly/Monthly Active Users (DAU, WAU, MAU) metrics
+  - Stickiness ratios: DAU/WAU and WAU/MAU for engagement analysis
+  - Churn tracking: 14-day at-risk, 30-day churned, 90-day churned users
+  - Activity trends chart with 30-day historical data
+  - Top engaged users list by XP and activity
+  - Hourly activity distribution heatmap
+  - At-risk users list with days inactive and revenue impact
+  - Activity breakdown by type (gallery deliveries, payments, logins, etc.)
+  - Tab navigation: Overview, At Risk, Activity views
+  - Server actions: getEngagementStats, getAtRiskUsers, getActivityBreakdown
+
 - **Photographer-to-Client Discount System** - New settings page for photographers to create client discounts
   - New organization-level discount management at `/settings/discounts`
   - Organization-scoped discounts separate from platform discounts

@@ -232,6 +232,23 @@ function DollarSignIcon({ className }: { className?: string }) {
   );
 }
 
+function ActivityIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" />
+    </svg>
+  );
+}
+
 function ArrowLeftIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -260,6 +277,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/super-admin", label: "Dashboard", icon: LayoutDashboardIcon },
   { href: "/super-admin/users", label: "Users", icon: UsersIcon },
   { href: "/super-admin/revenue", label: "Revenue", icon: DollarSignIcon },
+  { href: "/super-admin/engagement", label: "Engagement", icon: ActivityIcon },
   { href: "/super-admin/discounts", label: "Discounts", icon: TagIcon },
   { href: "/super-admin/announcements", label: "Announcements", icon: MegaphoneIcon },
   { href: "/super-admin/support", label: "Support", icon: TicketIcon },

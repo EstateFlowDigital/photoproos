@@ -2985,3 +2985,404 @@ export async function getRecentInvoices(options: {
     return fail("Failed to fetch recent invoices");
   }
 }
+
+// ============================================================================
+// USER ENGAGEMENT & CHURN TRACKING
+// ============================================================================
+
+export interface EngagementStats {
+  // Active users
+  dau: number; // Daily Active Users
+  wau: number; // Weekly Active Users
+  mau: number; // Monthly Active Users
+  dauWauRatio: number; // DAU/WAU stickiness
+  wauMauRatio: number; // WAU/MAU stickiness
+
+  // User segments
+  totalUsers: number;
+  newUsersThisWeek: number;
+  newUsersThisMonth: number;
+  atRiskUsers: number; // No login in 14+ days
+  churned30Days: number; // No login in 30+ days
+  churned90Days: number; // No login in 90+ days
+
+  // Engagement metrics
+  avgSessionsPerUser: number;
+  avgLoginStreak: number;
+  usersWithStreak7Plus: number;
+  avgLevel: number;
+
+  // Activity breakdown
+  activityByType: Array<{ type: string; count: number }>;
+  activityTrend: Array<{ date: string; count: number }>;
+
+  // Retention cohorts
+  retentionCohorts: Array<{
+    cohort: string; // Month of signup
+    totalUsers: number;
+    week1Retention: number;
+    week2Retention: number;
+    month1Retention: number;
+    month3Retention: number;
+  }>;
+
+  // Login trends
+  loginsByDay: Array<{ date: string; count: number }>;
+  loginsByHour: Array<{ hour: number; count: number }>;
+
+  // Top engaged users
+  topEngagedUsers: Array<{
+    id: string;
+    email: string;
+    fullName: string | null;
+    totalSessions: number;
+    loginStreak: number;
+    level: number;
+    lastLoginAt: Date | null;
+  }>;
+}
+
+export interface AtRiskUser {
+  id: string;
+  email: string;
+  fullName: string | null;
+  organizationName: string | null;
+  lastLoginAt: Date | null;
+  totalSessions: number;
+  daysSinceLogin: number;
+  plan: string | null;
+  totalRevenueCents: number;
+}
+
+/**
+ * Get comprehensive user engagement statistics
+ */
+export async function getEngagementStats(): Promise<ActionResult<EngagementStats>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfWeek = new Date(startOfToday);
+    startOfWeek.setDate(startOfWeek.getDate() - 7);
+    const startOfMonth = new Date(startOfToday);
+    startOfMonth.setDate(startOfMonth.getDate() - 30);
+    const day14Ago = new Date(startOfToday);
+    day14Ago.setDate(day14Ago.getDate() - 14);
+    const day30Ago = new Date(startOfToday);
+    day30Ago.setDate(day30Ago.getDate() - 30);
+    const day90Ago = new Date(startOfToday);
+    day90Ago.setDate(day90Ago.getDate() - 90);
+
+    // Fetch all stats in parallel
+    const [
+      totalUsers,
+      dauCount,
+      wauCount,
+      mauCount,
+      newUsersWeek,
+      newUsersMonth,
+      atRiskCount,
+      churned30Count,
+      churned90Count,
+      avgSessions,
+      gamificationStats,
+      activityCounts,
+      last30DaysActivity,
+      topUsers,
+    ] = await Promise.all([
+      // Total users
+      prisma.user.count(),
+      // DAU - users who logged in today
+      prisma.user.count({
+        where: { lastLoginAt: { gte: startOfToday } },
+      }),
+      // WAU - users who logged in this week
+      prisma.user.count({
+        where: { lastLoginAt: { gte: startOfWeek } },
+      }),
+      // MAU - users who logged in this month
+      prisma.user.count({
+        where: { lastLoginAt: { gte: startOfMonth } },
+      }),
+      // New users this week
+      prisma.user.count({
+        where: { createdAt: { gte: startOfWeek } },
+      }),
+      // New users this month
+      prisma.user.count({
+        where: { createdAt: { gte: startOfMonth } },
+      }),
+      // At-risk users (no login in 14+ days but did log in before)
+      prisma.user.count({
+        where: {
+          lastLoginAt: { lt: day14Ago, not: null },
+        },
+      }),
+      // Churned 30 days
+      prisma.user.count({
+        where: {
+          lastLoginAt: { lt: day30Ago, not: null },
+        },
+      }),
+      // Churned 90 days
+      prisma.user.count({
+        where: {
+          lastLoginAt: { lt: day90Ago, not: null },
+        },
+      }),
+      // Average sessions per user
+      prisma.user.aggregate({
+        _avg: { totalSessions: true },
+      }),
+      // Gamification stats
+      prisma.gamificationProfile.aggregate({
+        _avg: { currentLoginStreak: true, level: true },
+        _count: { _all: true },
+      }),
+      // Activity by type
+      prisma.activityLog.groupBy({
+        by: ["type"],
+        _count: true,
+        orderBy: { _count: { type: "desc" } },
+        take: 10,
+      }),
+      // Last 30 days activity
+      prisma.activityLog.findMany({
+        where: {
+          createdAt: { gte: startOfMonth },
+        },
+        select: { createdAt: true },
+      }),
+      // Top engaged users
+      prisma.user.findMany({
+        where: { lastLoginAt: { not: null } },
+        orderBy: { totalSessions: "desc" },
+        take: 10,
+        include: {
+          gamificationProfile: {
+            select: { currentLoginStreak: true, level: true },
+          },
+        },
+      }),
+    ]);
+
+    // Count users with 7+ day streaks
+    const streakUsers = await prisma.gamificationProfile.count({
+      where: { currentLoginStreak: { gte: 7 } },
+    });
+
+    // Build activity trend data
+    const activityTrend: Array<{ date: string; count: number }> = [];
+    const activityDayMap = new Map<string, number>();
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+      const key = date.toISOString().split("T")[0];
+      activityDayMap.set(key, 0);
+    }
+    last30DaysActivity.forEach((a) => {
+      const key = a.createdAt.toISOString().split("T")[0];
+      if (activityDayMap.has(key)) {
+        activityDayMap.set(key, (activityDayMap.get(key) || 0) + 1);
+      }
+    });
+    activityDayMap.forEach((count, date) => {
+      activityTrend.push({ date, count });
+    });
+
+    // Build login trend data (simplified - using lastLoginAt)
+    const loginsByDay = activityTrend; // Using same data for now
+
+    // Build hourly distribution (from activity logs)
+    const loginsByHour: Array<{ hour: number; count: number }> = [];
+    const hourMap = new Map<number, number>();
+    for (let i = 0; i < 24; i++) {
+      hourMap.set(i, 0);
+    }
+    last30DaysActivity.forEach((a) => {
+      const hour = a.createdAt.getHours();
+      hourMap.set(hour, (hourMap.get(hour) || 0) + 1);
+    });
+    hourMap.forEach((count, hour) => {
+      loginsByHour.push({ hour, count });
+    });
+
+    // Calculate ratios
+    const dauWauRatio = wauCount > 0 ? (dauCount / wauCount) * 100 : 0;
+    const wauMauRatio = mauCount > 0 ? (wauCount / mauCount) * 100 : 0;
+
+    return ok({
+      dau: dauCount,
+      wau: wauCount,
+      mau: mauCount,
+      dauWauRatio,
+      wauMauRatio,
+      totalUsers,
+      newUsersThisWeek: newUsersWeek,
+      newUsersThisMonth: newUsersMonth,
+      atRiskUsers: atRiskCount,
+      churned30Days: churned30Count,
+      churned90Days: churned90Count,
+      avgSessionsPerUser: avgSessions._avg.totalSessions || 0,
+      avgLoginStreak: gamificationStats._avg.currentLoginStreak || 0,
+      usersWithStreak7Plus: streakUsers,
+      avgLevel: gamificationStats._avg.level || 1,
+      activityByType: activityCounts.map((a) => ({
+        type: a.type,
+        count: a._count,
+      })),
+      activityTrend,
+      retentionCohorts: [], // Would need more complex query
+      loginsByDay,
+      loginsByHour,
+      topEngagedUsers: topUsers.map((u) => ({
+        id: u.id,
+        email: u.email,
+        fullName: u.fullName,
+        totalSessions: u.totalSessions,
+        loginStreak: u.gamificationProfile?.currentLoginStreak || 0,
+        level: u.gamificationProfile?.level || 1,
+        lastLoginAt: u.lastLoginAt,
+      })),
+    });
+  } catch (error) {
+    console.error("[SuperAdmin] Error fetching engagement stats:", error);
+    return fail("Failed to fetch engagement statistics");
+  }
+}
+
+/**
+ * Get at-risk users (users who haven't logged in recently)
+ */
+export async function getAtRiskUsers(options: {
+  daysInactive?: number;
+  limit?: number;
+}): Promise<ActionResult<AtRiskUser[]>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const daysInactive = options.daysInactive || 14;
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysInactive);
+
+    const users = await prisma.user.findMany({
+      where: {
+        lastLoginAt: { lt: cutoffDate, not: null },
+      },
+      orderBy: { lastLoginAt: "asc" },
+      take: options.limit || 50,
+      include: {
+        memberships: {
+          include: {
+            organization: {
+              select: {
+                id: true,
+                name: true,
+                plan: true,
+              },
+            },
+          },
+          take: 1,
+        },
+      },
+    });
+
+    // Get revenue for these users' organizations
+    const orgIds = users
+      .map((u) => u.memberships[0]?.organization?.id)
+      .filter(Boolean) as string[];
+
+    const revenues = await prisma.payment.groupBy({
+      by: ["organizationId"],
+      where: {
+        organizationId: { in: orgIds },
+        status: "completed",
+      },
+      _sum: { amountCents: true },
+    });
+
+    const revenueMap = new Map(
+      revenues.map((r) => [r.organizationId, r._sum.amountCents || 0])
+    );
+
+    const now = new Date();
+    return ok(
+      users.map((u) => {
+        const org = u.memberships[0]?.organization;
+        const daysSince = u.lastLoginAt
+          ? Math.floor((now.getTime() - u.lastLoginAt.getTime()) / (1000 * 60 * 60 * 24))
+          : 999;
+
+        return {
+          id: u.id,
+          email: u.email,
+          fullName: u.fullName,
+          organizationName: org?.name || null,
+          lastLoginAt: u.lastLoginAt,
+          totalSessions: u.totalSessions,
+          daysSinceLogin: daysSince,
+          plan: org?.plan || null,
+          totalRevenueCents: org ? revenueMap.get(org.id) || 0 : 0,
+        };
+      })
+    );
+  } catch (error) {
+    console.error("[SuperAdmin] Error fetching at-risk users:", error);
+    return fail("Failed to fetch at-risk users");
+  }
+}
+
+/**
+ * Get user engagement breakdown by activity type
+ */
+export async function getActivityBreakdown(options: {
+  days?: number;
+}): Promise<ActionResult<Array<{ type: string; count: number; change: number }>>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const days = options.days || 30;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    const previousStartDate = new Date();
+    previousStartDate.setDate(previousStartDate.getDate() - days * 2);
+
+    const [currentPeriod, previousPeriod] = await Promise.all([
+      prisma.activityLog.groupBy({
+        by: ["type"],
+        where: { createdAt: { gte: startDate } },
+        _count: true,
+      }),
+      prisma.activityLog.groupBy({
+        by: ["type"],
+        where: {
+          createdAt: { gte: previousStartDate, lt: startDate },
+        },
+        _count: true,
+      }),
+    ]);
+
+    const previousMap = new Map(previousPeriod.map((p) => [p.type, p._count]));
+
+    return ok(
+      currentPeriod.map((c) => {
+        const prev = previousMap.get(c.type) || 0;
+        const change = prev > 0 ? ((c._count - prev) / prev) * 100 : 100;
+        return {
+          type: c.type,
+          count: c._count,
+          change,
+        };
+      })
+    );
+  } catch (error) {
+    console.error("[SuperAdmin] Error fetching activity breakdown:", error);
+    return fail("Failed to fetch activity breakdown");
+  }
+}
