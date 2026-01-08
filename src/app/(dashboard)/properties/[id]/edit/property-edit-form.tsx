@@ -869,7 +869,7 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
             ) : (
               <div className="space-y-3">
                 <p className="text-sm text-foreground-muted">
-                  Stand out with a custom domain like <strong>{website.address.toLowerCase().replace(/\s+/g, "")}.com</strong>
+                  Stand out with a custom domain like <strong>{(website.address || "yourproperty").toLowerCase().replace(/\s+/g, "")}.com</strong>
                 </p>
                 <button
                   type="button"
@@ -956,7 +956,7 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
         onClose={() => setIsDomainModalOpen(false)}
         type="property"
         websiteId={website.id}
-        suggestFrom={website.address}
+        suggestFrom={website.address || ""}
         currentDomain={website.customDomain}
       />
 

@@ -1008,7 +1008,7 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
                   <div className="flex-1">
                     <h4 className="font-medium text-foreground">Purchase a Domain</h4>
                     <p className="mt-1 text-sm text-foreground-muted">
-                      Get a custom domain like <strong>{website.name.toLowerCase().replace(/\s+/g, "")}.com</strong> for your portfolio.
+                      Get a custom domain like <strong>{(website.name || "yourportfolio").toLowerCase().replace(/\s+/g, "")}.com</strong> for your portfolio.
                     </p>
                     <ul className="mt-2 space-y-1 text-xs text-foreground-muted">
                       <li className="flex items-center gap-1.5">
@@ -1084,7 +1084,7 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
         onClose={() => setIsDomainPurchaseModalOpen(false)}
         type="portfolio"
         websiteId={website.id}
-        suggestFrom={website.name}
+        suggestFrom={website.name || ""}
         currentDomain={website.customDomain}
       />
 

@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Property and portfolio pages crashing with "Cannot read properties of undefined (reading 'toLowerCase')" when address/name is undefined in domain purchase feature
+
 ### Added
 - **Super Admin Revenue & Billing Dashboard** - Comprehensive payment analytics at `/super-admin/revenue`
   - Total revenue overview (all time, today, week, month, year)

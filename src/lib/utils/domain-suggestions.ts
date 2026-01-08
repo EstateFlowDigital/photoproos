@@ -7,6 +7,11 @@
  * Generate domain suggestions based on property address
  */
 export function generateDomainSuggestions(address: string): string[] {
+  // Handle empty/invalid input
+  if (!address || typeof address !== "string") {
+    return [];
+  }
+
   // Clean and normalize the address
   const cleaned = address
     .toLowerCase()
@@ -54,6 +59,11 @@ export function generateDomainSuggestions(address: string): string[] {
  * Generate portfolio domain suggestions based on name
  */
 export function generatePortfolioDomainSuggestions(name: string): string[] {
+  // Handle empty/invalid input
+  if (!name || typeof name !== "string") {
+    return [];
+  }
+
   const cleaned = name
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, "")
