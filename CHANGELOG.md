@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Null Safety Across Dashboard and Portal** - Comprehensive fix for potential runtime errors
+  - Added null coalescing patterns for `.toLowerCase()`, `.charAt()`, `.replace()` calls
+  - Fixed search filters in portal-client, gallery-list, services, contracts, forms, questionnaires
+  - Fixed avatar initials in brokerages, scheduling, galleries pages to handle missing names
+  - Fixed client name displays with proper fallbacks to "Unknown" or "?" when null
+  - Fixed project name searches in portfolios and review requests
+
 ### Changed
 - **Industry-Based Navigation Structure** - Restructured dashboard sidebar for better organization
   - Navigation now organized into clear sections: Workspace → Clients → Industry → Settings
