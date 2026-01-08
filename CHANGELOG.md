@@ -48,6 +48,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - New `ImpersonationSession` Prisma model tracking admin, target, reason, duration, and actions performed
   - Server actions: `startImpersonation`, `endImpersonation`, `getActiveImpersonation`
   - Impersonation banner in Super Admin layout with end button
+
+### Fixed
+- **Super Admin Server-Side Error** - Fixed critical issues causing server-side exceptions
+  - Added missing `lastLoginAt` field to User model in Prisma schema
+  - Fixed `getUserDetails` server action to use correct relation name `userAchievements` instead of `achievements`
+  - Regenerated Prisma client with updated schema
   - Layout adjusts header and sidebar position when impersonation active
   - Session logging in audit trail
 

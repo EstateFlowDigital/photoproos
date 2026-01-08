@@ -304,7 +304,7 @@ export async function getUserDetails(
           },
         },
         gamificationProfile: true,
-        achievements: {
+        userAchievements: {
           include: {
             achievement: true,
           },
@@ -384,7 +384,7 @@ export async function getUserDetails(
           plan: m.organization.plan,
         },
       })),
-      achievements: user.achievements.map((a) => ({
+      achievements: user.userAchievements.map((a) => ({
         id: a.id,
         unlockedAt: a.unlockedAt,
         achievement: {

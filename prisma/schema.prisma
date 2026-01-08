@@ -1379,6 +1379,7 @@ model User {
   // Super Admin & Engagement Features
   hasLifetimeLicense Boolean @default(false) // Granted by super admin
   totalSessions      Int     @default(0) // Track logins for feedback modal trigger
+  lastLoginAt        DateTime? // Track last login time for activity stats
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
