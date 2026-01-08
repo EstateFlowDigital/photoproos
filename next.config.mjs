@@ -12,7 +12,8 @@ const isRailway = Boolean(process.env.RAILWAY_ENVIRONMENT);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  distDir: '.next',
+  // Use /tmp for local development to avoid Dropbox sync conflicts
+  distDir: isRailway ? '.next' : '/tmp/photoproos-next',
   images: {
     domains: ['images.ctfassets.net', 'videos.ctfassets.net'],
     formats: ['image/avif', 'image/webp'],
