@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Announcements & Broadcast System** - New Super Admin feature for platform-wide messaging
+  - New database models: Announcement, AnnouncementRead with full schema
+  - Support for 7 announcement types: info, feature, maintenance, warning, success, update, promotion
+  - 4 priority levels: low, medium, high, urgent
+  - Target audience filtering: all users, free/paid plans, specific tiers, specific organizations
+  - Stats dashboard showing total, active, reads, and dismissals
+  - Create, edit, delete, and toggle announcements
+  - Dismissible and banner display options
+  - Optional CTA button with custom label and URL
+  - Expiration date support for time-limited announcements
+  - Added to Super Admin sidebar navigation
+
 - **System Logs & Monitoring Page** - New Super Admin page for audit logs and system health
   - Real-time system health stats display (total users, galleries, activity, errors)
   - Comprehensive audit log table with admin action tracking
