@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Marketing Kit Settings Page** - New settings page for marketing materials
+  - Created `/settings/marketing` page to resolve 404 error
+  - Displays organization's marketing kits with asset counts
+  - Shows quick stats for kits, assets, and templates
+  - Feature overview with marketing capabilities list
+  - Links to property websites for kit creation
+  - Coming soon notice for planned AI features
+
 - **Add Widget Modal Multi-Selection** - Enhanced widget management
   - Multi-select checkboxes on widget cards in Add Widget modal
   - "Add Selected (X)" button for batch widget addition
