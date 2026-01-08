@@ -2541,3 +2541,447 @@ export async function generateDiscountQrCode(
     return fail("Failed to generate QR code");
   }
 }
+
+// ============================================================================
+// REVENUE & BILLING
+// ============================================================================
+
+export interface RevenueStats {
+  // Overview
+  totalRevenueCents: number;
+  revenueToday: number;
+  revenueThisWeek: number;
+  revenueThisMonth: number;
+  revenueThisYear: number;
+
+  // MRR metrics
+  mrr: number; // Monthly Recurring Revenue
+  arr: number; // Annual Recurring Revenue
+
+  // Growth
+  revenueGrowthPercent: number; // Month over month
+
+  // Payments
+  totalPayments: number;
+  successfulPayments: number;
+  failedPayments: number;
+  pendingPayments: number;
+  paymentSuccessRate: number;
+
+  // Invoices
+  totalInvoices: number;
+  paidInvoices: number;
+  unpaidInvoices: number;
+  overdueInvoices: number;
+  outstandingAmountCents: number;
+
+  // Averages
+  averagePaymentCents: number;
+  averageInvoiceCents: number;
+
+  // Charts data
+  revenueByDay: Array<{ date: string; amount: number }>;
+  revenueByMonth: Array<{ month: string; amount: number }>;
+  paymentsByStatus: Array<{ status: string; count: number; amount: number }>;
+
+  // Top customers
+  topCustomers: Array<{
+    organizationId: string;
+    organizationName: string;
+    totalRevenue: number;
+    paymentCount: number;
+  }>;
+
+  // By plan
+  revenueByPlan: Array<{
+    plan: string;
+    amount: number;
+    count: number;
+  }>;
+}
+
+export interface RecentPayment {
+  id: string;
+  amountCents: number;
+  tipAmountCents: number;
+  status: string;
+  clientEmail: string | null;
+  clientName: string | null;
+  description: string | null;
+  paidAt: Date | null;
+  createdAt: Date;
+  organization: {
+    id: string;
+    name: string;
+  } | null;
+}
+
+export interface RecentInvoice {
+  id: string;
+  invoiceNumber: string;
+  status: string;
+  totalCents: number;
+  paidAmountCents: number;
+  dueDate: Date;
+  paidAt: Date | null;
+  createdAt: Date;
+  client: {
+    name: string | null;
+    email: string;
+  } | null;
+  organization: {
+    id: string;
+    name: string;
+  } | null;
+}
+
+/**
+ * Get comprehensive revenue statistics
+ */
+export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfWeek = new Date(startOfToday);
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    // Fetch all payment stats in parallel
+    const [
+      totalRevenue,
+      revenueToday,
+      revenueThisWeek,
+      revenueThisMonth,
+      revenueLastMonth,
+      revenueThisYear,
+      paymentStats,
+      invoiceStats,
+      paymentsByStatus,
+      topCustomersRaw,
+      last30DaysPayments,
+      last12MonthsPayments,
+    ] = await Promise.all([
+      // Total revenue
+      prisma.payment.aggregate({
+        where: { status: "completed" },
+        _sum: { amountCents: true, tipAmountCents: true },
+      }),
+      // Revenue today
+      prisma.payment.aggregate({
+        where: { status: "completed", paidAt: { gte: startOfToday } },
+        _sum: { amountCents: true, tipAmountCents: true },
+      }),
+      // Revenue this week
+      prisma.payment.aggregate({
+        where: { status: "completed", paidAt: { gte: startOfWeek } },
+        _sum: { amountCents: true, tipAmountCents: true },
+      }),
+      // Revenue this month
+      prisma.payment.aggregate({
+        where: { status: "completed", paidAt: { gte: startOfMonth } },
+        _sum: { amountCents: true, tipAmountCents: true },
+      }),
+      // Revenue last month (for growth calculation)
+      prisma.payment.aggregate({
+        where: {
+          status: "completed",
+          paidAt: { gte: startOfLastMonth, lte: endOfLastMonth },
+        },
+        _sum: { amountCents: true, tipAmountCents: true },
+      }),
+      // Revenue this year
+      prisma.payment.aggregate({
+        where: { status: "completed", paidAt: { gte: startOfYear } },
+        _sum: { amountCents: true, tipAmountCents: true },
+      }),
+      // Payment counts by status
+      prisma.payment.groupBy({
+        by: ["status"],
+        _count: true,
+        _sum: { amountCents: true },
+      }),
+      // Invoice stats
+      prisma.invoice.groupBy({
+        by: ["status"],
+        _count: true,
+        _sum: { totalCents: true, paidAmountCents: true },
+      }),
+      // Payments by status for chart
+      prisma.payment.groupBy({
+        by: ["status"],
+        _count: true,
+        _sum: { amountCents: true },
+      }),
+      // Top customers by revenue
+      prisma.payment.groupBy({
+        by: ["organizationId"],
+        where: { status: "completed", organizationId: { not: null } },
+        _sum: { amountCents: true },
+        _count: true,
+        orderBy: { _sum: { amountCents: "desc" } },
+        take: 10,
+      }),
+      // Last 30 days for daily chart
+      prisma.payment.findMany({
+        where: {
+          status: "completed",
+          paidAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+        },
+        select: { paidAt: true, amountCents: true, tipAmountCents: true },
+      }),
+      // Last 12 months for monthly chart
+      prisma.payment.findMany({
+        where: {
+          status: "completed",
+          paidAt: { gte: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) },
+        },
+        select: { paidAt: true, amountCents: true, tipAmountCents: true },
+      }),
+    ]);
+
+    // Get organization names for top customers
+    const orgIds = topCustomersRaw.map((c) => c.organizationId).filter(Boolean) as string[];
+    const organizations = await prisma.organization.findMany({
+      where: { id: { in: orgIds } },
+      select: { id: true, name: true, plan: true },
+    });
+    const orgMap = new Map(organizations.map((o) => [o.id, o]));
+
+    // Calculate totals
+    const totalRevenueCents = (totalRevenue._sum.amountCents || 0) + (totalRevenue._sum.tipAmountCents || 0);
+    const thisMonthRevenue = (revenueThisMonth._sum.amountCents || 0) + (revenueThisMonth._sum.tipAmountCents || 0);
+    const lastMonthRevenue = (revenueLastMonth._sum.amountCents || 0) + (revenueLastMonth._sum.tipAmountCents || 0);
+
+    // Calculate MRR (simplified - using this month's revenue as proxy)
+    const mrr = thisMonthRevenue;
+    const arr = mrr * 12;
+
+    // Calculate growth
+    const revenueGrowthPercent = lastMonthRevenue > 0
+      ? ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
+      : 0;
+
+    // Payment stats
+    const totalPayments = paymentStats.reduce((acc, p) => acc + p._count, 0);
+    const successfulPayments = paymentStats.find((p) => p.status === "completed")?._count || 0;
+    const failedPayments = paymentStats.find((p) => p.status === "failed")?._count || 0;
+    const pendingPayments = paymentStats.find((p) => p.status === "pending")?._count || 0;
+    const paymentSuccessRate = totalPayments > 0 ? (successfulPayments / totalPayments) * 100 : 0;
+
+    // Invoice stats
+    const totalInvoices = invoiceStats.reduce((acc, i) => acc + i._count, 0);
+    const paidInvoices = invoiceStats.find((i) => i.status === "paid")?._count || 0;
+    const unpaidInvoices = invoiceStats.filter((i) => ["draft", "sent", "viewed"].includes(i.status)).reduce((acc, i) => acc + i._count, 0);
+    const overdueInvoices = invoiceStats.find((i) => i.status === "overdue")?._count || 0;
+
+    // Outstanding amount
+    const outstandingAmountCents = invoiceStats
+      .filter((i) => ["sent", "viewed", "overdue"].includes(i.status))
+      .reduce((acc, i) => acc + ((i._sum.totalCents || 0) - (i._sum.paidAmountCents || 0)), 0);
+
+    // Averages
+    const completedPaymentAmount = paymentStats.find((p) => p.status === "completed")?._sum.amountCents || 0;
+    const averagePaymentCents = successfulPayments > 0 ? Math.round(completedPaymentAmount / successfulPayments) : 0;
+    const totalInvoiceAmount = invoiceStats.reduce((acc, i) => acc + (i._sum.totalCents || 0), 0);
+    const averageInvoiceCents = totalInvoices > 0 ? Math.round(totalInvoiceAmount / totalInvoices) : 0;
+
+    // Build daily revenue chart data
+    const revenueByDay: Array<{ date: string; amount: number }> = [];
+    const dayMap = new Map<string, number>();
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+      const key = date.toISOString().split("T")[0];
+      dayMap.set(key, 0);
+    }
+    last30DaysPayments.forEach((p) => {
+      if (p.paidAt) {
+        const key = p.paidAt.toISOString().split("T")[0];
+        dayMap.set(key, (dayMap.get(key) || 0) + (p.amountCents || 0) + (p.tipAmountCents || 0));
+      }
+    });
+    dayMap.forEach((amount, date) => {
+      revenueByDay.push({ date, amount: amount / 100 });
+    });
+
+    // Build monthly revenue chart data
+    const revenueByMonth: Array<{ month: string; amount: number }> = [];
+    const monthMap = new Map<string, number>();
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = date.toISOString().slice(0, 7);
+      monthMap.set(key, 0);
+    }
+    last12MonthsPayments.forEach((p) => {
+      if (p.paidAt) {
+        const key = p.paidAt.toISOString().slice(0, 7);
+        if (monthMap.has(key)) {
+          monthMap.set(key, (monthMap.get(key) || 0) + (p.amountCents || 0) + (p.tipAmountCents || 0));
+        }
+      }
+    });
+    monthMap.forEach((amount, month) => {
+      revenueByMonth.push({ month, amount: amount / 100 });
+    });
+
+    // Top customers with org names
+    const topCustomers = topCustomersRaw.map((c) => {
+      const org = c.organizationId ? orgMap.get(c.organizationId) : null;
+      return {
+        organizationId: c.organizationId || "",
+        organizationName: org?.name || "Unknown",
+        totalRevenue: (c._sum.amountCents || 0) / 100,
+        paymentCount: c._count,
+      };
+    });
+
+    // Revenue by plan
+    const planRevenue = new Map<string, { amount: number; count: number }>();
+    organizations.forEach((org) => {
+      const plan = org.plan || "free";
+      const customer = topCustomersRaw.find((c) => c.organizationId === org.id);
+      if (customer) {
+        const existing = planRevenue.get(plan) || { amount: 0, count: 0 };
+        planRevenue.set(plan, {
+          amount: existing.amount + (customer._sum.amountCents || 0) / 100,
+          count: existing.count + 1,
+        });
+      }
+    });
+    const revenueByPlan = Array.from(planRevenue.entries()).map(([plan, data]) => ({
+      plan,
+      amount: data.amount,
+      count: data.count,
+    }));
+
+    return ok({
+      totalRevenueCents,
+      revenueToday: ((revenueToday._sum.amountCents || 0) + (revenueToday._sum.tipAmountCents || 0)) / 100,
+      revenueThisWeek: ((revenueThisWeek._sum.amountCents || 0) + (revenueThisWeek._sum.tipAmountCents || 0)) / 100,
+      revenueThisMonth: thisMonthRevenue / 100,
+      revenueThisYear: ((revenueThisYear._sum.amountCents || 0) + (revenueThisYear._sum.tipAmountCents || 0)) / 100,
+      mrr: mrr / 100,
+      arr: arr / 100,
+      revenueGrowthPercent,
+      totalPayments,
+      successfulPayments,
+      failedPayments,
+      pendingPayments,
+      paymentSuccessRate,
+      totalInvoices,
+      paidInvoices,
+      unpaidInvoices,
+      overdueInvoices,
+      outstandingAmountCents,
+      averagePaymentCents,
+      averageInvoiceCents,
+      revenueByDay,
+      revenueByMonth,
+      paymentsByStatus: paymentsByStatus.map((p) => ({
+        status: p.status,
+        count: p._count,
+        amount: (p._sum.amountCents || 0) / 100,
+      })),
+      topCustomers,
+      revenueByPlan,
+    });
+  } catch (error) {
+    console.error("[SuperAdmin] Error fetching revenue stats:", error);
+    return fail("Failed to fetch revenue statistics");
+  }
+}
+
+/**
+ * Get recent payments for super admin
+ */
+export async function getRecentPayments(options: {
+  limit?: number;
+  status?: string;
+}): Promise<ActionResult<RecentPayment[]>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const payments = await prisma.payment.findMany({
+      where: options.status ? { status: options.status as never } : undefined,
+      orderBy: { createdAt: "desc" },
+      take: options.limit || 20,
+      include: {
+        organization: {
+          select: { id: true, name: true },
+        },
+      },
+    });
+
+    return ok(
+      payments.map((p) => ({
+        id: p.id,
+        amountCents: p.amountCents,
+        tipAmountCents: p.tipAmountCents,
+        status: p.status,
+        clientEmail: p.clientEmail,
+        clientName: p.clientName,
+        description: p.description,
+        paidAt: p.paidAt,
+        createdAt: p.createdAt,
+        organization: p.organization,
+      }))
+    );
+  } catch (error) {
+    console.error("[SuperAdmin] Error fetching recent payments:", error);
+    return fail("Failed to fetch recent payments");
+  }
+}
+
+/**
+ * Get recent invoices for super admin
+ */
+export async function getRecentInvoices(options: {
+  limit?: number;
+  status?: string;
+}): Promise<ActionResult<RecentInvoice[]>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const invoices = await prisma.invoice.findMany({
+      where: options.status ? { status: options.status as never } : undefined,
+      orderBy: { createdAt: "desc" },
+      take: options.limit || 20,
+      include: {
+        organization: {
+          select: { id: true, name: true },
+        },
+        client: {
+          select: { name: true, email: true },
+        },
+      },
+    });
+
+    return ok(
+      invoices.map((i) => ({
+        id: i.id,
+        invoiceNumber: i.invoiceNumber,
+        status: i.status,
+        totalCents: i.totalCents,
+        paidAmountCents: i.paidAmountCents,
+        dueDate: i.dueDate,
+        paidAt: i.paidAt,
+        createdAt: i.createdAt,
+        client: i.client,
+        organization: i.organization,
+      }))
+    );
+  } catch (error) {
+    console.error("[SuperAdmin] Error fetching recent invoices:", error);
+    return fail("Failed to fetch recent invoices");
+  }
+}

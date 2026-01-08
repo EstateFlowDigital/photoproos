@@ -214,6 +214,24 @@ function TagIcon({ className }: { className?: string }) {
   );
 }
 
+function DollarSignIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <line x1="12" x2="12" y1="2" y2="22" />
+      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    </svg>
+  );
+}
+
 function ArrowLeftIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -241,6 +259,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: "/super-admin", label: "Dashboard", icon: LayoutDashboardIcon },
   { href: "/super-admin/users", label: "Users", icon: UsersIcon },
+  { href: "/super-admin/revenue", label: "Revenue", icon: DollarSignIcon },
   { href: "/super-admin/discounts", label: "Discounts", icon: TagIcon },
   { href: "/super-admin/announcements", label: "Announcements", icon: MegaphoneIcon },
   { href: "/super-admin/support", label: "Support", icon: TicketIcon },

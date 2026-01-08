@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Super Admin Revenue & Billing Dashboard** - Comprehensive payment analytics at `/super-admin/revenue`
+  - Total revenue overview (all time, today, week, month, year)
+  - MRR (Monthly Recurring Revenue) and ARR tracking
+  - Month-over-month revenue growth calculation
+  - Payment statistics: success rate, completed, pending, failed counts
+  - Invoice analytics: total, paid, unpaid, overdue counts
+  - Outstanding amount tracking
+  - Interactive revenue charts (30-day daily and 12-month trends)
+  - Top customers leaderboard by revenue
+  - Recent payments list with status badges
+  - Overdue invoices alert section
+  - Revenue breakdown by plan type
+  - Server actions: getRevenueStats, getRecentPayments, getRecentInvoices
+
 - **Photographer-to-Client Discount System** - New settings page for photographers to create client discounts
   - New organization-level discount management at `/settings/discounts`
   - Organization-scoped discounts separate from platform discounts
