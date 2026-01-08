@@ -9892,3 +9892,189 @@ model AnnouncementRead {
   @@index([userId])
   @@index([announcementId])
 }
+
+// ==================== DISCOUNT & COUPON SYSTEM ====================
+
+enum DiscountScope {
+  platform       // Platform-to-photographer (subscription discounts)
+  organization   // Photographer-to-client (service/gallery discounts)
+}
+
+enum DiscountType {
+  percentage     // Percentage off (e.g., 20% off)
+  fixed_amount   // Fixed dollar amount off (e.g., $50 off)
+  free_trial     // Extended free trial period
+  free_months    // Free subscription months
+}
+
+enum DiscountAppliesTo {
+  subscription   // Platform subscription plans
+  all_services   // All photographer services
+  specific_services // Specific service types only
+  gallery        // Gallery delivery fees
+  booking        // Booking fees
+  all            // Everything applicable
+}
+
+enum DiscountStatus {
+  active
+  paused
+  expired
+  depleted       // Usage limit reached
+  scheduled      // Not yet active
+}
+
+// Master discount/coupon code
+model DiscountCode {
+  id              String           @id @default(cuid())
+
+  // Ownership
+  scope           DiscountScope    @default(platform)
+  organizationId  String?          // null = platform-level, set = org-level
+  createdByUserId String           // User who created the discount
+
+  // Code details
+  code            String           // The actual discount code (e.g., "SUMMER20")
+  name            String           // Internal name for reference
+  description     String?          // Public description shown to users
+
+  // Discount configuration
+  discountType    DiscountType     @default(percentage)
+  discountValue   Float            // Value based on type (20 for 20%, 50 for $50)
+  appliesTo       DiscountAppliesTo @default(all)
+  specificIds     String[]         @default([]) // For specific_services: service IDs
+
+  // Limits
+  usageLimit      Int?             // Max total uses (null = unlimited)
+  usagePerUser    Int              @default(1) // Max uses per user/client
+  minPurchase     Float?           // Minimum purchase amount required
+  maxDiscount     Float?           // Cap on discount amount (for percentage)
+
+  // Scheduling
+  startsAt        DateTime         @default(now())
+  expiresAt       DateTime?        // null = never expires
+
+  // Status
+  status          DiscountStatus   @default(active)
+  isPublic        Boolean          @default(false) // Show in public listings
+  requiresEmail   Boolean          @default(false) // Require email to claim
+
+  // Sharing
+  shareableSlug   String?          @unique // For shareable URLs: /discount/[slug]
+  qrCodeUrl       String?          // Generated QR code image URL
+
+  // Tracking
+  totalUsageCount Int              @default(0)
+  totalSavings    Float            @default(0) // Total $ saved by users
+
+  // Metadata
+  metadata        Json?            // Additional custom data
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  // Relations
+  organization    Organization?    @relation("OrganizationDiscounts", fields: [organizationId], references: [id], onDelete: Cascade)
+  usages          DiscountUsage[]
+  campaigns       DiscountCampaign[]
+
+  @@unique([code, organizationId]) // Same code can exist for different orgs
+  @@index([scope])
+  @@index([status])
+  @@index([organizationId])
+  @@index([code])
+  @@index([shareableSlug])
+  @@index([startsAt, expiresAt])
+}
+
+// Track discount code usage
+model DiscountUsage {
+  id              String       @id @default(cuid())
+  discountCodeId  String
+
+  // Who used it
+  userId          String?      // Clerk user ID (for platform discounts)
+  clientId        String?      // Client ID (for org discounts)
+  email           String?      // Email used to claim (for tracking)
+
+  // What it was applied to
+  appliedTo       String       // Description: "Pro Plan Subscription", "Gallery #123", etc.
+  appliedToId     String?      // Reference ID (subscription, invoice, gallery, etc.)
+  appliedToType   String?      // Type: subscription, invoice, gallery, booking
+
+  // Value
+  originalAmount  Float        // Original price before discount
+  discountAmount  Float        // Amount discounted
+  finalAmount     Float        // Final price paid
+
+  // Tracking
+  source          String?      // How they found the code: "qr", "link", "manual", "referral"
+  ipAddress       String?
+  userAgent       String?
+
+  usedAt          DateTime     @default(now())
+
+  // Relations
+  discountCode    DiscountCode @relation(fields: [discountCodeId], references: [id], onDelete: Cascade)
+
+  @@index([discountCodeId])
+  @@index([userId])
+  @@index([clientId])
+  @@index([email])
+  @@index([usedAt])
+}
+
+// Group discounts into campaigns for organization
+model DiscountCampaign {
+  id              String       @id @default(cuid())
+  organizationId  String?      // null = platform campaign
+  createdByUserId String
+
+  // Campaign details
+  name            String
+  description     String?
+  isActive        Boolean      @default(true)
+
+  // Timing
+  startsAt        DateTime     @default(now())
+  endsAt          DateTime?
+
+  // Goals & tracking
+  goalUsageCount  Int?         // Target number of redemptions
+  goalRevenue     Float?       // Target revenue from campaign
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  organization    Organization? @relation("OrganizationDiscountCampaigns", fields: [organizationId], references: [id], onDelete: Cascade)
+  discountCodes   DiscountCode[]
+
+  @@index([organizationId])
+  @@index([isActive])
+}
+
+// Referral bonuses tied to discount system
+model ReferralDiscount {
+  id                String       @id @default(cuid())
+  referrerId        String       // User who referred
+  referredId        String       // User who was referred
+
+  // Discount awarded to referrer
+  referrerDiscountId String?
+  referrerBonus     Float        @default(0) // Direct cash/credit bonus
+
+  // Discount awarded to referred user
+  referredDiscountId String?
+  referredBonus     Float        @default(0)
+
+  // Status
+  isRedeemed        Boolean      @default(false)
+  redeemedAt        DateTime?
+
+  createdAt         DateTime     @default(now())
+
+  @@unique([referrerId, referredId])
+  @@index([referrerId])
+  @@index([referredId])
+}

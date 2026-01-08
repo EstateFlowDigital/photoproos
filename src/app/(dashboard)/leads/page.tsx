@@ -1,4 +1,5 @@
-import { PageHeader, PageContextNav } from "@/components/dashboard";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { PageContextNav } from "@/components/dashboard/page-context-nav";
 import { requireOrganizationId } from "@/lib/actions/auth-helper";
 import { getPortfolioInquiries, getPortfolioWebsitesForLeadCreation } from "@/lib/actions/portfolio-websites";
 import { getChatInquiries } from "@/lib/actions/chat-inquiries";

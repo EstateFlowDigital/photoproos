@@ -65,16 +65,19 @@ export {
   EmptyOrders,
   EmptyServices,
 } from "./empty-state";
-export { InvoiceBuilder, InvoiceSummary, type LineItem, type PricingType } from "./invoice-builder";
-export { ServiceSelector, ServiceDisplay } from "./service-selector";
-export { ServiceForm } from "./service-form";
+// InvoiceBuilder is a complex client component - import directly from "./invoice-builder"
+// ServiceSelector is a complex client component - import directly from "./service-selector"
+// ServiceForm is a complex client component - import directly from "./service-form"
 export { OnboardingChecklist } from "./onboarding-checklist";
 export { RelatedItems } from "./related-items";
 export { Breadcrumb } from "./breadcrumb";
 export { getChecklistItems } from "@/lib/utils/checklist-items";
-export { ReferralWidget } from "./referral-widget";
 export { CollapsibleSection } from "./collapsible-section";
-export { DashboardCustomizePanel } from "./dashboard-customize-panel";
-export { OverdueInvoicesWidget } from "./overdue-invoices-widget";
-export { WidgetDashboard, type DashboardData } from "./widget-dashboard";
-export { AddWidgetModal } from "./add-widget-modal";
+
+// NOTE: The following components are complex client components with hooks.
+// They should be imported directly to avoid barrel export issues with server components:
+// - WidgetDashboard, DashboardData from "./widget-dashboard"
+// - AddWidgetModal from "./add-widget-modal"
+// - DashboardCustomizePanel from "./dashboard-customize-panel"
+// - OverdueInvoicesWidget from "./overdue-invoices-widget"
+// - ReferralWidget from "./referral-widget"
