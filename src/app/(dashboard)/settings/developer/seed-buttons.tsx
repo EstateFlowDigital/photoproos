@@ -19,7 +19,28 @@ export function SeedDatabaseButton() {
 
       if (response.success) {
         const counts = response.data.counts;
-        const message = `Created: ${counts.clients} clients, ${counts.projects} projects, ${counts.bookings} bookings, ${counts.invoices} invoices, ${counts.contracts} contracts, ${counts.services} services, ${counts.tags} tags, ${counts.communications} communications`;
+        const parts: string[] = [];
+        if (counts.clients) parts.push(`${counts.clients} clients`);
+        if (counts.projects) parts.push(`${counts.projects} projects`);
+        if (counts.bookings) parts.push(`${counts.bookings} bookings`);
+        if (counts.bookingTypes) parts.push(`${counts.bookingTypes} booking types`);
+        if (counts.invoices) parts.push(`${counts.invoices} invoices`);
+        if (counts.contracts) parts.push(`${counts.contracts} contracts`);
+        if (counts.services) parts.push(`${counts.services} services`);
+        if (counts.tags) parts.push(`${counts.tags} tags`);
+        if (counts.deliveryLinks) parts.push(`${counts.deliveryLinks} delivery links`);
+        if (counts.questionnaireTemplates) parts.push(`${counts.questionnaireTemplates} questionnaires`);
+        if (counts.reviewPlatforms) parts.push(`${counts.reviewPlatforms} review platforms`);
+        if (counts.brokerages) parts.push(`${counts.brokerages} brokerages`);
+        if (counts.cannedResponses) parts.push(`${counts.cannedResponses} canned responses`);
+        if (counts.serviceAddons) parts.push(`${counts.serviceAddons} service addons`);
+        if (counts.conversations) parts.push(`${counts.conversations} conversations`);
+        if (counts.equipment) parts.push(`${counts.equipment} equipment`);
+        if (counts.tasks) parts.push(`${counts.tasks} tasks`);
+        if (counts.gamificationProfile) parts.push(`gamification profile`);
+        if (counts.portfolioWebsite) parts.push(`portfolio website`);
+        if (counts.locations) parts.push(`${counts.locations} location`);
+        const message = `Created: ${parts.join(", ")}`;
         setResult({ success: true, message });
         router.refresh();
       } else {

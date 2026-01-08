@@ -1,21 +1,28 @@
 import { Suspense } from "react";
-import { getSuperAdminDashboardStats } from "@/lib/actions/super-admin";
+import { getSuperAdminDashboardStats, getAuditLogs } from "@/lib/actions/super-admin";
 import { getAllSupportTickets } from "@/lib/actions/support-tickets";
+import { getAllPlatformFeedback } from "@/lib/actions/platform-feedback";
 import { SuperAdminDashboardClient } from "./dashboard-client";
 
 async function DashboardLoader() {
-  const [statsResult, ticketsResult] = await Promise.all([
+  const [statsResult, ticketsResult, auditResult, feedbackResult] = await Promise.all([
     getSuperAdminDashboardStats(),
     getAllSupportTickets({ status: "open" }),
+    getAuditLogs({ limit: 5 }),
+    getAllPlatformFeedback({ limit: 5 }),
   ]);
 
   const stats = statsResult.success ? statsResult.data : null;
   const recentTickets = ticketsResult.success ? ticketsResult.data?.slice(0, 5) : [];
+  const recentActivity = auditResult.success ? auditResult.data.logs : [];
+  const recentFeedback = feedbackResult.success ? feedbackResult.data : [];
 
   return (
     <SuperAdminDashboardClient
       stats={stats}
       recentTickets={recentTickets || []}
+      recentActivity={recentActivity}
+      recentFeedback={recentFeedback || []}
     />
   );
 }

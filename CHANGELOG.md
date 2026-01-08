@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Expanded Database Seeding** - Comprehensive sample data for Developer Settings
+  - Added 13 new data categories to the seed function:
+    - Booking Types (6 types: Real Estate, Twilight, Drone, Portrait, Event, Headshots)
+    - Delivery Links for all gallery projects
+    - Questionnaire Templates (Real Estate, Wedding, Portrait) with fields
+    - Gamification Profile with XP, streaks, and stats
+    - Review Platforms (Google, Yelp, Facebook, The Knot) and requests
+    - Brokerages (Keller Williams, RE/MAX, Coldwell Banker, Century 21)
+    - Canned Responses (6 templates for common communications)
+    - Portfolio Website with bio, social links, and styling
+    - Location (Main Studio address)
+    - Service Bundles with items
+    - Service Addons (Rush Delivery, Virtual Staging, Floor Plans, etc.)
+    - Conversations with messages for client communication
+  - Updated clear function to properly remove all new seeded data
+  - Enhanced seed result display showing all created items
+  - Now provides complete demo experience across all modules
+
 - **Marketing Kit Settings Page** - New settings page for marketing materials
   - Created `/settings/marketing` page to resolve 404 error
   - Displays organization's marketing kits with asset counts

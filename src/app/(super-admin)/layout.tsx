@@ -1,5 +1,7 @@
 import { requireSuperAdmin, getSuperAdminUser } from "@/lib/auth/super-admin";
 import { SuperAdminLayoutClient } from "./super-admin-layout-client";
+import { ToastProvider } from "@/components/ui/toast";
+import { Toaster } from "sonner";
 
 export default async function SuperAdminLayout({
   children,
@@ -13,8 +15,11 @@ export default async function SuperAdminLayout({
   const adminUser = await getSuperAdminUser();
 
   return (
-    <SuperAdminLayoutClient adminUser={adminUser}>
-      {children}
-    </SuperAdminLayoutClient>
+    <ToastProvider>
+      <SuperAdminLayoutClient adminUser={adminUser}>
+        {children}
+      </SuperAdminLayoutClient>
+      <Toaster position="bottom-right" richColors />
+    </ToastProvider>
   );
 }

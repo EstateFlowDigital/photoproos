@@ -11,6 +11,9 @@ import {
   AvailabilityBlockType,
   TaskStatus,
   TaskPriority,
+  BookingStatus,
+  PortfolioType,
+  PortfolioTemplate,
 } from "@prisma/client";
 import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 
@@ -810,6 +813,464 @@ By signing below, both parties agree to the terms outlined in this agreement.`,
     }
     counts.tasks = taskCount;
 
+    // 18. Create Booking Types
+    const BOOKING_TYPES = [
+      { name: "Real Estate Photography", duration: 120, price: 35000, color: "#3b82f6" },
+      { name: "Twilight Shoot", duration: 60, price: 25000, color: "#8b5cf6" },
+      { name: "Drone Photography", duration: 90, price: 45000, color: "#06b6d4" },
+      { name: "Portrait Session", duration: 60, price: 30000, color: "#ec4899" },
+      { name: "Event Coverage", duration: 240, price: 80000, color: "#f97316" },
+      { name: "Commercial Headshots", duration: 45, price: 20000, color: "#10b981" },
+    ];
+
+    let bookingTypeCount = 0;
+    const createdBookingTypes: { id: string; name: string }[] = [];
+    for (const bt of BOOKING_TYPES) {
+      const existing = await prisma.bookingType.findFirst({
+        where: { organizationId, name: bt.name },
+      });
+
+      if (!existing) {
+        const created = await prisma.bookingType.create({
+          data: {
+            organizationId,
+            name: bt.name,
+            description: `Professional ${bt.name.toLowerCase()} service`,
+            durationMinutes: bt.duration,
+            priceCents: bt.price,
+            color: bt.color,
+            isActive: true,
+          },
+        });
+        createdBookingTypes.push({ id: created.id, name: created.name });
+        bookingTypeCount++;
+      } else {
+        createdBookingTypes.push({ id: existing.id, name: existing.name });
+      }
+    }
+    counts.bookingTypes = bookingTypeCount;
+
+    // 19. Create Delivery Links for projects
+    let deliveryLinkCount = 0;
+    for (const project of allProjects) {
+      const existingLink = await prisma.deliveryLink.findFirst({
+        where: { projectId: project.id },
+      });
+
+      if (!existingLink) {
+        await prisma.deliveryLink.create({
+          data: {
+            projectId: project.id,
+            slug: `${project.name.toLowerCase().replace(/[^a-z0-9]/g, "-")}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            isActive: true,
+            viewCount: Math.floor(Math.random() * 100) + 10,
+          },
+        });
+        deliveryLinkCount++;
+      }
+    }
+    counts.deliveryLinks = deliveryLinkCount;
+
+    // 20. Create Questionnaire Templates
+    const QUESTIONNAIRE_TEMPLATES = [
+      {
+        name: "Real Estate Client Intake",
+        description: "Standard questionnaire for real estate photography clients",
+        fields: [
+          { label: "Property Address", type: "text", required: true },
+          { label: "Property Type", type: "select", options: ["Single Family", "Condo", "Townhouse", "Commercial"] },
+          { label: "Square Footage", type: "number" },
+          { label: "Any special requests?", type: "textarea" },
+          { label: "Preferred shoot time", type: "select", options: ["Morning", "Midday", "Afternoon", "Twilight"] },
+        ],
+      },
+      {
+        name: "Wedding Photography Questionnaire",
+        description: "Comprehensive questionnaire for wedding clients",
+        fields: [
+          { label: "Wedding Date", type: "date", required: true },
+          { label: "Ceremony Venue", type: "text", required: true },
+          { label: "Reception Venue", type: "text" },
+          { label: "Expected Guest Count", type: "number" },
+          { label: "Photography Style Preference", type: "select", options: ["Traditional", "Photojournalistic", "Fine Art", "Mixed"] },
+          { label: "Must-have shots list", type: "textarea" },
+        ],
+      },
+      {
+        name: "Portrait Session Brief",
+        description: "Pre-session questionnaire for portrait clients",
+        fields: [
+          { label: "Session Purpose", type: "select", options: ["Professional Headshots", "Family Portrait", "Senior Photos", "Personal Branding"] },
+          { label: "Number of People", type: "number", required: true },
+          { label: "Preferred Location", type: "select", options: ["Studio", "Outdoor", "Client Location"] },
+          { label: "Wardrobe Questions?", type: "textarea" },
+        ],
+      },
+    ];
+
+    let questionnaireCount = 0;
+    for (const template of QUESTIONNAIRE_TEMPLATES) {
+      const existing = await prisma.questionnaireTemplate.findFirst({
+        where: { organizationId, name: template.name },
+      });
+
+      if (!existing) {
+        const created = await prisma.questionnaireTemplate.create({
+          data: {
+            organizationId,
+            name: template.name,
+            description: template.description,
+            isActive: true,
+          },
+        });
+
+        // Create fields for the template
+        for (let i = 0; i < template.fields.length; i++) {
+          const field = template.fields[i];
+          await prisma.questionnaireField.create({
+            data: {
+              templateId: created.id,
+              label: field.label,
+              type: field.type as "text" | "textarea" | "select" | "multiselect" | "date" | "number" | "email" | "phone" | "checkbox" | "radio" | "file" | "signature" | "rating" | "time" | "url",
+              required: field.required || false,
+              options: field.options || [],
+              sortOrder: i,
+            },
+          });
+        }
+        questionnaireCount++;
+      }
+    }
+    counts.questionnaireTemplates = questionnaireCount;
+
+    // 21. Create Gamification Profile
+    const existingProfile = await prisma.gamificationProfile.findUnique({
+      where: { organizationId },
+    });
+
+    if (!existingProfile) {
+      await prisma.gamificationProfile.create({
+        data: {
+          organizationId,
+          level: 5,
+          currentXp: 2450,
+          totalXpEarned: 12450,
+          currentStreak: 7,
+          longestStreak: 14,
+          galleriesDelivered: 25,
+          paymentsCollected: 18,
+          clientsAdded: 15,
+          bookingsCompleted: 22,
+          invoicesSent: 30,
+          contractsSigned: 8,
+          reviewsCollected: 12,
+          referralsMade: 3,
+          questionsAnswered: 45,
+          challengesCompleted: 6,
+          achievementsUnlocked: 12,
+        },
+      });
+      counts.gamificationProfile = 1;
+    }
+
+    // 22. Create Review Platforms
+    const REVIEW_PLATFORMS = [
+      { name: "Google Business", url: "https://business.google.com/reviews", icon: "google" },
+      { name: "Yelp", url: "https://yelp.com", icon: "yelp" },
+      { name: "Facebook", url: "https://facebook.com/reviews", icon: "facebook" },
+      { name: "The Knot", url: "https://theknot.com", icon: "theknot" },
+    ];
+
+    let reviewPlatformCount = 0;
+    const createdPlatforms: { id: string; name: string }[] = [];
+    for (const platform of REVIEW_PLATFORMS) {
+      const existing = await prisma.reviewPlatform.findFirst({
+        where: { organizationId, name: platform.name },
+      });
+
+      if (!existing) {
+        const created = await prisma.reviewPlatform.create({
+          data: {
+            organizationId,
+            name: platform.name,
+            url: platform.url,
+            icon: platform.icon,
+            isActive: true,
+          },
+        });
+        createdPlatforms.push({ id: created.id, name: created.name });
+        reviewPlatformCount++;
+      } else {
+        createdPlatforms.push({ id: existing.id, name: existing.name });
+      }
+    }
+    counts.reviewPlatforms = reviewPlatformCount;
+
+    // 23. Create Review Requests
+    let reviewRequestCount = 0;
+    for (let i = 0; i < Math.min(5, createdClients.length); i++) {
+      const client = createdClients[i];
+      const platform = createdPlatforms[i % createdPlatforms.length];
+
+      const existing = await prisma.reviewRequest.findFirst({
+        where: { clientId: client.id },
+      });
+
+      if (!existing && platform) {
+        await prisma.reviewRequest.create({
+          data: {
+            organizationId,
+            clientId: client.id,
+            platformId: platform.id,
+            status: i < 2 ? "completed" : i < 4 ? "sent" : "pending",
+            sentAt: i < 4 ? new Date(Date.now() - (i * 7 * 24 * 60 * 60 * 1000)) : null,
+            completedAt: i < 2 ? new Date(Date.now() - (i * 3 * 24 * 60 * 60 * 1000)) : null,
+          },
+        });
+        reviewRequestCount++;
+      }
+    }
+    counts.reviewRequests = reviewRequestCount;
+
+    // 24. Create Brokerages (for real estate)
+    const BROKERAGES = [
+      { name: "Keller Williams Realty", primaryContact: "John Smith", email: "jsmith@kw.com", phone: "(555) 100-1001" },
+      { name: "RE/MAX Premier", primaryContact: "Sarah Johnson", email: "sjohnson@remax.com", phone: "(555) 100-1002" },
+      { name: "Coldwell Banker", primaryContact: "Mike Davis", email: "mdavis@coldwellbanker.com", phone: "(555) 100-1003" },
+      { name: "Century 21", primaryContact: "Lisa Chen", email: "lchen@century21.com", phone: "(555) 100-1004" },
+    ];
+
+    let brokerageCount = 0;
+    for (const brokerage of BROKERAGES) {
+      const existing = await prisma.brokerage.findFirst({
+        where: { organizationId, name: brokerage.name },
+      });
+
+      if (!existing) {
+        await prisma.brokerage.create({
+          data: {
+            organizationId,
+            name: brokerage.name,
+            primaryContact: brokerage.primaryContact,
+            email: brokerage.email,
+            phone: brokerage.phone,
+            isActive: true,
+            totalProjects: Math.floor(Math.random() * 20) + 5,
+            lifetimeRevenueCents: Math.floor(Math.random() * 500000) + 100000,
+          },
+        });
+        brokerageCount++;
+      }
+    }
+    counts.brokerages = brokerageCount;
+
+    // 25. Create Canned Responses
+    const CANNED_RESPONSES = [
+      { title: "Booking Confirmation", shortcut: "/confirm", content: "Thank you for booking with us! Your session is confirmed for {date} at {time}. Please arrive 10 minutes early. Looking forward to seeing you!" },
+      { title: "Quote Follow-up", shortcut: "/followup", content: "Hi {name}, I wanted to follow up on the quote I sent over. Do you have any questions about the services or pricing? I'm happy to discuss further." },
+      { title: "Gallery Ready", shortcut: "/gallery", content: "Great news! Your gallery is ready for viewing. You can access it here: {link}. Let me know if you have any questions or need any adjustments." },
+      { title: "Payment Reminder", shortcut: "/payment", content: "Hi {name}, This is a friendly reminder that your invoice #{invoice} is due on {date}. Please let me know if you have any questions." },
+      { title: "Thank You", shortcut: "/thanks", content: "Thank you so much for choosing us for your photography needs! It was a pleasure working with you. We'd love to hear your feedback!" },
+      { title: "Reschedule Request", shortcut: "/reschedule", content: "I understand you need to reschedule. No problem! Please let me know your availability and we'll find a new time that works." },
+    ];
+
+    let cannedResponseCount = 0;
+    for (const response of CANNED_RESPONSES) {
+      const existing = await prisma.cannedResponse.findFirst({
+        where: { organizationId, title: response.title },
+      });
+
+      if (!existing) {
+        await prisma.cannedResponse.create({
+          data: {
+            organizationId,
+            title: response.title,
+            shortcut: response.shortcut,
+            content: response.content,
+            category: "general",
+          },
+        });
+        cannedResponseCount++;
+      }
+    }
+    counts.cannedResponses = cannedResponseCount;
+
+    // 26. Create Portfolio Website
+    const existingPortfolio = await prisma.portfolioWebsite.findFirst({
+      where: { organizationId },
+    });
+
+    if (!existingPortfolio) {
+      await prisma.portfolioWebsite.create({
+        data: {
+          organizationId,
+          type: PortfolioType.photographer,
+          template: PortfolioTemplate.modern,
+          title: "Professional Photography Portfolio",
+          tagline: "Capturing moments that matter",
+          bio: "With over 10 years of experience in professional photography, I specialize in creating stunning visuals for real estate, commercial, and portrait clients. My passion is transforming ordinary moments into extraordinary memories.",
+          heroImage: "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=1920",
+          primaryColor: "#3b82f6",
+          secondaryColor: "#1e40af",
+          isPublished: true,
+          slug: `portfolio-${Date.now()}`,
+          viewCount: Math.floor(Math.random() * 500) + 100,
+          contactEmail: "contact@photography.com",
+          contactPhone: "(555) 123-4567",
+          socialLinks: {
+            instagram: "https://instagram.com/photographer",
+            facebook: "https://facebook.com/photographer",
+            linkedin: "https://linkedin.com/in/photographer",
+          },
+        },
+      });
+      counts.portfolioWebsite = 1;
+    }
+
+    // 27. Create Location
+    const existingLocation = await prisma.location.findFirst({
+      where: { organizationId },
+    });
+
+    if (!existingLocation) {
+      await prisma.location.create({
+        data: {
+          organizationId,
+          name: "Main Studio",
+          address: "123 Photography Lane",
+          city: "Los Angeles",
+          state: "CA",
+          zipCode: "90001",
+          country: "USA",
+          isDefault: true,
+          isActive: true,
+        },
+      });
+      counts.locations = 1;
+    }
+
+    // 28. Create Service Bundles
+    const existingBundle = await prisma.serviceBundle.findFirst({
+      where: { organizationId },
+    });
+
+    if (!existingBundle && createdServices.length >= 2) {
+      const bundle = await prisma.serviceBundle.create({
+        data: {
+          organizationId,
+          name: "Complete Property Package",
+          description: "Full interior and exterior photography with drone shots",
+          priceCents: 75000,
+          discountPercent: 15,
+          isActive: true,
+        },
+      });
+
+      // Add services to bundle
+      for (let i = 0; i < Math.min(3, createdServices.length); i++) {
+        await prisma.serviceBundleItem.create({
+          data: {
+            bundleId: bundle.id,
+            serviceId: createdServices[i].id,
+            quantity: 1,
+          },
+        });
+      }
+      counts.serviceBundles = 1;
+    }
+
+    // 29. Create Service Addons
+    const SERVICE_ADDONS = [
+      { name: "Rush Delivery (24hr)", price: 15000, description: "Get your photos delivered within 24 hours" },
+      { name: "Extra Edits (10 photos)", price: 5000, description: "Additional retouching for 10 more photos" },
+      { name: "Virtual Staging", price: 25000, description: "Digitally stage empty rooms" },
+      { name: "Floor Plan", price: 10000, description: "2D floor plan creation" },
+      { name: "Video Walkthrough", price: 35000, description: "Professional video tour of the property" },
+    ];
+
+    let addonCount = 0;
+    for (const addon of SERVICE_ADDONS) {
+      const existing = await prisma.serviceAddon.findFirst({
+        where: { organizationId, name: addon.name },
+      });
+
+      if (!existing) {
+        await prisma.serviceAddon.create({
+          data: {
+            organizationId,
+            name: addon.name,
+            description: addon.description,
+            priceCents: addon.price,
+            isActive: true,
+          },
+        });
+        addonCount++;
+      }
+    }
+    counts.serviceAddons = addonCount;
+
+    // 30. Create Conversations (Messages)
+    let conversationCount = 0;
+    for (let i = 0; i < Math.min(3, createdClients.length); i++) {
+      const client = createdClients[i];
+
+      const existingConvo = await prisma.conversation.findFirst({
+        where: {
+          organizationId,
+          participants: { some: { clientId: client.id } },
+        },
+      });
+
+      if (!existingConvo) {
+        const conversation = await prisma.conversation.create({
+          data: {
+            organizationId,
+            title: `Chat with ${client.fullName}`,
+            isGroup: false,
+            lastMessageAt: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
+          },
+        });
+
+        // Add participants
+        await prisma.conversationParticipant.create({
+          data: {
+            conversationId: conversation.id,
+            userId: userId,
+            role: "admin",
+          },
+        });
+
+        await prisma.conversationParticipant.create({
+          data: {
+            conversationId: conversation.id,
+            clientId: client.id,
+            role: "member",
+          },
+        });
+
+        // Add some messages
+        const messages = [
+          { content: "Hi! I wanted to check on the status of my photos.", fromClient: true },
+          { content: "Hi there! Your gallery is almost ready. I'm finishing up the final edits now.", fromClient: false },
+          { content: "That's great news! Can't wait to see them.", fromClient: true },
+        ];
+
+        for (let j = 0; j < messages.length; j++) {
+          await prisma.message.create({
+            data: {
+              conversationId: conversation.id,
+              content: messages[j].content,
+              senderId: messages[j].fromClient ? null : userId,
+              senderClientId: messages[j].fromClient ? client.id : null,
+              createdAt: new Date(Date.now() - (messages.length - j) * 60 * 60 * 1000),
+            },
+          });
+        }
+        conversationCount++;
+      }
+    }
+    counts.conversations = conversationCount;
+
     // Revalidate all paths
     revalidatePath("/dashboard");
     revalidatePath("/clients");
@@ -820,6 +1281,12 @@ By signing below, both parties agree to the terms outlined in this agreement.`,
     revalidatePath("/services");
     revalidatePath("/properties");
     revalidatePath("/galleries");
+    revalidatePath("/questionnaires");
+    revalidatePath("/brokerages");
+    revalidatePath("/messages");
+    revalidatePath("/achievements");
+    revalidatePath("/portfolios");
+    revalidatePath("/settings");
 
     return {
       success: true,
@@ -842,6 +1309,81 @@ export async function clearSeededData(): Promise<ActionResult> {
     const organizationId = await requireOrganizationId();
 
     // Delete in reverse order of dependencies
+
+    // Messages/Conversations
+    await prisma.messageReaction.deleteMany({
+      where: { message: { conversation: { organizationId } } },
+    });
+    await prisma.messageReadReceipt.deleteMany({
+      where: { message: { conversation: { organizationId } } },
+    });
+    await prisma.message.deleteMany({
+      where: { conversation: { organizationId } },
+    });
+    await prisma.conversationParticipant.deleteMany({
+      where: { conversation: { organizationId } },
+    });
+    await prisma.conversation.deleteMany({ where: { organizationId } });
+
+    // Service addons and bundles
+    await prisma.serviceBundleItem.deleteMany({
+      where: { bundle: { organizationId } },
+    });
+    await prisma.serviceBundle.deleteMany({ where: { organizationId } });
+    await prisma.serviceAddon.deleteMany({ where: { organizationId } });
+
+    // Portfolio websites
+    await prisma.portfolioWebsiteSection.deleteMany({
+      where: { website: { organizationId } },
+    });
+    await prisma.portfolioWebsiteView.deleteMany({
+      where: { website: { organizationId } },
+    });
+    await prisma.portfolioLead.deleteMany({
+      where: { website: { organizationId } },
+    });
+    await prisma.portfolioWebsite.deleteMany({ where: { organizationId } });
+
+    // Locations
+    await prisma.location.deleteMany({ where: { organizationId } });
+
+    // Canned responses
+    await prisma.cannedResponse.deleteMany({ where: { organizationId } });
+
+    // Brokerages
+    await prisma.brokerageContract.deleteMany({
+      where: { brokerage: { organizationId } },
+    });
+    await prisma.brokerage.deleteMany({ where: { organizationId } });
+
+    // Reviews
+    await prisma.reviewResponse.deleteMany({
+      where: { request: { organizationId } },
+    });
+    await prisma.reviewRequest.deleteMany({ where: { organizationId } });
+    await prisma.reviewPlatform.deleteMany({ where: { organizationId } });
+
+    // Gamification
+    await prisma.gamificationProfile.deleteMany({ where: { organizationId } });
+
+    // Questionnaires
+    await prisma.clientQuestionnaireResponse.deleteMany({
+      where: { questionnaire: { organizationId } },
+    });
+    await prisma.clientQuestionnaireAgreement.deleteMany({
+      where: { questionnaire: { organizationId } },
+    });
+    await prisma.clientQuestionnaire.deleteMany({ where: { organizationId } });
+    await prisma.questionnaireField.deleteMany({
+      where: { template: { organizationId } },
+    });
+    await prisma.questionnaireTemplateAgreement.deleteMany({
+      where: { template: { organizationId } },
+    });
+    await prisma.questionnaireTemplate.deleteMany({ where: { organizationId } });
+
+    // Booking types
+    await prisma.bookingType.deleteMany({ where: { organizationId } });
 
     // Task management
     await prisma.taskComment.deleteMany({

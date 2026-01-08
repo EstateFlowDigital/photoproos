@@ -78,6 +78,17 @@ export interface DashboardStats {
   openTickets: number;
   totalRevenueCents: number;
   newUsersThisWeek: number;
+  // Enhanced stats
+  totalGalleries: number;
+  totalClients: number;
+  galleriesDeliveredThisMonth: number;
+  revenueThisMonth: number;
+  averageRating: number;
+  feedbackCount: number;
+  pendingFeedback: number;
+  // Growth metrics (7-day data for sparklines)
+  userGrowth: number[];
+  revenueGrowth: number[];
 }
 
 // ============================================================================
@@ -98,6 +109,7 @@ export async function getSuperAdminDashboardStats(): Promise<
     const now = new Date();
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     const [
       totalUsers,
@@ -106,6 +118,12 @@ export async function getSuperAdminDashboardStats(): Promise<
       openTickets,
       revenueResult,
       newUsersThisWeek,
+      totalGalleries,
+      totalClients,
+      galleriesDeliveredThisMonth,
+      revenueThisMonthResult,
+      feedbackStats,
+      pendingFeedback,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({
@@ -124,7 +142,66 @@ export async function getSuperAdminDashboardStats(): Promise<
       prisma.user.count({
         where: { createdAt: { gte: weekAgo } },
       }),
+      prisma.gallery.count(),
+      prisma.client.count(),
+      prisma.gallery.count({
+        where: {
+          status: "delivered",
+          deliveredAt: { gte: monthAgo },
+        },
+      }),
+      prisma.payment.aggregate({
+        _sum: { amountCents: true },
+        where: {
+          status: "succeeded",
+          createdAt: { gte: monthAgo },
+        },
+      }),
+      prisma.platformFeedback.aggregate({
+        _avg: { rating: true },
+        _count: true,
+      }),
+      prisma.platformFeedback.count({
+        where: { isReviewed: false },
+      }),
     ]);
+
+    // Get 7-day growth data for sparklines
+    const userGrowth: number[] = [];
+    const revenueGrowth: number[] = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const dayStart = new Date(now);
+      dayStart.setDate(dayStart.getDate() - i);
+      dayStart.setHours(0, 0, 0, 0);
+
+      const dayEnd = new Date(dayStart);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      const [usersOnDay, revenueOnDay] = await Promise.all([
+        prisma.user.count({
+          where: {
+            createdAt: {
+              gte: dayStart,
+              lte: dayEnd,
+            },
+          },
+        }),
+        prisma.payment.aggregate({
+          _sum: { amountCents: true },
+          where: {
+            status: "succeeded",
+            createdAt: {
+              gte: dayStart,
+              lte: dayEnd,
+            },
+          },
+        }),
+      ]);
+
+      userGrowth.push(usersOnDay);
+      revenueGrowth.push((revenueOnDay._sum.amountCents || 0) / 100);
+    }
 
     return ok({
       totalUsers,
@@ -133,6 +210,15 @@ export async function getSuperAdminDashboardStats(): Promise<
       openTickets,
       totalRevenueCents: revenueResult._sum.amountCents || 0,
       newUsersThisWeek,
+      totalGalleries,
+      totalClients,
+      galleriesDeliveredThisMonth,
+      revenueThisMonth: revenueThisMonthResult._sum.amountCents || 0,
+      averageRating: feedbackStats._avg.rating || 0,
+      feedbackCount: feedbackStats._count,
+      pendingFeedback,
+      userGrowth,
+      revenueGrowth,
     });
   } catch (error) {
     console.error("Error getting dashboard stats:", error);
