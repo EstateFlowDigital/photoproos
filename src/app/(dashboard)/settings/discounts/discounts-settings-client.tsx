@@ -4,14 +4,14 @@ import { useState, useTransition, useEffect, useCallback, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
-  createPlatformDiscount,
-  updatePlatformDiscount,
-  deletePlatformDiscount,
-  toggleDiscountActive,
-  generateDiscountQrCode,
-  type DiscountCodeListItem,
-  type CreateDiscountInput,
-} from "@/lib/actions/super-admin";
+  createOrgDiscount,
+  updateOrgDiscount,
+  deleteOrgDiscount,
+  toggleOrgDiscountActive,
+  generateOrgDiscountQrCode,
+  type OrgDiscountListItem,
+  type CreateOrgDiscountInput,
+} from "@/lib/actions/organization-discounts";
 import type { DiscountType, DiscountAppliesTo } from "@prisma/client";
 
 // Icons
@@ -128,7 +128,7 @@ function UsersIcon({ className }: { className?: string }) {
   );
 }
 
-// Type labels and colors
+// Type labels
 const TYPE_CONFIG: Record<DiscountType, { label: string; icon: typeof PercentIcon }> = {
   percentage: { label: "Percentage", icon: PercentIcon },
   fixed_amount: { label: "Fixed Amount", icon: DollarIcon },
@@ -145,28 +145,26 @@ const APPLIES_TO_LABELS: Record<DiscountAppliesTo, string> = {
   all: "Everything",
 };
 
-interface DiscountsPageClientProps {
-  initialDiscounts: DiscountCodeListItem[];
+interface DiscountsSettingsClientProps {
+  initialDiscounts: OrgDiscountListItem[];
   totalDiscounts: number;
   stats: {
-    totalPlatformDiscounts: number;
-    activePlatformDiscounts: number;
+    totalDiscounts: number;
+    activeDiscounts: number;
     totalRedemptions: number;
     totalSavings: number;
-    topDiscounts: Array<{ code: string; usedCount: number; totalSavings: number }>;
-    recentRedemptions: number;
   } | null;
 }
 
-export function DiscountsPageClient({
+export function DiscountsSettingsClient({
   initialDiscounts,
   totalDiscounts,
   stats,
-}: DiscountsPageClientProps) {
-  const [discounts, setDiscounts] = useState<DiscountCodeListItem[]>(initialDiscounts);
+}: DiscountsSettingsClientProps) {
+  const [discounts, setDiscounts] = useState<OrgDiscountListItem[]>(initialDiscounts);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingDiscount, setEditingDiscount] = useState<DiscountCodeListItem | null>(null);
-  const [qrModalDiscount, setQrModalDiscount] = useState<DiscountCodeListItem | null>(null);
+  const [editingDiscount, setEditingDiscount] = useState<OrgDiscountListItem | null>(null);
+  const [qrModalDiscount, setQrModalDiscount] = useState<OrgDiscountListItem | null>(null);
   const [isPending, startTransition] = useTransition();
 
   // Refs for focus management
@@ -187,13 +185,11 @@ export function DiscountsPageClient({
     }
   }, [qrModalDiscount, isCreateModalOpen, editingDiscount]);
 
-  // Escape key listener
   useEffect(() => {
     document.addEventListener("keydown", handleEscapeKey);
     return () => document.removeEventListener("keydown", handleEscapeKey);
   }, [handleEscapeKey]);
 
-  // Focus management for modals
   useEffect(() => {
     if (isCreateModalOpen || editingDiscount) {
       createModalRef.current?.focus();
@@ -203,13 +199,13 @@ export function DiscountsPageClient({
   }, [isCreateModalOpen, editingDiscount, qrModalDiscount]);
 
   // Form state
-  const [formData, setFormData] = useState<Omit<CreateDiscountInput, "scope">>({
+  const [formData, setFormData] = useState<CreateOrgDiscountInput>({
     code: "",
     name: "",
     description: "",
     discountType: "percentage",
-    discountValue: 20,
-    appliesTo: "subscription",
+    discountValue: 10,
+    appliesTo: "gallery",
     maxUses: 0,
     usagePerUser: 1,
     isActive: true,
@@ -222,8 +218,8 @@ export function DiscountsPageClient({
       name: "",
       description: "",
       discountType: "percentage",
-      discountValue: 20,
-      appliesTo: "subscription",
+      discountValue: 10,
+      appliesTo: "gallery",
       maxUses: 0,
       usagePerUser: 1,
       isActive: true,
@@ -233,10 +229,7 @@ export function DiscountsPageClient({
 
   const handleCreate = () => {
     startTransition(async () => {
-      const result = await createPlatformDiscount({
-        ...formData,
-        scope: "platform",
-      });
+      const result = await createOrgDiscount(formData);
       if (result.success && result.data) {
         setDiscounts([result.data, ...discounts]);
         setIsCreateModalOpen(false);
@@ -252,10 +245,7 @@ export function DiscountsPageClient({
     if (!editingDiscount) return;
 
     startTransition(async () => {
-      const result = await updatePlatformDiscount({
-        id: editingDiscount.id,
-        ...formData,
-      });
+      const result = await updateOrgDiscount(editingDiscount.id, formData);
       if (result.success && result.data) {
         setDiscounts(discounts.map((d) => (d.id === editingDiscount.id ? result.data! : d)));
         setEditingDiscount(null);
@@ -271,7 +261,7 @@ export function DiscountsPageClient({
     if (!confirm("Are you sure you want to delete this discount code?")) return;
 
     startTransition(async () => {
-      const result = await deletePlatformDiscount(id);
+      const result = await deleteOrgDiscount(id);
       if (result.success) {
         setDiscounts(discounts.filter((d) => d.id !== id));
         toast.success("Discount deleted");
@@ -281,9 +271,9 @@ export function DiscountsPageClient({
     });
   };
 
-  const handleToggleActive = (discount: DiscountCodeListItem) => {
+  const handleToggleActive = (discount: OrgDiscountListItem) => {
     startTransition(async () => {
-      const result = await toggleDiscountActive(discount.id);
+      const result = await toggleOrgDiscountActive(discount.id);
       if (result.success && result.data) {
         setDiscounts(discounts.map((d) => (d.id === discount.id ? { ...d, isActive: result.data!.isActive } : d)));
         toast.success(result.data.isActive ? "Discount activated" : "Discount deactivated");
@@ -293,12 +283,12 @@ export function DiscountsPageClient({
     });
   };
 
-  const handleGenerateQr = (discount: DiscountCodeListItem) => {
+  const handleGenerateQr = (discount: OrgDiscountListItem) => {
     startTransition(async () => {
       const baseUrl = window.location.origin;
-      const result = await generateDiscountQrCode(discount.id, baseUrl);
+      const result = await generateOrgDiscountQrCode(discount.id, baseUrl);
       if (result.success && result.data) {
-        setDiscounts(discounts.map((d) => (d.id === discount.id ? { ...d, qrCodeUrl: result.data!.qrCodeUrl, shareableSlug: discount.shareableSlug } : d)));
+        setDiscounts(discounts.map((d) => (d.id === discount.id ? { ...d, qrCodeUrl: result.data!.qrCodeUrl } : d)));
         setQrModalDiscount({ ...discount, qrCodeUrl: result.data.qrCodeUrl });
       } else {
         toast.error(result.error || "Failed to generate QR code");
@@ -311,7 +301,7 @@ export function DiscountsPageClient({
     toast.success("Copied to clipboard");
   };
 
-  const openEditModal = (discount: DiscountCodeListItem) => {
+  const openEditModal = (discount: OrgDiscountListItem) => {
     setFormData({
       code: discount.code,
       name: discount.name || "",
@@ -347,9 +337,9 @@ export function DiscountsPageClient({
       {/* Header */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-[var(--foreground)]">Discount Codes</h1>
+          <h1 className="text-2xl font-semibold text-[var(--foreground)]">Client Discounts</h1>
           <p className="text-sm text-[var(--foreground-muted)] mt-1">
-            Create and manage platform-wide discount codes for subscriptions
+            Create and manage discount codes for your clients
           </p>
         </div>
         <button
@@ -375,29 +365,29 @@ export function DiscountsPageClient({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4" role="region" aria-label="Discount statistics">
           <div className="p-4 rounded-lg bg-[var(--card)] border border-[var(--border)]">
             <div className="flex items-center gap-2 text-[var(--foreground-muted)] mb-1">
-              <TagIcon className="w-4 h-4" />
+              <TagIcon className="w-4 h-4" aria-hidden="true" />
               <span className="text-sm">Total Codes</span>
             </div>
-            <p className="text-2xl font-semibold text-[var(--foreground)]">{stats.totalPlatformDiscounts}</p>
+            <p className="text-2xl font-semibold text-[var(--foreground)]">{stats.totalDiscounts}</p>
           </div>
           <div className="p-4 rounded-lg bg-[var(--card)] border border-[var(--border)]">
             <div className="flex items-center gap-2 text-green-400 mb-1">
-              <ToggleIcon className="w-4 h-4" />
+              <ToggleIcon className="w-4 h-4" aria-hidden="true" />
               <span className="text-sm">Active</span>
             </div>
-            <p className="text-2xl font-semibold text-[var(--foreground)]">{stats.activePlatformDiscounts}</p>
+            <p className="text-2xl font-semibold text-[var(--foreground)]">{stats.activeDiscounts}</p>
           </div>
           <div className="p-4 rounded-lg bg-[var(--card)] border border-[var(--border)]">
             <div className="flex items-center gap-2 text-blue-400 mb-1">
-              <UsersIcon className="w-4 h-4" />
+              <UsersIcon className="w-4 h-4" aria-hidden="true" />
               <span className="text-sm">Redemptions</span>
             </div>
             <p className="text-2xl font-semibold text-[var(--foreground)]">{stats.totalRedemptions}</p>
           </div>
           <div className="p-4 rounded-lg bg-[var(--card)] border border-[var(--border)]">
             <div className="flex items-center gap-2 text-purple-400 mb-1">
-              <DollarIcon className="w-4 h-4" />
-              <span className="text-sm">Total Savings</span>
+              <DollarIcon className="w-4 h-4" aria-hidden="true" />
+              <span className="text-sm">Savings Given</span>
             </div>
             <p className="text-2xl font-semibold text-[var(--foreground)]">{formatCurrency(stats.totalSavings)}</p>
           </div>
@@ -408,7 +398,7 @@ export function DiscountsPageClient({
       <section className="rounded-lg border border-[var(--border)] overflow-hidden" aria-labelledby="discounts-list-heading">
         <div className="bg-[var(--card)] px-4 py-3 border-b border-[var(--border)]">
           <h2 id="discounts-list-heading" className="font-medium text-[var(--foreground)]">
-            All Discount Codes ({totalDiscounts})
+            Your Discount Codes ({totalDiscounts})
           </h2>
         </div>
 
@@ -416,6 +406,9 @@ export function DiscountsPageClient({
           <div className="p-8 text-center">
             <TagIcon className="w-12 h-12 mx-auto text-[var(--foreground-muted)] mb-4" aria-hidden="true" />
             <p className="text-[var(--foreground-muted)]">No discount codes yet. Create your first one!</p>
+            <p className="text-sm text-[var(--foreground-muted)] mt-2">
+              Share discount codes with your clients via QR codes or direct links.
+            </p>
           </div>
         ) : (
           <ul className="divide-y divide-[var(--border)]" role="list" aria-label="Discount codes list">
@@ -603,7 +596,7 @@ export function DiscountsPageClient({
                     autoComplete="off"
                     value={formData.code}
                     onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                    placeholder="SUMMER20"
+                    placeholder="WELCOME10"
                     className={cn(
                       "w-full px-3 py-2 rounded-lg font-mono",
                       "bg-[var(--background)] border border-[var(--border)]",
@@ -622,7 +615,7 @@ export function DiscountsPageClient({
                     autoComplete="off"
                     value={formData.name || ""}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Summer Sale 2024"
+                    placeholder="New Client Welcome"
                     className={cn(
                       "w-full px-3 py-2 rounded-lg",
                       "bg-[var(--background)] border border-[var(--border)]",
@@ -650,11 +643,8 @@ export function DiscountsPageClient({
                       "focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
                     )}
                   >
-                    {Object.entries(TYPE_CONFIG).map(([value, config]) => (
-                      <option key={value} value={value}>
-                        {config.label}
-                      </option>
-                    ))}
+                    <option value="percentage">Percentage</option>
+                    <option value="fixed_amount">Fixed Amount</option>
                   </select>
                 </div>
                 <div>
@@ -700,11 +690,10 @@ export function DiscountsPageClient({
                     "focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
                   )}
                 >
-                  {Object.entries(APPLIES_TO_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
+                  <option value="gallery">Gallery Delivery</option>
+                  <option value="booking">Bookings</option>
+                  <option value="all_services">All Services</option>
+                  <option value="all">Everything</option>
                 </select>
               </div>
 
@@ -734,7 +723,7 @@ export function DiscountsPageClient({
                 </div>
                 <div>
                   <label htmlFor="uses-per-user" className="block text-sm font-medium text-[var(--foreground)] mb-1">
-                    Uses Per User
+                    Uses Per Client
                   </label>
                   <input
                     id="uses-per-user"
@@ -803,7 +792,7 @@ export function DiscountsPageClient({
                 </label>
               </fieldset>
 
-            {/* Form Actions */}
+              {/* Form Actions */}
               <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-4 border-t border-[var(--border)]">
                 <button
                   type="button"

@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Photographer-to-Client Discount System** - New settings page for photographers to create client discounts
+  - New organization-level discount management at `/settings/discounts`
+  - Organization-scoped discounts separate from platform discounts
+  - Server actions: getOrgDiscounts, createOrgDiscount, updateOrgDiscount, deleteOrgDiscount, toggleOrgDiscountActive, generateOrgDiscountQrCode, getOrgDiscountStats
+  - QR code generation for easy sharing with clients
+  - Shareable links with unique slugs
+  - Stats dashboard: total codes, active, redemptions, savings given
+  - Applies to: Gallery Delivery, Bookings, All Services, Everything
+
 - **Custom Domain Purchase System** - In-platform domain purchasing for property and portfolio websites
   - New DomainPurchase model with full purchase tracking and status management
   - DomainStatus enum: pending_payment, registering, configuring_dns, provisioning_ssl, active, etc.
@@ -129,6 +138,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Coming soon notice for planned AI features
 
 ### Changed
+- **Super Admin Discounts Accessibility & Responsiveness** - Enhanced discounts management page
+  - Added proper ARIA labels to all interactive elements
+  - Added keyboard navigation with escape key to close modals
+  - Focus management for modal dialogs
+  - Form inputs now have proper label associations (htmlFor/id)
+  - Responsive grid layouts (2 columns on mobile, 4 on desktop)
+  - Form fields use proper `<form>` with submit handling
+  - Added focus ring styling to all buttons and inputs
+  - List items wrapped in semantic `<ul>/<li>` with proper roles
+  - Screen reader friendly status indicators
+
 - **Standardized Form Page Layouts** - Updated form pages to follow consistent design pattern
   - All form pages now use `lg:grid-cols-3` layout with form in `lg:col-span-2` and sidebar
   - Added Tips cards with numbered steps to guide users
