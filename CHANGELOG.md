@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Messages Widget** - New dashboard widget for recent messages
+  - Added "messages" to WidgetType in dashboard-types.ts
+  - Added widget definition to WIDGET_REGISTRY with 2x2 default size
+  - Created MessagesWidget component showing recent conversations
+  - Displays unread count badge, conversation type icons, and relative timestamps
+  - Clicking messages navigates to full messaging interface at /messages
+  - Added getRecentMessagesForWidget and getUnreadMessageCount server actions
+
+### Fixed
+- **React Error #301 on Notifications Page** - Fixed "useContext only works in Client Components" error
+  - Root cause: notifications-page-client.tsx imported ActivityData type from @/lib/utils/activity.ts
+  - The activity.ts file imported prisma (server-only) at module level, causing bundler to include server code
+  - Solution: Created new @/lib/types/activity.ts with client-safe types and pure functions
+  - Updated notifications-page-client.tsx to import from the new types file
+  - Server actions still import from @/lib/utils/activity.ts for logActivity function
+
+- **Toast API Usage in Widget Modal** - Fixed showToast calls using wrong syntax
+  - Changed from object syntax `{ type, message }` to positional args `(message, type)`
+  - Fixed in add-widget-modal.tsx and widget-dashboard.tsx
+
+### Added
 - **Expanded Database Seeding** - Comprehensive sample data for Developer Settings
   - Added 13 new data categories to the seed function:
     - Booking Types (6 types: Real Estate, Twilight, Drone, Portrait, Event, Headshots)
@@ -92,6 +113,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Recent Platform Feedback with star ratings
   - Quick Actions grid linking to all admin modules
   - SVG-based sparkline component for trend visualization
+
+- **Enhanced User Management** - Powerful quick actions for managing users
+  - Advanced filtering: Filter users by plan (Free/Starter/Pro/Enterprise), activity level (active/inactive/new), and revenue tier
+  - Bulk selection mode: Select multiple users for batch operations like bulk XP awards
+  - Export to CSV: Download filtered user list with all stats (name, email, org, plan, level, XP, revenue, galleries, clients)
+  - Impersonate user: "View As" button to see app as any user (available from both user list and detail page)
+  - Apply discount: Time-limited percentage discounts for organizations with preview
+  - Dropdown actions menu on user cards consolidating all quick actions
+  - Plan badges with color coding (blue for Pro, purple for Enterprise)
+  - Empty state with smart messaging and filter reset when no users match criteria
+  - User detail page enhanced with impersonate and discount buttons
 
 ### Fixed
 - **Super Admin ToastProvider Error** - Fixed "useToast must be used within a ToastProvider" error

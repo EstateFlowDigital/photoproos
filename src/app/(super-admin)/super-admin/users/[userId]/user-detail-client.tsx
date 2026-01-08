@@ -22,6 +22,8 @@ import {
   grantLifetimeLicense,
   revokeLifetimeLicense,
   createCustomChallenge,
+  startImpersonation,
+  applyDiscount,
   type UserDetailData,
 } from "@/lib/actions/super-admin";
 import { formatDistanceToNow, format } from "date-fns";
@@ -195,6 +197,43 @@ function LoaderIcon({ className }: { className?: string }) {
   );
 }
 
+function EyeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function PercentIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <line x1="19" x2="5" y1="5" y2="19" />
+      <circle cx="6.5" cy="6.5" r="2.5" />
+      <circle cx="17.5" cy="17.5" r="2.5" />
+    </svg>
+  );
+}
+
 interface UserDetailClientProps {
   user: UserDetailData;
 }
@@ -223,6 +262,7 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
   // Dialog states
   const [isXpDialogOpen, setIsXpDialogOpen] = useState(false);
   const [isChallengeDialogOpen, setIsChallengeDialogOpen] = useState(false);
+  const [isDiscountDialogOpen, setIsDiscountDialogOpen] = useState(false);
 
   // Form states
   const [xpAmount, setXpAmount] = useState("");
@@ -231,6 +271,8 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
   const [challengeDescription, setChallengeDescription] = useState("");
   const [challengeXp, setChallengeXp] = useState("100");
   const [challengeDays, setChallengeDays] = useState("7");
+  const [discountPercent, setDiscountPercent] = useState("20");
+  const [discountDays, setDiscountDays] = useState("30");
 
   const handleAwardXp = () => {
     const amount = parseInt(xpAmount);
@@ -328,6 +370,69 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
     });
   };
 
+  const handleImpersonate = () => {
+    startTransition(async () => {
+      const result = await startImpersonation(user.id, "Viewing from user detail page");
+      if (result.success && result.data) {
+        toast({
+          title: "Impersonation Started",
+          description: `Now viewing as ${user.fullName || user.email}`,
+        });
+        // Redirect to dashboard to view as user
+        window.location.href = "/";
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to start impersonation",
+          variant: "destructive",
+        });
+      }
+    });
+  };
+
+  const handleApplyDiscount = () => {
+    if (!user.organization?.id) {
+      toast({
+        title: "No Organization",
+        description: "User must have an organization to apply a discount",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const percent = parseInt(discountPercent);
+    const days = parseInt(discountDays);
+
+    if (isNaN(percent) || percent < 1 || percent > 100) {
+      toast({
+        title: "Invalid Discount",
+        description: "Discount must be between 1 and 100 percent",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await applyDiscount(user.organization!.id, percent, days);
+      if (result.success) {
+        toast({
+          title: "Discount Applied",
+          description: `${percent}% discount applied for ${days} days`,
+        });
+        setIsDiscountDialogOpen(false);
+        setDiscountPercent("20");
+        setDiscountDays("30");
+        router.refresh();
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to apply discount",
+          variant: "destructive",
+        });
+      }
+    });
+  };
+
   const statCards = [
     {
       label: "Level",
@@ -413,7 +518,16 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleImpersonate}
+            disabled={isPending}
+          >
+            <EyeIcon className="w-4 h-4 mr-2" />
+            View As User
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -437,8 +551,18 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
             onClick={() => setIsChallengeDialogOpen(true)}
           >
             <TargetIcon className="w-4 h-4 mr-2" />
-            Create Challenge
+            Challenge
           </Button>
+          {user.organization && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsDiscountDialogOpen(true)}
+            >
+              <PercentIcon className="w-4 h-4 mr-2" />
+              Discount
+            </Button>
+          )}
         </div>
       </div>
 
@@ -792,6 +916,70 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
                   <TargetIcon className="w-4 h-4 mr-2" />
                 )}
                 Create Challenge
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Discount Dialog */}
+      <Dialog open={isDiscountDialogOpen} onOpenChange={setIsDiscountDialogOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Apply Discount</DialogTitle>
+            <DialogDescription>
+              Apply a time-limited discount to {user.organization?.name || "this organization"}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="percent">Discount %</Label>
+                <Input
+                  id="percent"
+                  type="number"
+                  min="1"
+                  max="100"
+                  placeholder="20"
+                  value={discountPercent}
+                  onChange={(e) => setDiscountPercent(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="discountDays">Days Valid</Label>
+                <Input
+                  id="discountDays"
+                  type="number"
+                  min="1"
+                  placeholder="30"
+                  value={discountDays}
+                  onChange={(e) => setDiscountDays(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="p-3 rounded-lg bg-[var(--background-tertiary)] text-sm">
+              <p className="text-[var(--foreground-muted)]">
+                This will apply a <span className="font-medium text-[var(--foreground)]">{discountPercent}%</span> discount
+                that expires in <span className="font-medium text-[var(--foreground)]">{discountDays}</span> days.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsDiscountDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleApplyDiscount} disabled={isPending}>
+                {isPending ? (
+                  <LoaderIcon className="w-4 h-4 mr-2" />
+                ) : (
+                  <PercentIcon className="w-4 h-4 mr-2" />
+                )}
+                Apply Discount
               </Button>
             </div>
           </div>
