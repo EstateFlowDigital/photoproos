@@ -39,7 +39,7 @@ export function BookingActions({
       } else {
         setError(result.error);
       }
-    } catch (err) {
+    } catch (_err) {
       setError("Failed to generate invoice");
     } finally {
       setIsGenerating(false);
@@ -138,7 +138,7 @@ export function BookingWeather({
         } else {
           setError(result.error);
         }
-      } catch (err) {
+      } catch (_err) {
         setError("Failed to load weather data");
       } finally {
         setIsLoading(false);

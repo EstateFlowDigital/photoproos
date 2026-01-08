@@ -46,9 +46,9 @@ export function NewPropertyWebsiteClient({ projects }: NewPropertyWebsiteClientP
   const [sqft, setSqft] = useState("");
   const [yearBuilt, setYearBuilt] = useState("");
   const [propertyType, setPropertyType] = useState<PropertyType>("single_family");
-  const [headline, setHeadline] = useState("");
-  const [description, setDescription] = useState("");
-  const [template, setTemplate] = useState<PropertyWebsiteTemplate>("modern");
+  const [headline, _setHeadline] = useState("");
+  const [description, _setDescription] = useState("");
+  const [template, _setTemplate] = useState<PropertyWebsiteTemplate>("modern");
 
   const handleProjectChange = (id: string) => {
     setProjectId(id);

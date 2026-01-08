@@ -1694,7 +1694,7 @@ function AddLeadModal({
       } else {
         setError(result.error || "Failed to create lead");
       }
-    } catch (err) {
+    } catch (_err) {
       setError("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);

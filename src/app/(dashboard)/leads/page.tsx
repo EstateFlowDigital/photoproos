@@ -7,7 +7,7 @@ import { getAllSubmissions } from "@/lib/actions/booking-forms";
 import { LeadsPageClient } from "./leads-page-client";
 
 export default async function LeadsPage() {
-  const organizationId = await requireOrganizationId();
+  const _organizationId = await requireOrganizationId();
 
   // Fetch portfolio inquiries, chat inquiries, booking form submissions, and portfolio websites
   const [portfolioInquiries, chatInquiries, bookingSubmissions, portfolioWebsites] = await Promise.all([

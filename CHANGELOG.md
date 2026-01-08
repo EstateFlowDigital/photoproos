@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **ESLint Unused Variable Warnings** - Prefixed unused variables with underscore to satisfy ESLint rules
+  - `leads-page-client.tsx`: `err` → `_err` in catch block
+  - `leads/page.tsx`: `organizationId` → `_organizationId`
+  - `payment-actions.tsx`: `paidAt` → `_paidAt`, `formatCurrency` → `_formatCurrency`, `formatDate` → `_formatDate` (in 3 components)
+  - `booking-actions.tsx`: `err` → `_err` in 2 catch blocks
+- **Empty Array Fallback Bug** - Fixed issue where empty `industries` or `enabledModules` arrays wouldn't trigger fallback defaults in dashboard layout (empty arrays are truthy, so `||` operator didn't work)
 - **Null Safety Across Dashboard and Portal** - Comprehensive fix for potential runtime errors
   - Added null coalescing patterns for `.toLowerCase()`, `.charAt()`, `.replace()` calls
   - Fixed search filters in portal-client, gallery-list, services, contracts, forms, questionnaires

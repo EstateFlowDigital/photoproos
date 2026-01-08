@@ -28,7 +28,7 @@ export function PaymentActions({
   clientEmail,
   amountCents,
   description,
-  paidAt,
+  _paidAt,
   hasStripeId,
 }: PaymentActionsProps) {
   const router = useRouter();
@@ -37,7 +37,7 @@ export function PaymentActions({
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [refundReason, setRefundReason] = useState("");
 
-  const formatCurrency = (cents: number) => {
+  const _formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
@@ -45,7 +45,7 @@ export function PaymentActions({
     }).format(cents / 100);
   };
 
-  const formatDate = (date: Date) => {
+  const _formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
       month: "long",
       day: "numeric",
@@ -355,7 +355,7 @@ export function PaymentSidebarActions({
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [refundReason, setRefundReason] = useState("");
 
-  const formatCurrency = (cents: number) => {
+  const _formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
@@ -363,7 +363,7 @@ export function PaymentSidebarActions({
     }).format(cents / 100);
   };
 
-  const formatDate = (date: Date) => {
+  const _formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
       month: "long",
       day: "numeric",
@@ -636,7 +636,7 @@ export function PaymentHeaderActions({
   const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
-  const formatCurrency = (cents: number) => {
+  const _formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
@@ -644,7 +644,7 @@ export function PaymentHeaderActions({
     }).format(cents / 100);
   };
 
-  const formatDate = (date: Date) => {
+  const _formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
       month: "long",
       day: "numeric",

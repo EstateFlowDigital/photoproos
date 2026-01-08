@@ -104,7 +104,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
   const [isConnectingDomain, setIsConnectingDomain] = useState(false);
   const [isVerifyingDomain, setIsVerifyingDomain] = useState(false);
   const [domainVerified, setDomainVerified] = useState(website.customDomainVerified);
-  const [showDomainInstructions, setShowDomainInstructions] = useState(false);
+  const [_showDomainInstructions, setShowDomainInstructions] = useState(false);
   const [cnameTarget, setCnameTarget] = useState<string>("cname.photoproos.com");
 
   // Password protection state
@@ -142,7 +142,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
 
   // Agent photo state
   const [agentPhotoUrl, setAgentPhotoUrl] = useState(website.agentPhotoUrl || "");
-  const [isUploadingAgentPhoto, setIsUploadingAgentPhoto] = useState(false);
+  const [_isUploadingAgentPhoto, setIsUploadingAgentPhoto] = useState(false);
 
   // Fetch CNAME target on mount
   useEffect(() => {
@@ -250,7 +250,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
       } else {
         showToast(result.error || "Failed to generate flyer", "error");
       }
-    } catch (error) {
+    } catch {
       showToast("Failed to generate flyer", "error");
     } finally {
       setIsGeneratingFlyer(false);
@@ -294,7 +294,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
       } else {
         showToast(result.error || "Failed to generate social graphic", "error");
       }
-    } catch (error) {
+    } catch {
       showToast("Failed to generate social graphic", "error");
     } finally {
       setIsGeneratingSocial(false);

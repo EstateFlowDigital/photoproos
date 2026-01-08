@@ -34,7 +34,7 @@ interface SectionsTabProps {
 export function SectionsTab({ propertyWebsiteId, sections: initialSections }: SectionsTabProps) {
   const router = useRouter();
   const { showToast } = useToast();
-  const [isPending, startTransition] = useTransition();
+  const [_isPending, startTransition] = useTransition();
 
   const [sections, setSections] = useState(initialSections);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);

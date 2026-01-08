@@ -75,7 +75,7 @@ export function AnalyticsViewClient({ analytics }: AnalyticsViewClientProps) {
   }, [analytics.dailyData, timeRange]);
 
   // Calculate totals for the selected time range
-  const rangeTotals = useMemo(() => {
+  const _rangeTotals = useMemo(() => {
     return filteredDailyData.reduce(
       (acc, day) => ({
         pageViews: acc.pageViews + day.pageViews,
@@ -106,7 +106,7 @@ export function AnalyticsViewClient({ analytics }: AnalyticsViewClientProps) {
 
   const viewsTrend = calculateTrend("pageViews");
   const visitorsTrend = calculateTrend("uniqueVisitors");
-  const leadsTrend = { value: 0, isUp: true }; // Leads don't have daily tracking
+  const _leadsTrend = { value: 0, isUp: true }; // Leads don't have daily tracking
 
   // Calculate conversion rate
   const totalViews = analytics.propertyStats.reduce((sum, p) => sum + p.viewCount, 0);

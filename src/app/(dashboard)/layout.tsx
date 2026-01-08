@@ -151,8 +151,11 @@ export default async function DashboardLayout({
   }
 
   // Get enabled modules (default to all if not set)
-  const organizationIndustries = organization.industries as string[] || ["real_estate"];
-  const enabledModulesRaw = (organization.enabledModules as string[]) ||
+  // Note: Use .length check since empty arrays are truthy for || operator
+  const industriesFromDb = organization.industries as string[];
+  const organizationIndustries = industriesFromDb?.length > 0 ? industriesFromDb : ["real_estate"];
+  const modulesFromDb = organization.enabledModules as string[];
+  const enabledModulesRaw = modulesFromDb?.length > 0 ? modulesFromDb :
     getDefaultModulesForIndustries(organizationIndustries);
   const availableModules = getModulesForIndustries(organizationIndustries);
   const enabledModules = enabledModulesRaw.filter((m) => availableModules.includes(m));

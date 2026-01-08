@@ -32,23 +32,14 @@ import {
   deleteAutomation,
   type AutomationTrigger,
   type AutomationAction,
-  type AutomationTriggerType,
-  type AutomationActionType,
   // Recurring Tasks
   getRecurringTasks,
   createRecurringTask,
   updateRecurringTask,
   deleteRecurringTask,
-  type RecurringFrequency,
   // Time Tracking
-  startTimeTracking,
   stopTimeTracking,
   getActiveTimer,
-  addManualTimeEntry,
-  // Dependencies
-  addTaskDependency,
-  removeTaskDependency,
-  getTaskDependencies,
 } from "@/lib/actions/projects";
 import type { TaskPriority } from "@prisma/client";
 import { isSameDay, isToday } from "date-fns";
@@ -610,7 +601,7 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
     });
   };
 
-  const selectAllFilteredTasks = () => {
+  const _selectAllFilteredTasks = () => {
     setSelectedTaskIds(new Set(filteredTasks.map((t) => t.id)));
   };
 
@@ -618,7 +609,7 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
     setSelectedTaskIds(new Set());
   };
 
-  const isAllSelected = filteredTasks.length > 0 && selectedTaskIds.size === filteredTasks.length;
+  const _isAllSelected = filteredTasks.length > 0 && selectedTaskIds.size === filteredTasks.length;
 
   // Bulk action handlers
   const handleBulkMove = async (columnId: string) => {
@@ -3484,13 +3475,6 @@ function StopIcon({ className }: { className?: string }) {
   );
 }
 
-function PlayIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-      <path d="M8 5v14l11-7z" />
-    </svg>
-  );
-}
 
 function formatTimerDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600);

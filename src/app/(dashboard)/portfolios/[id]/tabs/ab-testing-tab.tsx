@@ -48,15 +48,15 @@ interface ABTest {
 }
 
 export function ABTestingTab({ website, isPending: externalPending }: ABTestingTabProps) {
-  const router = useRouter();
+  const _router = useRouter();
   const { showToast } = useToast();
   const confirm = useConfirm();
   const [isPending, startTransition] = useTransition();
   const [tests, setTests] = useState<ABTest[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedTest, setSelectedTest] = useState<string | null>(null);
-  const [testStats, setTestStats] = useState<Record<string, unknown> | null>(null);
+  const [_selectedTest, _setSelectedTest] = useState<string | null>(null);
+  const [_testStats, setTestStats] = useState<Record<string, unknown> | null>(null);
 
   // New test form state
   const [newTest, setNewTest] = useState({
@@ -81,7 +81,7 @@ export function ABTestingTab({ website, isPending: externalPending }: ABTestingT
     setLoading(false);
   }
 
-  async function loadTestStats(testId: string) {
+  async function _loadTestStats(testId: string) {
     const result = await getABTestStats(testId);
     if (result.success && result.stats) {
       setTestStats(result.stats);
