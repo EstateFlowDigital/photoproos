@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { usePathname } from "next/navigation";
 
 type CapturedError = {
   type: "error" | "rejection";
@@ -10,10 +11,12 @@ type CapturedError = {
 };
 
 interface DebugBannerProps {
-  route: string;
+  route?: string;
 }
 
-export function DebugBanner({ route }: DebugBannerProps) {
+export function DebugBanner({ route: routeProp }: DebugBannerProps) {
+  const pathname = usePathname();
+  const route = routeProp || pathname;
   const [open, setOpen] = useState(false);
   const [errors, setErrors] = useState<CapturedError[]>([]);
 

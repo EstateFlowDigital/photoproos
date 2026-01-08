@@ -26,13 +26,14 @@ import {
   type WidgetSize,
   parseWidgetSize,
 } from "@/lib/dashboard-types";
-import { WIDGET_REGISTRY, type WidgetDefinition } from "@/lib/widget-registry";
+import { WIDGET_REGISTRY } from "@/lib/widget-registry";
 import { saveDashboardLayout, removeWidget, updateWidgetSize } from "@/lib/actions/dashboard";
-import { Plus, GripVertical, X, Settings2 } from "lucide-react";
+import { Plus, GripVertical, X, Settings2, Flame, Star, Gift, Zap } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useToast } from "@/components/ui/toast";
 import { MessagesWidget } from "./widgets/messages-widget";
+import { LevelBadge, StreakBadge } from "@/components/gamification";
 
 // ============================================================================
 // TYPES
@@ -95,7 +96,11 @@ export interface DashboardData {
     level: number;
     xp: number;
     xpToNextLevel: number;
+    xpProgress: number;
     streak: number;
+    deliveryStreak: number;
+    recentAchievementsCount: number;
+    activeChallengesCount: number;
   };
   dailyBonus?: {
     canClaim: boolean;
@@ -598,23 +603,82 @@ function GamificationWidget({
     );
   }
 
-  const progress = (data.xp / data.xpToNextLevel) * 100;
+  const progress = data.xpProgress || (data.xp / data.xpToNextLevel) * 100;
 
-  return (
-    <div className={cn("flex flex-col", isCompact ? "gap-2" : "gap-3")}>
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-foreground">Level {data.level}</span>
-        <span className="text-xs text-foreground-muted">{data.streak} day streak</span>
+  // Compact 1x1 view
+  if (isCompact) {
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <LevelBadge level={data.level} size="sm" />
+          <StreakBadge count={data.streak} type="login" size="sm" />
+        </div>
+        <div className="h-1.5 rounded-full bg-[var(--background-secondary)] overflow-hidden">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--ai)] transition-all"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <span className="text-xs text-foreground-muted">
+          {data.xp.toLocaleString()} / {data.xpToNextLevel.toLocaleString()} XP
+        </span>
       </div>
-      <div className="h-2 rounded-full bg-[var(--background)]">
+    );
+  }
+
+  // Larger view with more details
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Level & XP */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <LevelBadge level={data.level} size="md" showTitle />
+          <div>
+            <p className="font-semibold text-foreground">
+              {data.xp.toLocaleString()} XP
+            </p>
+            <p className="text-xs text-foreground-muted">
+              {data.xpToNextLevel.toLocaleString()} to level {data.level + 1}
+            </p>
+          </div>
+        </div>
+        <StreakBadge count={data.streak} type="login" size="md" />
+      </div>
+
+      {/* Progress Bar */}
+      <div className="h-2 rounded-full bg-[var(--background-secondary)] overflow-hidden">
         <div
-          className="h-full rounded-full bg-[var(--primary)] transition-all"
+          className="h-full rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--ai)] transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>
-      <span className="text-xs text-foreground-muted">
-        {data.xp} / {data.xpToNextLevel} XP
-      </span>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="flex items-center gap-2 rounded-lg bg-[var(--background-secondary)] p-2">
+          <Flame className="h-4 w-4 text-[var(--error)]" aria-hidden="true" />
+          <div>
+            <p className="text-sm font-medium text-foreground">{data.deliveryStreak || 0}</p>
+            <p className="text-xs text-foreground-muted">Delivery streak</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 rounded-lg bg-[var(--background-secondary)] p-2">
+          <Star className="h-4 w-4 text-[var(--warning)]" aria-hidden="true" />
+          <div>
+            <p className="text-sm font-medium text-foreground">{data.recentAchievementsCount || 0}</p>
+            <p className="text-xs text-foreground-muted">Achievements</p>
+          </div>
+        </div>
+      </div>
+
+      {/* View All Link */}
+      <Link
+        href="/achievements"
+        className="flex items-center justify-center gap-1 text-sm text-[var(--primary)] hover:underline"
+      >
+        View Progress
+        <Zap className="h-3 w-3" aria-hidden="true" />
+      </Link>
     </div>
   );
 }
@@ -625,12 +689,43 @@ function DailyBonusWidget({ data }: { data: DashboardData["dailyBonus"] }) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-2">
-      <span className="text-2xl" aria-hidden="true">🎁</span>
-      <span className="text-sm font-medium text-foreground">
-        {data.canClaim ? "Claim Bonus!" : "Claimed Today"}
-      </span>
-      <span className="text-xs text-foreground-muted">{data.streak} day streak</span>
+    <div className="flex flex-col items-center justify-center gap-3">
+      <div
+        className={cn(
+          "flex h-12 w-12 items-center justify-center rounded-xl",
+          data.canClaim
+            ? "bg-[var(--warning)]/15 animate-pulse"
+            : "bg-[var(--background-secondary)]"
+        )}
+      >
+        <Gift
+          className={cn(
+            "h-6 w-6",
+            data.canClaim ? "text-[var(--warning)]" : "text-foreground-muted"
+          )}
+          aria-hidden="true"
+        />
+      </div>
+      <div className="text-center">
+        <p className={cn(
+          "text-sm font-medium",
+          data.canClaim ? "text-[var(--warning)]" : "text-foreground"
+        )}>
+          {data.canClaim ? "Claim Daily Bonus!" : "Claimed Today"}
+        </p>
+        <p className="text-xs text-foreground-muted flex items-center justify-center gap-1 mt-1">
+          <Flame className="h-3 w-3 text-[var(--error)]" aria-hidden="true" />
+          {data.streak} day streak
+        </p>
+      </div>
+      {data.canClaim && (
+        <Link
+          href="/settings/gamification"
+          className="rounded-lg bg-[var(--warning)] px-4 py-1.5 text-xs font-medium text-white hover:bg-[var(--warning)]/90 transition-colors"
+        >
+          Claim +{Math.min(50 + (data.streak - 1) * 10, 200)} XP
+        </Link>
+      )}
     </div>
   );
 }
@@ -879,7 +974,7 @@ function recalculatePositions(
   let currentCol = 0;
 
   for (const widget of widgets) {
-    const { cols, rows } = parseWidgetSize(widget.size);
+    const { cols } = parseWidgetSize(widget.size);
 
     // If widget doesn't fit in current row, move to next
     if (currentCol + cols > gridColumns) {

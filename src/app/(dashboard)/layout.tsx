@@ -11,6 +11,8 @@ import { UploadProvider } from "@/contexts/upload-context";
 import { GlobalUploadModal } from "@/components/upload/global-upload-modal";
 import { SupportButton } from "@/components/support";
 import { FeedbackModal } from "@/components/feedback";
+import { BugProbe } from "@/components/dev/bug-probe";
+import { DebugBanner } from "@/components/debug/debug-banner";
 import { prisma } from "@/lib/db";
 import { getDefaultModulesForIndustries } from "@/lib/constants/industries";
 import { getUnreadNotificationCount } from "@/lib/actions/notifications";
@@ -241,6 +243,9 @@ export default async function DashboardLayout({
           </DashboardLayoutClient>
           <SupportButton />
           <FeedbackModal />
+          {/* Developer debugging tools - BugProbe shows only for dev account */}
+          <BugProbe />
+          <DebugBanner />
           </KeyboardShortcutsProvider>
           </CommandPaletteProvider>
         </TourProvider>

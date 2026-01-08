@@ -9677,3 +9677,128 @@ model SeasonalEventParticipation {
   @@index([userId])
   @@index([eventId])
 }
+
+// ============================================
+// SUPER ADMIN / PLATFORM MANAGEMENT
+// ============================================
+
+// Feature Flag Category
+enum FeatureFlagCategory {
+  ai_features
+  engagement
+  communications
+  finance
+  experimental
+  system
+}
+
+// Feature Flag - Database-backed feature toggles
+model FeatureFlag {
+  id          String              @id @default(cuid())
+  slug        String              @unique // e.g., "ai_assistant", "gamification"
+  name        String // Human-readable name
+  description String
+  category    FeatureFlagCategory
+  enabled     Boolean             @default(false)
+
+  // Rollout configuration
+  rolloutPercentage Int       @default(100) // 0-100, for gradual rollouts
+  enabledForOrgs    String[]  @default([]) // Specific org IDs with access
+  disabledForOrgs   String[]  @default([]) // Specific org IDs without access
+
+  // Metadata
+  icon      String? // Icon name for UI
+  order     Int     @default(0) // Display order within category
+  isSystem  Boolean @default(false) // System flags can't be deleted
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String? // User ID who created
+
+  @@index([category])
+  @@index([enabled])
+}
+
+// Admin Action Type
+enum AdminActionType {
+  user_view
+  user_update
+  user_impersonate
+  xp_award
+  plan_change
+  lifetime_license
+  discount_apply
+  custom_challenge
+  feature_flag_toggle
+  system_setting_change
+  support_ticket_resolve
+  feedback_review
+  roadmap_update
+}
+
+// Admin Audit Log - Tracks all super admin actions
+model AdminAuditLog {
+  id            String          @id @default(cuid())
+  adminUserId   String // The super admin who performed the action
+  actionType    AdminActionType
+  description   String // Human-readable description
+
+  // Target information
+  targetUserId  String? // User affected (if applicable)
+  targetOrgId   String? // Organization affected (if applicable)
+  targetId      String? // Generic target ID (ticket, flag, etc.)
+  targetType    String? // Type of target (user, org, feature_flag, etc.)
+
+  // Additional context
+  metadata      Json?   // Additional action-specific data
+  ipAddress     String? // IP address of admin
+  userAgent     String? // Browser/client info
+
+  // Before/after for changes
+  previousValue Json?
+  newValue      Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([adminUserId])
+  @@index([actionType])
+  @@index([targetUserId])
+  @@index([createdAt])
+}
+
+// System Setting - Global platform settings
+model SystemSetting {
+  id          String  @id @default(cuid())
+  key         String  @unique // e.g., "maintenance_mode", "new_signups"
+  name        String // Human-readable name
+  description String
+  value       String // JSON-encoded value
+  valueType   String  @default("boolean") // boolean, string, number, json
+  isSecret    Boolean @default(false) // Hide value in UI
+  category    String  @default("general")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  updatedBy String? // Last user to update
+
+  @@index([category])
+}
+
+// Impersonation Session - Track admin impersonation
+model ImpersonationSession {
+  id            String    @id @default(cuid())
+  adminUserId   String // Super admin who is impersonating
+  targetUserId  String // User being impersonated
+  reason        String? // Why impersonating
+
+  startedAt     DateTime  @default(now())
+  endedAt       DateTime?
+  isActive      Boolean   @default(true)
+
+  // Actions performed during impersonation
+  actionsPerformed Int @default(0)
+
+  @@index([adminUserId])
+  @@index([targetUserId])
+  @@index([isActive])
+}

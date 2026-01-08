@@ -22,72 +22,87 @@ import {
   getQuestState,
   resetSkillPoints,
   getStreakFreezeState,
+  getGamificationNotificationPrefs,
+  updateGamificationNotificationPrefs,
+  getBadgeShowcase,
+  updateBadgeShowcase,
   type StreakFreezeState,
+  type GamificationNotificationPrefs,
+  type UnlockedAchievement,
+  type BadgeShowcase,
 } from "@/lib/actions/gamification";
 import { StreakFreezeDisplay } from "@/components/gamification/streak-freeze-display";
+import {
+  BadgeShowcaseDisplay,
+  BadgeShowcaseEditor,
+  useBadgeShowcase,
+} from "@/components/gamification";
 
-interface GamificationSettings {
-  showXpNotifications: boolean;
-  showAchievementToasts: boolean;
-  showStreakReminders: boolean;
-  showLevelUpCelebrations: boolean;
-  showMilestoneCelebrations: boolean;
-  showDailyBonusBadge: boolean;
-  showLeaderboardRank: boolean;
-}
-
-const defaultSettings: GamificationSettings = {
-  showXpNotifications: true,
-  showAchievementToasts: true,
-  showStreakReminders: true,
-  showLevelUpCelebrations: true,
-  showMilestoneCelebrations: true,
-  showDailyBonusBadge: true,
-  showLeaderboardRank: true,
+// Default notification preferences
+const defaultNotificationPrefs: GamificationNotificationPrefs = {
+  achievementUnlocks: true,
+  levelUps: true,
+  streakReminders: true,
+  dailyBonusReminders: true,
+  leaderboardChanges: false,
+  challengeUpdates: true,
+  weeklyRecaps: true,
+  seasonalEvents: true,
 };
 
-const settingsOptions = [
+const notificationOptions: Array<{
+  id: keyof GamificationNotificationPrefs;
+  label: string;
+  description: string;
+  icon: typeof Zap;
+}> = [
   {
-    id: "showXpNotifications",
-    label: "XP Notifications",
-    description: "Show notifications when you earn XP from actions",
-    icon: Zap,
+    id: "achievementUnlocks",
+    label: "Achievement Unlocks",
+    description: "Get notified when you unlock new achievements",
+    icon: Trophy,
   },
   {
-    id: "showAchievementToasts",
-    label: "Achievement Toasts",
-    description: "Show celebration toasts when you unlock achievements",
-    icon: Award,
-  },
-  {
-    id: "showStreakReminders",
-    label: "Streak Reminders",
-    description: "Get reminded to maintain your login and delivery streaks",
-    icon: Calendar,
-  },
-  {
-    id: "showLevelUpCelebrations",
+    id: "levelUps",
     label: "Level Up Celebrations",
     description: "Show confetti and celebration when you level up",
     icon: Star,
   },
   {
-    id: "showMilestoneCelebrations",
-    label: "Milestone Celebrations",
-    description: "Celebrate when you hit revenue and client milestones",
-    icon: Trophy,
+    id: "streakReminders",
+    label: "Streak Reminders",
+    description: "Get reminded to maintain your login and delivery streaks",
+    icon: Calendar,
   },
   {
-    id: "showDailyBonusBadge",
-    label: "Daily Bonus Badge",
-    description: "Show the daily bonus badge in the dashboard",
+    id: "dailyBonusReminders",
+    label: "Daily Bonus Reminders",
+    description: "Never miss your daily XP bonus",
     icon: SparklesIcon,
   },
   {
-    id: "showLeaderboardRank",
-    label: "Leaderboard Visibility",
-    description: "Show your rank on the team leaderboard",
+    id: "leaderboardChanges",
+    label: "Leaderboard Changes",
+    description: "Know when your ranking changes on the leaderboard",
     icon: Target,
+  },
+  {
+    id: "challengeUpdates",
+    label: "Challenge Updates",
+    description: "Stay updated on team challenge progress",
+    icon: Zap,
+  },
+  {
+    id: "weeklyRecaps",
+    label: "Weekly Recaps",
+    description: "Receive weekly progress summaries",
+    icon: Award,
+  },
+  {
+    id: "seasonalEvents",
+    label: "Seasonal Events",
+    description: "Get notified about special events and bonuses",
+    icon: Calendar,
   },
 ];
 
@@ -95,8 +110,8 @@ export function GamificationSettingsClient() {
   const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [settings, setSettings] =
-    useState<GamificationSettings>(defaultSettings);
+  const [notificationPrefs, setNotificationPrefs] =
+    useState<GamificationNotificationPrefs>(defaultNotificationPrefs);
   const [hasChanges, setHasChanges] = useState(false);
 
   // Stats
@@ -111,22 +126,30 @@ export function GamificationSettingsClient() {
   const [isResettingSkills, setIsResettingSkills] = useState(false);
   const [streakFreezeState, setStreakFreezeState] = useState<StreakFreezeState | null>(null);
 
+  // Badge Showcase
+  const [badgeShowcase, setBadgeShowcase] = useState<BadgeShowcase | null>(null);
+  const [unlockedAchievements, setUnlockedAchievements] = useState<UnlockedAchievement[]>([]);
+  const showcaseHook = useBadgeShowcase([]);
+
   const loadSettings = useCallback(async () => {
     try {
-      // Load gamification state
-      const [stateResult, skillResult, questResult, freezeResult] = await Promise.all([
+      // Load gamification state and notification preferences
+      const [stateResult, skillResult, questResult, freezeResult, notifPrefsResult, showcaseResult] = await Promise.all([
         getGamificationState(),
         getSkillTreeState(),
         getQuestState(),
         getStreakFreezeState(),
+        getGamificationNotificationPrefs(),
+        getBadgeShowcase(),
       ]);
 
       if (stateResult.success) {
         setLevel(stateResult.data.level);
         setTotalXp(stateResult.data.totalXp);
-        setAchievementsUnlocked(
-          stateResult.data.recentAchievements.filter((a) => a.unlocked).length
-        );
+        // Store unlocked achievements for badge showcase
+        const unlocked = stateResult.data.recentAchievements.filter((a) => a.unlocked);
+        setUnlockedAchievements(unlocked);
+        setAchievementsUnlocked(unlocked.length);
         setTotalAchievements(45);
       }
 
@@ -146,34 +169,29 @@ export function GamificationSettingsClient() {
         setStreakFreezeState(freezeResult.data);
       }
 
-      // Load settings from localStorage for now
-      const savedSettings = localStorage.getItem("gamification-settings");
-      if (savedSettings) {
-        try {
-          const parsed = JSON.parse(savedSettings);
-          // Validate that parsed data has expected shape
-          if (parsed && typeof parsed === "object") {
-            setSettings((prev) => ({ ...prev, ...parsed }));
-          }
-        } catch (parseError) {
-          console.warn("[Gamification] Failed to parse saved settings, using defaults:", parseError);
-          // Clear corrupted data
-          localStorage.removeItem("gamification-settings");
-        }
+      // Load notification preferences from database
+      if (notifPrefsResult.success) {
+        setNotificationPrefs(notifPrefsResult.data);
+      }
+
+      // Load badge showcase
+      if (showcaseResult.success) {
+        setBadgeShowcase(showcaseResult.data);
+        showcaseHook.resetSelection(showcaseResult.data.featuredAchievementIds);
       }
     } catch (error) {
       console.error("Error loading settings:", error);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [showcaseHook]);
 
   useEffect(() => {
     loadSettings();
   }, [loadSettings]);
 
-  const handleToggle = (key: keyof GamificationSettings) => {
-    setSettings((prev) => ({
+  const handleToggle = (key: keyof GamificationNotificationPrefs) => {
+    setNotificationPrefs((prev) => ({
       ...prev,
       [key]: !prev[key],
     }));
@@ -183,13 +201,21 @@ export function GamificationSettingsClient() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      localStorage.setItem("gamification-settings", JSON.stringify(settings));
-      setHasChanges(false);
-      showToast({
-        title: "Settings saved",
-        description: "Your gamification preferences have been updated.",
-        variant: "success",
-      });
+      const result = await updateGamificationNotificationPrefs(notificationPrefs);
+      if (result.success) {
+        setHasChanges(false);
+        showToast({
+          title: "Settings saved",
+          description: "Your gamification preferences have been updated.",
+          variant: "success",
+        });
+      } else {
+        showToast({
+          title: "Error",
+          description: result.error || "Failed to save settings. Please try again.",
+          variant: "error",
+        });
+      }
     } catch {
       showToast({
         title: "Error",
@@ -255,6 +281,35 @@ export function GamificationSettingsClient() {
     },
     []
   );
+
+  const handleSaveShowcase = useCallback(async () => {
+    try {
+      const result = await updateBadgeShowcase(showcaseHook.selectedIds);
+      if (result.success) {
+        setBadgeShowcase((prev) =>
+          prev ? { ...prev, featuredAchievementIds: showcaseHook.selectedIds } : null
+        );
+        showcaseHook.closeEditor();
+        showToast({
+          title: "Showcase updated",
+          description: "Your badge showcase has been saved.",
+          variant: "success",
+        });
+      } else {
+        showToast({
+          title: "Error",
+          description: result.error || "Failed to update showcase.",
+          variant: "error",
+        });
+      }
+    } catch {
+      showToast({
+        title: "Error",
+        description: "Failed to update showcase. Please try again.",
+        variant: "error",
+      });
+    }
+  }, [showcaseHook, showToast]);
 
   if (isLoading) {
     return (
@@ -401,6 +456,30 @@ export function GamificationSettingsClient() {
         </div>
       </div>
 
+      {/* Badge Showcase */}
+      {badgeShowcase && (
+        <>
+          <BadgeShowcaseDisplay
+            showcase={badgeShowcase}
+            achievements={unlockedAchievements}
+            onEdit={showcaseHook.openEditor}
+          />
+          <BadgeShowcaseEditor
+            showcase={badgeShowcase}
+            achievements={unlockedAchievements}
+            selectedIds={showcaseHook.selectedIds}
+            onSelect={showcaseHook.handleSelect}
+            onDeselect={showcaseHook.handleDeselect}
+            onSave={handleSaveShowcase}
+            onCancel={() => {
+              showcaseHook.resetSelection(badgeShowcase.featuredAchievementIds);
+              showcaseHook.closeEditor();
+            }}
+            isOpen={showcaseHook.isEditorOpen}
+          />
+        </>
+      )}
+
       {/* Notification Settings */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
         <h3 className="text-base font-semibold text-foreground mb-1">
@@ -411,9 +490,9 @@ export function GamificationSettingsClient() {
         </p>
 
         <div className="space-y-4">
-          {settingsOptions.map((option) => {
+          {notificationOptions.map((option) => {
             const IconComponent = option.icon;
-            const isEnabled = settings[option.id as keyof GamificationSettings];
+            const isEnabled = notificationPrefs[option.id];
 
             return (
               <div
@@ -449,9 +528,8 @@ export function GamificationSettingsClient() {
                 </div>
                 <Switch
                   checked={isEnabled}
-                  onCheckedChange={() =>
-                    handleToggle(option.id as keyof GamificationSettings)
-                  }
+                  onCheckedChange={() => handleToggle(option.id)}
+                  aria-label={`Toggle ${option.label}`}
                 />
               </div>
             );

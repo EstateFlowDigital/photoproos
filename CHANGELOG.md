@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Application-Wide Debugging Tools** - Developer debugging tools available on all pages
+  - `BugProbe` component added to dashboard layout (dev account only: cameron@houseandhomephoto.com)
+    - Click tracking with overlay intercept detection
+    - Route change monitoring with fallback hard navigation
+    - Network monitoring (Fetch & XHR errors)
+    - Screenshot capture with auto-capture on failed navigation
+    - Screen recording (up to 30s)
+    - Voice notes with speech recognition
+    - Text notes for manual annotations
+    - Session persistence in localStorage
+    - Click HUD overlay showing last click details
+  - `DebugBanner` component now auto-detects route via usePathname
+  - JavaScript error capture (window.error, unhandledrejection)
+  - Toggle debug panel with Cmd/Ctrl+Shift+D
+  - Removed duplicate DebugBanner from dashboard page
+
 - **Dashboard Widget System** - Drag-and-drop customizable widget dashboard
   - New widget types system with 20+ widget types across 5 categories (Core, Content, Analytics, Productivity, Engagement)
   - Widget sizes: 1x1, 2x1, 2x2, 3x1, 3x2, 4x1, 4x2 with per-widget allowed sizes

@@ -12,7 +12,6 @@ import { getDashboardWidgets } from "@/lib/actions/dashboard";
 import { getExpiringSoonGalleries } from "@/lib/actions/gallery-expiration";
 import { WalkthroughWrapper } from "@/components/walkthrough";
 import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
-import { DebugBanner } from "@/components/debug/debug-banner";
 import { ErrorBoundary } from "@/components/debug/error-boundary";
 import { triggerLoginStreak } from "@/lib/gamification/trigger";
 import { getDailyBonusState, getGamificationState } from "@/lib/actions/gamification";
@@ -382,7 +381,11 @@ export default async function DashboardPage() {
       level: gamificationState.level,
       xp: gamificationState.totalXp,
       xpToNextLevel: gamificationState.xpToNextLevel || 1000,
+      xpProgress: gamificationState.xpProgress || 0,
       streak: gamificationState.currentLoginStreak,
+      deliveryStreak: gamificationState.currentDeliveryStreak || 0,
+      recentAchievementsCount: gamificationState.recentAchievements?.filter((a) => a.unlocked).length || 0,
+      activeChallengesCount: 0, // Will be populated when team challenges are active
     } : undefined,
     dailyBonus: dailyBonusState ? {
       canClaim: dailyBonusState.canClaim,
@@ -402,7 +405,6 @@ export default async function DashboardPage() {
 
   return (
     <ErrorBoundary label="dashboard-page">
-      <DebugBanner route="/dashboard" />
       <div className="flex flex-col density-gap-section">
         <Suspense fallback={null}>
           <TourStarter />
