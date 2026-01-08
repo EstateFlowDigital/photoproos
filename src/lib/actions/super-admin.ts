@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import { isSuperAdmin } from "@/lib/auth/super-admin";
+import { currentUser } from "@clerk/nextjs/server";
+import type { FeatureFlagCategory, AdminActionType } from "@prisma/client";
 
 // ============================================================================
 // TYPES
@@ -620,28 +622,781 @@ export async function createCustomChallenge(
  * Note: This should set a cookie/session that the app can use to detect impersonation
  */
 export async function startImpersonation(
-  userId: string
-): Promise<ActionResult<{ redirectUrl: string }>> {
+  userId: string,
+  reason?: string
+): Promise<ActionResult<{ redirectUrl: string; sessionId: string }>> {
   try {
     if (!(await isSuperAdmin())) {
       return fail("Unauthorized");
     }
 
+    const user = await currentUser();
+    if (!user) {
+      return fail("Not logged in");
+    }
+
     // Get user's clerk ID
-    const user = await prisma.user.findUnique({
+    const targetUser = await prisma.user.findUnique({
       where: { id: userId },
       select: { clerkUserId: true },
     });
 
-    if (!user) {
+    if (!targetUser) {
       return fail("User not found");
     }
 
-    // For now, return a redirect URL - actual impersonation would need
-    // Clerk's impersonation feature or a custom session system
-    return ok({ redirectUrl: `/super-admin/impersonate/${userId}` });
+    // End any active impersonation sessions for this admin
+    await prisma.impersonationSession.updateMany({
+      where: {
+        adminUserId: user.id,
+        isActive: true,
+      },
+      data: {
+        isActive: false,
+        endedAt: new Date(),
+      },
+    });
+
+    // Create new impersonation session
+    const session = await prisma.impersonationSession.create({
+      data: {
+        adminUserId: user.id,
+        targetUserId: userId,
+        reason,
+      },
+    });
+
+    // Log the action
+    await logAdminAction({
+      actionType: "user_impersonate",
+      description: `Started impersonating user`,
+      targetUserId: userId,
+      metadata: { reason, sessionId: session.id },
+    });
+
+    return ok({ redirectUrl: `/super-admin/impersonate/${userId}`, sessionId: session.id });
   } catch (error) {
     console.error("Error starting impersonation:", error);
     return fail("Failed to start impersonation");
+  }
+}
+
+/**
+ * End impersonation session
+ */
+export async function endImpersonation(): Promise<ActionResult<void>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+    if (!user) {
+      return fail("Not logged in");
+    }
+
+    const session = await prisma.impersonationSession.findFirst({
+      where: {
+        adminUserId: user.id,
+        isActive: true,
+      },
+    });
+
+    if (!session) {
+      return fail("No active impersonation session");
+    }
+
+    await prisma.impersonationSession.update({
+      where: { id: session.id },
+      data: {
+        isActive: false,
+        endedAt: new Date(),
+      },
+    });
+
+    await logAdminAction({
+      actionType: "user_impersonate",
+      description: `Ended impersonation session`,
+      targetUserId: session.targetUserId,
+      metadata: { sessionId: session.id, actionsPerformed: session.actionsPerformed },
+    });
+
+    return success();
+  } catch (error) {
+    console.error("Error ending impersonation:", error);
+    return fail("Failed to end impersonation");
+  }
+}
+
+/**
+ * Get active impersonation session
+ */
+export async function getActiveImpersonation(): Promise<
+  ActionResult<{ userId: string; reason: string | null } | null>
+> {
+  try {
+    const user = await currentUser();
+    if (!user) return ok(null);
+
+    const isAdmin = user.publicMetadata?.isSuperAdmin === true;
+    if (!isAdmin) return ok(null);
+
+    const session = await prisma.impersonationSession.findFirst({
+      where: {
+        adminUserId: user.id,
+        isActive: true,
+      },
+    });
+
+    if (!session) return ok(null);
+
+    return ok({ userId: session.targetUserId, reason: session.reason });
+  } catch (error) {
+    console.error("Error getting active impersonation:", error);
+    return fail("Failed to get impersonation");
+  }
+}
+
+// ============================================================================
+// ADMIN AUDIT LOGGING
+// ============================================================================
+
+interface AuditLogInput {
+  actionType: AdminActionType;
+  description: string;
+  targetUserId?: string;
+  targetOrgId?: string;
+  targetId?: string;
+  targetType?: string;
+  metadata?: Record<string, unknown>;
+  previousValue?: unknown;
+  newValue?: unknown;
+}
+
+export async function logAdminAction(input: AuditLogInput): Promise<ActionResult<void>> {
+  try {
+    const user = await currentUser();
+    if (!user) {
+      return fail("Not logged in");
+    }
+
+    await prisma.adminAuditLog.create({
+      data: {
+        adminUserId: user.id,
+        actionType: input.actionType,
+        description: input.description,
+        targetUserId: input.targetUserId,
+        targetOrgId: input.targetOrgId,
+        targetId: input.targetId,
+        targetType: input.targetType,
+        metadata: input.metadata as object | undefined,
+        previousValue: input.previousValue as object | undefined,
+        newValue: input.newValue as object | undefined,
+      },
+    });
+
+    return success();
+  } catch (error) {
+    console.error("[SuperAdmin] Error logging action:", error);
+    return fail("Failed to log action");
+  }
+}
+
+export async function getAuditLogs(options?: {
+  limit?: number;
+  offset?: number;
+  actionType?: AdminActionType;
+}): Promise<ActionResult<{ logs: unknown[]; total: number }>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const where = options?.actionType ? { actionType: options.actionType } : {};
+
+    const [logs, total] = await Promise.all([
+      prisma.adminAuditLog.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        take: options?.limit ?? 50,
+        skip: options?.offset ?? 0,
+      }),
+      prisma.adminAuditLog.count({ where }),
+    ]);
+
+    return ok({ logs, total });
+  } catch (error) {
+    console.error("[SuperAdmin] Error fetching audit logs:", error);
+    return fail("Failed to fetch audit logs");
+  }
+}
+
+// ============================================================================
+// FEATURE FLAGS
+// ============================================================================
+
+export async function getFeatureFlags(): Promise<ActionResult<unknown[]>> {
+  try {
+    const flags = await prisma.featureFlag.findMany({
+      orderBy: [{ category: "asc" }, { order: "asc" }],
+    });
+
+    return ok(flags);
+  } catch (error) {
+    console.error("[SuperAdmin] Error fetching feature flags:", error);
+    return fail("Failed to fetch feature flags");
+  }
+}
+
+interface CreateFeatureFlagInput {
+  slug: string;
+  name: string;
+  description: string;
+  category: FeatureFlagCategory;
+  enabled?: boolean;
+  rolloutPercentage?: number;
+  icon?: string;
+  order?: number;
+  isSystem?: boolean;
+}
+
+export async function createFeatureFlag(
+  input: CreateFeatureFlagInput
+): Promise<ActionResult<unknown>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+
+    const flag = await prisma.featureFlag.create({
+      data: {
+        slug: input.slug,
+        name: input.name,
+        description: input.description,
+        category: input.category,
+        enabled: input.enabled ?? false,
+        rolloutPercentage: input.rolloutPercentage ?? 100,
+        icon: input.icon,
+        order: input.order ?? 0,
+        isSystem: input.isSystem ?? false,
+        createdBy: user?.id,
+      },
+    });
+
+    await logAdminAction({
+      actionType: "feature_flag_toggle",
+      description: `Created feature flag: ${input.name}`,
+      targetId: flag.id,
+      targetType: "feature_flag",
+      newValue: flag,
+    });
+
+    revalidatePath("/super-admin/config");
+    return ok(flag);
+  } catch (error) {
+    console.error("[SuperAdmin] Error creating feature flag:", error);
+    return fail("Failed to create feature flag");
+  }
+}
+
+export async function toggleFeatureFlag(
+  slugOrId: string,
+  enabled: boolean
+): Promise<ActionResult<unknown>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const existing = await prisma.featureFlag.findFirst({
+      where: {
+        OR: [{ id: slugOrId }, { slug: slugOrId }],
+      },
+    });
+
+    if (!existing) {
+      return fail("Feature flag not found");
+    }
+
+    const flag = await prisma.featureFlag.update({
+      where: { id: existing.id },
+      data: { enabled },
+    });
+
+    await logAdminAction({
+      actionType: "feature_flag_toggle",
+      description: `${enabled ? "Enabled" : "Disabled"} feature flag: ${flag.name}`,
+      targetId: flag.id,
+      targetType: "feature_flag",
+      previousValue: { enabled: existing.enabled },
+      newValue: { enabled: flag.enabled },
+    });
+
+    revalidatePath("/super-admin/config");
+    return ok(flag);
+  } catch (error) {
+    console.error("[SuperAdmin] Error toggling feature flag:", error);
+    return fail("Failed to toggle feature flag");
+  }
+}
+
+export async function deleteFeatureFlag(slugOrId: string): Promise<ActionResult<void>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const existing = await prisma.featureFlag.findFirst({
+      where: {
+        OR: [{ id: slugOrId }, { slug: slugOrId }],
+      },
+    });
+
+    if (!existing) {
+      return fail("Feature flag not found");
+    }
+
+    if (existing.isSystem) {
+      return fail("Cannot delete system feature flags");
+    }
+
+    await prisma.featureFlag.delete({
+      where: { id: existing.id },
+    });
+
+    await logAdminAction({
+      actionType: "feature_flag_toggle",
+      description: `Deleted feature flag: ${existing.name}`,
+      targetId: existing.id,
+      targetType: "feature_flag",
+      previousValue: existing,
+    });
+
+    revalidatePath("/super-admin/config");
+    return success();
+  } catch (error) {
+    console.error("[SuperAdmin] Error deleting feature flag:", error);
+    return fail("Failed to delete feature flag");
+  }
+}
+
+/**
+ * Check if a feature is enabled for a specific organization
+ */
+export async function isFeatureEnabled(
+  slug: string,
+  organizationId?: string
+): Promise<boolean> {
+  try {
+    const flag = await prisma.featureFlag.findUnique({
+      where: { slug },
+    });
+
+    if (!flag) return false;
+    if (!flag.enabled) return false;
+
+    // Check org-specific overrides
+    if (organizationId) {
+      if (flag.disabledForOrgs.includes(organizationId)) return false;
+      if (flag.enabledForOrgs.length > 0) {
+        return flag.enabledForOrgs.includes(organizationId);
+      }
+    }
+
+    // Check rollout percentage
+    if (flag.rolloutPercentage < 100 && organizationId) {
+      const hash = organizationId.split("").reduce((acc, char) => {
+        return char.charCodeAt(0) + ((acc << 5) - acc);
+      }, 0);
+      const percentage = Math.abs(hash % 100);
+      return percentage < flag.rolloutPercentage;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("[SuperAdmin] Error checking feature flag:", error);
+    return false;
+  }
+}
+
+// ============================================================================
+// SYSTEM SETTINGS
+// ============================================================================
+
+export async function getSystemSettings(): Promise<ActionResult<unknown[]>> {
+  try {
+    const settings = await prisma.systemSetting.findMany({
+      orderBy: [{ category: "asc" }, { key: "asc" }],
+    });
+
+    return ok(settings);
+  } catch (error) {
+    console.error("[SuperAdmin] Error fetching system settings:", error);
+    return fail("Failed to fetch system settings");
+  }
+}
+
+interface CreateSystemSettingInput {
+  key: string;
+  name: string;
+  description: string;
+  value: string;
+  valueType?: string;
+  isSecret?: boolean;
+  category?: string;
+}
+
+export async function createSystemSetting(
+  input: CreateSystemSettingInput
+): Promise<ActionResult<unknown>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+
+    const setting = await prisma.systemSetting.create({
+      data: {
+        key: input.key,
+        name: input.name,
+        description: input.description,
+        value: input.value,
+        valueType: input.valueType ?? "boolean",
+        isSecret: input.isSecret ?? false,
+        category: input.category ?? "general",
+        updatedBy: user?.id,
+      },
+    });
+
+    await logAdminAction({
+      actionType: "system_setting_change",
+      description: `Created system setting: ${input.name}`,
+      targetId: setting.id,
+      targetType: "system_setting",
+      newValue: setting,
+    });
+
+    revalidatePath("/super-admin/config");
+    return ok(setting);
+  } catch (error) {
+    console.error("[SuperAdmin] Error creating system setting:", error);
+    return fail("Failed to create system setting");
+  }
+}
+
+export async function updateSystemSetting(
+  key: string,
+  value: string
+): Promise<ActionResult<unknown>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+
+    const existing = await prisma.systemSetting.findUnique({
+      where: { key },
+    });
+
+    if (!existing) {
+      return fail("System setting not found");
+    }
+
+    const setting = await prisma.systemSetting.update({
+      where: { key },
+      data: {
+        value,
+        updatedBy: user?.id,
+      },
+    });
+
+    await logAdminAction({
+      actionType: "system_setting_change",
+      description: `Updated system setting: ${setting.name}`,
+      targetId: setting.id,
+      targetType: "system_setting",
+      previousValue: { value: existing.value },
+      newValue: { value: setting.value },
+    });
+
+    revalidatePath("/super-admin/config");
+    return ok(setting);
+  } catch (error) {
+    console.error("[SuperAdmin] Error updating system setting:", error);
+    return fail("Failed to update system setting");
+  }
+}
+
+/**
+ * Get a system setting value with type coercion
+ */
+export async function getSystemSettingValue<T = string>(
+  key: string,
+  defaultValue: T
+): Promise<T> {
+  try {
+    const setting = await prisma.systemSetting.findUnique({
+      where: { key },
+    });
+
+    if (!setting) return defaultValue;
+
+    switch (setting.valueType) {
+      case "boolean":
+        return (setting.value === "true") as unknown as T;
+      case "number":
+        return parseFloat(setting.value) as unknown as T;
+      case "json":
+        return JSON.parse(setting.value) as T;
+      default:
+        return setting.value as unknown as T;
+    }
+  } catch {
+    return defaultValue;
+  }
+}
+
+// ============================================================================
+// SEED DEFAULTS
+// ============================================================================
+
+export async function seedDefaultFeatureFlags(): Promise<ActionResult<number>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+
+    const defaultFlags: CreateFeatureFlagInput[] = [
+      {
+        slug: "ai_assistant",
+        name: "AI Business Assistant",
+        description: "Claude-powered AI assistant for business queries",
+        category: "ai_features",
+        enabled: true,
+        icon: "sparkles",
+        order: 1,
+        isSystem: true,
+      },
+      {
+        slug: "gamification",
+        name: "Gamification System",
+        description: "XP, levels, achievements, and streaks",
+        category: "engagement",
+        enabled: true,
+        icon: "trophy",
+        order: 1,
+        isSystem: true,
+      },
+      {
+        slug: "feedback_modal",
+        name: "Feedback Collection",
+        description: "Session-based feedback modal for users",
+        category: "engagement",
+        enabled: true,
+        icon: "message-circle",
+        order: 2,
+        isSystem: true,
+      },
+      {
+        slug: "email_notifications",
+        name: "Email Notifications",
+        description: "Transactional and marketing emails",
+        category: "communications",
+        enabled: true,
+        icon: "mail",
+        order: 1,
+        isSystem: true,
+      },
+      {
+        slug: "slack_notifications",
+        name: "Slack Notifications",
+        description: "Support ticket notifications to Slack",
+        category: "communications",
+        enabled: true,
+        icon: "bell",
+        order: 2,
+        isSystem: true,
+      },
+      {
+        slug: "tax_prep",
+        name: "Tax Preparation",
+        description: "Seasonal tax preparation wizard",
+        category: "finance",
+        enabled: true,
+        icon: "calendar",
+        order: 1,
+        isSystem: true,
+      },
+    ];
+
+    let created = 0;
+    for (const flag of defaultFlags) {
+      const existing = await prisma.featureFlag.findUnique({
+        where: { slug: flag.slug },
+      });
+
+      if (!existing) {
+        await prisma.featureFlag.create({
+          data: {
+            ...flag,
+            createdBy: user?.id,
+          },
+        });
+        created++;
+      }
+    }
+
+    revalidatePath("/super-admin/config");
+    return ok(created);
+  } catch (error) {
+    console.error("[SuperAdmin] Error seeding feature flags:", error);
+    return fail("Failed to seed flags");
+  }
+}
+
+export async function seedDefaultSystemSettings(): Promise<ActionResult<number>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+
+    const defaultSettings: CreateSystemSettingInput[] = [
+      {
+        key: "maintenance_mode",
+        name: "Maintenance Mode",
+        description: "Show maintenance page to all users",
+        value: "false",
+        valueType: "boolean",
+        category: "system",
+      },
+      {
+        key: "new_signups",
+        name: "New Signups",
+        description: "Allow new user registrations",
+        value: "true",
+        valueType: "boolean",
+        category: "system",
+      },
+      {
+        key: "trial_period",
+        name: "Free Trial",
+        description: "14-day free trial for new users",
+        value: "true",
+        valueType: "boolean",
+        category: "system",
+      },
+      {
+        key: "trial_days",
+        name: "Trial Days",
+        description: "Number of days for free trial",
+        value: "14",
+        valueType: "number",
+        category: "system",
+      },
+    ];
+
+    let created = 0;
+    for (const setting of defaultSettings) {
+      const existing = await prisma.systemSetting.findUnique({
+        where: { key: setting.key },
+      });
+
+      if (!existing) {
+        await prisma.systemSetting.create({
+          data: {
+            ...setting,
+            updatedBy: user?.id,
+          },
+        });
+        created++;
+      }
+    }
+
+    revalidatePath("/super-admin/config");
+    return ok(created);
+  } catch (error) {
+    console.error("[SuperAdmin] Error seeding system settings:", error);
+    return fail("Failed to seed settings");
+  }
+}
+
+// ============================================================================
+// SYSTEM HEALTH / STATS
+// ============================================================================
+
+export async function getSystemHealthStats(): Promise<
+  ActionResult<{
+    totalUsers: number;
+    totalOrganizations: number;
+    totalGalleries: number;
+    recentLogins: number;
+    activeImpersonations: number;
+    recentAuditLogs: number;
+    featureFlagsEnabled: number;
+    featureFlagsTotal: number;
+  }>
+> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const [
+      totalUsers,
+      totalOrganizations,
+      totalGalleries,
+      recentLogins,
+      activeImpersonations,
+      recentAuditLogs,
+      featureFlagsEnabled,
+      featureFlagsTotal,
+    ] = await Promise.all([
+      prisma.user.count(),
+      prisma.organization.count(),
+      prisma.gallery.count(),
+      prisma.user.count({
+        where: {
+          lastLoginAt: {
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
+          },
+        },
+      }),
+      prisma.impersonationSession.count({
+        where: { isActive: true },
+      }),
+      prisma.adminAuditLog.count({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+          },
+        },
+      }),
+      prisma.featureFlag.count({
+        where: { enabled: true },
+      }),
+      prisma.featureFlag.count(),
+    ]);
+
+    return ok({
+      totalUsers,
+      totalOrganizations,
+      totalGalleries,
+      recentLogins,
+      activeImpersonations,
+      recentAuditLogs,
+      featureFlagsEnabled,
+      featureFlagsTotal,
+    });
+  } catch (error) {
+    console.error("[SuperAdmin] Error fetching system stats:", error);
+    return fail("Failed to fetch stats");
   }
 }

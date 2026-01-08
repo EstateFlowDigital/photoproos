@@ -1,5 +1,30 @@
 import { Suspense } from "react";
 import { ConfigPageClient } from "./config-client";
+import {
+  getFeatureFlags,
+  getSystemSettings,
+  getAuditLogs,
+} from "@/lib/actions/super-admin";
+
+async function ConfigLoader() {
+  const [flagsResult, settingsResult, auditResult] = await Promise.all([
+    getFeatureFlags(),
+    getSystemSettings(),
+    getAuditLogs({ limit: 10 }),
+  ]);
+
+  const flags = flagsResult.success ? (flagsResult.data as unknown[]) : [];
+  const settings = settingsResult.success ? (settingsResult.data as unknown[]) : [];
+  const auditLogs = auditResult.success ? auditResult.data.logs : [];
+
+  return (
+    <ConfigPageClient
+      initialFlags={flags}
+      initialSettings={settings}
+      initialAuditLogs={auditLogs}
+    />
+  );
+}
 
 function LoadingSkeleton() {
   return (
@@ -30,7 +55,7 @@ export default function ConfigPage() {
       </div>
 
       <Suspense fallback={<LoadingSkeleton />}>
-        <ConfigPageClient />
+        <ConfigLoader />
       </Suspense>
     </div>
   );

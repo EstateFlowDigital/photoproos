@@ -37,17 +37,39 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
     description: "Residential, commercial, and architectural photography",
     icon: Building2,
     modules: [
+      // Core operations
       "galleries",
       "scheduling",
       "invoices",
+      "services",
+      // Client management
       "clients",
       "leads",
-      "services",
-      "properties",
+      "inbox",
       "questionnaires",
+      // Business tools
+      "analytics",
+      "orders",
+      "payments",
+      "expenses",
+      "team_management",
+      // Client engagement
+      "reviews",
+      // Industry-specific
+      "properties",
+      "brokerages",
       "portfolio_websites",
+      // Advanced
+      "marketing_kit",
+      "referrals",
+      "integrations",
+      "tax_prep",
+      "ai_assistant",
     ],
-    defaultModules: ["galleries", "scheduling", "invoices", "clients", "leads", "properties", "questionnaires", "portfolio_websites"],
+    defaultModules: [
+      "galleries", "scheduling", "invoices", "clients", "leads", "inbox",
+      "properties", "questionnaires", "portfolio_websites", "analytics", "reviews"
+    ],
     color: "#3b82f6", // blue
     sortOrder: 1,
   },
@@ -57,18 +79,39 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
     description: "Business headshots, office spaces, products",
     icon: Briefcase,
     modules: [
+      // Core operations
       "galleries",
       "scheduling",
       "invoices",
+      "services",
+      // Client management
       "clients",
       "leads",
-      "services",
+      "inbox",
+      "questionnaires",
       "contracts",
+      // Business tools
+      "analytics",
+      "orders",
+      "payments",
+      "expenses",
+      "team_management",
+      // Client engagement
+      "reviews",
+      // Industry-specific
       "licensing",
       "portfolio_websites",
-      "questionnaires",
+      // Advanced
+      "marketing_kit",
+      "referrals",
+      "integrations",
+      "tax_prep",
+      "ai_assistant",
     ],
-    defaultModules: ["galleries", "scheduling", "invoices", "clients", "leads", "contracts", "portfolio_websites", "questionnaires"],
+    defaultModules: [
+      "galleries", "scheduling", "invoices", "clients", "leads", "inbox",
+      "contracts", "questionnaires", "portfolio_websites", "analytics", "reviews"
+    ],
     color: "#8b5cf6", // purple
     sortOrder: 2,
   },
@@ -78,24 +121,37 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
     description: "Weddings, corporate events, parties",
     icon: Calendar,
     modules: [
+      // Core operations
       "galleries",
       "scheduling",
       "invoices",
+      "services",
+      // Client management
       "clients",
       "leads",
-      "contracts",
+      "inbox",
       "questionnaires",
+      "contracts",
+      // Business tools
+      "analytics",
+      "orders",
+      "payments",
+      "expenses",
+      "team_management",
+      // Client engagement
+      "reviews",
+      // Portfolio
       "portfolio_websites",
+      // Advanced
+      "marketing_kit",
+      "referrals",
+      "integrations",
+      "tax_prep",
+      "ai_assistant",
     ],
     defaultModules: [
-      "galleries",
-      "scheduling",
-      "invoices",
-      "clients",
-      "leads",
-      "contracts",
-      "portfolio_websites",
-      "questionnaires",
+      "galleries", "scheduling", "invoices", "clients", "leads", "inbox",
+      "contracts", "questionnaires", "portfolio_websites", "analytics", "reviews"
     ],
     color: "#ec4899", // pink
     sortOrder: 3,
@@ -106,18 +162,39 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
     description: "Family portraits, senior photos, professional headshots",
     icon: User,
     modules: [
+      // Core operations
       "galleries",
       "scheduling",
       "invoices",
+      "services",
+      // Client management
       "clients",
       "leads",
-      "services",
+      "inbox",
+      "questionnaires",
+      // Business tools
+      "analytics",
+      "orders",
+      "payments",
+      "expenses",
+      "team_management",
+      // Client engagement
+      "reviews",
+      // Industry-specific
       "mini_sessions",
       "online_booking",
       "portfolio_websites",
-      "questionnaires",
+      // Advanced
+      "marketing_kit",
+      "referrals",
+      "integrations",
+      "tax_prep",
+      "ai_assistant",
     ],
-    defaultModules: ["galleries", "scheduling", "invoices", "clients", "leads", "portfolio_websites", "questionnaires"],
+    defaultModules: [
+      "galleries", "scheduling", "invoices", "clients", "leads", "inbox",
+      "questionnaires", "portfolio_websites", "analytics", "reviews"
+    ],
     color: "#f97316", // orange
     sortOrder: 4,
   },
@@ -127,17 +204,38 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
     description: "Restaurant, menu, and culinary photography",
     icon: UtensilsCrossed,
     modules: [
+      // Core operations
       "galleries",
       "scheduling",
       "invoices",
+      "services",
+      // Client management
       "clients",
       "leads",
-      "services",
+      "inbox",
+      "questionnaires",
+      // Business tools
+      "analytics",
+      "orders",
+      "payments",
+      "expenses",
+      "team_management",
+      // Client engagement
+      "reviews",
+      // Industry-specific
       "licensing",
       "portfolio_websites",
-      "questionnaires",
+      // Advanced
+      "marketing_kit",
+      "referrals",
+      "integrations",
+      "tax_prep",
+      "ai_assistant",
     ],
-    defaultModules: ["galleries", "scheduling", "invoices", "clients", "leads", "portfolio_websites", "questionnaires"],
+    defaultModules: [
+      "galleries", "scheduling", "invoices", "clients", "leads", "inbox",
+      "questionnaires", "portfolio_websites", "analytics", "reviews"
+    ],
     color: "#22c55e", // green
     sortOrder: 5,
   },
@@ -147,19 +245,40 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
     description: "Product shots, catalog, and e-commerce imagery",
     icon: Package,
     modules: [
+      // Core operations
       "galleries",
       "scheduling",
       "invoices",
+      "services",
+      // Client management
       "clients",
       "leads",
-      "services",
+      "inbox",
+      "questionnaires",
+      // Business tools
+      "analytics",
+      "orders",
+      "payments",
+      "expenses",
+      "team_management",
+      // Client engagement
+      "reviews",
+      // Industry-specific
       "licensing",
       "batch_processing",
-      "portfolio_websites",
       "product_catalogs",
-      "questionnaires",
+      "portfolio_websites",
+      // Advanced
+      "marketing_kit",
+      "referrals",
+      "integrations",
+      "tax_prep",
+      "ai_assistant",
     ],
-    defaultModules: ["galleries", "scheduling", "invoices", "clients", "leads", "portfolio_websites", "product_catalogs", "questionnaires"],
+    defaultModules: [
+      "galleries", "scheduling", "invoices", "clients", "leads", "inbox",
+      "questionnaires", "portfolio_websites", "product_catalogs", "analytics", "reviews"
+    ],
     color: "#06b6d4", // cyan
     sortOrder: 6,
   },

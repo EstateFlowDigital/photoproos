@@ -8,6 +8,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Database-Backed Feature Flags** - Platform-wide feature management
+  - New `FeatureFlag` Prisma model with slug, name, description, category, enabled state, and rollout percentage
+  - Enum `FeatureFlagCategory` for organizing flags (ai_features, engagement, communications, finance, experimental, system)
+  - Per-organization rollout support with `enabledForOrgs` and `disabledForOrgs` arrays
+  - Server actions: `getFeatureFlags`, `createFeatureFlag`, `toggleFeatureFlag`, `deleteFeatureFlag`, `isFeatureEnabled`
+  - Seed function `seedDefaultFeatureFlags` to initialize default flags
+  - Config page updated to use database-backed flags instead of in-memory state
+
+- **Admin Audit Logging** - Track all super admin actions
+  - New `AdminAuditLog` Prisma model with action type, description, target info, metadata, and before/after values
+  - Enum `AdminActionType` covering user management, impersonation, feature flags, system settings, and support actions
+  - Server actions: `logAdminAction`, `getAuditLogs`
+  - Recent activity display in Config and Developer pages
+
+- **System Settings Management** - Platform-wide settings
+  - New `SystemSetting` Prisma model with key, value, valueType, isSecret, and category
+  - Server actions: `getSystemSettings`, `createSystemSetting`, `updateSystemSetting`, `getSystemSettingValue`
+  - Seed function `seedDefaultSystemSettings` for maintenance mode, signups, trial settings
+  - Config page displays system settings with toggle controls
+
+- **Enhanced Impersonation System** - Full impersonation tracking
+  - New `ImpersonationSession` Prisma model tracking admin, target, reason, duration, and actions performed
+  - Server actions: `startImpersonation`, `endImpersonation`, `getActiveImpersonation`
+  - Impersonation banner in Super Admin layout with end button
+  - Layout adjusts header and sidebar position when impersonation active
+  - Session logging in audit trail
+
+- **System Health Monitoring** - Real-time platform statistics
+  - Server action `getSystemHealthStats` returning user, organization, gallery counts, recent logins, active impersonations, and feature flag status
+  - Developer page shows health stats in quick stats grid
+  - System Health Monitoring section with detailed metrics cards
+  - Recent Admin Activity section showing audit log entries
+
 - **Application-Wide Debugging Tools** - Developer debugging tools available on all pages
   - `BugProbe` component added to dashboard layout (dev account only: cameron@houseandhomephoto.com)
     - Click tracking with overlay intercept detection
@@ -350,6 +383,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 8 notification types: achievements, level ups, streaks, daily bonus, leaderboard, challenges, recaps, events
   - Toggle switches with instant feedback
   - `getGamificationNotificationPrefs` and `updateGamificationNotificationPrefs` server actions
+
+- **Gamification Database Persistence** - Full database backing for gamification features
+  - New Prisma models: `XpActivityLog`, `BadgeShowcase`, `GamificationNotificationPrefs`, `DailyQuestProgress`, `SeasonalEvent`, `SeasonalEventParticipation`
+  - `XpActivityType` enum for categorizing XP sources (achievement, daily_bonus, level_up, streak_milestone, delivery, gallery, quest, challenge, referral, seasonal_event, admin_award)
+  - `logXpActivity` helper function for recording all XP transactions
+  - Updated `getXpActivityLog` and `getXpSummaryByType` to query from database with proper aggregations
+  - Updated `getBadgeShowcase` and `updateBadgeShowcase` to persist featured badges
+  - Updated notification preferences to persist in database instead of localStorage
+  - Relations added to User and Organization models for all new gamification models
+
+- **Enhanced Dashboard Gamification Widget** - Richer gamification display in dashboard
+  - Updated `GamificationWidget` with level badge and streak badge components
+  - Compact 1x1 view with level, streak, and XP progress
+  - Expanded view (2x1, 2x2) with delivery streak stats and recent achievements count
+  - Gradient progress bars matching design system
+  - Quick stats grid for login and delivery streaks
+  - "View Progress" link to achievements page
+  - `DailyBonusWidget` enhanced with animated pulse for claimable bonuses and streak indicators
+
+- **Badge Showcase in Settings** - Showcase your achievements in gamification settings
+  - `BadgeShowcaseDisplay` integrated into gamification settings page
+  - `BadgeShowcaseEditor` modal for selecting featured achievements
+  - Automatic loading of unlocked achievements on settings page load
+  - Save showcase selections with `updateBadgeShowcase` server action
+  - Visual feedback with toast notifications on save
+
+- **Comprehensive Onboarding Feature Selection** - Full coverage of all platform features during onboarding
+  - Added 12 new modules to feature selection: Analytics & Reports, AI Assistant, Orders, Payment Tracking, Expenses, Review Collection, Marketing Kit, Referral Program, Integrations, Team Management, Tax Preparation, Brokerage Management
+  - Updated all 6 industry types with comprehensive module availability
+  - Default modules pre-selected for optimal workflow (galleries, scheduling, invoices, clients, leads, inbox, analytics, reviews)
+  - Advanced features available as optional toggles (AI Assistant, Marketing Kit, Referrals, Integrations, Tax Prep)
+  - Industry-specific modules only shown when relevant (Brokerages for real estate, Mini Sessions for portraits, etc.)
+  - Clear messaging that users can enable/disable features anytime in Settings > Industries & Features
+  - Module categories organized by type: Core Operations, Client Management, Business Tools, and Advanced Features
 
 - **Review Gate System** - Capture internal feedback and route happy clients to public reviews
   - Prisma models: ReviewPlatform, ReviewRequest, ReviewResponse with full relations

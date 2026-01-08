@@ -4,20 +4,30 @@ import {
   getSubscriptionPlans,
   getPricingExperiments,
 } from "@/lib/actions/subscription-plans";
+import {
+  getSystemHealthStats,
+  getAuditLogs,
+} from "@/lib/actions/super-admin";
 
 async function DeveloperLoader() {
-  const [plansResult, experimentsResult] = await Promise.all([
+  const [plansResult, experimentsResult, healthResult, auditResult] = await Promise.all([
     getSubscriptionPlans(),
     getPricingExperiments(),
+    getSystemHealthStats(),
+    getAuditLogs({ limit: 10 }),
   ]);
 
   const plans = plansResult.success ? plansResult.data || [] : [];
   const experiments = experimentsResult.success ? experimentsResult.data || [] : [];
+  const healthStats = healthResult.success ? healthResult.data : null;
+  const auditLogs = auditResult.success ? auditResult.data.logs : [];
 
   return (
     <DeveloperPageClient
       initialPlans={plans}
       initialExperiments={experiments}
+      healthStats={healthStats}
+      recentAuditLogs={auditLogs}
     />
   );
 }

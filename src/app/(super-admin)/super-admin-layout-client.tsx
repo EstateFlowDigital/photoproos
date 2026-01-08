@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useEffect, useState, useTransition } from "react";
+import { getActiveImpersonation, endImpersonation } from "@/lib/actions/super-admin";
+import { toast } from "sonner";
 
 // Icons
 function LayoutDashboardIcon({ className }: { className?: string }) {
@@ -203,13 +206,84 @@ export function SuperAdminLayoutClient({
   adminUser,
 }: SuperAdminLayoutClientProps) {
   const pathname = usePathname();
+  const [impersonation, setImpersonation] = useState<{
+    userId: string;
+    reason: string | null;
+  } | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    async function checkImpersonation() {
+      const result = await getActiveImpersonation();
+      if (result.success && result.data) {
+        setImpersonation(result.data);
+      }
+    }
+    checkImpersonation();
+  }, []);
+
+  const handleEndImpersonation = () => {
+    startTransition(async () => {
+      const result = await endImpersonation();
+      if (result.success) {
+        setImpersonation(null);
+        toast.success("Impersonation ended");
+      } else {
+        toast.error(result.error || "Failed to end impersonation");
+      }
+    });
+  };
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
+      {/* Impersonation Banner */}
+      {impersonation && (
+        <div
+          className={cn(
+            "sticky top-0 z-[60] px-4 py-2",
+            "bg-[var(--warning)] text-black",
+            "flex items-center justify-between"
+          )}
+        >
+          <div className="flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-4 h-4"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            <span className="text-sm font-medium">
+              Impersonating user: {impersonation.userId}
+              {impersonation.reason && ` — ${impersonation.reason}`}
+            </span>
+          </div>
+          <button
+            onClick={handleEndImpersonation}
+            disabled={isPending}
+            className={cn(
+              "px-3 py-1 text-sm font-medium rounded",
+              "bg-black/20 hover:bg-black/30",
+              "transition-colors",
+              isPending && "opacity-50 cursor-not-allowed"
+            )}
+          >
+            {isPending ? "Ending..." : "End Impersonation"}
+          </button>
+        </div>
+      )}
+
       {/* Top bar */}
       <header
         className={cn(
-          "sticky top-0 z-50 h-14",
+          "sticky z-50 h-14",
+          impersonation ? "top-10" : "top-0",
           "border-b border-[var(--border)]",
           "bg-[var(--card)]"
         )}
@@ -258,7 +332,8 @@ export function SuperAdminLayoutClient({
         {/* Sidebar */}
         <aside
           className={cn(
-            "sticky top-14 h-[calc(100vh-3.5rem)]",
+            "sticky h-[calc(100vh-3.5rem)]",
+            impersonation ? "top-24" : "top-14",
             "w-64 flex-shrink-0",
             "border-r border-[var(--border)]",
             "bg-[var(--card)]"

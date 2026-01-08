@@ -1,10 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
+import {
+  toggleFeatureFlag,
+  updateSystemSetting,
+  seedDefaultFeatureFlags,
+  seedDefaultSystemSettings,
+} from "@/lib/actions/super-admin";
 
 // Icons
 function ToggleRightIcon({ className }: { className?: string }) {
@@ -143,165 +150,217 @@ function CalendarIcon({ className }: { className?: string }) {
 
 interface FeatureFlag {
   id: string;
+  slug: string;
   name: string;
   description: string;
   enabled: boolean;
   category: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon?: string;
+  isSystem?: boolean;
+  rolloutPercentage?: number;
 }
 
-const FEATURE_FLAGS: FeatureFlag[] = [
-  {
-    id: "ai_assistant",
-    name: "AI Business Assistant",
-    description: "Claude-powered AI assistant for business queries",
-    enabled: true,
-    category: "AI Features",
-    icon: SparklesIcon,
-  },
-  {
-    id: "gamification",
-    name: "Gamification System",
-    description: "XP, levels, achievements, and streaks",
-    enabled: true,
-    category: "Engagement",
-    icon: TrophyIcon,
-  },
-  {
-    id: "feedback_modal",
-    name: "Feedback Collection",
-    description: "Session-based feedback modal for users",
-    enabled: true,
-    category: "Engagement",
-    icon: MessageCircleIcon,
-  },
-  {
-    id: "email_notifications",
-    name: "Email Notifications",
-    description: "Transactional and marketing emails",
-    enabled: true,
-    category: "Communications",
-    icon: MailIcon,
-  },
-  {
-    id: "slack_notifications",
-    name: "Slack Notifications",
-    description: "Support ticket notifications to Slack",
-    enabled: true,
-    category: "Communications",
-    icon: BellIcon,
-  },
-  {
-    id: "tax_prep",
-    name: "Tax Preparation",
-    description: "Seasonal tax preparation wizard",
-    enabled: true,
-    category: "Finance",
-    icon: CalendarIcon,
-  },
-];
+interface SystemSetting {
+  id: string;
+  key: string;
+  name: string;
+  description: string;
+  value: string;
+  valueType: string;
+  category: string;
+}
 
-const SYSTEM_SETTINGS = [
-  {
-    id: "maintenance_mode",
-    name: "Maintenance Mode",
-    description: "Show maintenance page to all users",
-    enabled: false,
-  },
-  {
-    id: "new_signups",
-    name: "New Signups",
-    description: "Allow new user registrations",
-    enabled: true,
-  },
-  {
-    id: "trial_period",
-    name: "Free Trial",
-    description: "14-day free trial for new users",
-    enabled: true,
-  },
-];
+interface AuditLog {
+  id: string;
+  actionType: string;
+  description: string;
+  createdAt: string;
+  targetType?: string;
+}
 
-export function ConfigPageClient() {
-  const [flags, setFlags] = useState(FEATURE_FLAGS);
-  const [settings, setSettings] = useState(SYSTEM_SETTINGS);
+interface ConfigPageClientProps {
+  initialFlags: unknown[];
+  initialSettings: unknown[];
+  initialAuditLogs: unknown[];
+}
 
-  const toggleFlag = (id: string) => {
-    setFlags((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, enabled: !f.enabled } : f))
-    );
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  sparkles: SparklesIcon,
+  trophy: TrophyIcon,
+  "message-circle": MessageCircleIcon,
+  mail: MailIcon,
+  bell: BellIcon,
+  calendar: CalendarIcon,
+};
+
+const CATEGORY_NAMES: Record<string, string> = {
+  ai_features: "AI Features",
+  engagement: "Engagement",
+  communications: "Communications",
+  finance: "Finance",
+  experimental: "Experimental",
+  system: "System",
+};
+
+export function ConfigPageClient({
+  initialFlags,
+  initialSettings,
+  initialAuditLogs,
+}: ConfigPageClientProps) {
+  const [flags, setFlags] = useState<FeatureFlag[]>(initialFlags as FeatureFlag[]);
+  const [settings, setSettings] = useState<SystemSetting[]>(initialSettings as SystemSetting[]);
+  const [auditLogs] = useState<AuditLog[]>(initialAuditLogs as AuditLog[]);
+  const [isPending, startTransition] = useTransition();
+
+  const handleToggleFlag = async (slugOrId: string, currentEnabled: boolean) => {
+    startTransition(async () => {
+      const result = await toggleFeatureFlag(slugOrId, !currentEnabled);
+      if (result.success) {
+        setFlags((prev) =>
+          prev.map((f) =>
+            f.slug === slugOrId || f.id === slugOrId
+              ? { ...f, enabled: !currentEnabled }
+              : f
+          )
+        );
+        toast.success(`Feature flag ${!currentEnabled ? "enabled" : "disabled"}`);
+      } else {
+        toast.error(result.error || "Failed to toggle feature flag");
+      }
+    });
   };
 
-  const toggleSetting = (id: string) => {
-    setSettings((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, enabled: !s.enabled } : s))
-    );
+  const handleToggleSetting = async (key: string, currentValue: string) => {
+    const newValue = currentValue === "true" ? "false" : "true";
+    startTransition(async () => {
+      const result = await updateSystemSetting(key, newValue);
+      if (result.success) {
+        setSettings((prev) =>
+          prev.map((s) => (s.key === key ? { ...s, value: newValue } : s))
+        );
+        toast.success("System setting updated");
+      } else {
+        toast.error(result.error || "Failed to update setting");
+      }
+    });
+  };
+
+  const handleSeedDefaults = async () => {
+    startTransition(async () => {
+      const [flagsResult, settingsResult] = await Promise.all([
+        seedDefaultFeatureFlags(),
+        seedDefaultSystemSettings(),
+      ]);
+
+      if (flagsResult.success && settingsResult.success) {
+        toast.success(
+          `Seeded ${flagsResult.data} flags and ${settingsResult.data} settings`
+        );
+        // Reload page to get fresh data
+        window.location.reload();
+      } else {
+        toast.error("Failed to seed defaults");
+      }
+    });
   };
 
   // Group flags by category
   const flagsByCategory = flags.reduce((acc, flag) => {
-    if (!acc[flag.category]) acc[flag.category] = [];
-    acc[flag.category].push(flag);
+    const categoryName = CATEGORY_NAMES[flag.category] || flag.category;
+    if (!acc[categoryName]) acc[categoryName] = [];
+    acc[categoryName].push(flag);
     return acc;
   }, {} as Record<string, FeatureFlag[]>);
 
+  // Check if we have data
+  const hasData = flags.length > 0 || settings.length > 0;
+
   return (
     <div className="space-y-6">
-      {/* System Settings */}
-      <div
-        className={cn(
-          "rounded-xl",
-          "border border-[var(--border)]",
-          "bg-[var(--card)]"
-        )}
-      >
-        <div className="p-6 border-b border-[var(--border)]">
-          <div className="flex items-center gap-3">
-            <div
-              className={cn(
-                "w-10 h-10 rounded-lg",
-                "bg-[var(--error)]/10",
-                "flex items-center justify-center"
-              )}
-            >
-              <ToggleRightIcon className="w-5 h-5 text-[var(--error)]" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-[var(--foreground)]">
-                System Settings
-              </h2>
-              <p className="text-sm text-[var(--foreground-muted)]">
-                Critical platform-wide settings
-              </p>
-            </div>
+      {/* Empty State - Seed Button */}
+      {!hasData && (
+        <div
+          className={cn(
+            "rounded-xl",
+            "border border-[var(--border)]",
+            "bg-[var(--card)]",
+            "p-8 text-center"
+          )}
+        >
+          <div className="mx-auto w-12 h-12 rounded-full bg-[var(--primary)]/10 flex items-center justify-center mb-4">
+            <ToggleRightIcon className="w-6 h-6 text-[var(--primary)]" />
           </div>
+          <h3 className="text-lg font-semibold text-[var(--foreground)] mb-2">
+            No Configuration Data
+          </h3>
+          <p className="text-sm text-[var(--foreground-muted)] mb-4">
+            Seed the default feature flags and system settings to get started.
+          </p>
+          <Button onClick={handleSeedDefaults} disabled={isPending}>
+            {isPending ? "Seeding..." : "Seed Default Configuration"}
+          </Button>
         </div>
-        <div className="p-6 space-y-4">
-          {settings.map((setting) => (
-            <div
-              key={setting.id}
-              className={cn(
-                "flex items-center justify-between p-4 rounded-lg",
-                "border border-[var(--border)]",
-                "bg-[var(--background)]"
-              )}
-            >
+      )}
+
+      {/* System Settings */}
+      {settings.length > 0 && (
+        <div
+          className={cn(
+            "rounded-xl",
+            "border border-[var(--border)]",
+            "bg-[var(--card)]"
+          )}
+        >
+          <div className="p-6 border-b border-[var(--border)]">
+            <div className="flex items-center gap-3">
+              <div
+                className={cn(
+                  "w-10 h-10 rounded-lg",
+                  "bg-[var(--error)]/10",
+                  "flex items-center justify-center"
+                )}
+              >
+                <ToggleRightIcon className="w-5 h-5 text-[var(--error)]" />
+              </div>
               <div>
-                <p className="font-medium text-[var(--foreground)]">
-                  {setting.name}
-                </p>
+                <h2 className="text-lg font-semibold text-[var(--foreground)]">
+                  System Settings
+                </h2>
                 <p className="text-sm text-[var(--foreground-muted)]">
-                  {setting.description}
+                  Critical platform-wide settings
                 </p>
               </div>
-              <Switch
-                checked={setting.enabled}
-                onCheckedChange={() => toggleSetting(setting.id)}
-              />
             </div>
-          ))}
+          </div>
+          <div className="p-6 space-y-4">
+            {settings.map((setting) => (
+              <div
+                key={setting.id}
+                className={cn(
+                  "flex items-center justify-between p-4 rounded-lg",
+                  "border border-[var(--border)]",
+                  "bg-[var(--background)]",
+                  isPending && "opacity-50"
+                )}
+              >
+                <div>
+                  <p className="font-medium text-[var(--foreground)]">
+                    {setting.name}
+                  </p>
+                  <p className="text-sm text-[var(--foreground-muted)]">
+                    {setting.description}
+                  </p>
+                </div>
+                <Switch
+                  checked={setting.value === "true"}
+                  onCheckedChange={() => handleToggleSetting(setting.key, setting.value)}
+                  disabled={isPending}
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Feature Flags by Category */}
       {Object.entries(flagsByCategory).map(([category, categoryFlags]) => (
@@ -319,64 +378,119 @@ export function ConfigPageClient() {
             </h2>
           </div>
           <div className="p-6 space-y-4">
-            {categoryFlags.map((flag) => (
-              <div
-                key={flag.id}
-                className={cn(
-                  "flex items-center justify-between p-4 rounded-lg",
-                  "border border-[var(--border)]",
-                  "bg-[var(--background)]"
-                )}
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className={cn(
-                      "w-10 h-10 rounded-lg",
-                      "bg-[var(--primary)]/10",
-                      "flex items-center justify-center"
-                    )}
-                  >
-                    <flag.icon className="w-5 h-5 text-[var(--primary)]" />
+            {categoryFlags.map((flag) => {
+              const IconComponent = flag.icon ? ICON_MAP[flag.icon] : SparklesIcon;
+              return (
+                <div
+                  key={flag.id}
+                  className={cn(
+                    "flex items-center justify-between p-4 rounded-lg",
+                    "border border-[var(--border)]",
+                    "bg-[var(--background)]",
+                    isPending && "opacity-50"
+                  )}
+                >
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={cn(
+                        "w-10 h-10 rounded-lg",
+                        "bg-[var(--primary)]/10",
+                        "flex items-center justify-center"
+                      )}
+                    >
+                      {IconComponent && (
+                        <IconComponent className="w-5 h-5 text-[var(--primary)]" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-[var(--foreground)]">
+                          {flag.name}
+                        </p>
+                        {flag.isSystem && (
+                          <Badge variant="outline" className="text-xs">
+                            System
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-[var(--foreground-muted)]">
+                        {flag.description}
+                      </p>
+                      {flag.rolloutPercentage !== undefined && flag.rolloutPercentage < 100 && (
+                        <p className="text-xs text-[var(--warning)] mt-1">
+                          Rollout: {flag.rolloutPercentage}%
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-[var(--foreground)]">
-                      {flag.name}
-                    </p>
-                    <p className="text-sm text-[var(--foreground-muted)]">
-                      {flag.description}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <Badge
+                      variant="secondary"
+                      className={cn(
+                        "text-xs",
+                        flag.enabled
+                          ? "bg-[var(--success)]/10 text-[var(--success)]"
+                          : "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)]"
+                      )}
+                    >
+                      {flag.enabled ? "Enabled" : "Disabled"}
+                    </Badge>
+                    <Switch
+                      checked={flag.enabled}
+                      onCheckedChange={() => handleToggleFlag(flag.slug, flag.enabled)}
+                      disabled={isPending}
+                    />
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Badge
-                    variant="secondary"
-                    className={cn(
-                      "text-xs",
-                      flag.enabled
-                        ? "bg-[var(--success)]/10 text-[var(--success)]"
-                        : "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)]"
-                    )}
-                  >
-                    {flag.enabled ? "Enabled" : "Disabled"}
-                  </Badge>
-                  <Switch
-                    checked={flag.enabled}
-                    onCheckedChange={() => toggleFlag(flag.id)}
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       ))}
 
+      {/* Recent Audit Log */}
+      {auditLogs.length > 0 && (
+        <div
+          className={cn(
+            "rounded-xl",
+            "border border-[var(--border)]",
+            "bg-[var(--card)]"
+          )}
+        >
+          <div className="p-6 border-b border-[var(--border)]">
+            <h2 className="text-lg font-semibold text-[var(--foreground)]">
+              Recent Activity
+            </h2>
+          </div>
+          <div className="p-6 space-y-3">
+            {auditLogs.slice(0, 5).map((log) => (
+              <div
+                key={log.id}
+                className="flex items-center justify-between text-sm"
+              >
+                <div>
+                  <p className="text-[var(--foreground)]">{log.description}</p>
+                  <p className="text-xs text-[var(--foreground-muted)]">
+                    {log.actionType.replace(/_/g, " ")}
+                  </p>
+                </div>
+                <span className="text-xs text-[var(--foreground-muted)]">
+                  {new Date(log.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Info Banner */}
-      <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/10 px-4 py-3">
-        <p className="text-sm text-[var(--primary)]">
-          <strong>Note:</strong> Feature flag changes take effect immediately but are stored in memory for this demo.
-          In production, these would be stored in the database and synced across all instances.
-        </p>
-      </div>
+      {hasData && (
+        <div className="rounded-lg border border-[var(--success)]/30 bg-[var(--success)]/10 px-4 py-3">
+          <p className="text-sm text-[var(--success)]">
+            <strong>Database-backed:</strong> All changes are persisted to the database and take effect immediately across all instances. Actions are logged for audit purposes.
+          </p>
+        </div>
+      )}
 
       {/* Clerk Super Admin Setup Instructions */}
       <div

@@ -15,6 +15,9 @@ import {
   Video,
   StopCircle,
   AlertTriangle,
+  Minimize2,
+  Maximize2,
+  GripHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -84,6 +87,10 @@ export function BugProbe() {
     routeStarted?: string;
     routeCompleted?: string;
   }>({});
+  const [hudMinimized, setHudMinimized] = useState(false);
+  const [hudPosition, setHudPosition] = useState({ x: 16, y: 16 });
+  const [isDraggingHud, setIsDraggingHud] = useState(false);
+  const hudDragStartRef = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
 
   // Generate session ID on client only to avoid hydration mismatch
   useEffect(() => {
@@ -354,6 +361,41 @@ export function BugProbe() {
     setNote("");
   };
 
+  // HUD drag handlers
+  const handleHudDragStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDraggingHud(true);
+    hudDragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      posX: hudPosition.x,
+      posY: hudPosition.y,
+    };
+  };
+
+  useEffect(() => {
+    if (!isDraggingHud) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - hudDragStartRef.current.x;
+      const deltaY = e.clientY - hudDragStartRef.current.y;
+      const newX = Math.max(0, Math.min(window.innerWidth - 260, hudDragStartRef.current.posX + deltaX));
+      const newY = Math.max(0, Math.min(window.innerHeight - 100, hudDragStartRef.current.posY + deltaY));
+      setHudPosition({ x: newX, y: newY });
+    };
+
+    const handleMouseUp = () => {
+      setIsDraggingHud(false);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDraggingHud]);
+
   async function captureScreenshot() {
     if (screenshotting) return;
     if (!navigator.mediaDevices?.getDisplayMedia) {
@@ -479,20 +521,53 @@ export function BugProbe() {
 
   return (
     <>
-      {/* Inline HUD for quick debugging */}
-      <div className="pointer-events-none fixed top-4 left-4 z-[9998] w-[260px]">
-        <div className="pointer-events-auto rounded-lg border border-[rgba(255,255,255,0.12)] bg-[#0f0f10] px-3 py-2 text-[11px] text-white shadow-lg space-y-1">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-[var(--primary)]">Click HUD</span>
-            <span className="text-[10px] text-[#9ca3af]">path: {pathname}</span>
+      {/* Inline HUD for quick debugging - draggable and minimizable */}
+      <div
+        className="pointer-events-none fixed z-[9998]"
+        style={{ left: hudPosition.x, top: hudPosition.y, width: hudMinimized ? "auto" : 260 }}
+      >
+        <div className="pointer-events-auto rounded-lg border border-[rgba(255,255,255,0.12)] bg-[#0f0f10] text-[11px] text-white shadow-lg">
+          {/* Header with drag handle and controls */}
+          <div
+            className={cn(
+              "flex items-center justify-between gap-2 px-2 py-1.5",
+              !hudMinimized && "border-b border-[rgba(255,255,255,0.08)]"
+            )}
+          >
+            <div
+              className="flex items-center gap-1.5 cursor-move select-none"
+              onMouseDown={handleHudDragStart}
+            >
+              <GripHorizontal className="h-3 w-3 text-[#6b7280]" />
+              <span className="font-semibold text-[var(--primary)] text-[10px]">HUD</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {!hudMinimized && (
+                <span className="text-[9px] text-[#6b7280] truncate max-w-[100px]">{pathname}</span>
+              )}
+              <button
+                onClick={() => setHudMinimized(!hudMinimized)}
+                className="flex h-5 w-5 items-center justify-center rounded text-[#9ca3af] hover:bg-white/10 hover:text-white"
+                title={hudMinimized ? "Expand HUD" : "Minimize HUD"}
+              >
+                {hudMinimized ? (
+                  <Maximize2 className="h-3 w-3" />
+                ) : (
+                  <Minimize2 className="h-3 w-3" />
+                )}
+              </button>
+            </div>
           </div>
-          <div className="space-y-1 text-[#d1d5db]">
-            <div>Href: {hud.href || "—"}</div>
-            <div>DefaultPrevented: {hud.defaultPrevented || "—"}</div>
-            <div>Target: {hud.target || "—"}</div>
-            <div>Overlay: {hud.overlay || "—"}</div>
-            <div>Route events: start {hud.routeStarted || "no"}, complete {hud.routeCompleted || "no"}</div>
-          </div>
+          {/* Content - hidden when minimized */}
+          {!hudMinimized && (
+            <div className="space-y-1 px-2 py-1.5 text-[#d1d5db]">
+              <div>Href: {hud.href || "—"}</div>
+              <div>DefaultPrevented: {hud.defaultPrevented || "—"}</div>
+              <div>Target: {hud.target || "—"}</div>
+              <div>Overlay: {hud.overlay || "—"}</div>
+              <div>Route: start {hud.routeStarted || "no"}, complete {hud.routeCompleted || "no"}</div>
+            </div>
+          )}
         </div>
       </div>
 

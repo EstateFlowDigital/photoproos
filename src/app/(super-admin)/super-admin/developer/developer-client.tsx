@@ -167,14 +167,37 @@ interface PricingExperiment {
   endDate: Date | null;
 }
 
+interface HealthStats {
+  totalUsers: number;
+  totalOrganizations: number;
+  totalGalleries: number;
+  recentLogins: number;
+  activeImpersonations: number;
+  recentAuditLogs: number;
+  featureFlagsEnabled: number;
+  featureFlagsTotal: number;
+}
+
+interface AuditLog {
+  id: string;
+  actionType: string;
+  description: string;
+  createdAt: string;
+  targetType?: string;
+}
+
 interface DeveloperPageClientProps {
   initialPlans: SubscriptionPlan[];
   initialExperiments: PricingExperiment[];
+  healthStats: HealthStats | null;
+  recentAuditLogs: unknown[];
 }
 
 export function DeveloperPageClient({
   initialPlans,
   initialExperiments,
+  healthStats,
+  recentAuditLogs,
 }: DeveloperPageClientProps) {
   const router = useRouter();
   const { toast } = useToast();
@@ -191,6 +214,8 @@ export function DeveloperPageClient({
     { name: "RESEND_API_KEY", status: "configured", description: "Email delivery" },
   ];
 
+  const auditLogs = recentAuditLogs as AuditLog[];
+
   return (
     <div className="space-y-6">
       {/* Quick Stats */}
@@ -203,14 +228,17 @@ export function DeveloperPageClient({
           )}
         >
           <div className="flex items-center gap-3 mb-2">
-            <CreditCardIcon className="w-5 h-5 text-[var(--primary)]" />
+            <ServerIcon className="w-5 h-5 text-[var(--primary)]" />
             <span className="text-sm text-[var(--foreground-muted)]">
-              Subscription Plans
+              Total Users
             </span>
           </div>
           <div className="text-2xl font-bold text-[var(--foreground)]">
-            {initialPlans.length}
+            {healthStats?.totalUsers ?? 0}
           </div>
+          <p className="text-xs text-[var(--foreground-muted)]">
+            {healthStats?.recentLogins ?? 0} active (24h)
+          </p>
         </div>
         <div
           className={cn(
@@ -220,14 +248,17 @@ export function DeveloperPageClient({
           )}
         >
           <div className="flex items-center gap-3 mb-2">
-            <FlaskIcon className="w-5 h-5 text-[var(--warning)]" />
+            <DatabaseIcon className="w-5 h-5 text-[var(--success)]" />
             <span className="text-sm text-[var(--foreground-muted)]">
-              Active Experiments
+              Total Galleries
             </span>
           </div>
           <div className="text-2xl font-bold text-[var(--foreground)]">
-            {initialExperiments.filter((e) => e.isActive).length}
+            {healthStats?.totalGalleries ?? 0}
           </div>
+          <p className="text-xs text-[var(--foreground-muted)]">
+            {healthStats?.totalOrganizations ?? 0} organizations
+          </p>
         </div>
         <div
           className={cn(
@@ -237,14 +268,17 @@ export function DeveloperPageClient({
           )}
         >
           <div className="flex items-center gap-3 mb-2">
-            <KeyIcon className="w-5 h-5 text-[var(--success)]" />
+            <KeyIcon className="w-5 h-5 text-[var(--warning)]" />
             <span className="text-sm text-[var(--foreground-muted)]">
-              API Keys Configured
+              Feature Flags
             </span>
           </div>
           <div className="text-2xl font-bold text-[var(--foreground)]">
-            {envVars.filter((e) => e.status === "configured").length}/{envVars.length}
+            {healthStats?.featureFlagsEnabled ?? 0}/{healthStats?.featureFlagsTotal ?? 0}
           </div>
+          <p className="text-xs text-[var(--foreground-muted)]">
+            enabled
+          </p>
         </div>
         <div
           className={cn(
@@ -254,16 +288,117 @@ export function DeveloperPageClient({
           )}
         >
           <div className="flex items-center gap-3 mb-2">
-            <ServerIcon className="w-5 h-5 text-[var(--ai)]" />
+            <FlaskIcon className="w-5 h-5 text-[var(--ai)]" />
             <span className="text-sm text-[var(--foreground-muted)]">
               System Status
             </span>
           </div>
           <div className="text-2xl font-bold text-[var(--success)]">
-            Healthy
+            {healthStats ? "Healthy" : "Unknown"}
           </div>
+          <p className="text-xs text-[var(--foreground-muted)]">
+            {healthStats?.activeImpersonations ?? 0} active impersonations
+          </p>
         </div>
       </div>
+
+      {/* System Health Monitoring */}
+      {healthStats && (
+        <div
+          className={cn(
+            "rounded-xl",
+            "border border-[var(--border)]",
+            "bg-[var(--card)]"
+          )}
+        >
+          <div className="p-6 border-b border-[var(--border)]">
+            <div className="flex items-center gap-3">
+              <div
+                className={cn(
+                  "w-10 h-10 rounded-lg",
+                  "bg-[var(--ai)]/10",
+                  "flex items-center justify-center"
+                )}
+              >
+                <ServerIcon className="w-5 h-5 text-[var(--ai)]" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-[var(--foreground)]">
+                  System Health Monitoring
+                </h2>
+                <p className="text-sm text-[var(--foreground-muted)]">
+                  Real-time platform statistics
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center p-4 rounded-lg border border-[var(--border)] bg-[var(--background)]">
+              <p className="text-2xl font-bold text-[var(--foreground)]">
+                {healthStats.totalUsers}
+              </p>
+              <p className="text-xs text-[var(--foreground-muted)]">Total Users</p>
+            </div>
+            <div className="text-center p-4 rounded-lg border border-[var(--border)] bg-[var(--background)]">
+              <p className="text-2xl font-bold text-[var(--foreground)]">
+                {healthStats.totalOrganizations}
+              </p>
+              <p className="text-xs text-[var(--foreground-muted)]">Organizations</p>
+            </div>
+            <div className="text-center p-4 rounded-lg border border-[var(--border)] bg-[var(--background)]">
+              <p className="text-2xl font-bold text-[var(--foreground)]">
+                {healthStats.totalGalleries}
+              </p>
+              <p className="text-xs text-[var(--foreground-muted)]">Galleries</p>
+            </div>
+            <div className="text-center p-4 rounded-lg border border-[var(--border)] bg-[var(--background)]">
+              <p className="text-2xl font-bold text-[var(--primary)]">
+                {healthStats.recentLogins}
+              </p>
+              <p className="text-xs text-[var(--foreground-muted)]">Active Today</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Audit Log */}
+      {auditLogs.length > 0 && (
+        <div
+          className={cn(
+            "rounded-xl",
+            "border border-[var(--border)]",
+            "bg-[var(--card)]"
+          )}
+        >
+          <div className="p-6 border-b border-[var(--border)]">
+            <h2 className="text-lg font-semibold text-[var(--foreground)]">
+              Recent Admin Activity
+            </h2>
+            <p className="text-sm text-[var(--foreground-muted)]">
+              {healthStats?.recentAuditLogs ?? 0} actions in the last 7 days
+            </p>
+          </div>
+          <div className="p-6 space-y-3">
+            {auditLogs.slice(0, 5).map((log) => (
+              <div
+                key={log.id}
+                className="flex items-center justify-between text-sm p-3 rounded-lg border border-[var(--border)] bg-[var(--background)]"
+              >
+                <div>
+                  <p className="text-[var(--foreground)]">{log.description}</p>
+                  <p className="text-xs text-[var(--foreground-muted)]">
+                    {log.actionType.replace(/_/g, " ")}
+                    {log.targetType && ` • ${log.targetType}`}
+                  </p>
+                </div>
+                <span className="text-xs text-[var(--foreground-muted)]">
+                  {new Date(log.createdAt).toLocaleString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Warning Banner */}
       <div className="rounded-lg border border-[var(--warning)]/30 bg-[var(--warning)]/10 px-4 py-3">
