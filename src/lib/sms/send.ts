@@ -303,6 +303,18 @@ export async function sendSMSDirect(
     };
   }
 
+  // Check client opt-in status if clientId is provided
+  if (clientId) {
+    const client = await prisma.client.findUnique({
+      where: { id: clientId },
+      select: { smsOptIn: true },
+    });
+
+    if (client && client.smsOptIn === false) {
+      return { success: false, error: "Client has opted out of SMS" };
+    }
+  }
+
   // Format phone number
   const formattedPhone = formatPhoneNumber(toPhone);
   if (!formattedPhone) {

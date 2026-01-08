@@ -1,6 +1,6 @@
 import { PageHeader, PageContextNav } from "@/components/dashboard";
 import { requireOrganizationId } from "@/lib/actions/auth-helper";
-import { getPortfolioInquiries } from "@/lib/actions/portfolio-websites";
+import { getPortfolioInquiries, getPortfolioWebsitesForLeadCreation } from "@/lib/actions/portfolio-websites";
 import { getChatInquiries } from "@/lib/actions/chat-inquiries";
 import { getAllSubmissions } from "@/lib/actions/booking-forms";
 import { LeadsPageClient } from "./leads-page-client";
@@ -8,11 +8,12 @@ import { LeadsPageClient } from "./leads-page-client";
 export default async function LeadsPage() {
   const organizationId = await requireOrganizationId();
 
-  // Fetch portfolio inquiries, chat inquiries, and booking form submissions
-  const [portfolioInquiries, chatInquiries, bookingSubmissions] = await Promise.all([
+  // Fetch portfolio inquiries, chat inquiries, booking form submissions, and portfolio websites
+  const [portfolioInquiries, chatInquiries, bookingSubmissions, portfolioWebsites] = await Promise.all([
     getPortfolioInquiries(),
     getChatInquiries(),
     getAllSubmissions(),
+    getPortfolioWebsitesForLeadCreation(),
   ]);
 
   return (
@@ -33,6 +34,7 @@ export default async function LeadsPage() {
         portfolioInquiries={portfolioInquiries}
         chatInquiries={chatInquiries}
         bookingSubmissions={bookingSubmissions}
+        portfolioWebsites={portfolioWebsites}
       />
     </div>
   );

@@ -54,6 +54,27 @@ export function Spotlight({
     setMounted(true);
   }, []);
 
+  // Prevent body scroll when spotlight is active
+  React.useEffect(() => {
+    if (!isActive || !mounted) return;
+
+    // Save current scroll position and prevent scrolling
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      // Restore scroll position
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      window.scrollTo(0, scrollY);
+    };
+  }, [isActive, mounted]);
+
   // Find and track the target element
   React.useEffect(() => {
     if (!isActive || !mounted) {
@@ -65,14 +86,15 @@ export function Spotlight({
       const element = document.querySelector(targetSelector);
       if (element) {
         const rect = element.getBoundingClientRect();
+        // Use viewport-relative coordinates (no scrollY) since overlay is fixed
         setTargetRect({
-          top: rect.top + window.scrollY,
-          left: rect.left + window.scrollX,
+          top: rect.top,
+          left: rect.left,
           width: rect.width,
           height: rect.height,
         });
 
-        // Scroll element into view if needed
+        // Scroll element into view if needed (before locking scroll)
         if (scrollIntoView) {
           const viewportHeight = window.innerHeight;
           const elementTop = rect.top;
@@ -80,6 +102,8 @@ export function Spotlight({
 
           if (elementTop < 100 || elementBottom > viewportHeight - 100) {
             element.scrollIntoView({ behavior: "smooth", block: "center" });
+            // Update rect after scroll animation
+            setTimeout(updateRect, 500);
           }
         }
       } else {
@@ -87,11 +111,10 @@ export function Spotlight({
       }
     };
 
-    // Initial update
-    updateRect();
+    // Initial update with delay to let any scroll settle
+    const timer = setTimeout(updateRect, 100);
 
-    // Update on scroll and resize
-    window.addEventListener("scroll", updateRect, { passive: true });
+    // Update on resize only (scroll is locked)
     window.addEventListener("resize", updateRect, { passive: true });
 
     // Also observe DOM changes
@@ -99,7 +122,7 @@ export function Spotlight({
     observer.observe(document.body, { childList: true, subtree: true });
 
     return () => {
-      window.removeEventListener("scroll", updateRect);
+      clearTimeout(timer);
       window.removeEventListener("resize", updateRect);
       observer.disconnect();
     };

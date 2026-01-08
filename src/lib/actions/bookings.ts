@@ -36,6 +36,53 @@ async function getOrganizationId(): Promise<string> {
   return requireOrganizationId();
 }
 
+/**
+ * Booking Status Transition State Machine
+ *
+ * Valid transitions:
+ * - pending → confirmed, cancelled
+ * - confirmed → completed, cancelled
+ * - completed → (terminal state)
+ * - cancelled → pending (reactivate)
+ */
+const VALID_STATUS_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
+  pending: ["confirmed", "cancelled"],
+  confirmed: ["completed", "cancelled"],
+  completed: [], // Terminal state
+  cancelled: ["pending"], // Allow reactivation
+};
+
+/**
+ * Validate that a status transition is allowed
+ */
+function isValidStatusTransition(
+  currentStatus: BookingStatus,
+  newStatus: BookingStatus
+): { valid: boolean; message?: string } {
+  // Same status is always allowed (no-op)
+  if (currentStatus === newStatus) {
+    return { valid: true };
+  }
+
+  const allowedTransitions = VALID_STATUS_TRANSITIONS[currentStatus];
+  if (allowedTransitions.includes(newStatus)) {
+    return { valid: true };
+  }
+
+  // Provide helpful error message
+  if (allowedTransitions.length === 0) {
+    return {
+      valid: false,
+      message: `Booking is ${currentStatus} and cannot be changed. ${currentStatus === "completed" ? "Completed bookings cannot be modified." : "Cancelled bookings can only be reactivated to pending."}`,
+    };
+  }
+
+  return {
+    valid: false,
+    message: `Cannot change booking from "${currentStatus}" to "${newStatus}". Valid transitions from "${currentStatus}" are: ${allowedTransitions.join(", ")}.`,
+  };
+}
+
 async function getOrganizationTimezone(organizationId: string) {
   const org = await prisma.organization.findUnique({
     where: { id: organizationId },
@@ -434,12 +481,25 @@ export async function updateBookingStatus(
       return fail("Booking not found");
     }
 
+    // Validate status transition
+    const transitionCheck = isValidStatusTransition(existing.status, status);
+    if (!transitionCheck.valid) {
+      return fail(transitionCheck.message || "Invalid status transition");
+    }
+
+    // Skip update if no change
+    if (existing.status === status) {
+      return ok();
+    }
+
     await prisma.booking.update({
       where: { id },
       data: {
         status,
         // Set completedAt timestamp when booking is marked as completed
         ...(status === "completed" && { completedAt: new Date() }),
+        // Clear completedAt if reactivating from cancelled to pending
+        ...(status === "pending" && existing.status === "cancelled" && { completedAt: null }),
       },
     });
 
@@ -2520,6 +2580,14 @@ export async function validateBookingTime(params: {
   try {
     const organizationId = params.organizationId ?? await getOrganizationId();
     const { allowConflicts = false, ...checkParams } = params;
+
+    // Validate end time is after start time
+    if (params.endTime <= params.startTime) {
+      return success({
+        valid: false,
+        message: "End time must be after start time.",
+      });
+    }
 
     const bufferSettings = await getBookingBufferSettings(organizationId, params.serviceId);
 

@@ -134,6 +134,21 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
       return;
     }
 
+    // Validate custom expiration date
+    if (expirationType === "custom") {
+      if (!customExpirationDate) {
+        showToast("Please select an expiration date", "error");
+        return;
+      }
+      const selectedDate = new Date(customExpirationDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (selectedDate <= today) {
+        showToast("Expiration date must be in the future", "error");
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -326,30 +341,56 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
         <h2 className="text-lg font-semibold text-foreground mb-4">Access Control</h2>
 
         <div className="space-y-3">
-          <label className="flex items-start gap-3 cursor-pointer">
+          <label className={`flex items-center gap-3 cursor-pointer rounded-lg border p-4 transition-colors ${
+            accessType === "public"
+              ? "border-[var(--primary)] bg-[var(--primary)]/5"
+              : "border-[var(--card-border)] hover:border-[var(--border-hover)]"
+          }`}>
+            <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+              accessType === "public"
+                ? "border-[var(--primary)] bg-[var(--primary)]"
+                : "border-[var(--card-border)]"
+            }`}>
+              {accessType === "public" && (
+                <div className="h-2 w-2 rounded-full bg-white" />
+              )}
+            </div>
             <input
               type="radio"
               name="accessType"
               value="public"
               checked={accessType === "public"}
               onChange={() => setAccessType("public")}
-              className="mt-0.5 h-4 w-4 border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+              className="sr-only"
             />
-            <div>
+            <div className="flex-1 min-w-0">
               <span className="text-sm font-medium text-foreground">Public Link</span>
               <p className="text-xs text-foreground-muted">Anyone with the link can view (and pay to download)</p>
             </div>
           </label>
-          <label className="flex items-start gap-3 cursor-pointer">
+          <label className={`flex items-center gap-3 cursor-pointer rounded-lg border p-4 transition-colors ${
+            accessType === "password"
+              ? "border-[var(--primary)] bg-[var(--primary)]/5"
+              : "border-[var(--card-border)] hover:border-[var(--border-hover)]"
+          }`}>
+            <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+              accessType === "password"
+                ? "border-[var(--primary)] bg-[var(--primary)]"
+                : "border-[var(--card-border)]"
+            }`}>
+              {accessType === "password" && (
+                <div className="h-2 w-2 rounded-full bg-white" />
+              )}
+            </div>
             <input
               type="radio"
               name="accessType"
               value="password"
               checked={accessType === "password"}
               onChange={() => setAccessType("password")}
-              className="mt-0.5 h-4 w-4 border-[var(--card-border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+              className="sr-only"
             />
-            <div>
+            <div className="flex-1 min-w-0">
               <span className="text-sm font-medium text-foreground">Password Protected</span>
               <p className="text-xs text-foreground-muted">Require a password to view the gallery</p>
             </div>
@@ -508,20 +549,29 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
               ].map((option) => (
                 <label
                   key={option.value}
-                  className={`flex items-start gap-3 cursor-pointer rounded-lg border p-3 transition-colors ${
+                  className={`flex items-center gap-3 cursor-pointer rounded-lg border p-3 transition-colors ${
                     downloadResolution === option.value
                       ? "border-[var(--primary)] bg-[var(--primary)]/5"
                       : "border-[var(--card-border)] hover:border-[var(--border-hover)]"
                   }`}
                 >
+                  <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                    downloadResolution === option.value
+                      ? "border-[var(--primary)] bg-[var(--primary)]"
+                      : "border-[var(--card-border)]"
+                  }`}>
+                    {downloadResolution === option.value && (
+                      <div className="h-2 w-2 rounded-full bg-white" />
+                    )}
+                  </div>
                   <input
                     type="radio"
                     name="downloadResolution"
                     checked={downloadResolution === option.value}
                     onChange={() => setDownloadResolution(option.value)}
-                    className="mt-0.5"
+                    className="sr-only"
                   />
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-foreground">{option.label}</div>
                     <div className="text-xs text-foreground-muted">{option.desc}</div>
                   </div>
@@ -593,88 +643,81 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
         </p>
 
         <div className="space-y-3">
-          <label className="flex items-start gap-3 cursor-pointer rounded-lg border border-[var(--card-border)] p-4 hover:border-[var(--border-hover)] transition-colors">
-            <input
-              type="radio"
-              name="expirationType"
-              checked={expirationType === "never"}
-              onChange={() => setExpirationType("never")}
-              className="mt-1"
-            />
-            <div className="flex-1">
-              <div className="text-sm font-medium text-foreground">Never Expires</div>
-              <div className="text-xs text-foreground-muted mt-0.5">
-                Gallery stays accessible indefinitely
+          {[
+            { value: "never" as const, label: "Never Expires", desc: "Gallery stays accessible indefinitely" },
+            { value: "30days" as const, label: "30 Days After Creation", desc: "Gallery expires in 30 days" },
+            { value: "60days" as const, label: "60 Days After Creation", desc: "Gallery expires in 60 days" },
+            { value: "90days" as const, label: "90 Days After Creation", desc: "Gallery expires in 90 days" },
+          ].map((option) => (
+            <label
+              key={option.value}
+              className={`flex items-center gap-3 cursor-pointer rounded-lg border p-4 transition-colors ${
+                expirationType === option.value
+                  ? "border-[var(--primary)] bg-[var(--primary)]/5"
+                  : "border-[var(--card-border)] hover:border-[var(--border-hover)]"
+              }`}
+            >
+              <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                expirationType === option.value
+                  ? "border-[var(--primary)] bg-[var(--primary)]"
+                  : "border-[var(--card-border)]"
+              }`}>
+                {expirationType === option.value && (
+                  <div className="h-2 w-2 rounded-full bg-white" />
+                )}
               </div>
-            </div>
-          </label>
-
-          <label className="flex items-start gap-3 cursor-pointer rounded-lg border border-[var(--card-border)] p-4 hover:border-[var(--border-hover)] transition-colors">
-            <input
-              type="radio"
-              name="expirationType"
-              checked={expirationType === "30days"}
-              onChange={() => setExpirationType("30days")}
-              className="mt-1"
-            />
-            <div className="flex-1">
-              <div className="text-sm font-medium text-foreground">30 Days After Creation</div>
-              <div className="text-xs text-foreground-muted mt-0.5">
-                Gallery expires in 30 days
+              <input
+                type="radio"
+                name="expirationType"
+                checked={expirationType === option.value}
+                onChange={() => setExpirationType(option.value)}
+                className="sr-only"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-foreground">{option.label}</div>
+                <div className="text-xs text-foreground-muted mt-0.5">{option.desc}</div>
               </div>
-            </div>
-          </label>
+            </label>
+          ))}
 
-          <label className="flex items-start gap-3 cursor-pointer rounded-lg border border-[var(--card-border)] p-4 hover:border-[var(--border-hover)] transition-colors">
-            <input
-              type="radio"
-              name="expirationType"
-              checked={expirationType === "60days"}
-              onChange={() => setExpirationType("60days")}
-              className="mt-1"
-            />
-            <div className="flex-1">
-              <div className="text-sm font-medium text-foreground">60 Days After Creation</div>
-              <div className="text-xs text-foreground-muted mt-0.5">
-                Gallery expires in 60 days
-              </div>
+          {/* Custom Date Option */}
+          <label
+            className={`flex items-center gap-3 cursor-pointer rounded-lg border p-4 transition-colors ${
+              expirationType === "custom"
+                ? "border-[var(--primary)] bg-[var(--primary)]/5"
+                : "border-[var(--card-border)] hover:border-[var(--border-hover)]"
+            }`}
+          >
+            <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+              expirationType === "custom"
+                ? "border-[var(--primary)] bg-[var(--primary)]"
+                : "border-[var(--card-border)]"
+            }`}>
+              {expirationType === "custom" && (
+                <div className="h-2 w-2 rounded-full bg-white" />
+              )}
             </div>
-          </label>
-
-          <label className="flex items-start gap-3 cursor-pointer rounded-lg border border-[var(--card-border)] p-4 hover:border-[var(--border-hover)] transition-colors">
-            <input
-              type="radio"
-              name="expirationType"
-              checked={expirationType === "90days"}
-              onChange={() => setExpirationType("90days")}
-              className="mt-1"
-            />
-            <div className="flex-1">
-              <div className="text-sm font-medium text-foreground">90 Days After Creation</div>
-              <div className="text-xs text-foreground-muted mt-0.5">
-                Gallery expires in 90 days
-              </div>
-            </div>
-          </label>
-
-          <label className="flex items-start gap-3 cursor-pointer rounded-lg border border-[var(--card-border)] p-4 hover:border-[var(--border-hover)] transition-colors">
             <input
               type="radio"
               name="expirationType"
               checked={expirationType === "custom"}
               onChange={() => setExpirationType("custom")}
-              className="mt-1"
+              className="sr-only"
             />
-            <div className="flex-1">
-              <div className="text-sm font-medium text-foreground mb-2">Custom Date</div>
-              {expirationType === "custom" && (
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium text-foreground">Custom Date</div>
+              {expirationType === "custom" ? (
                 <input
                   type="date"
                   value={customExpirationDate}
                   onChange={(e) => setCustomExpirationDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full rounded-lg border border-[var(--input-border)] bg-[var(--input)] px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  onClick={(e) => e.stopPropagation()}
+                  placeholder="Select a date"
+                  className="mt-2 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                 />
+              ) : (
+                <div className="text-xs text-foreground-muted mt-0.5">Choose a specific expiration date</div>
               )}
             </div>
           </label>

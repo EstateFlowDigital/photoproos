@@ -8,6 +8,82 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Manual Lead Creation** - Add leads manually from the leads page
+  - "Add Lead" button on leads page (appears when portfolio websites exist)
+  - Modal form with name, email, phone, message, and internal notes fields
+  - Portfolio website selection to associate leads
+  - Server-side validation with email format checking
+  - Source tracking as "manual" for analytics
+
+### Fixed
+- **Galleries Password Edit** - Allow changing password for password-protected galleries
+  - Added password field with show/hide toggle in gallery edit form
+  - Validation for new password-protected galleries
+  - Future date validation for custom expiration dates
+
+- **Invoice Tax/Discount Validation** - Prevent negative values in invoice editor
+  - Discount, tax percent, and late fee fields now clamped to valid ranges
+  - Tax and late fee percent limited to 0-100%
+  - Flat amounts prevented from going negative
+
+- **Scheduling End Time Validation** - Ensure end time is after start time
+  - Added validation in `validateBookingTime` function
+  - Clear error message when end time is before start time
+
+- **Messaging Content Validation** - Prevent empty messages
+  - Server-side validation for message content
+  - SMS opt-in check in direct SMS sending
+
+- **Projects Entity Ownership Verification** - Security improvement
+  - Added `validateEntityOwnership` helper in projects.ts
+  - Validates assigneeId, clientId, projectId, bookingId, invoiceId, propertyWebsiteId
+  - Applied to both `createTask` and `updateTask` functions
+  - Prevents cross-organization data linking attacks
+
+- **Client Phone/Email Validation** - Enhanced input validation
+  - Added `validatePhone` helper for 10-15 digit phone numbers
+  - Added `isValidEmail` helper for email format validation
+  - Applied to both `createClient` and `updateClient` functions
+  - Normalized email to lowercase, trimmed whitespace from all fields
+
+- **Scheduling Status Transition State Machine** - Prevent invalid booking status changes
+  - Defined valid transitions: pending → confirmed/cancelled, confirmed → completed/cancelled
+  - Terminal states: completed (no changes), cancelled (only to pending for reactivation)
+  - Clear error messages explaining allowed transitions
+  - Added completedAt timestamp management
+
+- **Interactive Tutorial Mode Improvements** - Fixed spotlight and walkthrough issues
+  - Fixed black screen issue by preventing body scroll during spotlight overlay
+  - Corrected element positioning using viewport-relative coordinates instead of scroll-offset
+  - Added scroll lock to prevent background content from scrolling during tutorial
+  - Restored scroll position when tutorial ends
+
+- **Walkthrough Minimized State Styling** - Improved collapsed tutorial appearance
+  - Added proper card border and background matching expanded state
+  - Responsive text layout with flex-wrap for mobile
+  - Icon container with background highlight
+  - Shadow for visual elevation
+  - Consistent styling in both light and dark modes
+
+- **Onboarding Checklist Card Styling** - Enhanced setup card visibility
+  - Changed from gradient background to solid card background with border
+  - Added shadow for visual elevation
+  - Consistent appearance in both light and dark modes
+  - Better visibility as a distinct UI element
+
+- **New Gallery Page Radio Buttons** - Improved form controls
+  - Custom styled radio buttons with visual selection state
+  - Border highlight and background change when selected
+  - Vertically centered radio indicators
+  - Consistent styling across Access Control, Gallery Expiration, and Download Resolution sections
+  - Fixed custom date picker styling and functionality
+
+- **Booking Forms Page Spacing** - Fixed layout issues
+  - Added proper spacing between page sections using space-y-6 wrapper
+  - Fixed modal scrolling to prevent content overflow
+  - Modal now properly contained within viewport
+  - Header and footer sections remain fixed while content scrolls
+
 - **Settings Area Improvements (Continued)** - Additional settings enhancements
   - **Unsaved Changes Warning** - Prevent accidental navigation away from forms with unsaved changes
     - Context provider for tracking form dirty state across settings pages
@@ -297,6 +373,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Significant performance improvement for year-in-review page load
   - **Design System Variables** - New reward tokens in `globals.css`
     - Added `--reward`, `--reward-hover`, `--reward-gradient-start`, `--reward-gradient-end`
+
+- **Gamification Reduced Motion Support & Performance Optimizations**
+  - **Skill Tree** (`skill-tree.tsx`)
+    - Added `useReducedMotion` hook to respect user motion preferences
+    - Disabled scale animations and pulse effects when reduced motion is preferred
+    - Unlock button and success overlay animations skip when reduced motion enabled
+    - Wrapped `SkillCard` component with `React.memo` to prevent unnecessary re-renders
+  - **Quest Card** (`quest-card.tsx`)
+    - Added `useReducedMotion` hook for motion preference support
+    - Storyline expand/collapse animations simplified when reduced motion enabled
+    - Progress bar animations skip initial slide-in when reduced motion preferred
+    - Start quest button animations respect motion preferences
+    - Added `useRef` for error timeout cleanup on unmount
+  - **Achievement Toast** (`achievement-toast.tsx`)
+    - Added `useReducedMotion` hook for motion preference support
+    - Toast entry/exit animations use simple fade when reduced motion enabled
+    - Confetti celebrations disabled entirely for reduced motion users
+    - Achievement queue timing reduced (500ms vs 1500ms) for reduced motion
+    - Animation variants computed based on motion preferences
+  - **Challenge Card** (`challenge-card.tsx`)
+    - Wrapped `ChallengeCard` component with `React.memo` to prevent unnecessary re-renders
+
+- **Design System Variables** - Additional reward tokens
     - Added `--reward-gradient`, `--reward-muted`, `--reward-text`, `--reward-ring`, `--reward-shadow`
   - **Performance Optimization - Query Parallelization**
     - `getGamificationState()` now uses `Promise.all` for 3 concurrent queries

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useTransition, useCallback, useMemo, useRef, useEffect } from "react";
+import { useState, useTransition, useCallback, useMemo, useRef, useEffect, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { unlockSkill, resetSkillPoints } from "@/lib/actions/gamification";
 import type { SkillTreeState, SkillWithStatus } from "@/lib/actions/gamification";
 import type { SkillTreeCategory } from "@/lib/gamification/skill-trees";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { Lock, Check, Sparkles, RotateCcw, ChevronRight, AlertCircle } from "lucide-react";
 
 interface SkillTreeProps {
@@ -19,6 +20,7 @@ export function SkillTree({ initialState, className }: SkillTreeProps) {
   const [isPending, startTransition] = useTransition();
   const [lastUnlocked, setLastUnlocked] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   // Track timeout IDs for cleanup
   const unlockAnimationTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -267,6 +269,7 @@ export function SkillTree({ initialState, className }: SkillTreeProps) {
                     onUnlock={() => handleUnlockSkill(skill.id)}
                     isPending={isPending}
                     justUnlocked={lastUnlocked === skill.id}
+                    prefersReducedMotion={prefersReducedMotion}
                   />
                 ))}
               </div>
@@ -285,14 +288,16 @@ interface SkillCardProps {
   onUnlock: () => void;
   isPending: boolean;
   justUnlocked: boolean;
+  prefersReducedMotion: boolean;
 }
 
-function SkillCard({
+const SkillCard = memo(function SkillCard({
   skill,
   treeColor,
   onUnlock,
   isPending,
   justUnlocked,
+  prefersReducedMotion,
 }: SkillCardProps) {
   const statusLabel = skill.isUnlocked
     ? "Unlocked"
@@ -309,8 +314,8 @@ function SkillCard({
         !skill.isUnlocked && !skill.canUnlock && "opacity-60"
       )}
       aria-label={`Skill: ${skill.name} - ${statusLabel}`}
-      animate={justUnlocked ? { scale: [1, 1.02, 1] } : {}}
-      transition={{ duration: 0.3 }}
+      animate={justUnlocked && !prefersReducedMotion ? { scale: [1, 1.02, 1] } : {}}
+      transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3 }}
     >
       {/* Status indicator */}
       <div className="absolute -top-2 -right-2" aria-hidden="true">
@@ -376,8 +381,9 @@ function SkillCard({
       {/* Unlock button */}
       {skill.canUnlock && !skill.isUnlocked && (
         <motion.button
-          initial={{ opacity: 0, y: 10 }}
+          initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={prefersReducedMotion ? { duration: 0 } : undefined}
           onClick={onUnlock}
           disabled={isPending}
           aria-label={isPending ? `Unlocking ${skill.name}...` : `Unlock ${skill.name} for ${skill.cost} skill points`}
@@ -390,7 +396,7 @@ function SkillCard({
 
       {/* Unlocked animation */}
       <AnimatePresence>
-        {justUnlocked && (
+        {justUnlocked && !prefersReducedMotion && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -407,7 +413,7 @@ function SkillCard({
       </AnimatePresence>
     </motion.article>
   );
-}
+});
 
 // Compact version for dashboard widget
 interface SkillTreeWidgetProps {

@@ -127,6 +127,18 @@ Notes: Use Postgres + PostGIS for geo (or zip lists if PostGIS not desired). For
 - Trust: review velocity/recency, dispute rate, fraud flags, moderation actions.
 - Infra: search latency, index staleness, error rates on uploads and lead submissions.
 
+## Compliance, Risk, and Operational Considerations
+- **Tax & marketplace facilitator rules:** Determine sales tax/VAT obligations per region for gear sales; add tax calculation in checkout; generate invoices/receipts; handle cross-border duties/customs disclosures.
+- **Liability/returns/warranties:** Define DOA/return windows, who pays return shipping, what “certified/inspected” guarantees, and localized consumer rights (e.g., EU cooling-off). Add disclosures in checkout and listings.
+- **KYC/KYB & fraud controls:** Identity/business verification, stepped-up checks for high-value gear/ads, spend/velocity caps, device/IP fingerprinting, stolen-gear checks where possible.
+- **Shipping risk & insurance:** Partner SLAs, optional insurance, lost/damaged-in-transit claims, photo proof-of-condition requirements, pickup vs. ship impacts on disputes.
+- **Ad/placement disclosures & fairness:** Clear “Sponsored” labels, rotation rules, audit logs of ranking/placement decisions; consider regional rules on self-preferencing.
+- **Privacy/PII & retention:** Policies for reviews/media/location/messaging; consent for media and translations/AI summaries; GDPR/CCPA handling; retention/deletion schedules.
+- **Content rights & moderation:** License grants for user media, takedown/appeals process, audit trail for moderation actions, blocking illegal/objectionable content.
+- **Accessibility/localization:** WCAG compliance for public pages, map alternatives, keyboard nav; multi-language UI and currency/units where applicable.
+- **Insurance/protection:** If offering guarantees, ensure funding/insurance backing; gear sales: optional shipping insurance and clear risk transfer pre/post-delivery.
+- **Ops/SLOs & observability:** SLOs for search, lead submission, checkout/escrow, shipping label generation; alerting for payment/escrow/shipping failures; runbooks for disputes, fraud spikes, index staleness.
+
 ## Rollout Phases (Epics)
 - **Phase 0 – Foundations (2–4 weeks):** data models (Profile/Review/Lead/Bid/Badge/CoverageArea), profile sync from PhotoProOS, organic directory, basic search/filters, text reviews, public profile page, anti-abuse basics (rate limits/CAPTCHA).
 - **Phase 1 – Marketplace MVP (4–6 weeks):** media reviews, profile CTAs (contact/quote), inquiry capture, moderation queue, SEO pages (schema/sitemap), shortlists, public Q&A, follow-up reminders/SLAs.

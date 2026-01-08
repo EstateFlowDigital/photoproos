@@ -4,7 +4,7 @@ import { useState, useTransition, useCallback, memo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { updatePortfolioInquiryStatus, convertPortfolioInquiryToClient, bulkDeletePortfolioInquiries } from "@/lib/actions/portfolio-websites";
+import { updatePortfolioInquiryStatus, convertPortfolioInquiryToClient, bulkDeletePortfolioInquiries, createManualLead } from "@/lib/actions/portfolio-websites";
 import { updateChatInquiryStatus, convertChatInquiryToClient, bulkDeleteChatInquiries } from "@/lib/actions/chat-inquiries";
 import { convertBookingSubmissionToClient } from "@/lib/actions/booking-forms";
 import type { LeadStatus, BookingFormSubmissionStatus } from "@prisma/client";
@@ -68,10 +68,17 @@ interface BookingSubmission {
   createdAt: Date;
 }
 
+interface PortfolioWebsite {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 interface LeadsPageClientProps {
   portfolioInquiries: PortfolioInquiry[];
   chatInquiries: ChatInquiry[];
   bookingSubmissions: BookingSubmission[];
+  portfolioWebsites: PortfolioWebsite[];
 }
 
 type InquiryType = "all" | "portfolio" | "chat" | "booking";
@@ -228,12 +235,16 @@ export function LeadsPageClient({
   portfolioInquiries,
   chatInquiries,
   bookingSubmissions,
+  portfolioWebsites,
 }: LeadsPageClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   // View mode state
   const [viewMode, setViewMode] = useState<"list" | "board">("list");
+
+  // Add Lead Modal state
+  const [showAddLeadModal, setShowAddLeadModal] = useState(false);
 
   // Filter state
   const [typeFilter, setTypeFilter] = useState<InquiryType>("all");
@@ -567,6 +578,17 @@ export function LeadsPageClient({
 
       {/* Search and Filters */}
       <div className="flex flex-wrap items-center gap-4">
+        {/* Add Lead Button */}
+        {portfolioWebsites.length > 0 && (
+          <button
+            onClick={() => setShowAddLeadModal(true)}
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+          >
+            <PlusIcon className="h-4 w-4" />
+            Add Lead
+          </button>
+        )}
+
         {/* Search */}
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
@@ -880,6 +902,18 @@ export function LeadsPageClient({
           onNotesUpdate={(notes) => handleNotesUpdate(selectedInquiry, notes)}
           isPending={isPending}
           convertedClientId={convertedClientId}
+        />
+      )}
+
+      {/* Add Lead Modal */}
+      {showAddLeadModal && (
+        <AddLeadModal
+          portfolioWebsites={portfolioWebsites}
+          onClose={() => setShowAddLeadModal(false)}
+          onSuccess={() => {
+            setShowAddLeadModal(false);
+            router.refresh();
+          }}
         />
       )}
     </div>
@@ -1598,6 +1632,249 @@ function TrashIcon({ className }: { className?: string }) {
         fillRule="evenodd"
         d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z"
         clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className}
+    >
+      <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+    </svg>
+  );
+}
+
+// Add Lead Modal Component
+function AddLeadModal({
+  portfolioWebsites,
+  onClose,
+  onSuccess,
+}: {
+  portfolioWebsites: PortfolioWebsite[];
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Form state
+  const [portfolioWebsiteId, setPortfolioWebsiteId] = useState(portfolioWebsites[0]?.id || "");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [message, setMessage] = useState("");
+  const [notes, setNotes] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      const result = await createManualLead({
+        portfolioWebsiteId,
+        name,
+        email,
+        phone: phone || undefined,
+        message: message || undefined,
+        notes: notes || undefined,
+      });
+
+      if (result.success) {
+        onSuccess();
+      } else {
+        setError(result.error || "Failed to create lead");
+      }
+    } catch (err) {
+      setError("An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-lg rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-[var(--card-border)] px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10">
+              <UserPlusIcon className="h-5 w-5 text-[var(--primary)]" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Add New Lead</h2>
+              <p className="text-sm text-foreground-muted">Create a manual lead entry</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
+          >
+            <CloseIcon className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4 px-6 py-4">
+          {error && (
+            <div className="rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 p-3 text-sm text-[var(--error)]">
+              {error}
+            </div>
+          )}
+
+          {/* Portfolio Website */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">
+              Portfolio Website <span className="text-[var(--error)]">*</span>
+            </label>
+            <select
+              value={portfolioWebsiteId}
+              onChange={(e) => setPortfolioWebsiteId(e.target.value)}
+              required
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+            >
+              {portfolioWebsites.map((website) => (
+                <option key={website.id} value={website.id}>
+                  {website.name}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-foreground-muted">
+              Associate this lead with a portfolio website
+            </p>
+          </div>
+
+          {/* Name */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">
+              Name <span className="text-[var(--error)]">*</span>
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              placeholder="John Doe"
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+            />
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">
+              Email <span className="text-[var(--error)]">*</span>
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="john@example.com"
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+            />
+          </div>
+
+          {/* Phone */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">
+              Phone
+            </label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+1 (555) 123-4567"
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+            />
+          </div>
+
+          {/* Message */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">
+              Message / Inquiry
+            </label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Details about this lead..."
+              rows={3}
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+            />
+          </div>
+
+          {/* Internal Notes */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">
+              Internal Notes
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Private notes about this lead (not visible to client)..."
+              rows={2}
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+            />
+          </div>
+        </form>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 border-t border-[var(--card-border)] px-6 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitting || !name || !email}
+            className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isSubmitting ? (
+              <>
+                <LoadingSpinner />
+                Creating...
+              </>
+            ) : (
+              <>
+                <PlusIcon className="h-4 w-4" />
+                Create Lead
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LoadingSpinner() {
+  return (
+    <svg
+      className="h-4 w-4 animate-spin"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
       />
     </svg>
   );

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { AchievementBadge, RarityLabel } from "./achievement-badge";
 import { XpDisplay } from "./level-progress";
 import { useCelebration, celebrations } from "@/hooks/use-celebration";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { Confetti } from "@/components/ui/confetti";
 import type { AchievementRarity } from "@prisma/client";
 
@@ -28,6 +29,7 @@ interface AchievementToastProps {
 export function AchievementToast({ achievements, onDismiss, onDismissAll }: AchievementToastProps) {
   const [visibleAchievements, setVisibleAchievements] = useState<UnlockedAchievement[]>([]);
   const { celebrate, confettiProps } = useCelebration();
+  const prefersReducedMotion = useReducedMotion();
 
   // Track timeout IDs for cleanup
   const queueTimeouts = useRef<NodeJS.Timeout[]>([]);
@@ -50,24 +52,27 @@ export function AchievementToast({ achievements, onDismiss, onDismissAll }: Achi
     // Show first achievement immediately
     setVisibleAchievements([achievements[0]]);
 
-    // Trigger celebration based on rarity
-    const rarity = achievements[0].rarity;
-    if (rarity === "legendary" || rarity === "epic") {
-      celebrate(celebrations.big());
-    } else if (rarity === "rare") {
-      celebrate(celebrations.milestone());
-    } else {
-      celebrate(celebrations.standard());
+    // Trigger celebration based on rarity (skip if reduced motion preferred)
+    if (!prefersReducedMotion) {
+      const rarity = achievements[0].rarity;
+      if (rarity === "legendary" || rarity === "epic") {
+        celebrate(celebrations.big());
+      } else if (rarity === "rare") {
+        celebrate(celebrations.milestone());
+      } else {
+        celebrate(celebrations.standard());
+      }
     }
 
-    // Queue remaining achievements
+    // Queue remaining achievements (faster if reduced motion)
+    const delay = prefersReducedMotion ? 500 : 1500;
     achievements.slice(1).forEach((achievement, index) => {
       const timeout = setTimeout(() => {
         setVisibleAchievements((prev) => [...prev, achievement]);
-      }, (index + 1) * 1500);
+      }, (index + 1) * delay);
       queueTimeouts.current.push(timeout);
     });
-  }, [achievements, celebrate]);
+  }, [achievements, celebrate, prefersReducedMotion]);
 
   const handleDismiss = useCallback(
     (id: string) => {
@@ -82,9 +87,22 @@ export function AchievementToast({ achievements, onDismiss, onDismissAll }: Achi
     [onDismiss, onDismissAll, visibleAchievements.length]
   );
 
+  // Animation variants based on motion preferences
+  const toastVariants = prefersReducedMotion
+    ? {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 },
+      }
+    : {
+        initial: { opacity: 0, y: 50, scale: 0.9 },
+        animate: { opacity: 1, y: 0, scale: 1 },
+        exit: { opacity: 0, x: 100, scale: 0.9 },
+      };
+
   return (
     <>
-      <Confetti {...confettiProps} />
+      {!prefersReducedMotion && <Confetti {...confettiProps} />}
       <div
         className="fixed bottom-4 right-4 z-50 flex flex-col gap-3"
         role="region"
@@ -95,10 +113,14 @@ export function AchievementToast({ achievements, onDismiss, onDismissAll }: Achi
           {visibleAchievements.map((achievement) => (
             <motion.div
               key={achievement.id}
-              initial={{ opacity: 0, y: 50, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 100, scale: 0.9 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              initial={toastVariants.initial}
+              animate={toastVariants.animate}
+              exit={toastVariants.exit}
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0.15 }
+                  : { type: "spring", damping: 25, stiffness: 300 }
+              }
               className="achievement-toast-item"
             >
               <AchievementToastItem

@@ -428,8 +428,12 @@ export async function checkAchievements(
 
 /**
  * Update login streak (call on dashboard load)
+ * Returns streak freeze info if one was used
  */
-export async function updateLoginStreak(userId: string): Promise<void> {
+export async function updateLoginStreak(userId: string): Promise<{
+  streakFreezeUsed?: boolean;
+  previousStreak?: number;
+}> {
   try {
     const profile = await prisma.gamificationProfile.findUnique({
       where: { userId },
@@ -447,7 +451,7 @@ export async function updateLoginStreak(userId: string): Promise<void> {
           questObjectives: Prisma.JsonNull,
         },
       });
-      return;
+      return {};
     }
 
     // Check if user has no active quest and no completed quests - auto-start first quest
@@ -466,6 +470,7 @@ export async function updateLoginStreak(userId: string): Promise<void> {
 
     const lastLogin = profile.lastLoginDate;
     let newStreak = profile.currentLoginStreak;
+    let streakFreezeUsed = false;
 
     if (lastLogin) {
       const lastDate = new Date(lastLogin);
@@ -477,10 +482,39 @@ export async function updateLoginStreak(userId: string): Promise<void> {
 
       if (diffDays === 0) {
         // Already logged in today - no change
-        return;
+        return {};
       } else if (diffDays === 1) {
         // Consecutive day - increment streak
         newStreak = profile.currentLoginStreak + 1;
+      } else if (diffDays === 2 && profile.availableStreakFreezes > 0 && profile.currentLoginStreak > 0) {
+        // Missed exactly 1 day and has freezes - use a freeze to save the streak
+        // Check if we haven't already used a freeze today
+        const lastFreezeDate = profile.lastStreakFreezeDate;
+        const canUseFreeze = !lastFreezeDate ||
+          new Date(lastFreezeDate).setHours(0, 0, 0, 0) !== today.getTime();
+
+        if (canUseFreeze) {
+          // Use a streak freeze - keep the streak and increment by 1
+          newStreak = profile.currentLoginStreak + 1;
+          streakFreezeUsed = true;
+
+          await prisma.gamificationProfile.update({
+            where: { userId },
+            data: {
+              currentLoginStreak: newStreak,
+              longestLoginStreak: Math.max(newStreak, profile.longestLoginStreak),
+              lastLoginDate: today,
+              availableStreakFreezes: { decrement: 1 },
+              totalStreakFreezesUsed: { increment: 1 },
+              lastStreakFreezeDate: today,
+            },
+          });
+
+          return { streakFreezeUsed: true, previousStreak: profile.currentLoginStreak };
+        } else {
+          // Already used a freeze today - streak breaks
+          newStreak = 1;
+        }
       } else {
         // Streak broken - reset to 1
         newStreak = 1;
@@ -497,8 +531,11 @@ export async function updateLoginStreak(userId: string): Promise<void> {
         lastLoginDate: today,
       },
     });
+
+    return { streakFreezeUsed };
   } catch (error) {
     console.error("[Gamification] Error updating login streak:", error);
+    return {};
   }
 }
 
@@ -548,6 +585,164 @@ export async function updateDeliveryStreak(userId: string): Promise<void> {
     });
   } catch (error) {
     console.error("[Gamification] Error updating delivery streak:", error);
+  }
+}
+
+// ============================================================================
+// STREAK FREEZE MANAGEMENT
+// ============================================================================
+
+import { STREAK_FREEZE_CONFIG } from "@/lib/gamification/constants";
+
+export type StreakFreezeState = {
+  available: number;
+  totalUsed: number;
+  maxFreezes: number;
+  lastUsedDate: Date | null;
+};
+
+/**
+ * Get streak freeze state for a user
+ */
+export async function getStreakFreezeState(userId: string): Promise<StreakFreezeState> {
+  const profile = await prisma.gamificationProfile.findUnique({
+    where: { userId },
+    select: {
+      availableStreakFreezes: true,
+      totalStreakFreezesUsed: true,
+      lastStreakFreezeDate: true,
+    },
+  });
+
+  return {
+    available: profile?.availableStreakFreezes ?? 0,
+    totalUsed: profile?.totalStreakFreezesUsed ?? 0,
+    maxFreezes: STREAK_FREEZE_CONFIG.maxFreezes,
+    lastUsedDate: profile?.lastStreakFreezeDate ?? null,
+  };
+}
+
+/**
+ * Award streak freezes to a user
+ * @param userId - User to award freezes to
+ * @param amount - Number of freezes to award
+ * @param source - Source of the award (for logging/analytics)
+ * @returns The new total freezes
+ */
+export async function awardStreakFreezes(
+  userId: string,
+  amount: number,
+  source: "daily_bonus" | "level_up" | "milestone" | "purchase" | "achievement"
+): Promise<{ success: boolean; newTotal: number }> {
+  try {
+    const profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+      select: { availableStreakFreezes: true },
+    });
+
+    if (!profile) {
+      return { success: false, newTotal: 0 };
+    }
+
+    // Cap at max freezes
+    const currentFreezes = profile.availableStreakFreezes;
+    const newTotal = Math.min(
+      currentFreezes + amount,
+      STREAK_FREEZE_CONFIG.maxFreezes
+    );
+
+    // Only update if there's an actual change
+    if (newTotal > currentFreezes) {
+      await prisma.gamificationProfile.update({
+        where: { userId },
+        data: {
+          availableStreakFreezes: newTotal,
+        },
+      });
+
+      console.log(`[Gamification] Awarded ${amount} streak freeze(s) to user ${userId} from ${source}. New total: ${newTotal}`);
+    }
+
+    return { success: true, newTotal };
+  } catch (error) {
+    console.error("[Gamification] Error awarding streak freezes:", error);
+    return { success: false, newTotal: 0 };
+  }
+}
+
+/**
+ * Purchase a streak freeze with XP
+ */
+export async function purchaseStreakFreeze(
+  userId: string,
+  organizationId: string
+): Promise<ActionResult<{ newFreezes: number; xpRemaining: number }>> {
+  try {
+    const profile = await prisma.gamificationProfile.findUnique({
+      where: { userId },
+      select: {
+        availableStreakFreezes: true,
+        totalXp: true,
+      },
+    });
+
+    if (!profile) {
+      return { success: false, error: "Profile not found" };
+    }
+
+    // Check if at max freezes
+    if (profile.availableStreakFreezes >= STREAK_FREEZE_CONFIG.maxFreezes) {
+      return { success: false, error: `Maximum ${STREAK_FREEZE_CONFIG.maxFreezes} freezes reached` };
+    }
+
+    // Check if has enough XP
+    if (profile.totalXp < STREAK_FREEZE_CONFIG.xpCost) {
+      return { success: false, error: `Requires ${STREAK_FREEZE_CONFIG.xpCost} XP` };
+    }
+
+    // Deduct XP and add freeze
+    const updated = await prisma.gamificationProfile.update({
+      where: { userId },
+      data: {
+        totalXp: { decrement: STREAK_FREEZE_CONFIG.xpCost },
+        availableStreakFreezes: { increment: 1 },
+      },
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/achievements");
+
+    return {
+      success: true,
+      data: {
+        newFreezes: updated.availableStreakFreezes,
+        xpRemaining: updated.totalXp,
+      },
+    };
+  } catch (error) {
+    console.error("[Gamification] Error purchasing streak freeze:", error);
+    return { success: false, error: "Failed to purchase streak freeze" };
+  }
+}
+
+/**
+ * Check if user should receive streak freeze rewards based on streak milestones
+ */
+export async function checkStreakMilestoneRewards(
+  userId: string,
+  currentStreak: number,
+  streakType: "login" | "delivery"
+): Promise<void> {
+  const milestoneRewards = STREAK_FREEZE_CONFIG.rewards.milestoneStreaks;
+
+  for (const [milestone, freezeReward] of Object.entries(milestoneRewards)) {
+    if (currentStreak === parseInt(milestone)) {
+      await awardStreakFreezes(userId, freezeReward, "milestone");
+      console.log(
+        `[Gamification] ${streakType} streak milestone ${milestone} reached! Awarded ${freezeReward} freeze(s)`
+      );
+      break;
+    }
   }
 }
 

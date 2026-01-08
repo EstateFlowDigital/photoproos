@@ -48,6 +48,34 @@ async function logActivity(
   }
 }
 
+/**
+ * Validate email format
+ */
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+/**
+ * Validate and normalize phone number
+ * Accepts various formats and normalizes to digits only
+ * Returns null if invalid
+ */
+function validatePhone(phone: string | undefined | null): string | null {
+  if (!phone) return null;
+
+  // Remove all non-digit characters except +
+  const cleaned = phone.replace(/[^\d+]/g, "");
+
+  // Must have at least 10 digits (or 11 with country code, or 12+ with +)
+  const digits = cleaned.replace(/\+/g, "");
+  if (digits.length < 10 || digits.length > 15) {
+    return null;
+  }
+
+  return cleaned;
+}
+
 // Input types
 export interface CreateClientInput {
   email: string;
@@ -193,11 +221,31 @@ export async function createClient(
   try {
     const organizationId = await getOrganizationId();
 
+    // Validate required fields
+    if (!input.email?.trim()) {
+      return fail("Email is required");
+    }
+
+    // Validate email format
+    const normalizedEmail = input.email.trim().toLowerCase();
+    if (!isValidEmail(normalizedEmail)) {
+      return fail("Invalid email address format");
+    }
+
+    // Validate phone if provided
+    let validatedPhone: string | null = null;
+    if (input.phone?.trim()) {
+      validatedPhone = validatePhone(input.phone);
+      if (validatedPhone === null) {
+        return fail("Invalid phone number. Please enter a valid phone number with 10-15 digits.");
+      }
+    }
+
     // Check if client with email already exists
     const existing = await prisma.client.findFirst({
       where: {
         organizationId,
-        email: input.email,
+        email: normalizedEmail,
       },
     });
 
@@ -208,13 +256,13 @@ export async function createClient(
     const client = await prisma.client.create({
       data: {
         organizationId,
-        email: input.email,
-        fullName: input.fullName,
-        company: input.company,
-        phone: input.phone,
-        address: input.address,
+        email: normalizedEmail,
+        fullName: input.fullName?.trim() || null,
+        company: input.company?.trim() || null,
+        phone: validatedPhone,
+        address: input.address?.trim() || null,
         industry: input.industry || "other",
-        notes: input.notes,
+        notes: input.notes?.trim() || null,
       },
     });
 
@@ -266,12 +314,37 @@ export async function updateClient(
       return fail("Client not found");
     }
 
+    // Validate email format if provided
+    let normalizedEmail: string | undefined;
+    if (input.email !== undefined) {
+      if (!input.email?.trim()) {
+        return fail("Email cannot be empty");
+      }
+      normalizedEmail = input.email.trim().toLowerCase();
+      if (!isValidEmail(normalizedEmail)) {
+        return fail("Invalid email address format");
+      }
+    }
+
+    // Validate phone if provided (but allow empty to clear)
+    let validatedPhone: string | null | undefined;
+    if (input.phone !== undefined) {
+      if (input.phone?.trim()) {
+        validatedPhone = validatePhone(input.phone);
+        if (validatedPhone === null) {
+          return fail("Invalid phone number. Please enter a valid phone number with 10-15 digits.");
+        }
+      } else {
+        validatedPhone = null; // Explicitly clearing phone
+      }
+    }
+
     // If changing email, check for duplicates
-    if (input.email && input.email !== existing.email) {
+    if (normalizedEmail && normalizedEmail !== existing.email) {
       const duplicate = await prisma.client.findFirst({
         where: {
           organizationId,
-          email: input.email,
+          email: normalizedEmail,
           id: { not: input.id },
         },
       });
@@ -281,18 +354,18 @@ export async function updateClient(
       }
     }
 
-    const { id, ...updateData } = input;
+    const { id } = input;
 
     const client = await prisma.client.update({
       where: { id },
       data: {
-        ...(updateData.email && { email: updateData.email }),
-        ...(updateData.fullName !== undefined && { fullName: updateData.fullName }),
-        ...(updateData.company !== undefined && { company: updateData.company }),
-        ...(updateData.phone !== undefined && { phone: updateData.phone }),
-        ...(updateData.address !== undefined && { address: updateData.address }),
-        ...(updateData.industry && { industry: updateData.industry }),
-        ...(updateData.notes !== undefined && { notes: updateData.notes }),
+        ...(normalizedEmail !== undefined && { email: normalizedEmail }),
+        ...(input.fullName !== undefined && { fullName: input.fullName?.trim() || null }),
+        ...(input.company !== undefined && { company: input.company?.trim() || null }),
+        ...(validatedPhone !== undefined && { phone: validatedPhone }),
+        ...(input.address !== undefined && { address: input.address?.trim() || null }),
+        ...(input.industry && { industry: input.industry }),
+        ...(input.notes !== undefined && { notes: input.notes?.trim() || null }),
       },
     });
 

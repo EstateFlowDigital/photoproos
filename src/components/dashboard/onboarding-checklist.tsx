@@ -520,7 +520,8 @@ export function OnboardingChecklist({
   return (
     <div
       className={cn(
-        "rounded-xl border border-[var(--primary)]/20 bg-gradient-to-br from-[var(--primary)]/5 to-transparent p-6",
+        "rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6",
+        "shadow-sm",
         className
       )}
     >

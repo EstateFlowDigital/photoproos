@@ -600,7 +600,7 @@ export function InvoiceEditor({ invoice, clients, services }: InvoiceEditorProps
                     min="0"
                     step="0.01"
                     value={discountCents ? (discountCents / 100).toFixed(2) : ""}
-                    onChange={(e) => setDiscountCents(Math.round(parseFloat(e.target.value || "0") * 100))}
+                    onChange={(e) => setDiscountCents(Math.max(0, Math.round(parseFloat(e.target.value || "0") * 100)))}
                     placeholder="0.00"
                     className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] pl-7 pr-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                   />
@@ -616,7 +616,7 @@ export function InvoiceEditor({ invoice, clients, services }: InvoiceEditorProps
                     max="100"
                     step="0.1"
                     value={taxPercent || ""}
-                    onChange={(e) => setTaxPercent(parseFloat(e.target.value || "0"))}
+                    onChange={(e) => setTaxPercent(Math.min(100, Math.max(0, parseFloat(e.target.value || "0"))))}
                     placeholder="0"
                     className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 pr-8 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                   />
@@ -680,7 +680,7 @@ export function InvoiceEditor({ invoice, clients, services }: InvoiceEditorProps
                         max="100"
                         step="0.5"
                         value={lateFeePercent}
-                        onChange={(e) => setLateFeePercent(parseFloat(e.target.value) || 0)}
+                        onChange={(e) => setLateFeePercent(Math.min(100, Math.max(0, parseFloat(e.target.value) || 0)))}
                         className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 pr-8 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted text-sm">%</span>
@@ -696,7 +696,7 @@ export function InvoiceEditor({ invoice, clients, services }: InvoiceEditorProps
                         min="0"
                         step="0.01"
                         value={lateFeeFlatCents ? (lateFeeFlatCents / 100).toFixed(2) : ""}
-                        onChange={(e) => setLateFeeFlatCents(Math.round(parseFloat(e.target.value || "0") * 100))}
+                        onChange={(e) => setLateFeeFlatCents(Math.max(0, Math.round(parseFloat(e.target.value || "0") * 100)))}
                         className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] pl-7 pr-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                       />
                     </div>

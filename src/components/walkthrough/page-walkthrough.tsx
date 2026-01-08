@@ -188,25 +188,30 @@ export function PageWalkthrough({
         aria-label={`${config.title} tutorial`}
         className={cn(
           "walkthrough-minimized",
-          "flex items-center justify-between gap-4 rounded-lg",
-          "border border-[var(--primary)]/30 bg-[var(--primary)]/5",
-          "px-4 py-2",
+          "flex flex-wrap items-center justify-between gap-3 rounded-xl",
+          "border border-[var(--card-border)] bg-[var(--card)]",
+          "px-4 py-3",
+          "shadow-sm",
           transitionClasses,
           className
         )}
       >
-        <div className="flex items-center gap-3">
-          <HelpCircle className="h-4 w-4 text-[var(--primary)]" aria-hidden />
-          <span className="text-sm font-medium text-foreground">
-            {config.title}
-          </span>
-          {config.estimatedTime && (
-            <span className="text-xs text-foreground-muted">
-              {config.estimatedTime}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+            <HelpCircle className="h-4 w-4 text-[var(--primary)]" aria-hidden />
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
+            <span className="text-sm font-medium text-foreground">
+              {config.title}
             </span>
-          )}
+            {config.estimatedTime && (
+              <span className="text-xs text-foreground-muted">
+                {config.estimatedTime}
+              </span>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon-sm"

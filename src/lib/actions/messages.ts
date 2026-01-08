@@ -105,6 +105,11 @@ export async function sendMessage(
     const organizationId = await requireOrganizationId();
     const userId = await requireUserId();
 
+    // Validate message content is not empty
+    if (!input.content || !input.content.trim()) {
+      return fail("Message content cannot be empty");
+    }
+
     // Verify user is a participant
     const participant = await prisma.conversationParticipant.findFirst({
       where: {

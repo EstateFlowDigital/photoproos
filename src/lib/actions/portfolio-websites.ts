@@ -2064,3 +2064,85 @@ export async function bulkUpdatePortfolioInquiryStatus(
     return fail("Failed to update inquiries");
   }
 }
+
+/**
+ * Create a manual lead (portfolio inquiry)
+ */
+export async function createManualLead(data: {
+  portfolioWebsiteId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  message?: string;
+  notes?: string;
+}): Promise<{ success: boolean; leadId?: string; error?: string }> {
+  try {
+    await requireAuth();
+    const organizationId = await requireOrganizationId();
+
+    // Validate required fields
+    if (!data.name?.trim()) {
+      return fail("Name is required");
+    }
+    if (!data.email?.trim()) {
+      return fail("Email is required");
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(data.email)) {
+      return fail("Invalid email address");
+    }
+
+    // Verify portfolio website belongs to organization
+    const portfolioWebsite = await prisma.portfolioWebsite.findFirst({
+      where: {
+        id: data.portfolioWebsiteId,
+        organizationId,
+      },
+    });
+
+    if (!portfolioWebsite) {
+      return fail("Portfolio website not found");
+    }
+
+    // Create the manual lead
+    const lead = await prisma.portfolioInquiry.create({
+      data: {
+        organizationId,
+        portfolioWebsiteId: data.portfolioWebsiteId,
+        name: data.name.trim(),
+        email: data.email.trim().toLowerCase(),
+        phone: data.phone?.trim() || null,
+        message: data.message?.trim() || "Manually created lead",
+        notes: data.notes?.trim() || null,
+        source: "manual",
+        status: "new",
+      },
+    });
+
+    revalidatePath("/leads");
+    return { success: true, leadId: lead.id };
+  } catch (error) {
+    console.error("Error creating manual lead:", error);
+    return fail("Failed to create lead");
+  }
+}
+
+/**
+ * Get portfolio websites for lead creation (simple list)
+ */
+export async function getPortfolioWebsitesForLeadCreation() {
+  await requireAuth();
+  const organizationId = await requireOrganizationId();
+
+  return prisma.portfolioWebsite.findMany({
+    where: { organizationId },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+    },
+    orderBy: { name: "asc" },
+  });
+}

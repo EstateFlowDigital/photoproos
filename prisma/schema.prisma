@@ -8709,6 +8709,11 @@ model GamificationProfile {
   longestDeliveryStreak Int       @default(0)
   lastDeliveryDate      DateTime?
 
+  // Streak Protection (Streak Freezes)
+  availableStreakFreezes Int       @default(0) // Number of streak freezes the user has
+  totalStreakFreezesUsed Int       @default(0) // Lifetime count of freezes used
+  lastStreakFreezeDate   DateTime? // When a freeze was last used (to prevent multiple per day)
+
   // Daily Login Bonus
   lastBonusClaimDate   DateTime? // Last date the user claimed their daily bonus
   consecutiveBonusDays Int       @default(0) // Days in current bonus streak (1-7, resets weekly)

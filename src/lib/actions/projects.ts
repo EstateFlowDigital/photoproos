@@ -21,6 +21,87 @@ function getStatusForColumn(columnName: string, fallback: TaskStatus) {
   return COLUMN_STATUS_MAP[columnName] || fallback;
 }
 
+/**
+ * Validate that all provided entity IDs belong to the organization
+ * Prevents cross-organization data linking attacks
+ */
+async function validateEntityOwnership(
+  organizationId: string,
+  entities: {
+    assigneeId?: string | null;
+    clientId?: string | null;
+    projectId?: string | null;
+    bookingId?: string | null;
+    invoiceId?: string | null;
+    propertyWebsiteId?: string | null;
+  }
+): Promise<{ valid: boolean; error?: string }> {
+  const checks: Promise<{ entity: string; valid: boolean }>[] = [];
+
+  if (entities.assigneeId) {
+    checks.push(
+      prisma.organizationMember.findFirst({
+        where: { id: entities.assigneeId, organizationId },
+        select: { id: true },
+      }).then((r) => ({ entity: "Assignee", valid: !!r }))
+    );
+  }
+
+  if (entities.clientId) {
+    checks.push(
+      prisma.client.findFirst({
+        where: { id: entities.clientId, organizationId },
+        select: { id: true },
+      }).then((r) => ({ entity: "Client", valid: !!r }))
+    );
+  }
+
+  if (entities.projectId) {
+    checks.push(
+      prisma.project.findFirst({
+        where: { id: entities.projectId, organizationId },
+        select: { id: true },
+      }).then((r) => ({ entity: "Project", valid: !!r }))
+    );
+  }
+
+  if (entities.bookingId) {
+    checks.push(
+      prisma.booking.findFirst({
+        where: { id: entities.bookingId, organizationId },
+        select: { id: true },
+      }).then((r) => ({ entity: "Booking", valid: !!r }))
+    );
+  }
+
+  if (entities.invoiceId) {
+    checks.push(
+      prisma.invoice.findFirst({
+        where: { id: entities.invoiceId, organizationId },
+        select: { id: true },
+      }).then((r) => ({ entity: "Invoice", valid: !!r }))
+    );
+  }
+
+  if (entities.propertyWebsiteId) {
+    checks.push(
+      prisma.propertyWebsite.findFirst({
+        where: { id: entities.propertyWebsiteId, organizationId },
+        select: { id: true },
+      }).then((r) => ({ entity: "Property website", valid: !!r }))
+    );
+  }
+
+  const results = await Promise.all(checks);
+  const invalid = results.find((r) => !r.valid);
+
+  if (invalid) {
+    return { valid: false, error: `${invalid.entity} not found or does not belong to this organization` };
+  }
+
+  return { valid: true };
+}
+
 // ============================================================================
 // BOARD ACTIONS
 // ============================================================================
@@ -567,6 +648,20 @@ export async function createTask(data: {
     await requireAuth();
     const organizationId = await requireOrganizationId();
 
+    // Validate entity ownership before creating task
+    const ownershipCheck = await validateEntityOwnership(organizationId, {
+      assigneeId: data.assigneeId,
+      clientId: data.clientId,
+      projectId: data.projectId,
+      bookingId: data.bookingId,
+      invoiceId: data.invoiceId,
+      propertyWebsiteId: data.propertyWebsiteId,
+    });
+
+    if (!ownershipCheck.valid) {
+      return fail(ownershipCheck.error || "Invalid entity reference");
+    }
+
     // Verify board and column
     const column = await prisma.taskColumn.findFirst({
       where: {
@@ -642,6 +737,43 @@ export async function updateTask(
   try {
     await requireAuth();
     const organizationId = await requireOrganizationId();
+
+    // Validate entity ownership for non-null entity IDs being set
+    // (null means clearing the link, which is always allowed)
+    const entitiesToValidate: {
+      assigneeId?: string | null;
+      clientId?: string | null;
+      projectId?: string | null;
+      bookingId?: string | null;
+      invoiceId?: string | null;
+      propertyWebsiteId?: string | null;
+    } = {};
+
+    if (data.assigneeId !== undefined && data.assigneeId !== null) {
+      entitiesToValidate.assigneeId = data.assigneeId;
+    }
+    if (data.clientId !== undefined && data.clientId !== null) {
+      entitiesToValidate.clientId = data.clientId;
+    }
+    if (data.projectId !== undefined && data.projectId !== null) {
+      entitiesToValidate.projectId = data.projectId;
+    }
+    if (data.bookingId !== undefined && data.bookingId !== null) {
+      entitiesToValidate.bookingId = data.bookingId;
+    }
+    if (data.invoiceId !== undefined && data.invoiceId !== null) {
+      entitiesToValidate.invoiceId = data.invoiceId;
+    }
+    if (data.propertyWebsiteId !== undefined && data.propertyWebsiteId !== null) {
+      entitiesToValidate.propertyWebsiteId = data.propertyWebsiteId;
+    }
+
+    if (Object.keys(entitiesToValidate).length > 0) {
+      const ownershipCheck = await validateEntityOwnership(organizationId, entitiesToValidate);
+      if (!ownershipCheck.valid) {
+        return fail(ownershipCheck.error || "Invalid entity reference");
+      }
+    }
 
     let completedAt = data.completedAt;
     if (data.status) {

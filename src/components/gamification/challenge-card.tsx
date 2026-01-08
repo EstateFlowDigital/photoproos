@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, memo } from "react";
 import { cn } from "@/lib/utils";
 import { XpDisplay } from "./level-progress";
 
@@ -16,7 +16,7 @@ interface ChallengeCardProps {
   className?: string;
 }
 
-export function ChallengeCard({
+export const ChallengeCard = memo(function ChallengeCard({
   name,
   description,
   targetCount,
@@ -102,7 +102,7 @@ export function ChallengeCard({
       </div>
     </article>
   );
-}
+});
 
 // Challenge list for the dashboard widget
 export function ChallengeList({

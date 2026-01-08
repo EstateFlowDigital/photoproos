@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useTransition, useMemo, useCallback } from "react";
+import { useState, useTransition, useMemo, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { startQuest, abandonQuest } from "@/lib/actions/gamification";
 import type { QuestWithStatus, Quest } from "@/lib/actions/gamification";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { Lock, Check, Play, ChevronRight, Star, Sparkles, AlertCircle } from "lucide-react";
 
 interface QuestCardProps {
@@ -26,9 +27,22 @@ export function QuestCard({
   const [isPending, startTransition] = useTransition();
   const [showStoryline, setShowStoryline] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const prefersReducedMotion = useReducedMotion();
+
+  // Track timeout IDs for cleanup
+  const errorTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (errorTimeout.current) clearTimeout(errorTimeout.current);
+    };
+  }, []);
 
   const handleStartQuest = useCallback(() => {
     setError(null);
+    if (errorTimeout.current) clearTimeout(errorTimeout.current);
+
     startTransition(async () => {
       try {
         const result = await startQuest(quest.id);
@@ -36,11 +50,11 @@ export function QuestCard({
           onQuestStart?.(result.data.quest);
         } else {
           setError(result.error || "Failed to start quest");
-          setTimeout(() => setError(null), 5000);
+          errorTimeout.current = setTimeout(() => setError(null), 5000);
         }
       } catch {
         setError("Failed to start quest. Please try again.");
-        setTimeout(() => setError(null), 5000);
+        errorTimeout.current = setTimeout(() => setError(null), 5000);
       }
     });
   }, [quest.id, onQuestStart]);
@@ -49,6 +63,8 @@ export function QuestCard({
     if (!confirm("Abandon this quest? You'll lose your progress.")) return;
 
     setError(null);
+    if (errorTimeout.current) clearTimeout(errorTimeout.current);
+
     startTransition(async () => {
       try {
         const result = await abandonQuest();
@@ -56,11 +72,11 @@ export function QuestCard({
           onQuestAbandon?.();
         } else {
           setError(result.error || "Failed to abandon quest");
-          setTimeout(() => setError(null), 5000);
+          errorTimeout.current = setTimeout(() => setError(null), 5000);
         }
       } catch {
         setError("Failed to abandon quest. Please try again.");
-        setTimeout(() => setError(null), 5000);
+        errorTimeout.current = setTimeout(() => setError(null), 5000);
       }
     });
   }, [onQuestAbandon]);
@@ -164,9 +180,10 @@ export function QuestCard({
       <AnimatePresence>
         {showStoryline && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
+            initial={prefersReducedMotion ? { opacity: 1, height: "auto" } : { opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
+            transition={prefersReducedMotion ? { duration: 0 } : undefined}
             className="mt-4 overflow-hidden"
           >
             <div className="rounded-lg bg-[var(--background-secondary)] p-3 text-sm italic text-[var(--foreground-secondary)]">
@@ -191,9 +208,9 @@ export function QuestCard({
             >
               <motion.div
                 className="h-full bg-[var(--primary)] rounded-full"
-                initial={{ width: 0 }}
+                initial={prefersReducedMotion ? { width: `${progressPercent}%` } : { width: 0 }}
                 animate={{ width: `${progressPercent}%` }}
-                transition={{ duration: 0.5 }}
+                transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.5 }}
                 aria-hidden="true"
               />
             </div>
@@ -265,8 +282,9 @@ export function QuestCard({
       {/* Start button for available quests */}
       {quest.status === "available" && (
         <motion.button
-          initial={{ opacity: 0, y: 10 }}
+          initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={prefersReducedMotion ? { duration: 0 } : undefined}
           onClick={handleStartQuest}
           disabled={isPending}
           aria-label={isPending ? `Starting quest: ${quest.name}` : `Start quest: ${quest.name} for ${quest.xpReward} XP`}

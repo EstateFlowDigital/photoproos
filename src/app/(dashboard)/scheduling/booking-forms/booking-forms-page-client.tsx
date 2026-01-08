@@ -215,7 +215,7 @@ export function BookingFormsPageClient({
   };
 
   return (
-    <>
+    <div className="space-y-6">
       <PageHeader
         title="Booking Forms"
         subtitle="Create public booking forms for clients to request appointments"
@@ -489,23 +489,23 @@ export function BookingFormsPageClient({
 
       {/* Create Form Modal */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
           <div
-            className="absolute inset-0 bg-black/50"
+            className="fixed inset-0 bg-black/50"
             onClick={() => setIsCreateModalOpen(false)}
           />
-          <div className="relative w-full max-w-lg mx-4 rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl animate-in zoom-in-95 fade-in duration-200">
-            <div className="flex flex-col gap-3 p-6 border-b border-[var(--card-border)] sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full max-w-lg rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl animate-in zoom-in-95 fade-in duration-200 max-h-[calc(100vh-2rem)] flex flex-col">
+            <div className="flex flex-col gap-3 p-6 border-b border-[var(--card-border)] sm:flex-row sm:items-center sm:justify-between shrink-0">
               <h2 className="text-lg font-semibold text-foreground">Create Booking Form</h2>
               <button
                 onClick={() => setIsCreateModalOpen(false)}
-                className="rounded-lg p-1.5 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
+                className="rounded-lg p-1.5 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground self-end sm:self-auto"
               >
                 <XIcon className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 overflow-y-auto flex-1">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1.5">
                   Form Name <span className="text-[var(--error)]">*</span>
@@ -553,7 +553,7 @@ export function BookingFormsPageClient({
               )}
             </div>
 
-            <div className="flex justify-end gap-3 p-6 border-t border-[var(--card-border)]">
+            <div className="flex justify-end gap-3 p-6 border-t border-[var(--card-border)] shrink-0">
               <button
                 onClick={() => setIsCreateModalOpen(false)}
                 className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground hover:bg-[var(--background-hover)]"
@@ -571,6 +571,6 @@ export function BookingFormsPageClient({
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
