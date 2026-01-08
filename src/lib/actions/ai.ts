@@ -167,6 +167,26 @@ export async function createConversation(): Promise<
     const { userId } = await requireAuth();
     const organizationId = await requireOrganizationId();
 
+    // Verify user exists in database
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      console.error("User not found in database:", userId);
+      return fail("User not found. Please try signing out and back in.");
+    }
+
+    // Verify organization exists
+    const org = await prisma.organization.findUnique({
+      where: { id: organizationId },
+    });
+
+    if (!org) {
+      console.error("Organization not found:", organizationId);
+      return fail("Organization not found. Please select an organization.");
+    }
+
     const conversation = await prisma.aIConversation.create({
       data: {
         organizationId,
@@ -178,7 +198,8 @@ export async function createConversation(): Promise<
     return ok({ id: conversation.id });
   } catch (error) {
     console.error("Error creating conversation:", error);
-    return fail("Failed to create conversation");
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return fail(`Failed to create conversation: ${errorMessage}`);
   }
 }
 

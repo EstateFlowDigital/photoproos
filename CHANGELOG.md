@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Add Widget Modal Multi-Selection** - Enhanced widget management
+  - Multi-select checkboxes on widget cards in Add Widget modal
+  - "Add Selected (X)" button for batch widget addition
+  - New `addWidgets` server action for adding multiple widgets at once
+  - Smart interaction: clicking card directly adds single widget, selecting checkboxes enables batch mode
+  - Clear selection button to reset choices
+  - Visual feedback with selection indicators and styling
+
 - **Database-Backed Feature Flags** - Platform-wide feature management
   - New `FeatureFlag` Prisma model with slug, name, description, category, enabled state, and rollout percentage
   - Enum `FeatureFlagCategory` for organizing flags (ai_features, engagement, communications, finance, experimental, system)
@@ -457,6 +465,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `disclaimerAcceptedAt` field to `TaxPrepSessionSummary` interface
   - Updated `getOrCreateTaxPrepSession` and `getTaxPrepSessions` to return `disclaimerAcceptedAt`
   - Buttons now show disabled state (opacity + cursor) when loading or session unavailable
+
+- **AI Page New Conversation Error** - Improved error handling for AI conversation creation
+  - Added user and organization validation before creating conversation
+  - Returns specific error messages for missing user or organization
+  - Improved error logging with actual error message details
+  - Shows clearer error feedback in the UI when conversation creation fails
 
 - **Recent Clients Icon Styling** - Improved avatar styling in gallery new page sidebar
   - Added border and background to client initial avatars

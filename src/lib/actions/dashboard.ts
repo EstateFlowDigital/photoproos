@@ -174,6 +174,83 @@ export async function addWidget(
 }
 
 /**
+ * Add multiple widgets to the dashboard at once
+ */
+export async function addWidgets(
+  types: WidgetType[]
+): Promise<ActionResult<WidgetInstance[]>> {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return fail("Unauthorized");
+    }
+
+    // Validate all widget types
+    for (const type of types) {
+      if (!isValidWidgetType(type)) {
+        return fail(`Invalid widget type: ${type}`);
+      }
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { clerkUserId: userId },
+      select: { dashboardConfig: true },
+    });
+
+    if (!user) {
+      return fail("User not found");
+    }
+
+    let currentConfig = normalizeConfig(user.dashboardConfig);
+    const newWidgets: WidgetInstance[] = [];
+
+    // Add each widget, checking maxInstances
+    for (const type of types) {
+      const widgetDef = WIDGET_REGISTRY[type];
+
+      if (widgetDef.maxInstances) {
+        const existingCount = currentConfig.widgets.filter((w) => w.type === type).length;
+        if (existingCount >= widgetDef.maxInstances) {
+          // Skip this widget but continue with others
+          continue;
+        }
+      }
+
+      const position = findNextAvailablePosition(currentConfig, widgetDef.defaultSize);
+
+      const newWidget: WidgetInstance = {
+        id: generateWidgetId(),
+        type,
+        size: widgetDef.defaultSize,
+        position,
+      };
+
+      newWidgets.push(newWidget);
+      // Update currentConfig so next widget gets correct position
+      currentConfig = {
+        ...currentConfig,
+        widgets: [...currentConfig.widgets, newWidget],
+      };
+    }
+
+    if (newWidgets.length === 0) {
+      return fail("No widgets could be added (max instances reached)");
+    }
+
+    await prisma.user.update({
+      where: { clerkUserId: userId },
+      data: { dashboardConfig: currentConfig as unknown as Prisma.InputJsonValue },
+    });
+
+    revalidatePath("/dashboard");
+    return success(newWidgets);
+  } catch (error) {
+    console.error("Error adding widgets:", error);
+    return fail("Failed to add widgets");
+  }
+}
+
+/**
  * Remove a widget from the dashboard
  */
 export async function removeWidget(widgetId: string): Promise<VoidActionResult> {

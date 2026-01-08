@@ -7,7 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogBody,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { type WidgetType, type DashboardWidgetConfig } from "@/lib/dashboard-types";
 import {
@@ -17,7 +19,7 @@ import {
   type WidgetDefinition,
   type WidgetCategory,
 } from "@/lib/widget-registry";
-import { addWidget } from "@/lib/actions/dashboard";
+import { addWidget, addWidgets } from "@/lib/actions/dashboard";
 import { useToast } from "@/components/ui/toast";
 import {
   DollarSign,
@@ -43,6 +45,7 @@ import {
   Layout,
   Plus,
   MessageSquare,
+  Check,
 } from "lucide-react";
 
 // ============================================================================
@@ -108,6 +111,15 @@ export function AddWidgetModal({ isOpen, onClose, config }: AddWidgetModalProps)
   const { showToast } = useToast();
   const [selectedCategory, setSelectedCategory] = React.useState<WidgetCategory>("core");
   const [isAdding, setIsAdding] = React.useState<string | null>(null);
+  const [selectedWidgets, setSelectedWidgets] = React.useState<Set<WidgetType>>(new Set());
+  const [isAddingMultiple, setIsAddingMultiple] = React.useState(false);
+
+  // Clear selection when modal closes
+  React.useEffect(() => {
+    if (!isOpen) {
+      setSelectedWidgets(new Set());
+    }
+  }, [isOpen]);
 
   // Get widgets that can still be added (respecting maxInstances)
   const getAvailableWidgets = React.useCallback(
@@ -141,6 +153,20 @@ export function AddWidgetModal({ isOpen, onClose, config }: AddWidgetModalProps)
     [config.widgets]
   );
 
+  // Toggle widget selection for multi-add
+  const toggleWidgetSelection = (type: WidgetType) => {
+    setSelectedWidgets((prev) => {
+      const next = new Set(prev);
+      if (next.has(type)) {
+        next.delete(type);
+      } else {
+        next.add(type);
+      }
+      return next;
+    });
+  };
+
+  // Add a single widget (click without selection mode)
   const handleAddWidget = async (type: WidgetType) => {
     setIsAdding(type);
 
@@ -157,6 +183,30 @@ export function AddWidgetModal({ isOpen, onClose, config }: AddWidgetModalProps)
       showToast("Failed to add widget", "error");
     } finally {
       setIsAdding(null);
+    }
+  };
+
+  // Add all selected widgets
+  const handleAddSelectedWidgets = async () => {
+    if (selectedWidgets.size === 0) return;
+
+    setIsAddingMultiple(true);
+
+    try {
+      const result = await addWidgets(Array.from(selectedWidgets));
+
+      if (result.success && result.data) {
+        const count = result.data.length;
+        showToast(`${count} widget${count !== 1 ? "s" : ""} added!`, "success");
+        setSelectedWidgets(new Set());
+        onClose();
+      } else {
+        showToast(result.error || "Failed to add widgets", "error");
+      }
+    } catch {
+      showToast("Failed to add widgets", "error");
+    } finally {
+      setIsAddingMultiple(false);
     }
   };
 
@@ -211,64 +261,97 @@ export function AddWidgetModal({ isOpen, onClose, config }: AddWidgetModalProps)
               const Icon = getIcon(widgetDef.icon);
               const isAvailable = canAddWidget(widgetDef);
               const isLoading = isAdding === widgetDef.type;
+              const isSelected = selectedWidgets.has(widgetDef.type);
 
               return (
-                <button
+                <div
                   key={widgetDef.type}
-                  onClick={() => isAvailable && handleAddWidget(widgetDef.type)}
-                  disabled={!isAvailable || isLoading}
                   className={cn(
-                    "flex items-start gap-3 rounded-xl border p-4 text-left transition-all",
-                    isAvailable
-                      ? "border-[var(--card-border)] bg-[var(--card)] hover:border-[var(--primary)] hover:bg-[var(--background-hover)]"
-                      : "border-[var(--card-border)] bg-[var(--background)] opacity-50 cursor-not-allowed"
+                    "relative flex items-start gap-3 rounded-xl border p-4 text-left transition-all",
+                    !isAvailable
+                      ? "border-[var(--card-border)] bg-[var(--background)] opacity-50"
+                      : isSelected
+                        ? "border-[var(--primary)] bg-[var(--primary)]/5 ring-1 ring-[var(--primary)]"
+                        : "border-[var(--card-border)] bg-[var(--card)] hover:border-[var(--primary)]/50 hover:bg-[var(--background-hover)]"
                   )}
                 >
-                  <div
-                    className={cn(
-                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
-                      isAvailable
-                        ? "bg-[var(--primary)]/10 text-[var(--primary)]"
-                        : "bg-[var(--background-secondary)] text-foreground-muted"
-                    )}
+                  {/* Selection checkbox (top-left) */}
+                  {isAvailable && (
+                    <button
+                      onClick={() => toggleWidgetSelection(widgetDef.type)}
+                      disabled={isLoading}
+                      className={cn(
+                        "absolute -top-2 -left-2 flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all",
+                        isSelected
+                          ? "border-[var(--primary)] bg-[var(--primary)] text-white"
+                          : "border-[var(--card-border)] bg-[var(--card)] text-foreground-muted hover:border-[var(--primary)]/50"
+                      )}
+                      aria-label={isSelected ? `Deselect ${widgetDef.label}` : `Select ${widgetDef.label}`}
+                    >
+                      {isSelected && <Check className="h-3.5 w-3.5" />}
+                    </button>
+                  )}
+
+                  {/* Quick add button (entire card clickable for single add) */}
+                  <button
+                    onClick={() => {
+                      if (!isAvailable || isLoading) return;
+                      // If nothing is selected, do quick add; otherwise toggle selection
+                      if (selectedWidgets.size === 0) {
+                        handleAddWidget(widgetDef.type);
+                      } else {
+                        toggleWidgetSelection(widgetDef.type);
+                      }
+                    }}
+                    disabled={!isAvailable || isLoading}
+                    className="flex flex-1 items-start gap-3 text-left"
                   >
-                    {isLoading ? (
-                      <div
-                        className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--primary)] border-t-transparent"
-                        role="status"
-                        aria-label={`Adding ${widgetDef.label}`}
-                      />
-                    ) : (
-                      <Icon className="h-5 w-5" aria-hidden="true" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-semibold text-foreground">
-                        {widgetDef.label}
-                      </h4>
-                      {isAvailable && (
-                        <Plus className="h-4 w-4 text-foreground-muted" />
+                    <div
+                      className={cn(
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
+                        isAvailable
+                          ? "bg-[var(--primary)]/10 text-[var(--primary)]"
+                          : "bg-[var(--background-secondary)] text-foreground-muted"
                       )}
-                      {!isAvailable && (
-                        <span className="text-xs text-foreground-muted">Added</span>
+                    >
+                      {isLoading ? (
+                        <div
+                          className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--primary)] border-t-transparent"
+                          role="status"
+                          aria-label={`Adding ${widgetDef.label}`}
+                        />
+                      ) : (
+                        <Icon className="h-5 w-5" aria-hidden="true" />
                       )}
                     </div>
-                    <p className="mt-0.5 text-xs text-foreground-muted line-clamp-2">
-                      {widgetDef.description}
-                    </p>
-                    <div className="mt-2 flex items-center gap-2">
-                      <span className="rounded bg-[var(--background)] px-1.5 py-0.5 text-[10px] font-medium text-foreground-muted">
-                        {widgetDef.defaultSize}
-                      </span>
-                      {widgetDef.allowedSizes.length > 1 && (
-                        <span className="text-[10px] text-foreground-muted">
-                          Resizable
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-semibold text-foreground">
+                          {widgetDef.label}
+                        </h4>
+                        {isAvailable && selectedWidgets.size === 0 && (
+                          <Plus className="h-4 w-4 text-foreground-muted" />
+                        )}
+                        {!isAvailable && (
+                          <span className="text-xs text-foreground-muted">Added</span>
+                        )}
+                      </div>
+                      <p className="mt-0.5 text-xs text-foreground-muted line-clamp-2">
+                        {widgetDef.description}
+                      </p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="rounded bg-[var(--background)] px-1.5 py-0.5 text-[10px] font-medium text-foreground-muted">
+                          {widgetDef.defaultSize}
                         </span>
-                      )}
+                        {widgetDef.allowedSizes.length > 1 && (
+                          <span className="text-[10px] text-foreground-muted">
+                            Resizable
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </button>
+                  </button>
+                </div>
               );
             })}
           </div>
@@ -288,6 +371,37 @@ export function AddWidgetModal({ isOpen, onClose, config }: AddWidgetModalProps)
             </div>
           )}
         </DialogBody>
+
+        {/* Footer with Add Selected button */}
+        {selectedWidgets.size > 0 && (
+          <DialogFooter className="border-t border-[var(--card-border)] px-6 py-4">
+            <div className="flex items-center justify-between w-full">
+              <button
+                onClick={() => setSelectedWidgets(new Set())}
+                className="text-sm text-foreground-muted hover:text-foreground transition-colors"
+              >
+                Clear selection
+              </button>
+              <Button
+                variant="primary"
+                onClick={handleAddSelectedWidgets}
+                disabled={isAddingMultiple}
+              >
+                {isAddingMultiple ? (
+                  <>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
+                    Adding...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add {selectedWidgets.size} Widget{selectedWidgets.size !== 1 ? "s" : ""}
+                  </>
+                )}
+              </Button>
+            </div>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );
