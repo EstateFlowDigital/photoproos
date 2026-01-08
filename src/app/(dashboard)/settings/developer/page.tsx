@@ -5,6 +5,7 @@ import Link from "next/link";
 import { SeedDatabaseButton, ClearDataButton, LifetimeLicenseButton } from "./seed-buttons";
 import { StripeProductsSection } from "./stripe-products";
 import { SubscriptionPlansSection } from "./subscription-plans";
+import { DevToolsSettings } from "./dev-tools-settings";
 import { requireOrganizationId } from "@/lib/actions/auth-helper";
 import { getProductSyncOverview } from "@/lib/stripe/product-sync";
 import {
@@ -85,6 +86,9 @@ export default async function DeveloperSettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Debug Tools Visibility */}
+      <DevToolsSettings />
 
       {/* Warning Banner */}
       <div className="rounded-lg border border-[var(--warning)]/30 bg-[var(--warning)]/10 px-4 py-3">

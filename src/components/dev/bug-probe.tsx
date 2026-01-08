@@ -20,6 +20,7 @@ import {
   GripHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getDevSettings } from "@/lib/utils/dev-settings";
 
 // Only available for the developer account
 const DEV_EMAIL = "cameron@houseandhomephoto.com";
@@ -92,11 +93,36 @@ export function BugProbe() {
   const [isDraggingHud, setIsDraggingHud] = useState(false);
   const hudDragStartRef = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
 
+  // Dev settings visibility state
+  const [hideBugProbe, setHideBugProbe] = useState(false);
+  const [hideHUD, setHideHUD] = useState(false);
+
   // Generate session ID on client only to avoid hydration mismatch
   useEffect(() => {
     if (!sessionIdRef.current) {
       sessionIdRef.current = crypto.randomUUID();
     }
+  }, []);
+
+  // Load dev settings on mount and listen for changes
+  useEffect(() => {
+    const loadSettings = () => {
+      const settings = getDevSettings();
+      setHideBugProbe(settings.hideBugProbe);
+      setHideHUD(settings.hideHUD);
+    };
+
+    loadSettings();
+
+    // Listen for storage changes (in case settings change in another tab/component)
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "ppos_dev_settings") {
+        loadSettings();
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
   const isDeveloper =
@@ -519,9 +545,13 @@ export function BugProbe() {
 
   if (!isDeveloper) return null;
 
+  // If both are hidden via dev settings, render nothing
+  if (hideBugProbe && hideHUD) return null;
+
   return (
     <>
       {/* Inline HUD for quick debugging - draggable and minimizable */}
+      {!hideHUD && (
       <div
         className="pointer-events-none fixed z-[9998]"
         style={{ left: hudPosition.x, top: hudPosition.y, width: hudMinimized ? "auto" : 260 }}
@@ -570,7 +600,9 @@ export function BugProbe() {
           )}
         </div>
       </div>
+      )}
 
+      {!hideBugProbe && (
       <div className="pointer-events-none fixed bottom-4 right-4 z-[9999] w-full max-w-[360px] text-sm">
         {isOpen ? (
           <div className="pointer-events-auto rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#0f0f10] text-white shadow-2xl">
@@ -764,6 +796,7 @@ export function BugProbe() {
         </div>
       )}
       </div>
+      )}
     </>
   );
 }

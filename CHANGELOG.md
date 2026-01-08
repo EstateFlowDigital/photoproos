@@ -18,6 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Settings moved to its own section at the bottom
 
 ### Added
+- **Developer Tools Visibility Settings** - Toggle visibility of debugging overlays from Settings → Developer
+  - New settings page section with toggles for Bug Probe panel, HUD overlay, and Debug Banner
+  - Settings persist to localStorage and sync across tabs
+  - Each component (BugProbe, DebugBanner) respects the visibility settings
+  - Created `dev-settings.ts` utility for centralized settings management
 - **Comprehensive Messaging System** - Full-featured team and client communication platform
   - **Database Models** (6 new models):
     - `Conversation` - Container for all message threads with type (direct/group/channel/client_support)

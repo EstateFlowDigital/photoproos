@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
+import { getDevSettings } from "@/lib/utils/dev-settings";
 
 type CapturedError = {
   type: "error" | "rejection";
@@ -19,6 +20,27 @@ export function DebugBanner({ route: routeProp }: DebugBannerProps) {
   const route = routeProp || pathname;
   const [open, setOpen] = useState(false);
   const [errors, setErrors] = useState<CapturedError[]>([]);
+  const [isHidden, setIsHidden] = useState(false);
+
+  // Load dev settings on mount and listen for changes
+  useEffect(() => {
+    const loadSettings = () => {
+      const settings = getDevSettings();
+      setIsHidden(settings.hideDebugBanner);
+    };
+
+    loadSettings();
+
+    // Listen for storage changes (in case settings change in another tab/component)
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "ppos_dev_settings") {
+        loadSettings();
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
 
   const addError = useCallback((err: CapturedError) => {
     setErrors((prev) => [err, ...prev].slice(0, 20));
@@ -64,6 +86,9 @@ export function DebugBanner({ route: routeProp }: DebugBannerProps) {
       window.removeEventListener("keydown", handleKey);
     };
   }, [addError]);
+
+  // If hidden via dev settings, render nothing
+  if (isHidden) return null;
 
   if (!open && errors.length === 0) {
     return (
