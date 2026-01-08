@@ -60,12 +60,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Now correctly uses hasLifetimeLicense boolean flag
   - Updated Developer Settings UI to show accurate feature list
 
-- **React Error #301 on Notifications Page** - Fixed "useContext only works in Client Components" error
+- **React Error #301 on Dashboard Pages** - Fixed "useContext only works in Client Components" error
   - Root cause 1: notifications-page-client.tsx imported ActivityData type from @/lib/utils/activity.ts
   - The activity.ts file imported prisma (server-only) at module level, causing bundler to include server code
   - Solution: Created new @/lib/types/activity.ts with client-safe types and pure functions
   - Root cause 2: Barrel import from @/components/dashboard loaded all exports including complex client components
-  - Solution: Changed PageHeader import to use direct path (@/components/dashboard/page-header)
+  - Solution: Removed complex client components from barrel export (WidgetDashboard, AddWidgetModal,
+    DashboardCustomizePanel, InvoiceBuilder, ServiceSelector, etc.)
+  - These components should now be imported directly from their files
+  - Fixed leads page and notifications page to use direct imports
   - Server actions still import from @/lib/utils/activity.ts for logActivity function
 
 - **Toast API Usage in Widget Modal** - Fixed showToast calls using wrong syntax
