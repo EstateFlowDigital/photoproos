@@ -80,6 +80,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `/properties/new` - Property website creation form
     - `/questionnaires/templates/new` - Questionnaire template creation form
     - `/contracts/[id]/edit` - Contract editing form with tabs
+    - `/contracts/new` - Contract creation form with stats and available templates
+    - `/contracts/templates/new` - Contract template creation with template variables card
+    - `/invoices/[id]/edit` - Invoice editing with invoice summary card
+    - `/brokerages/new` - Brokerage creation with agent stats
+    - `/brokerages/[id]/edit` - Brokerage editing with brokerage info card
+    - `/billing/estimates/new` - Estimate creation with acceptance stats
+    - `/billing/estimates/[id]/edit` - Estimate editing with estimate summary card
+    - `/billing/credit-notes/new` - Credit note creation with credit stats
     - `/settings/marketing` - Marketing settings page
   - Improved mobile responsiveness with proper flex-wrap and responsive grids
   - Consistent styling using design system tokens (--card, --card-border, --primary, etc.)
