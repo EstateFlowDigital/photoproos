@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Industry-Based Navigation Structure** - Restructured dashboard sidebar for better organization
+  - Navigation now organized into clear sections: Workspace → Clients → Industry → Settings
+  - Each selected industry gets its own collapsible section with relevant modules
+  - Industry sections display colored dot indicators matching industry brand colors
+  - Modules can appear in multiple industry sections where relevant (e.g., Galleries in Real Estate and Events)
+  - Workspace section contains core tools: Dashboard, Projects, Forms, Messages, Achievements
+  - Clients section groups client-facing modules: Inbox, Leads, Clients, Questionnaires, Reviews
+  - Settings moved to its own section at the bottom
+
 ### Added
 - **Comprehensive Messaging System** - Full-featured team and client communication platform
   - **Database Models** (6 new models):
