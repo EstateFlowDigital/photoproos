@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { PageHeader } from "@/components/dashboard";
+import { PageHeader } from "@/components/dashboard/page-header";
 import type { NotificationData } from "@/lib/actions/notifications";
 import type { ActivityData } from "@/lib/types/activity";
 import { VirtualList } from "@/components/ui/virtual-list";

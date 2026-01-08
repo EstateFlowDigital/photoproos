@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import { isSuperAdmin } from "@/lib/auth/super-admin";
 import { currentUser } from "@clerk/nextjs/server";
-import type { FeatureFlagCategory, AdminActionType } from "@prisma/client";
+import type { FeatureFlagCategory, AdminActionType, AnnouncementType, AnnouncementPriority, AnnouncementAudience } from "@prisma/client";
 
 // ============================================================================
 // TYPES
@@ -1506,5 +1506,484 @@ export async function getSystemHealthStats(): Promise<
   } catch (error) {
     console.error("[SuperAdmin] Error fetching system stats:", error);
     return fail("Failed to fetch stats");
+  }
+}
+
+// ============================================================================
+// ANNOUNCEMENTS
+// ============================================================================
+
+export interface AnnouncementListItem {
+  id: string;
+  title: string;
+  content: string;
+  type: AnnouncementType;
+  priority: AnnouncementPriority;
+  audience: AnnouncementAudience;
+  targetOrgIds: string[];
+  dismissible: boolean;
+  showBanner: boolean;
+  bannerColor: string | null;
+  ctaLabel: string | null;
+  ctaUrl: string | null;
+  publishedAt: Date;
+  expiresAt: Date | null;
+  isActive: boolean;
+  createdByUserId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  _count: {
+    readStatuses: number;
+  };
+}
+
+export interface CreateAnnouncementInput {
+  title: string;
+  content: string;
+  type: AnnouncementType;
+  priority: AnnouncementPriority;
+  audience: AnnouncementAudience;
+  targetOrgIds?: string[];
+  dismissible?: boolean;
+  showBanner?: boolean;
+  bannerColor?: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+  publishedAt?: Date;
+  expiresAt?: Date;
+}
+
+export interface UpdateAnnouncementInput extends Partial<CreateAnnouncementInput> {
+  isActive?: boolean;
+}
+
+/**
+ * Get all announcements for admin view
+ */
+export async function getAnnouncements(options?: {
+  limit?: number;
+  offset?: number;
+  type?: AnnouncementType | "all";
+  audience?: AnnouncementAudience | "all";
+  activeOnly?: boolean;
+}): Promise<ActionResult<{ announcements: AnnouncementListItem[]; total: number }>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const { limit = 20, offset = 0, type, audience, activeOnly } = options || {};
+
+    // Build where clause
+    const where: {
+      type?: AnnouncementType;
+      audience?: AnnouncementAudience;
+      isActive?: boolean;
+    } = {};
+
+    if (type && type !== "all") {
+      where.type = type;
+    }
+    if (audience && audience !== "all") {
+      where.audience = audience;
+    }
+    if (activeOnly) {
+      where.isActive = true;
+    }
+
+    const [announcements, total] = await Promise.all([
+      prisma.announcement.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+        include: {
+          _count: {
+            select: { readStatuses: true },
+          },
+        },
+      }),
+      prisma.announcement.count({ where }),
+    ]);
+
+    return ok({ announcements: announcements as AnnouncementListItem[], total });
+  } catch (error) {
+    console.error("[SuperAdmin] Error fetching announcements:", error);
+    return fail("Failed to fetch announcements");
+  }
+}
+
+/**
+ * Get a single announcement by ID
+ */
+export async function getAnnouncementById(
+  id: string
+): Promise<ActionResult<AnnouncementListItem & { readStatuses: { userId: string; readAt: Date; isDismissed: boolean }[] }>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const announcement = await prisma.announcement.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { readStatuses: true },
+        },
+        readStatuses: {
+          take: 100,
+          orderBy: { readAt: "desc" },
+          select: {
+            userId: true,
+            readAt: true,
+            isDismissed: true,
+          },
+        },
+      },
+    });
+
+    if (!announcement) {
+      return fail("Announcement not found");
+    }
+
+    return ok(announcement as AnnouncementListItem & { readStatuses: { userId: string; readAt: Date; isDismissed: boolean }[] });
+  } catch (error) {
+    console.error("[SuperAdmin] Error fetching announcement:", error);
+    return fail("Failed to fetch announcement");
+  }
+}
+
+/**
+ * Create a new announcement
+ */
+export async function createAnnouncement(
+  input: CreateAnnouncementInput
+): Promise<ActionResult<AnnouncementListItem>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+    if (!user) {
+      return fail("No user found");
+    }
+
+    const announcement = await prisma.announcement.create({
+      data: {
+        title: input.title,
+        content: input.content,
+        type: input.type,
+        priority: input.priority,
+        audience: input.audience,
+        targetOrgIds: input.targetOrgIds || [],
+        dismissible: input.dismissible ?? true,
+        showBanner: input.showBanner ?? true,
+        bannerColor: input.bannerColor,
+        ctaLabel: input.ctaLabel,
+        ctaUrl: input.ctaUrl,
+        publishedAt: input.publishedAt || new Date(),
+        expiresAt: input.expiresAt,
+        createdByUserId: user.id,
+      },
+      include: {
+        _count: {
+          select: { readStatuses: true },
+        },
+      },
+    });
+
+    // Log the action
+    await prisma.adminAuditLog.create({
+      data: {
+        adminUserId: user.id,
+        actionType: "other",
+        description: `Created announcement: "${input.title}"`,
+        targetId: announcement.id,
+        targetType: "announcement",
+        newValue: {
+          title: input.title,
+          type: input.type,
+          audience: input.audience,
+        },
+      },
+    });
+
+    revalidatePath("/super-admin/announcements");
+    return ok(announcement as AnnouncementListItem);
+  } catch (error) {
+    console.error("[SuperAdmin] Error creating announcement:", error);
+    return fail("Failed to create announcement");
+  }
+}
+
+/**
+ * Update an existing announcement
+ */
+export async function updateAnnouncement(
+  id: string,
+  input: UpdateAnnouncementInput
+): Promise<ActionResult<AnnouncementListItem>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+    if (!user) {
+      return fail("No user found");
+    }
+
+    // Get existing announcement
+    const existing = await prisma.announcement.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      return fail("Announcement not found");
+    }
+
+    const announcement = await prisma.announcement.update({
+      where: { id },
+      data: {
+        ...(input.title !== undefined && { title: input.title }),
+        ...(input.content !== undefined && { content: input.content }),
+        ...(input.type !== undefined && { type: input.type }),
+        ...(input.priority !== undefined && { priority: input.priority }),
+        ...(input.audience !== undefined && { audience: input.audience }),
+        ...(input.targetOrgIds !== undefined && { targetOrgIds: input.targetOrgIds }),
+        ...(input.dismissible !== undefined && { dismissible: input.dismissible }),
+        ...(input.showBanner !== undefined && { showBanner: input.showBanner }),
+        ...(input.bannerColor !== undefined && { bannerColor: input.bannerColor }),
+        ...(input.ctaLabel !== undefined && { ctaLabel: input.ctaLabel }),
+        ...(input.ctaUrl !== undefined && { ctaUrl: input.ctaUrl }),
+        ...(input.publishedAt !== undefined && { publishedAt: input.publishedAt }),
+        ...(input.expiresAt !== undefined && { expiresAt: input.expiresAt }),
+        ...(input.isActive !== undefined && { isActive: input.isActive }),
+      },
+      include: {
+        _count: {
+          select: { readStatuses: true },
+        },
+      },
+    });
+
+    // Log the action
+    await prisma.adminAuditLog.create({
+      data: {
+        adminUserId: user.id,
+        actionType: "other",
+        description: `Updated announcement: "${announcement.title}"`,
+        targetId: announcement.id,
+        targetType: "announcement",
+        previousValue: {
+          title: existing.title,
+          isActive: existing.isActive,
+        },
+        newValue: input,
+      },
+    });
+
+    revalidatePath("/super-admin/announcements");
+    return ok(announcement as AnnouncementListItem);
+  } catch (error) {
+    console.error("[SuperAdmin] Error updating announcement:", error);
+    return fail("Failed to update announcement");
+  }
+}
+
+/**
+ * Delete an announcement
+ */
+export async function deleteAnnouncement(id: string): Promise<ActionResult<void>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+    if (!user) {
+      return fail("No user found");
+    }
+
+    const announcement = await prisma.announcement.findUnique({
+      where: { id },
+    });
+
+    if (!announcement) {
+      return fail("Announcement not found");
+    }
+
+    await prisma.announcement.delete({
+      where: { id },
+    });
+
+    // Log the action
+    await prisma.adminAuditLog.create({
+      data: {
+        adminUserId: user.id,
+        actionType: "other",
+        description: `Deleted announcement: "${announcement.title}"`,
+        targetId: id,
+        targetType: "announcement",
+        previousValue: {
+          title: announcement.title,
+          type: announcement.type,
+        },
+      },
+    });
+
+    revalidatePath("/super-admin/announcements");
+    return success();
+  } catch (error) {
+    console.error("[SuperAdmin] Error deleting announcement:", error);
+    return fail("Failed to delete announcement");
+  }
+}
+
+/**
+ * Get announcement statistics
+ */
+export async function getAnnouncementStats(): Promise<
+  ActionResult<{
+    total: number;
+    active: number;
+    expired: number;
+    byType: Record<AnnouncementType, number>;
+    byPriority: Record<AnnouncementPriority, number>;
+    totalReads: number;
+    totalDismissals: number;
+  }>
+> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const now = new Date();
+
+    const [
+      total,
+      active,
+      expired,
+      byTypeResults,
+      byPriorityResults,
+      totalReads,
+      totalDismissals,
+    ] = await Promise.all([
+      prisma.announcement.count(),
+      prisma.announcement.count({
+        where: {
+          isActive: true,
+          OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+        },
+      }),
+      prisma.announcement.count({
+        where: {
+          OR: [{ isActive: false }, { expiresAt: { lte: now } }],
+        },
+      }),
+      prisma.announcement.groupBy({
+        by: ["type"],
+        _count: true,
+      }),
+      prisma.announcement.groupBy({
+        by: ["priority"],
+        _count: true,
+      }),
+      prisma.announcementRead.count(),
+      prisma.announcementRead.count({
+        where: { isDismissed: true },
+      }),
+    ]);
+
+    // Convert grouped results to record format
+    const byType = {
+      info: 0,
+      feature: 0,
+      maintenance: 0,
+      warning: 0,
+      success: 0,
+      update: 0,
+      promotion: 0,
+    } as Record<AnnouncementType, number>;
+
+    for (const result of byTypeResults) {
+      byType[result.type] = result._count;
+    }
+
+    const byPriority = {
+      low: 0,
+      medium: 0,
+      high: 0,
+      urgent: 0,
+    } as Record<AnnouncementPriority, number>;
+
+    for (const result of byPriorityResults) {
+      byPriority[result.priority] = result._count;
+    }
+
+    return ok({
+      total,
+      active,
+      expired,
+      byType,
+      byPriority,
+      totalReads,
+      totalDismissals,
+    });
+  } catch (error) {
+    console.error("[SuperAdmin] Error fetching announcement stats:", error);
+    return fail("Failed to fetch announcement stats");
+  }
+}
+
+/**
+ * Toggle announcement active status
+ */
+export async function toggleAnnouncementActive(
+  id: string
+): Promise<ActionResult<{ isActive: boolean }>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+    if (!user) {
+      return fail("No user found");
+    }
+
+    const existing = await prisma.announcement.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      return fail("Announcement not found");
+    }
+
+    const announcement = await prisma.announcement.update({
+      where: { id },
+      data: { isActive: !existing.isActive },
+    });
+
+    // Log the action
+    await prisma.adminAuditLog.create({
+      data: {
+        adminUserId: user.id,
+        actionType: "other",
+        description: `${announcement.isActive ? "Activated" : "Deactivated"} announcement: "${announcement.title}"`,
+        targetId: id,
+        targetType: "announcement",
+        previousValue: { isActive: existing.isActive },
+        newValue: { isActive: announcement.isActive },
+      },
+    });
+
+    revalidatePath("/super-admin/announcements");
+    return ok({ isActive: announcement.isActive });
+  } catch (error) {
+    console.error("[SuperAdmin] Error toggling announcement:", error);
+    return fail("Failed to toggle announcement");
   }
 }

@@ -140,6 +140,45 @@ function SettingsIcon({ className }: { className?: string }) {
   );
 }
 
+function MegaphoneIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="m3 11 18-5v12L3 13v-2z" />
+      <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
+    </svg>
+  );
+}
+
+function FileTextIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+      <path d="M10 9H8" />
+      <path d="M16 13H8" />
+      <path d="M16 17H8" />
+    </svg>
+  );
+}
+
 function ShieldIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -184,9 +223,11 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: "/super-admin", label: "Dashboard", icon: LayoutDashboardIcon },
   { href: "/super-admin/users", label: "Users", icon: UsersIcon },
+  { href: "/super-admin/announcements", label: "Announcements", icon: MegaphoneIcon },
   { href: "/super-admin/support", label: "Support", icon: TicketIcon },
   { href: "/super-admin/feedback", label: "Feedback", icon: MessageSquareIcon },
   { href: "/super-admin/roadmap", label: "Roadmap", icon: MapIcon },
+  { href: "/super-admin/logs", label: "System Logs", icon: FileTextIcon },
   { href: "/super-admin/developer", label: "Developer", icon: CodeIcon },
   { href: "/super-admin/config", label: "Configuration", icon: SettingsIcon },
 ];

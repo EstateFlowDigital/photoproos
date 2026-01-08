@@ -9803,3 +9803,92 @@ model ImpersonationSession {
   @@index([targetUserId])
   @@index([isActive])
 }
+
+// ==================== ANNOUNCEMENTS & BROADCASTS ====================
+
+enum AnnouncementType {
+  info           // General information
+  feature        // New feature announcement
+  maintenance    // Scheduled maintenance notice
+  warning        // Important warning
+  success        // Positive news/celebration
+  update         // Platform update
+  promotion      // Marketing promotion
+}
+
+enum AnnouncementPriority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum AnnouncementAudience {
+  all            // All users
+  free_users     // Free plan only
+  paid_users     // Any paid plan
+  starter_users  // Starter plan only
+  pro_users      // Pro plan only
+  enterprise     // Enterprise only
+  specific_orgs  // Specific organizations (via targetOrgIds)
+}
+
+// Platform Announcement - Admin broadcasts to users
+model Announcement {
+  id              String               @id @default(cuid())
+
+  // Content
+  title           String
+  content         String               @db.Text
+  type            AnnouncementType     @default(info)
+  priority        AnnouncementPriority @default(medium)
+
+  // Targeting
+  audience        AnnouncementAudience @default(all)
+  targetOrgIds    String[]             @default([]) // For specific_orgs audience
+
+  // Display options
+  dismissible     Boolean              @default(true)  // Can users dismiss this?
+  showBanner      Boolean              @default(true)  // Show as banner at top of page?
+  bannerColor     String?                              // Custom banner color
+  ctaLabel        String?                              // Call-to-action button text
+  ctaUrl          String?                              // Call-to-action URL
+
+  // Scheduling
+  publishedAt     DateTime             @default(now())
+  expiresAt       DateTime?                            // Auto-expire after this time
+  isActive        Boolean              @default(true)
+
+  // Admin tracking
+  createdByUserId String                               // Clerk user ID of admin
+
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  // Relations
+  readStatuses    AnnouncementRead[]
+
+  @@index([isActive])
+  @@index([publishedAt])
+  @@index([audience])
+  @@index([type])
+}
+
+// Track which users have read/dismissed announcements
+model AnnouncementRead {
+  id              String      @id @default(cuid())
+  announcementId  String
+  userId          String      // Clerk user ID
+  organizationId  String?     // Organization ID at time of reading
+
+  readAt          DateTime    @default(now())
+  isDismissed     Boolean     @default(false) // User explicitly dismissed
+  dismissedAt     DateTime?
+
+  // Relations
+  announcement    Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, userId])
+  @@index([userId])
+  @@index([announcementId])
+}
