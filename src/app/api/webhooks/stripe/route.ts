@@ -18,6 +18,7 @@ import { prisma } from "@/lib/db";
 import { sendPaymentReceiptEmail, sendOrderConfirmationEmail } from "@/lib/email/send";
 import { notifySlackPayment } from "@/lib/actions/slack";
 import { processReferralConversion } from "@/lib/actions/platform-referrals";
+import { completeDomainPurchase } from "@/lib/actions/domain-purchases";
 import type Stripe from "stripe";
 
 /**
@@ -114,6 +115,13 @@ async function handleCheckoutSessionCompleted(
   const galleryId = session.metadata?.galleryId;
   const organizationId = session.metadata?.organizationId;
   const clientId = session.metadata?.clientId;
+  const domainPurchaseId = session.metadata?.domainPurchaseId;
+
+  // Handle domain purchases
+  if (domainPurchaseId) {
+    await handleDomainPurchaseCompleted(session, domainPurchaseId);
+    return;
+  }
 
   // Handle order payments
   if (orderId) {
@@ -482,5 +490,34 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     }
   } else {
     console.log(`[Stripe Webhook] No organization found for customer ${customerId}`);
+  }
+}
+
+/**
+ * Handle domain purchase completed
+ * Triggers domain registration with Cloudflare
+ */
+async function handleDomainPurchaseCompleted(
+  session: Stripe.Checkout.Session,
+  purchaseId: string
+) {
+  console.log(`[Domain Purchase] Processing domain purchase ${purchaseId}`);
+
+  try {
+    const result = await completeDomainPurchase(
+      purchaseId,
+      session.id,
+      typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : session.payment_intent?.id || null
+    );
+
+    if (result.success) {
+      console.log(`[Domain Purchase] Successfully initiated registration for ${result.data?.domain}`);
+    } else {
+      console.error(`[Domain Purchase] Failed to complete purchase: ${result.error}`);
+    }
+  } catch (error) {
+    console.error("[Domain Purchase] Error processing domain purchase:", error);
   }
 }

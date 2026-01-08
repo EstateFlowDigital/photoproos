@@ -108,6 +108,13 @@ export async function createEstimate(
     return fail("Organization not found");
   }
 
+  // Check plan limit for monthly estimates
+  const { enforcePlanLimit } = await import("./plan-enforcement");
+  const limitCheck = await enforcePlanLimit("estimates_per_month");
+  if (!limitCheck.success) {
+    return fail(limitCheck.error);
+  }
+
   let clientInfo = {
     clientName: input.clientName,
     clientEmail: input.clientEmail,

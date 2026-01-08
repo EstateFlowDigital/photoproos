@@ -142,6 +142,13 @@ export async function createPropertyWebsite(
   data: PropertyWebsiteInput
 ): Promise<{ success: boolean; id?: string; error?: string }> {
   try {
+    // Check plan limit for active properties
+    const { enforcePlanLimit } = await import("./plan-enforcement");
+    const limitCheck = await enforcePlanLimit("properties_active");
+    if (!limitCheck.success) {
+      return fail(limitCheck.error);
+    }
+
     // Verify project exists
     const project = await prisma.project.findUnique({
       where: { id: data.projectId },

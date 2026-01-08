@@ -196,6 +196,24 @@ function ShieldIcon({ className }: { className?: string }) {
   );
 }
 
+function TagIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" />
+      <circle cx="7.5" cy="7.5" r=".5" fill="currentColor" />
+    </svg>
+  );
+}
+
 function ArrowLeftIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -223,6 +241,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: "/super-admin", label: "Dashboard", icon: LayoutDashboardIcon },
   { href: "/super-admin/users", label: "Users", icon: UsersIcon },
+  { href: "/super-admin/discounts", label: "Discounts", icon: TagIcon },
   { href: "/super-admin/announcements", label: "Announcements", icon: MegaphoneIcon },
   { href: "/super-admin/support", label: "Support", icon: TicketIcon },
   { href: "/super-admin/feedback", label: "Feedback", icon: MessageSquareIcon },

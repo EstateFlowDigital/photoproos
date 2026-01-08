@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import { isSuperAdmin } from "@/lib/auth/super-admin";
 import { currentUser } from "@clerk/nextjs/server";
-import type { FeatureFlagCategory, AdminActionType, AnnouncementType, AnnouncementPriority, AnnouncementAudience } from "@prisma/client";
+import type { FeatureFlagCategory, AdminActionType, AnnouncementType, AnnouncementPriority, AnnouncementAudience, DiscountType, DiscountScope, DiscountAppliesTo } from "@prisma/client";
 
 // ============================================================================
 // TYPES
@@ -1985,5 +1985,559 @@ export async function toggleAnnouncementActive(
   } catch (error) {
     console.error("[SuperAdmin] Error toggling announcement:", error);
     return fail("Failed to toggle announcement");
+  }
+}
+
+// ============================================================================
+// DISCOUNT CODES
+// ============================================================================
+
+export interface DiscountCodeListItem {
+  id: string;
+  code: string;
+  name: string | null;
+  description: string | null;
+  discountType: DiscountType;
+  discountValue: number;
+  scope: DiscountScope;
+  appliesTo: DiscountAppliesTo;
+  maxUses: number | null;
+  usedCount: number;
+  usagePerUser: number;
+  minPurchase: number | null;
+  maxDiscount: number | null;
+  validFrom: Date;
+  validUntil: Date | null;
+  isActive: boolean;
+  isPublic: boolean;
+  shareableSlug: string | null;
+  qrCodeUrl: string | null;
+  totalSavings: number;
+  createdAt: Date;
+  updatedAt: Date;
+  createdByUserId: string | null;
+  organizationId: string | null;
+  _count: {
+    usages: number;
+  };
+}
+
+export interface CreateDiscountInput {
+  code: string;
+  name?: string;
+  description?: string;
+  discountType: DiscountType;
+  discountValue: number;
+  scope: DiscountScope;
+  appliesTo?: DiscountAppliesTo;
+  maxUses?: number;
+  usagePerUser?: number;
+  minPurchase?: number;
+  maxDiscount?: number;
+  validFrom?: Date;
+  validUntil?: Date;
+  isActive?: boolean;
+  isPublic?: boolean;
+  shareableSlug?: string;
+}
+
+export interface UpdateDiscountInput extends Partial<CreateDiscountInput> {
+  id: string;
+}
+
+/**
+ * Generate a unique shareable slug for a discount
+ */
+function generateSlug(code: string): string {
+  const base = code.toLowerCase().replace(/[^a-z0-9]/g, "-");
+  const random = Math.random().toString(36).substring(2, 8);
+  return `${base}-${random}`;
+}
+
+/**
+ * Get all platform-level discount codes
+ */
+export async function getPlatformDiscounts(options?: {
+  limit?: number;
+  offset?: number;
+  activeOnly?: boolean;
+  search?: string;
+}): Promise<ActionResult<{ discounts: DiscountCodeListItem[]; total: number }>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const { limit = 20, offset = 0, activeOnly, search } = options || {};
+
+    // Build where clause for platform-level discounts
+    const where: {
+      scope: DiscountScope;
+      organizationId: null;
+      isActive?: boolean;
+      OR?: Array<{ code?: { contains: string; mode: "insensitive" }; name?: { contains: string; mode: "insensitive" } }>;
+    } = {
+      scope: "platform",
+      organizationId: null,
+    };
+
+    if (activeOnly) {
+      where.isActive = true;
+    }
+
+    if (search) {
+      where.OR = [
+        { code: { contains: search, mode: "insensitive" } },
+        { name: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    const [discounts, total] = await Promise.all([
+      prisma.discountCode.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+        include: {
+          _count: {
+            select: { usages: true },
+          },
+        },
+      }),
+      prisma.discountCode.count({ where }),
+    ]);
+
+    return ok({ discounts: discounts as DiscountCodeListItem[], total });
+  } catch (error) {
+    console.error("[SuperAdmin] Error fetching platform discounts:", error);
+    return fail("Failed to fetch discounts");
+  }
+}
+
+/**
+ * Get a single discount code by ID
+ */
+export async function getDiscountById(
+  id: string
+): Promise<ActionResult<DiscountCodeListItem & { usages: Array<{ id: string; clientEmail: string | null; userId: string | null; discountAmount: number; createdAt: Date; source: string | null }> }>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const discount = await prisma.discountCode.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { usages: true },
+        },
+        usages: {
+          take: 50,
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            clientEmail: true,
+            userId: true,
+            discountAmount: true,
+            createdAt: true,
+            source: true,
+          },
+        },
+      },
+    });
+
+    if (!discount) {
+      return fail("Discount not found");
+    }
+
+    return ok(discount as DiscountCodeListItem & { usages: Array<{ id: string; clientEmail: string | null; userId: string | null; discountAmount: number; createdAt: Date; source: string | null }> });
+  } catch (error) {
+    console.error("[SuperAdmin] Error fetching discount:", error);
+    return fail("Failed to fetch discount");
+  }
+}
+
+/**
+ * Create a new platform-level discount code
+ */
+export async function createPlatformDiscount(
+  input: CreateDiscountInput
+): Promise<ActionResult<DiscountCodeListItem>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+    if (!user) {
+      return fail("No user found");
+    }
+
+    // Check if code already exists for platform
+    const existing = await prisma.discountCode.findFirst({
+      where: {
+        code: input.code.toUpperCase(),
+        organizationId: null,
+      },
+    });
+
+    if (existing) {
+      return fail("A discount with this code already exists");
+    }
+
+    // Generate shareable slug if not provided
+    const shareableSlug = input.shareableSlug || generateSlug(input.code);
+
+    const discount = await prisma.discountCode.create({
+      data: {
+        code: input.code.toUpperCase(),
+        name: input.name,
+        description: input.description,
+        discountType: input.discountType,
+        discountValue: input.discountValue,
+        scope: "platform",
+        organizationId: null,
+        createdByUserId: user.id,
+        appliesTo: input.appliesTo || "subscription",
+        maxUses: input.maxUses || 0,
+        usagePerUser: input.usagePerUser || 1,
+        minPurchase: input.minPurchase || 0,
+        maxDiscount: input.maxDiscount,
+        validFrom: input.validFrom || new Date(),
+        validUntil: input.validUntil,
+        isActive: input.isActive ?? true,
+        isPublic: input.isPublic ?? false,
+        shareableSlug,
+      },
+      include: {
+        _count: {
+          select: { usages: true },
+        },
+      },
+    });
+
+    // Log the action
+    await prisma.adminAuditLog.create({
+      data: {
+        adminUserId: user.id,
+        actionType: "other",
+        description: `Created platform discount: ${input.code}`,
+        targetId: discount.id,
+        targetType: "discount",
+        newValue: {
+          code: input.code,
+          discountType: input.discountType,
+          discountValue: input.discountValue,
+        },
+      },
+    });
+
+    revalidatePath("/super-admin/discounts");
+    return ok(discount as DiscountCodeListItem);
+  } catch (error) {
+    console.error("[SuperAdmin] Error creating discount:", error);
+    return fail("Failed to create discount");
+  }
+}
+
+/**
+ * Update a platform-level discount code
+ */
+export async function updatePlatformDiscount(
+  input: UpdateDiscountInput
+): Promise<ActionResult<DiscountCodeListItem>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+    if (!user) {
+      return fail("No user found");
+    }
+
+    const existing = await prisma.discountCode.findUnique({
+      where: { id: input.id },
+    });
+
+    if (!existing) {
+      return fail("Discount not found");
+    }
+
+    // If code is being changed, check for duplicates
+    if (input.code && input.code.toUpperCase() !== existing.code) {
+      const duplicate = await prisma.discountCode.findFirst({
+        where: {
+          code: input.code.toUpperCase(),
+          organizationId: null,
+          id: { not: input.id },
+        },
+      });
+
+      if (duplicate) {
+        return fail("A discount with this code already exists");
+      }
+    }
+
+    const discount = await prisma.discountCode.update({
+      where: { id: input.id },
+      data: {
+        ...(input.code && { code: input.code.toUpperCase() }),
+        ...(input.name !== undefined && { name: input.name }),
+        ...(input.description !== undefined && { description: input.description }),
+        ...(input.discountType && { discountType: input.discountType }),
+        ...(input.discountValue !== undefined && { discountValue: input.discountValue }),
+        ...(input.appliesTo && { appliesTo: input.appliesTo }),
+        ...(input.maxUses !== undefined && { maxUses: input.maxUses }),
+        ...(input.usagePerUser !== undefined && { usagePerUser: input.usagePerUser }),
+        ...(input.minPurchase !== undefined && { minPurchase: input.minPurchase }),
+        ...(input.maxDiscount !== undefined && { maxDiscount: input.maxDiscount }),
+        ...(input.validFrom && { validFrom: input.validFrom }),
+        ...(input.validUntil !== undefined && { validUntil: input.validUntil }),
+        ...(input.isActive !== undefined && { isActive: input.isActive }),
+        ...(input.isPublic !== undefined && { isPublic: input.isPublic }),
+        ...(input.shareableSlug && { shareableSlug: input.shareableSlug }),
+      },
+      include: {
+        _count: {
+          select: { usages: true },
+        },
+      },
+    });
+
+    // Log the action
+    await prisma.adminAuditLog.create({
+      data: {
+        adminUserId: user.id,
+        actionType: "other",
+        description: `Updated platform discount: ${discount.code}`,
+        targetId: discount.id,
+        targetType: "discount",
+        previousValue: { code: existing.code, isActive: existing.isActive },
+        newValue: input,
+      },
+    });
+
+    revalidatePath("/super-admin/discounts");
+    return ok(discount as DiscountCodeListItem);
+  } catch (error) {
+    console.error("[SuperAdmin] Error updating discount:", error);
+    return fail("Failed to update discount");
+  }
+}
+
+/**
+ * Delete a platform-level discount code
+ */
+export async function deletePlatformDiscount(id: string): Promise<ActionResult<void>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+    if (!user) {
+      return fail("No user found");
+    }
+
+    const discount = await prisma.discountCode.findUnique({
+      where: { id },
+    });
+
+    if (!discount) {
+      return fail("Discount not found");
+    }
+
+    await prisma.discountCode.delete({
+      where: { id },
+    });
+
+    // Log the action
+    await prisma.adminAuditLog.create({
+      data: {
+        adminUserId: user.id,
+        actionType: "other",
+        description: `Deleted platform discount: ${discount.code}`,
+        targetId: id,
+        targetType: "discount",
+        previousValue: { code: discount.code, discountValue: discount.discountValue },
+      },
+    });
+
+    revalidatePath("/super-admin/discounts");
+    return success();
+  } catch (error) {
+    console.error("[SuperAdmin] Error deleting discount:", error);
+    return fail("Failed to delete discount");
+  }
+}
+
+/**
+ * Toggle discount active status
+ */
+export async function toggleDiscountActive(
+  id: string
+): Promise<ActionResult<{ isActive: boolean }>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+    if (!user) {
+      return fail("No user found");
+    }
+
+    const existing = await prisma.discountCode.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      return fail("Discount not found");
+    }
+
+    const discount = await prisma.discountCode.update({
+      where: { id },
+      data: { isActive: !existing.isActive },
+    });
+
+    // Log the action
+    await prisma.adminAuditLog.create({
+      data: {
+        adminUserId: user.id,
+        actionType: "other",
+        description: `${discount.isActive ? "Activated" : "Deactivated"} discount: ${discount.code}`,
+        targetId: id,
+        targetType: "discount",
+        previousValue: { isActive: existing.isActive },
+        newValue: { isActive: discount.isActive },
+      },
+    });
+
+    revalidatePath("/super-admin/discounts");
+    return ok({ isActive: discount.isActive });
+  } catch (error) {
+    console.error("[SuperAdmin] Error toggling discount:", error);
+    return fail("Failed to toggle discount");
+  }
+}
+
+/**
+ * Get discount statistics
+ */
+export async function getDiscountStats(): Promise<
+  ActionResult<{
+    totalPlatformDiscounts: number;
+    activePlatformDiscounts: number;
+    totalRedemptions: number;
+    totalSavings: number;
+    topDiscounts: Array<{ code: string; usedCount: number; totalSavings: number }>;
+    recentRedemptions: number;
+  }>
+> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const [
+      totalPlatformDiscounts,
+      activePlatformDiscounts,
+      totalRedemptions,
+      savingsAggregate,
+      topDiscounts,
+      recentRedemptions,
+    ] = await Promise.all([
+      prisma.discountCode.count({
+        where: { scope: "platform", organizationId: null },
+      }),
+      prisma.discountCode.count({
+        where: { scope: "platform", organizationId: null, isActive: true },
+      }),
+      prisma.discountCodeUsage.count({
+        where: {
+          discountCode: { scope: "platform", organizationId: null },
+        },
+      }),
+      prisma.discountCode.aggregate({
+        where: { scope: "platform", organizationId: null },
+        _sum: { totalSavings: true },
+      }),
+      prisma.discountCode.findMany({
+        where: { scope: "platform", organizationId: null },
+        orderBy: { usedCount: "desc" },
+        take: 5,
+        select: { code: true, usedCount: true, totalSavings: true },
+      }),
+      prisma.discountCodeUsage.count({
+        where: {
+          createdAt: { gte: sevenDaysAgo },
+          discountCode: { scope: "platform", organizationId: null },
+        },
+      }),
+    ]);
+
+    return ok({
+      totalPlatformDiscounts,
+      activePlatformDiscounts,
+      totalRedemptions,
+      totalSavings: savingsAggregate._sum.totalSavings || 0,
+      topDiscounts,
+      recentRedemptions,
+    });
+  } catch (error) {
+    console.error("[SuperAdmin] Error fetching discount stats:", error);
+    return fail("Failed to fetch discount stats");
+  }
+}
+
+/**
+ * Generate a QR code URL for a discount
+ */
+export async function generateDiscountQrCode(
+  id: string,
+  baseUrl: string
+): Promise<ActionResult<{ qrCodeUrl: string; shareableUrl: string }>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const discount = await prisma.discountCode.findUnique({
+      where: { id },
+    });
+
+    if (!discount) {
+      return fail("Discount not found");
+    }
+
+    // Generate slug if not exists
+    let slug = discount.shareableSlug;
+    if (!slug) {
+      slug = generateSlug(discount.code);
+      await prisma.discountCode.update({
+        where: { id },
+        data: { shareableSlug: slug },
+      });
+    }
+
+    const shareableUrl = `${baseUrl}/discount/${slug}`;
+
+    // Generate QR code using a simple API (can be replaced with actual QR generation)
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(shareableUrl)}`;
+
+    // Update the discount with QR code URL
+    await prisma.discountCode.update({
+      where: { id },
+      data: { qrCodeUrl },
+    });
+
+    revalidatePath("/super-admin/discounts");
+    return ok({ qrCodeUrl, shareableUrl });
+  } catch (error) {
+    console.error("[SuperAdmin] Error generating QR code:", error);
+    return fail("Failed to generate QR code");
   }
 }

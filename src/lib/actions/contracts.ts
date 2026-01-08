@@ -125,6 +125,13 @@ export async function createContract(
   try {
     const organizationId = await requireOrganizationId();
 
+    // Check plan limit for monthly contracts
+    const { enforcePlanLimit } = await import("./plan-enforcement");
+    const limitCheck = await enforcePlanLimit("contracts_per_month");
+    if (!limitCheck.success) {
+      return fail(limitCheck.error);
+    }
+
     const contract = await prisma.contract.create({
       data: {
         organizationId,

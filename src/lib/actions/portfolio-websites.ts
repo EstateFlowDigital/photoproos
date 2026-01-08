@@ -59,6 +59,13 @@ export async function createPortfolioWebsite(data: {
     await requireAuth();
     const organizationId = await requireOrganizationId();
 
+    // Check plan limit for portfolio websites
+    const { enforcePlanLimit } = await import("./plan-enforcement");
+    const limitCheck = await enforcePlanLimit("portfolio_websites");
+    if (!limitCheck.success) {
+      return { success: false, error: limitCheck.error };
+    }
+
     const baseSlug = slugify(data.slug || data.name);
     const slug = await getUniqueSlug(baseSlug);
 

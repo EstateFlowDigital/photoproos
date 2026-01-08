@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Platform Discount & Coupon System** - Comprehensive discount management for Super Admin
+  - Enhanced DiscountCode model with platform vs organization scope
+  - New enums: DiscountScope (platform/organization), DiscountAppliesTo (subscription, services, gallery, etc.)
+  - Extended DiscountType with free_trial and free_months options
+  - Shareable links with unique slugs for easy distribution
+  - QR code generation via external API for discount codes
+  - Usage tracking with source attribution (qr, link, manual, referral)
+  - Super Admin discount management page at `/super-admin/discounts`
+  - Stats dashboard: total codes, active, redemptions, total savings
+  - Create, edit, delete, toggle active discounts
+  - Copy code and share link functionality
+  - Server actions: getPlatformDiscounts, createPlatformDiscount, updatePlatformDiscount, deletePlatformDiscount, toggleDiscountActive, getDiscountStats, generateDiscountQrCode
+
 - **Comprehensive Plan Limits System** - Freemium model with usage-based limits
   - Created `src/lib/plan-limits.ts` with centralized limit definitions
   - Created `src/lib/actions/plan-enforcement.ts` with server-side enforcement
