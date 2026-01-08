@@ -33,10 +33,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated Developer Settings UI to show accurate feature list
 
 - **React Error #301 on Notifications Page** - Fixed "useContext only works in Client Components" error
-  - Root cause: notifications-page-client.tsx imported ActivityData type from @/lib/utils/activity.ts
+  - Root cause 1: notifications-page-client.tsx imported ActivityData type from @/lib/utils/activity.ts
   - The activity.ts file imported prisma (server-only) at module level, causing bundler to include server code
   - Solution: Created new @/lib/types/activity.ts with client-safe types and pure functions
-  - Updated notifications-page-client.tsx to import from the new types file
+  - Root cause 2: Barrel import from @/components/dashboard loaded all exports including complex client components
+  - Solution: Changed PageHeader import to use direct path (@/components/dashboard/page-header)
   - Server actions still import from @/lib/utils/activity.ts for logActivity function
 
 - **Toast API Usage in Widget Modal** - Fixed showToast calls using wrong syntax
