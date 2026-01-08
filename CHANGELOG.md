@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Custom Domain Purchase System** - In-platform domain purchasing for property and portfolio websites
+  - New DomainPurchase model with full purchase tracking and status management
+  - DomainStatus enum: pending_payment, registering, configuring_dns, provisioning_ssl, active, etc.
+  - Cloudflare Registrar API integration for domain registration
+  - Stripe checkout for $30/year domain pricing (SSL included)
+  - Smart domain suggestions based on property address or portfolio name
+  - Real-time domain availability checking with alternative suggestions
+  - Automatic DNS configuration after purchase
+  - Domain purchase modal component for both property and portfolio websites
+  - Stripe webhook handler for domain purchase completion
+  - Server actions: checkDomainAvailability, initiateDomainPurchase, completeDomainPurchase, getOrganizationDomains
+  - Utility functions for generating domain suggestions from addresses/names
+
 - **Platform Discount & Coupon System** - Comprehensive discount management for Super Admin
   - Enhanced DiscountCode model with platform vs organization scope
   - New enums: DiscountScope (platform/organization), DiscountAppliesTo (subscription, services, gallery, etc.)
