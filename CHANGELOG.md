@@ -10,8 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **Industry-Based Navigation Structure** - Restructured dashboard sidebar for better organization
   - Navigation now organized into clear sections: Workspace → Clients → Industry → Settings
-  - Each selected industry gets its own collapsible section with relevant modules
+  - Each selected industry gets its own collapsible dropdown section with relevant modules
+  - Industry sections are collapsible with click-to-expand/collapse behavior
+  - Industry sections auto-expand when containing the currently active page
   - Industry sections display colored dot indicators matching industry brand colors
+  - Simplified industry labels in navigation: "Real Estate", "Commercial", "Events", "Portraits", "Food", "Product"
+  - Added `shortName` field to industry definitions for cleaner navigation display
   - Modules can appear in multiple industry sections where relevant (e.g., Galleries in Real Estate and Events)
   - Workspace section contains core tools: Dashboard, Projects, Forms, Messages, Achievements
   - Clients section groups client-facing modules: Inbox, Leads, Clients, Questionnaires, Reviews

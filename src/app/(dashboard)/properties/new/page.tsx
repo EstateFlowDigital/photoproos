@@ -11,10 +11,10 @@ import { NewPropertyWebsiteClient } from "./new-property-website-client";
 async function getStats(organizationId: string) {
   try {
     const [totalProperties, totalGalleries, recentProperties] = await Promise.all([
-      prisma.propertyWebsite.count({ where: { organizationId } }),
+      prisma.propertyWebsite.count({ where: { project: { organizationId } } }),
       prisma.project.count({ where: { organizationId } }),
       prisma.propertyWebsite.findMany({
-        where: { organizationId },
+        where: { project: { organizationId } },
         orderBy: { createdAt: "desc" },
         take: 3,
         select: {
