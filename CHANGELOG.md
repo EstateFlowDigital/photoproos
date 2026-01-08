@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added getRecentMessagesForWidget and getUnreadMessageCount server actions
 
 ### Fixed
+- **Lifetime License Prisma Error** - Fixed invalid fields in enableLifetimeLicense server action
+  - Removed non-existent fields: storageLimit, galleryLimit, monthlyEmailLimit
+  - Now correctly uses hasLifetimeLicense boolean flag
+  - Updated Developer Settings UI to show accurate feature list
+
 - **React Error #301 on Notifications Page** - Fixed "useContext only works in Client Components" error
   - Root cause: notifications-page-client.tsx imported ActivityData type from @/lib/utils/activity.ts
   - The activity.ts file imported prisma (server-only) at module level, causing bundler to include server code
