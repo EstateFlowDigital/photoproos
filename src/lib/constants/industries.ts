@@ -18,6 +18,8 @@ import {
 export interface IndustryDefinition {
   id: string;
   name: string;
+  /** Short name for navigation display */
+  shortName: string;
   description: string;
   icon: LucideIcon;
   /** Modules available when this industry is selected */
@@ -34,6 +36,7 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
   real_estate: {
     id: "real_estate",
     name: "Real Estate & Property",
+    shortName: "Real Estate",
     description: "Residential, commercial, and architectural photography",
     icon: Building2,
     modules: [
@@ -76,6 +79,7 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
   commercial: {
     id: "commercial",
     name: "Commercial & Corporate",
+    shortName: "Commercial",
     description: "Business headshots, office spaces, products",
     icon: Briefcase,
     modules: [
@@ -118,6 +122,7 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
   events: {
     id: "events",
     name: "Events & Weddings",
+    shortName: "Events",
     description: "Weddings, corporate events, parties",
     icon: Calendar,
     modules: [
@@ -159,6 +164,7 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
   portraits: {
     id: "portraits",
     name: "Portraits & Headshots",
+    shortName: "Portraits",
     description: "Family portraits, senior photos, professional headshots",
     icon: User,
     modules: [
@@ -201,6 +207,7 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
   food: {
     id: "food",
     name: "Food & Hospitality",
+    shortName: "Food",
     description: "Restaurant, menu, and culinary photography",
     icon: UtensilsCrossed,
     modules: [
@@ -242,6 +249,7 @@ export const INDUSTRIES: Record<string, IndustryDefinition> = {
   product: {
     id: "product",
     name: "Product & E-commerce",
+    shortName: "Product",
     description: "Product shots, catalog, and e-commerce imagery",
     icon: Package,
     modules: [

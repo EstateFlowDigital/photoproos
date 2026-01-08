@@ -32,11 +32,24 @@ export function DashboardSidebar({
 }: DashboardSidebarProps) {
   const pathname = usePathname() || "";
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
+  const [sectionExpanded, setSectionExpanded] = React.useState<Record<string, boolean>>({});
   const [viewportVH, setViewportVH] = React.useState<number | null>(null);
   const [forceExpanded, setForceExpanded] = React.useState(false);
   const [isAutoCompact, setIsAutoCompact] = React.useState(false);
   const { topItems, sections } = navData;
   const sidebarRef = React.useRef<HTMLElement | null>(null);
+
+  // Check if any item in a section is active
+  const isSectionActive = React.useCallback((sectionItems: typeof navData.items) => {
+    return sectionItems.some((item) => {
+      if (isActiveRoute(pathname, item.href)) return true;
+      return item.subNav?.some((sub) => isActiveRoute(pathname, sub.href));
+    });
+  }, [pathname]);
+
+  const handleSectionToggle = (sectionId: string) => {
+    setSectionExpanded((prev) => ({ ...prev, [sectionId]: !prev[sectionId] }));
+  };
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -230,23 +243,48 @@ export function DashboardSidebar({
             const items = section.items;
             if (!items.length) return null;
             const isIndustrySection = section.isIndustrySection;
+            const sectionIsActive = isSectionActive(items);
+            // Industry sections are collapsible, others are always expanded
+            const isSectionExpanded = isIndustrySection
+              ? sectionExpanded[section.id] ?? sectionIsActive
+              : true;
             return (
               <div
                 key={section.id}
                 className={cn("space-y-2", section.id === "admin" ? "pb-4" : null)}
               >
-                <div className="sidebar-section-title flex items-center gap-2 px-2">
-                  {isIndustrySection && section.industryColor && (
-                    <span
-                      className="h-2 w-2 rounded-full shrink-0"
-                      style={{ backgroundColor: section.industryColor }}
-                      aria-hidden="true"
+                {isIndustrySection ? (
+                  <button
+                    type="button"
+                    onClick={() => handleSectionToggle(section.id)}
+                    className="sidebar-section-title flex w-full items-center gap-2 px-2 py-1 rounded-md hover:bg-[var(--background-hover)] transition-colors"
+                    aria-expanded={isSectionExpanded}
+                  >
+                    {section.industryColor && (
+                      <span
+                        className="h-2 w-2 rounded-full shrink-0"
+                        style={{ backgroundColor: section.industryColor }}
+                        aria-hidden="true"
+                      />
+                    )}
+                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground-muted flex-1 text-left">
+                      {section.label}
+                    </span>
+                    <ChevronDown
+                      className={cn(
+                        "h-3.5 w-3.5 text-foreground-muted transition-transform",
+                        isSectionExpanded ? "rotate-180" : "rotate-0"
+                      )}
                     />
-                  )}
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground-muted">
-                    {section.label}
-                  </p>
-                </div>
+                  </button>
+                ) : (
+                  <div className="sidebar-section-title flex items-center gap-2 px-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground-muted">
+                      {section.label}
+                    </p>
+                  </div>
+                )}
+                {isSectionExpanded && (
                 <div className="space-y-1">
                   {items.map((item) => {
                     const children = item.subNav ?? [];
@@ -346,6 +384,7 @@ export function DashboardSidebar({
                     );
                   })}
                 </div>
+                )}
               </div>
             );
           })}

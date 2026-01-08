@@ -248,7 +248,7 @@ export function buildDashboardNav({
     if (industryItems.length > 0) {
       sections.push({
         id: `industry-${industry.id}`,
-        label: industry.name,
+        label: industry.shortName,
         items: industryItems,
         industryId: industry.id,
         industryColor: industry.color,

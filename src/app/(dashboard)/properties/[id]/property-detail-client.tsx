@@ -240,7 +240,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `${website.address.replace(/\s+/g, "-")}-flyer.pdf`;
+        link.download = `${(website.address || "property").replace(/\s+/g, "-")}-flyer.pdf`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -284,7 +284,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `${website.address.replace(/\s+/g, "-")}-${selectedSocialVariant}.pdf`;
+        link.download = `${(website.address || "property").replace(/\s+/g, "-")}-${selectedSocialVariant}.pdf`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -822,7 +822,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="flex items-start gap-4">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-sm font-medium text-[var(--primary)]">
-                          {lead.name.charAt(0)}
+                          {(lead.name || "?").charAt(0)}
                         </div>
                         <div>
                           <div className="flex items-center gap-2">

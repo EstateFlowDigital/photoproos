@@ -60,9 +60,9 @@ export function LeadsViewClient({ leads }: LeadsViewClientProps) {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       return (
-        lead.name.toLowerCase().includes(query) ||
-        lead.email.toLowerCase().includes(query) ||
-        lead.propertyWebsite.address.toLowerCase().includes(query)
+        (lead.name || "").toLowerCase().includes(query) ||
+        (lead.email || "").toLowerCase().includes(query) ||
+        (lead.propertyWebsite.address || "").toLowerCase().includes(query)
       );
     }
     return true;

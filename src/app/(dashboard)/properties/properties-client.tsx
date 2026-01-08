@@ -75,8 +75,8 @@ export function PropertiesClient({ websites }: PropertiesClientProps) {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       return (
-        website.address.toLowerCase().includes(query) ||
-        website.city.toLowerCase().includes(query) ||
+        (website.address || "").toLowerCase().includes(query) ||
+        (website.city || "").toLowerCase().includes(query) ||
         website.project.client?.fullName?.toLowerCase().includes(query) ||
         website.project.client?.company?.toLowerCase().includes(query)
       );
