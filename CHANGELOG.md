@@ -69,6 +69,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Property and portfolio pages crashing with "Cannot read properties of undefined (reading 'toLowerCase')" when address/name is undefined in domain purchase feature
+- **Database Query Fixes** - Fixed incorrect field references in Prisma queries
+  - Fixed PropertyWebsite queries in new property page using `organizationId` directly instead of through `project` relation
+  - Fixed PortfolioWebsite count in plan enforcement using non-existent `type` field instead of `portfolioType`
+  - These fixes resolve errors when creating new portfolios and viewing property pages
 
 - **Feature Voting Security** - Added missing super admin authentication to moderation functions
   - `getPendingFeatureRequests()` - Now requires super admin authorization

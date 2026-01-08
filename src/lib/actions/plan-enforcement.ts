@@ -367,7 +367,6 @@ async function getCurrentUsage(organizationId: string, limitKey: LimitKey): Prom
       return prisma.portfolioWebsite.count({
         where: {
           organizationId,
-          type: { in: ["portfolio", "photographer"] },
         },
       });
     }
