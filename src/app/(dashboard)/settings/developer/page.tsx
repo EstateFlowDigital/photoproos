@@ -120,15 +120,7 @@ export default async function DeveloperSettingsPage() {
             </div>
             <div className="flex items-center gap-2">
               <CheckIcon className="h-4 w-4 text-[var(--ai)]" />
-              1TB storage limit
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckIcon className="h-4 w-4 text-[var(--ai)]" />
-              Unlimited galleries
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckIcon className="h-4 w-4 text-[var(--ai)]" />
-              Unlimited emails
+              Lifetime license flag
             </div>
             <div className="flex items-center gap-2">
               <CheckIcon className="h-4 w-4 text-[var(--ai)]" />

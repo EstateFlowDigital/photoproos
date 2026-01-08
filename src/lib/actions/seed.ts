@@ -1349,10 +1349,7 @@ export async function enableLifetimeLicense(): Promise<ActionResult<{ plan: stri
       data: {
         plan: "enterprise",
         enabledModules: ALL_MODULES,
-        // Set generous limits
-        storageLimit: BigInt(1000 * 1024 * 1024 * 1024), // 1TB
-        galleryLimit: 999999,
-        monthlyEmailLimit: 999999,
+        hasLifetimeLicense: true,
       },
     });
 
