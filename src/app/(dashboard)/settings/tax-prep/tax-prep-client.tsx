@@ -448,27 +448,39 @@ export function TaxPrepClient({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-2">
-                {ENTITY_TYPES.map((type) => (
-                  <button
-                    key={type.value}
-                    onClick={() => handleEntitySelect(type.value)}
-                    disabled={loading}
-                    className={cn(
-                      "p-4 rounded-lg border text-left transition-all",
-                      "hover:border-[var(--primary)] hover:bg-[var(--background-hover)]",
-                      session?.entityType === type.value
-                        ? "border-[var(--primary)] bg-[var(--primary)]/10"
-                        : "border-[var(--border)]"
-                    )}
-                  >
-                    <div className="font-medium text-foreground">{type.label}</div>
-                    <div className="text-sm text-foreground-muted mt-1">
-                      {type.description}
-                    </div>
-                  </button>
-                ))}
-              </div>
+              {!session ? (
+                <div className="text-center py-8">
+                  <p className="text-foreground-muted mb-4">
+                    Unable to load tax preparation session. Please try refreshing the page.
+                  </p>
+                  <Button variant="outline" onClick={() => window.location.reload()}>
+                    Refresh Page
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {ENTITY_TYPES.map((type) => (
+                    <button
+                      key={type.value}
+                      onClick={() => handleEntitySelect(type.value)}
+                      disabled={loading || !session}
+                      className={cn(
+                        "p-4 rounded-lg border text-left transition-all",
+                        "hover:border-[var(--primary)] hover:bg-[var(--background-hover)]",
+                        session?.entityType === type.value
+                          ? "border-[var(--primary)] bg-[var(--primary)]/10"
+                          : "border-[var(--border)]",
+                        (!session || loading) && "opacity-50 cursor-not-allowed"
+                      )}
+                    >
+                      <div className="font-medium text-foreground">{type.label}</div>
+                      <div className="text-sm text-foreground-muted mt-1">
+                        {type.description}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         );

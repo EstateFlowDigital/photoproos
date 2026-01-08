@@ -451,6 +451,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Date objects from server components are serialized as strings when passed to client components
   - Prevents hydration mismatch errors during client-side navigation
 
+- **Tax Preparation Entity Selection** - Fixed silent failure when selecting business entity type
+  - Added error state display when tax prep session fails to load
+  - Added "Refresh Page" button when session is unavailable
+  - Added `disclaimerAcceptedAt` field to `TaxPrepSessionSummary` interface
+  - Updated `getOrCreateTaxPrepSession` and `getTaxPrepSessions` to return `disclaimerAcceptedAt`
+  - Buttons now show disabled state (opacity + cursor) when loading or session unavailable
+
 - **Recent Clients Icon Styling** - Improved avatar styling in gallery new page sidebar
   - Added border and background to client initial avatars
   - Better contrast with `bg-[var(--background-secondary)]` background

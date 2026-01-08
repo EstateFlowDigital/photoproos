@@ -24,6 +24,7 @@ export interface TaxPrepSessionSummary {
   documentsUploaded: boolean;
   summaryGenerated: boolean;
   documentsCount: number;
+  disclaimerAcceptedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -115,6 +116,7 @@ export async function getOrCreateTaxPrepSession(
       documentsUploaded: session.documentsUploaded,
       summaryGenerated: session.summaryGenerated,
       documentsCount: session._count.documents,
+      disclaimerAcceptedAt: session.disclaimerAcceptedAt,
       createdAt: session.createdAt,
       updatedAt: session.updatedAt,
     });
@@ -153,6 +155,7 @@ export async function getTaxPrepSessions(): Promise<
         documentsUploaded: session.documentsUploaded,
         summaryGenerated: session.summaryGenerated,
         documentsCount: session._count.documents,
+        disclaimerAcceptedAt: session.disclaimerAcceptedAt,
         createdAt: session.createdAt,
         updatedAt: session.updatedAt,
       }))
