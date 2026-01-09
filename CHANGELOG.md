@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Marketing CMS** - Created a complete content management system for marketing pages at `/super-admin/marketing`
+  - New Prisma models: MarketingPage, MarketingNavigation, BlogPost, TeamMember, Testimonial, FAQ
+  - Server actions for full CRUD operations on all marketing content
+  - Content fetching utilities with caching (`unstable_cache`) for optimal performance
+  - Validation schemas using Zod for all content types
+  - Super Admin dashboard with quick actions and content overview
+  - Blog posts management with category filtering and status tracking
+  - Testimonials management with industry targeting and visibility controls
+  - FAQs management with category organization
+  - Supports JSON-based flexible content for different page types (homepage, pricing, features, etc.)
+
 - **Interactive Sitemap Page** - Created password-protected sitemap at `/app-map` for viewing all 403 pages
   - Collapsible sections organized by route group (Dashboard, Client Portal, Field App, etc.)
   - Search and filter functionality (all, implemented, coming soon)
