@@ -168,11 +168,11 @@ Tracking progress of adding `data-element` attributes across the application for
 | `/about` | [x] | **COMPLETE** - See detailed section below |
 | `/affiliates` | [x] | **COMPLETE** - Benefits, how it works, calculator, FAQ, CTA |
 | `/blog` | [x] | **COMPLETE** - Categories, featured post, posts grid, newsletter |
-| `/blog/[slug]` | [ ] | Blog post detail |
+| `/blog/[slug]` | [x] | **COMPLETE** - Blog post detail with author, related posts, CTA |
 | `/careers` | [x] | **COMPLETE** - Values, benefits, positions, CTA |
 | `/changelog` | [x] | **COMPLETE** - Releases timeline, subscribe section |
 | `/contact` | [x] | **COMPLETE** - Contact form, info, social links, FAQ preview |
-| `/guides` | [ ] | Guides listing |
+| `/guides` | [x] | **COMPLETE** - Search, categories, featured guides, all guides, CTA |
 | `/integrations` | [x] | **COMPLETE** - Integrations grid, CTA |
 | `/partners` | [x] | **COMPLETE** - Partner types, current partners, why section, CTA |
 | `/press` | [x] | **COMPLETE** - Brand assets, company facts, press releases, media contact |
@@ -480,9 +480,11 @@ Tracking progress of adding `data-element` attributes across the application for
 49. [x] `/super-admin/engagement` - Page wrapper, header
 50. [x] `/super-admin/roadmap` - Page wrapper, header
 51. [x] `/super-admin/announcements` - Page wrapper
+52. [x] `/guides` - Search, categories, featured guides, all guides, CTA
+53. [x] `/blog/[slug]` - Blog post detail with author, related posts, CTA
 
 ### Next Steps:
-1. [x] ~~Marketing Site main pages~~ DONE (13/15 main pages complete)
+1. [x] ~~Marketing Site main pages~~ DONE (15/15 main pages complete)
 2. [x] ~~Features pages (8 pages)~~ DONE (8/8 complete)
 3. [x] ~~Industries pages (6 pages)~~ DONE (6/6 complete)
 4. [x] ~~Legal pages (5 pages)~~ DONE (5/5 complete)
@@ -504,7 +506,7 @@ Tracking progress of adding `data-element` attributes across the application for
 |---------|-------------|----------|-----------|
 | **Super Admin Marketing CMS** | **5** | **5** | **0** |
 | **Super Admin Other** | **14** | **14** | **0** |
-| Marketing Site Main Pages | 15 | 13 | 2 |
+| **Marketing Site Main Pages** | **15** | **15** | **0** |
 | **Marketing Site Features** | **8** | **8** | **0** |
 | **Marketing Site Industries** | **6** | **6** | **0** |
 | **Marketing Site Legal** | **5** | **5** | **0** |
@@ -517,6 +519,6 @@ Tracking progress of adding `data-element` attributes across the application for
 | **Dashboard Settings** | **51** | **51** | **0** |
 | Shared Components | TBD | 0 | TBD |
 
-**Total Complete: 149 pages**
+**Total Complete: 151 pages**
 
 *Last updated: January 2026*

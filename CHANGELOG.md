@@ -55,8 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Onboarding progress widget
     - Messages widget for recent conversations
 
-- **Element Inspector data-element Attributes** - Added `data-element` attributes across 149 pages for Element Inspector tool
-  - Marketing site pages (32): about, affiliates, blog, careers, changelog, contact, integrations, partners, press, pricing, roadmap, support, webinars, 8 features pages, 6 industries pages, 5 legal pages
+- **Element Inspector data-element Attributes** - Added `data-element` attributes across 151 pages for Element Inspector tool
+  - Marketing site pages (34): about, affiliates, blog, blog/[slug], careers, changelog, contact, guides, integrations, partners, press, pricing, roadmap, support, webinars, 8 features pages, 6 industries pages, 5 legal pages
   - Super Admin pages (19): dashboard, users, support, feedback, config, developer, logs, discounts, revenue, engagement, roadmap, announcements, 5 marketing CMS pages
   - Dashboard pages (98):
     - Core pages: dashboard, create, notifications

@@ -91,7 +91,7 @@ export default async function DeveloperSettingsPage() {
       <DevToolsSettings />
 
       {/* Warning Banner */}
-      <div className="rounded-lg border border-[var(--warning)]/30 bg-[var(--warning)]/10 px-4 py-3">
+      <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-3">
         <p className="text-sm text-[var(--warning)]">
           <strong>Warning:</strong> These tools modify your database. Use with caution in production environments.
         </p>

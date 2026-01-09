@@ -48,7 +48,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   const relatedPosts = getRelatedPosts(slug);
 
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="blog-post-page">
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-[var(--card-border)]">
         <div className="absolute inset-0 z-0">
