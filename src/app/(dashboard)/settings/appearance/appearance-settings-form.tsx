@@ -739,8 +739,9 @@ export function AppearanceSettingsForm({
             return (
               <div
                 key={density.id}
+                onClick={() => !isPending && handleDensityPreview(density.id)}
                 className={cn(
-                  "group relative flex flex-col rounded-xl border p-4 text-left transition-all",
+                  "group relative flex flex-col rounded-xl border p-4 text-left transition-all cursor-pointer",
                   isPreviewing
                     ? "border-[var(--primary)] bg-[var(--primary)]/5 ring-2 ring-[var(--primary)]/20"
                     : isSaved
@@ -749,12 +750,7 @@ export function AppearanceSettingsForm({
                 )}
               >
                 {/* Density Visual */}
-                <button
-                  type="button"
-                  onClick={() => handleDensityPreview(density.id)}
-                  disabled={isPending}
-                  className="mb-3 flex gap-1"
-                >
+                <div className="mb-3 flex gap-1">
                   {density.id === "compact" && (
                     <>
                       <div className="h-2 w-full rounded bg-[var(--foreground-muted)]" />
@@ -771,7 +767,7 @@ export function AppearanceSettingsForm({
                   {density.id === "spacious" && (
                     <div className="h-4 w-full rounded bg-[var(--foreground-muted)]" />
                   )}
-                </button>
+                </div>
 
                 {/* Name and Description */}
                 <h3 className="font-medium text-foreground">{density.name}</h3>
@@ -795,7 +791,7 @@ export function AppearanceSettingsForm({
                 {isPreviewing && !isSaved && (
                   <button
                     type="button"
-                    onClick={() => handleDensitySave(density.id)}
+                    onClick={(e) => { e.stopPropagation(); handleDensitySave(density.id); }}
                     disabled={isPending}
                     className="mt-3 w-full rounded-lg bg-[var(--primary)] px-3 py-1.5 text-sm font-medium text-white hover:bg-[var(--primary-hover)] disabled:opacity-50"
                   >
@@ -824,8 +820,9 @@ export function AppearanceSettingsForm({
             return (
               <div
                 key={fontSize.id}
+                onClick={() => !isPending && handleFontSizePreview(fontSize.id)}
                 className={cn(
-                  "group relative flex flex-col rounded-xl border p-4 text-left transition-all",
+                  "group relative flex flex-col rounded-xl border p-4 text-left transition-all cursor-pointer",
                   isPreviewing
                     ? "border-[var(--primary)] bg-[var(--primary)]/5 ring-2 ring-[var(--primary)]/20"
                     : isSaved
@@ -834,15 +831,12 @@ export function AppearanceSettingsForm({
                 )}
               >
                 {/* Size Preview */}
-                <button
-                  type="button"
-                  onClick={() => handleFontSizePreview(fontSize.id)}
-                  disabled={isPending}
+                <div
                   className="mb-2 text-foreground text-left"
                   style={{ fontSize: `calc(16px * ${fontSize.scale})` }}
                 >
                   Aa
-                </button>
+                </div>
 
                 {/* Name and Description */}
                 <h3 className="font-medium text-foreground">{fontSize.name}</h3>
@@ -866,7 +860,7 @@ export function AppearanceSettingsForm({
                 {isPreviewing && !isSaved && (
                   <button
                     type="button"
-                    onClick={() => handleFontSizeSave(fontSize.id)}
+                    onClick={(e) => { e.stopPropagation(); handleFontSizeSave(fontSize.id); }}
                     disabled={isPending}
                     className="mt-3 w-full rounded-lg bg-[var(--primary)] px-3 py-1.5 text-sm font-medium text-white hover:bg-[var(--primary-hover)] disabled:opacity-50"
                   >
