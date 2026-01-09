@@ -1,6 +1,6 @@
 # PhotoProOS Complete Sitemap
 
-Complete directory of all 403 pages in the application. Use this as a reference for roadmap planning and understanding page relationships.
+Complete directory of all 396 pages in the application. Use this as a reference for roadmap planning and understanding page relationships.
 
 **Legend:**
 - No icon = Implemented page
@@ -12,7 +12,7 @@ Complete directory of all 403 pages in the application. Use this as a reference 
 
 | Section | Total | Implemented | Stub |
 |---------|-------|-------------|------|
-| Dashboard | 303 | 153 | 150 |
+| Dashboard | 296 | 153 | 143 |
 | Client Portal | 16 | 6 | 10 |
 | Field App | 6 | 2 | 4 |
 | Marketing | 32 | 32 | 0 |
@@ -20,7 +20,7 @@ Complete directory of all 403 pages in the application. Use this as a reference 
 | Auth | 3 | 3 | 0 |
 | Public Routes | 17 | 17 | 0 |
 | Onboarding | 1 | 1 | 0 |
-| **Total** | **403** | **239** | **164** |
+| **Total** | **396** | **239** | **157** |
 
 ---
 
@@ -281,7 +281,6 @@ Complete directory of all 403 pages in the application. Use this as a reference 
 | [/services/bundles](https://app.photoproos.com/services/bundles) | [src/app/(dashboard)/services/bundles/page.tsx](src/app/(dashboard)/services/bundles/page.tsx) | |
 | [/services/bundles/new](https://app.photoproos.com/services/bundles/new) | [src/app/(dashboard)/services/bundles/new/page.tsx](src/app/(dashboard)/services/bundles/new/page.tsx) | |
 | [/services/bundles/:id](https://app.photoproos.com/services/bundles/:id) | [src/app/(dashboard)/services/bundles/[id]/page.tsx](src/app/(dashboard)/services/bundles/[id]/page.tsx) | |
-| [/pricing](https://app.photoproos.com/pricing) | [src/app/(dashboard)/pricing/page.tsx](src/app/(dashboard)/pricing/page.tsx) | (stub) |
 
 ### Contracts & Legal
 
@@ -466,9 +465,6 @@ Complete directory of all 403 pages in the application. Use this as a reference 
 | [/email-campaigns/:id](https://app.photoproos.com/email-campaigns/:id) | [src/app/(dashboard)/email-campaigns/[id]/page.tsx](src/app/(dashboard)/email-campaigns/[id]/page.tsx) | (stub) |
 | [/social](https://app.photoproos.com/social) | [src/app/(dashboard)/social/page.tsx](src/app/(dashboard)/social/page.tsx) | (stub) |
 | [/content](https://app.photoproos.com/content) | [src/app/(dashboard)/content/page.tsx](src/app/(dashboard)/content/page.tsx) | (stub) |
-| [/blog](https://app.photoproos.com/blog) | [src/app/(dashboard)/blog/page.tsx](src/app/(dashboard)/blog/page.tsx) | (stub) |
-| [/blog/new](https://app.photoproos.com/blog/new) | [src/app/(dashboard)/blog/new/page.tsx](src/app/(dashboard)/blog/new/page.tsx) | (stub) |
-| [/blog/:id](https://app.photoproos.com/blog/:id) | [src/app/(dashboard)/blog/[id]/page.tsx](src/app/(dashboard)/blog/[id]/page.tsx) | (stub) |
 | [/seo](https://app.photoproos.com/seo) | [src/app/(dashboard)/seo/page.tsx](src/app/(dashboard)/seo/page.tsx) | (stub) |
 | [/ads](https://app.photoproos.com/ads) | [src/app/(dashboard)/ads/page.tsx](src/app/(dashboard)/ads/page.tsx) | (stub) |
 | [/reviews](https://app.photoproos.com/reviews) | [src/app/(dashboard)/reviews/page.tsx](src/app/(dashboard)/reviews/page.tsx) | (stub) |
@@ -562,7 +558,6 @@ Complete directory of all 403 pages in the application. Use this as a reference 
 
 | Live Route | File Path | Status |
 |------------|-----------|--------|
-| [/integrations](https://app.photoproos.com/integrations) | [src/app/(dashboard)/integrations/page.tsx](src/app/(dashboard)/integrations/page.tsx) | (stub) |
 | [/integrations/quickbooks](https://app.photoproos.com/integrations/quickbooks) | [src/app/(dashboard)/integrations/quickbooks/page.tsx](src/app/(dashboard)/integrations/quickbooks/page.tsx) | (stub) |
 | [/integrations/google](https://app.photoproos.com/integrations/google) | [src/app/(dashboard)/integrations/google/page.tsx](src/app/(dashboard)/integrations/google/page.tsx) | (stub) |
 | [/integrations/zapier](https://app.photoproos.com/integrations/zapier) | [src/app/(dashboard)/integrations/zapier/page.tsx](src/app/(dashboard)/integrations/zapier/page.tsx) | (stub) |
@@ -580,8 +575,6 @@ Complete directory of all 403 pages in the application. Use this as a reference 
 | [/help/videos](https://app.photoproos.com/help/videos) | [src/app/(dashboard)/help/videos/page.tsx](src/app/(dashboard)/help/videos/page.tsx) | (stub) |
 | [/help/:category](https://app.photoproos.com/help/:category) | [src/app/(dashboard)/help/[category]/page.tsx](src/app/(dashboard)/help/[category]/page.tsx) | |
 | [/help/:category/:slug](https://app.photoproos.com/help/:category/:slug) | [src/app/(dashboard)/help/[category]/[slug]/page.tsx](src/app/(dashboard)/help/[category]/[slug]/page.tsx) | |
-| [/support](https://app.photoproos.com/support) | [src/app/(dashboard)/support/page.tsx](src/app/(dashboard)/support/page.tsx) | (stub) |
-| [/support/new](https://app.photoproos.com/support/new) | [src/app/(dashboard)/support/new/page.tsx](src/app/(dashboard)/support/new/page.tsx) | (stub) |
 
 ### Settings
 

@@ -48,9 +48,7 @@ This document lists all "Page Coming Soon" placeholder pages in the PhotoProOS a
 | [/email-campaigns/:id](/email-campaigns/:id) | [src/app/(dashboard)/email-campaigns/[id]/page.tsx](src/app/(dashboard)/email-campaigns/[id]/page.tsx) |
 | [/social](/social) | [src/app/(dashboard)/social/page.tsx](src/app/(dashboard)/social/page.tsx) |
 | [/content](/content) | [src/app/(dashboard)/content/page.tsx](src/app/(dashboard)/content/page.tsx) |
-| [/blog](/blog) | [src/app/(dashboard)/blog/page.tsx](src/app/(dashboard)/blog/page.tsx) |
 | [/blog/new](/blog/new) | [src/app/(dashboard)/blog/new/page.tsx](src/app/(dashboard)/blog/new/page.tsx) |
-| [/blog/:id](/blog/:id) | [src/app/(dashboard)/blog/[id]/page.tsx](src/app/(dashboard)/blog/[id]/page.tsx) |
 | [/seo](/seo) | [src/app/(dashboard)/seo/page.tsx](src/app/(dashboard)/seo/page.tsx) |
 | [/ads](/ads) | [src/app/(dashboard)/ads/page.tsx](src/app/(dashboard)/ads/page.tsx) |
 | [/reviews](/reviews) | [src/app/(dashboard)/reviews/page.tsx](src/app/(dashboard)/reviews/page.tsx) |

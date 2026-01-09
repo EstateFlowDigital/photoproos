@@ -10008,3 +10008,240 @@ model AnnouncementRead {
   @@index([userId])
   @@index([announcementId])
 }
+
+// ============================================================================
+// MARKETING CMS
+// ============================================================================
+
+enum MarketingPageType {
+  homepage
+  about
+  pricing
+  features
+  industries
+  legal
+  blog_index
+  contact
+  custom
+}
+
+enum MarketingPageStatus {
+  draft
+  published
+  archived
+}
+
+enum BlogPostStatus {
+  draft
+  published
+  archived
+}
+
+enum BlogCategory {
+  tips
+  tutorials
+  news
+  case_studies
+  product_updates
+  industry_insights
+}
+
+enum TestimonialIndustry {
+  real_estate
+  commercial
+  architecture
+  events
+  headshots
+  food
+  general
+}
+
+enum FAQCategory {
+  general
+  pricing
+  features
+  billing
+  getting_started
+  technical
+}
+
+// Marketing Page - Flexible JSON content storage per page
+model MarketingPage {
+  id String @id @default(cuid())
+
+  // Identification
+  slug     String            @unique // e.g., "homepage", "about", "pricing", "features/galleries"
+  pageType MarketingPageType @default(custom)
+  title    String // Page title for admin reference
+
+  // Content (JSON structure varies by pageType)
+  content Json // Flexible content structure
+
+  // SEO
+  metaTitle       String?
+  metaDescription String? @db.Text
+  ogImage         String?
+
+  // Status
+  status      MarketingPageStatus @default(draft)
+  publishedAt DateTime?
+
+  // Admin tracking
+  createdByUserId String? // Clerk user ID
+  updatedByUserId String? // Last editor
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([pageType])
+  @@index([status])
+}
+
+// Marketing Navigation - Navbar and Footer content
+model MarketingNavigation {
+  id String @id @default(cuid())
+
+  // Type
+  location String @unique // "navbar" or "footer"
+
+  // Content (JSON for flexible structure)
+  content Json // Links, dropdowns, social links, etc.
+
+  // Status
+  isActive Boolean @default(true)
+
+  // Admin tracking
+  updatedByUserId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Blog Post - Individual blog articles
+model BlogPost {
+  id String @id @default(cuid())
+
+  // Content
+  title       String
+  slug        String         @unique
+  excerpt     String?        @db.Text
+  content     String         @db.Text // Markdown or HTML content
+  featuredImg String? // Featured image URL
+
+  // Categorization
+  category BlogCategory @default(tips)
+  tags     String[]     @default([])
+
+  // Author (optional - can be admin name)
+  authorName  String?
+  authorImage String?
+  authorBio   String?
+
+  // Status & Scheduling
+  status      BlogPostStatus @default(draft)
+  publishedAt DateTime?
+  isFeatured  Boolean        @default(false)
+
+  // SEO
+  metaTitle       String?
+  metaDescription String? @db.Text
+
+  // Metrics
+  viewCount Int @default(0)
+
+  // Admin tracking
+  createdByUserId String?
+  updatedByUserId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([category])
+  @@index([publishedAt])
+  @@index([isFeatured])
+}
+
+// Team Member - For About page
+model TeamMember {
+  id String @id @default(cuid())
+
+  // Profile
+  name     String
+  role     String
+  bio      String? @db.Text
+  imageUrl String?
+
+  // Social Links
+  linkedIn String?
+  twitter  String?
+  website  String?
+
+  // Display
+  sortOrder Int     @default(0)
+  isVisible Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@index([isVisible])
+}
+
+// Testimonial - Customer testimonials with targeting
+model Testimonial {
+  id String @id @default(cuid())
+
+  // Content
+  quote       String  @db.Text
+  authorName  String
+  authorRole  String?
+  companyName String?
+  authorImage String?
+
+  // Rating (optional)
+  rating Int? // 1-5 stars
+
+  // Targeting - which pages/industries to show on
+  targetPages     String[]            @default([]) // e.g., ["homepage", "pricing"]
+  targetIndustry  TestimonialIndustry @default(general)
+  showOnAllPages  Boolean             @default(false)
+
+  // Display
+  sortOrder Int     @default(0)
+  isVisible Boolean @default(true)
+  isFeatured Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([targetIndustry])
+  @@index([isVisible])
+  @@index([sortOrder])
+}
+
+// FAQ - Frequently Asked Questions with category targeting
+model FAQ {
+  id String @id @default(cuid())
+
+  // Content
+  question String
+  answer   String @db.Text
+
+  // Categorization
+  category    FAQCategory @default(general)
+  targetPages String[]    @default([]) // e.g., ["pricing", "features/galleries"]
+
+  // Display
+  sortOrder Int     @default(0)
+  isVisible Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([isVisible])
+  @@index([sortOrder])
+}
