@@ -1450,6 +1450,24 @@ export function ElementInspector() {
 
     const allChanges = [changedStyles, customStylesText].filter(Boolean).join("\n");
 
+    // Calculate class changes
+    const addedClasses = elementClasses.filter(c => !originalClassesRef.current.includes(c));
+    const removedClasses = originalClassesRef.current.filter(c => !elementClasses.includes(c));
+    const hasClassChanges = addedClasses.length > 0 || removedClasses.length > 0;
+
+    // Build classes section
+    let classesSection = `**Current Classes:** \`${elementClasses.join(" ") || "(none)"}\``;
+
+    if (hasClassChanges) {
+      classesSection += "\n\n**Class Changes:**";
+      if (addedClasses.length > 0) {
+        classesSection += `\n- Added: \`${addedClasses.join("`, `")}\``;
+      }
+      if (removedClasses.length > 0) {
+        classesSection += `\n- Removed: \`${removedClasses.join("`, `")}\` (removed from original)`;
+      }
+    }
+
     return `## Style Change Request
 
 **Page:** ${window.location.pathname}
@@ -1457,13 +1475,13 @@ export function ElementInspector() {
 **Path:** ${selected.path}
 ${selected.dataElement ? `**data-element:** \`${selected.dataElement}\`` : ""}
 ${selected.suggestedComponent ? `**Likely Component:** ${selected.suggestedComponent}` : ""}
-**Classes:** \`${selected.classes.join(" ") || "(none)"}\`
+${classesSection}
 
 ${notes ? `### Notes\n${notes}\n` : ""}
-### Requested Changes
+### Requested Style Changes
 \`\`\`css
 ${selected.selector} {
-${allChanges || "  /* No changes specified */"}
+${allChanges || "  /* No style changes specified */"}
 }
 \`\`\`
 
