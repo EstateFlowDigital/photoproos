@@ -236,11 +236,18 @@ function BlogPostItem({ post }: { post: BlogPost }) {
   );
 }
 
-export function MarketingDashboardClient({ pages, posts, testimonials, faqs, team }: Props) {
-  const publishedPages = pages.filter((p) => p.status === "published").length;
-  const publishedPosts = posts.filter((p) => p.status === "published").length;
-  const visibleTestimonials = testimonials.filter((t) => t.isVisible).length;
-  const visibleFaqs = faqs.filter((f) => f.isVisible).length;
+export function MarketingDashboardClient({ pages = [], posts = [], testimonials = [], faqs = [], team = [] }: Props) {
+  // Ensure arrays are valid before filtering
+  const safePages = Array.isArray(pages) ? pages : [];
+  const safePosts = Array.isArray(posts) ? posts : [];
+  const safeTestimonials = Array.isArray(testimonials) ? testimonials : [];
+  const safeFaqs = Array.isArray(faqs) ? faqs : [];
+  const safeTeam = Array.isArray(team) ? team : [];
+
+  const publishedPages = safePages.filter((p) => p.status === "published").length;
+  const publishedPosts = safePosts.filter((p) => p.status === "published").length;
+  const visibleTestimonials = safeTestimonials.filter((t) => t.isVisible).length;
+  const visibleFaqs = safeFaqs.filter((f) => f.isVisible).length;
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -275,27 +282,27 @@ export function MarketingDashboardClient({ pages, posts, testimonials, faqs, tea
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
           <StatCard
             label="Pages"
-            value={pages.length}
+            value={safePages.length}
             sublabel={`${publishedPages} published`}
           />
           <StatCard
             label="Blog Posts"
-            value={posts.length}
+            value={safePosts.length}
             sublabel={`${publishedPosts} published`}
           />
           <StatCard
             label="Testimonials"
-            value={testimonials.length}
+            value={safeTestimonials.length}
             sublabel={`${visibleTestimonials} visible`}
           />
           <StatCard
             label="FAQs"
-            value={faqs.length}
+            value={safeFaqs.length}
             sublabel={`${visibleFaqs} visible`}
           />
           <StatCard
             label="Team"
-            value={team.length}
+            value={safeTeam.length}
           />
         </div>
       </section>
@@ -317,35 +324,35 @@ export function MarketingDashboardClient({ pages, posts, testimonials, faqs, tea
             icon={FileText}
             title="Edit Pages"
             description="Homepage, Pricing, Features, etc."
-            count={pages.length}
+            count={safePages.length}
           />
           <QuickActionCard
             href="/super-admin/marketing/blog"
             icon={Newspaper}
             title="Blog Posts"
             description="Create and manage blog content"
-            count={posts.length}
+            count={safePosts.length}
           />
           <QuickActionCard
             href="/super-admin/marketing/testimonials"
             icon={Quote}
             title="Testimonials"
             description="Customer quotes and reviews"
-            count={testimonials.length}
+            count={safeTestimonials.length}
           />
           <QuickActionCard
             href="/super-admin/marketing/faqs"
             icon={HelpCircle}
             title="FAQs"
             description="Frequently asked questions"
-            count={faqs.length}
+            count={safeFaqs.length}
           />
           <QuickActionCard
             href="/super-admin/marketing/team"
             icon={Users}
             title="Team Members"
             description="About page team section"
-            count={team.length}
+            count={safeTeam.length}
           />
           <QuickActionCard
             href="/super-admin/marketing/navigation"
@@ -385,14 +392,14 @@ export function MarketingDashboardClient({ pages, posts, testimonials, faqs, tea
               </Link>
             </header>
             <div className="divide-y divide-[var(--border)]" role="list">
-              {pages.length === 0 ? (
+              {safePages.length === 0 ? (
                 <div className="p-6 sm:p-8 text-center text-[var(--foreground-muted)]">
                   <p className="text-sm sm:text-base">
                     No pages yet. Run the seed script to populate content.
                   </p>
                 </div>
               ) : (
-                pages.slice(0, 5).map((page) => (
+                safePages.slice(0, 5).map((page) => (
                   <div key={page.id} role="listitem">
                     <PageListItem page={page} />
                   </div>
@@ -426,7 +433,7 @@ export function MarketingDashboardClient({ pages, posts, testimonials, faqs, tea
               </Link>
             </header>
             <div className="divide-y divide-[var(--border)]" role="list">
-              {posts.length === 0 ? (
+              {safePosts.length === 0 ? (
                 <div className="p-6 sm:p-8 text-center text-[var(--foreground-muted)]">
                   <p className="text-sm sm:text-base">No blog posts yet.</p>
                   <Link
@@ -440,7 +447,7 @@ export function MarketingDashboardClient({ pages, posts, testimonials, faqs, tea
                   </Link>
                 </div>
               ) : (
-                posts.slice(0, 5).map((post) => (
+                safePosts.slice(0, 5).map((post) => (
                   <div key={post.id} role="listitem">
                     <BlogPostItem post={post} />
                   </div>

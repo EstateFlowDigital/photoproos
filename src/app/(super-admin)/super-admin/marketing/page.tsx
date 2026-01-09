@@ -52,19 +52,37 @@ function LoadingSkeleton() {
 
 // Data fetcher component
 async function MarketingLoader() {
-  const [pagesResult, postsResult, testimonialsResult, faqsResult, teamResult] = await Promise.all([
-    getMarketingPages(),
-    getBlogPosts({ limit: 10 }),
-    getTestimonials({ visibleOnly: false }),
-    getFAQs({ visibleOnly: false }),
-    getTeamMembers({ visibleOnly: false }),
-  ]);
+  // Fetch all data with error handling for missing tables
+  let pagesResult, postsResult, testimonialsResult, faqsResult, teamResult;
 
-  const pages = pagesResult.success ? pagesResult.data : [];
-  const posts = postsResult.success ? postsResult.data : [];
-  const testimonials = testimonialsResult.success ? testimonialsResult.data : [];
-  const faqs = faqsResult.success ? faqsResult.data : [];
-  const team = teamResult.success ? teamResult.data : [];
+  try {
+    [pagesResult, postsResult, testimonialsResult, faqsResult, teamResult] = await Promise.all([
+      getMarketingPages(),
+      getBlogPosts({ limit: 10 }),
+      getTestimonials({ visibleOnly: false }),
+      getFAQs({ visibleOnly: false }),
+      getTeamMembers({ visibleOnly: false }),
+    ]);
+  } catch (error) {
+    console.error("Error fetching marketing data (tables may not exist):", error);
+    // Return empty data if database tables don't exist yet
+    return (
+      <MarketingDashboardClient
+        pages={[]}
+        posts={[]}
+        testimonials={[]}
+        faqs={[]}
+        team={[]}
+      />
+    );
+  }
+
+  // Safely extract data with fallbacks - ensure we always pass arrays
+  const pages = (pagesResult?.success && Array.isArray(pagesResult.data)) ? pagesResult.data : [];
+  const posts = (postsResult?.success && Array.isArray(postsResult.data)) ? postsResult.data : [];
+  const testimonials = (testimonialsResult?.success && Array.isArray(testimonialsResult.data)) ? testimonialsResult.data : [];
+  const faqs = (faqsResult?.success && Array.isArray(faqsResult.data)) ? faqsResult.data : [];
+  const team = (teamResult?.success && Array.isArray(teamResult.data)) ? teamResult.data : [];
 
   return (
     <MarketingDashboardClient
