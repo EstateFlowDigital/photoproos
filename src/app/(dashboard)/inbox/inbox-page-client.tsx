@@ -285,7 +285,7 @@ export function InboxPageClient({
           subtitle="Manage all your client conversations in one place"
         />
 
-        <div className="flex flex-col items-center justify-center rounded-xl border border-[var(--card-border)] bg-[var(--card)] py-20">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-[var(--card-border)] bg-[var(--card)] py-20 px-5 text-center">
           <div className="mb-6 rounded-full bg-[var(--primary)]/10 p-6">
             <Mail className="h-12 w-12 text-[var(--primary)]" />
           </div>
