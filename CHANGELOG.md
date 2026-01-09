@@ -16,8 +16,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Super Admin dashboard with quick actions and content overview
   - Blog posts management with category filtering and status tracking
   - Testimonials management with industry targeting and visibility controls
-  - FAQs management with category organization
+  - FAQs management with category grouping and color-coded badges
+  - Team members management with social links (LinkedIn, Twitter, Website)
+  - Seed script (`prisma/seed-marketing.ts`) for populating initial marketing content
   - Supports JSON-based flexible content for different page types (homepage, pricing, features, etc.)
+
+- **Marketing CMS Accessibility & Responsiveness**
+  - Proper ARIA labels, roles, and semantic HTML throughout
+  - Focus-visible states for keyboard navigation
+  - 44px minimum touch targets for mobile accessibility (WCAG/iOS standard)
+  - Responsive grids: 1-column mobile → multi-column desktop
+  - Semantic HTML elements (blockquote/cite for testimonials)
+  - Lucide React icons for consistent iconography
+  - Screen reader text (.sr-only) for hidden labels
 
 - **Interactive Sitemap Page** - Created password-protected sitemap at `/app-map` for viewing all 403 pages
   - Collapsible sections organized by route group (Dashboard, Client Portal, Field App, etc.)
