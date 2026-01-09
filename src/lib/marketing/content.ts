@@ -1,8 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 import type {
-  MarketingPage,
-  MarketingNavigation,
   BlogPost,
   TeamMember,
   Testimonial,

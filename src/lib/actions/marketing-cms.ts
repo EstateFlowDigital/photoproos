@@ -13,7 +13,6 @@ import type {
   Testimonial,
   FAQ,
   MarketingPageType,
-  MarketingPageStatus,
   BlogPostStatus,
   BlogCategory,
   TestimonialIndustry,
