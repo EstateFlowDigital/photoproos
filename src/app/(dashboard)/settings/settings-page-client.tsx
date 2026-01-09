@@ -156,7 +156,7 @@ export function SettingsPageClient({
       </div>
 
       {/* Danger Zone */}
-      <div className="mt-4 rounded-xl border border-[var(--error)]/20 bg-[var(--error)]/5 p-6">
+      <div className="mt-4 rounded-xl border border-[var(--error)] bg-[var(--error)]/5 p-6">
         <h3 className="font-medium text-foreground">Danger Zone</h3>
         <p className="mt-1 text-sm text-foreground-muted">
           Irreversible and destructive actions

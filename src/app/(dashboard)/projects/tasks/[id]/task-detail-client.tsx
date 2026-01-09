@@ -475,7 +475,7 @@ export function TaskDetailClient({ task: initialTask, teamMembers, clients, gall
         </div>
 
         {/* Danger Zone */}
-        <div className="rounded-xl border border-[var(--error)]/30 bg-[var(--error)]/5 p-6">
+        <div className="rounded-xl border border-[var(--error)] bg-[var(--error)]/5 p-6">
           <h2 className="text-lg font-semibold text-[var(--error)] mb-2">Danger Zone</h2>
           <p className="text-sm text-foreground-muted mb-4">
             Permanently delete this task and all its subtasks.

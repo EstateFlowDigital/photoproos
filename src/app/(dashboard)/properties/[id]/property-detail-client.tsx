@@ -1777,14 +1777,14 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
               </div>
             </div>
 
-            <div className="rounded-xl border border-[var(--error)]/30 bg-[var(--error)]/5 p-6">
+            <div className="rounded-xl border border-[var(--error)] bg-[var(--error)]/5 p-6">
               <h2 className="mb-2 font-semibold text-[var(--error)]">Danger Zone</h2>
               <p className="mb-4 text-sm text-foreground-secondary">
                 Permanently delete this property website. This action cannot be undone.
               </p>
               <button
                 onClick={() => setIsDeleteModalOpen(true)}
-                className="rounded-lg border border-[var(--error)]/30 px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
+                className="rounded-lg border border-[var(--error)] px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/10"
               >
                 Delete Property Website
               </button>

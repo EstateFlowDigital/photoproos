@@ -1089,7 +1089,7 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
       />
 
       {/* Danger Zone */}
-      <div className="rounded-xl border border-[var(--error)]/30 bg-[var(--error)]/5 p-6">
+      <div className="rounded-xl border border-[var(--error)] bg-[var(--error)]/5 p-6">
         <h3 className="text-lg font-semibold text-[var(--error)]">
           Danger Zone
         </h3>
@@ -1101,7 +1101,7 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
           <button
             onClick={handleDelete}
             disabled={loading}
-            className="rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20 disabled:opacity-50"
+            className="rounded-lg border border-[var(--error)] bg-[var(--error)]/10 px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20 disabled:opacity-50"
           >
             Delete Portfolio
           </button>

@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Element Inspector z-index** - Increased z-index values from 9998-10002 to 99997-100001 so the inspector stays above modals and doesn't accidentally close them when clicked
+- **Element Inspector selected highlight** - Added persistent green highlight for selected elements that stays visible while navigating parent/child and updates on scroll/resize
+
+### Changed
+- **Danger Zone Styling** - Updated all danger zone card borders from 20-30% opacity to solid error color for better visibility and consistency
+  - Settings page (`/settings`) - Export All Data and Delete Account section
+  - Profile settings (`/settings/profile`) - Delete Account section
+  - Client edit page (`/clients/[id]/edit`) - Delete Client section
+  - Booking edit page (`/scheduling/[id]/edit`) - Cancel Booking section
+  - Portfolio settings tab (`/portfolios/[id]`) - Delete Portfolio section
+  - Property detail page (`/properties/[id]`) - Delete Property Website section
+  - Task detail page (`/projects/tasks/[id]`) - Delete Task section
+  - Appearance settings (`/settings/appearance`) - Reset All button
+
 ### Added
 - **Data Element Attributes** - Added `data-element` attributes to 18 dashboard pages for improved analytics and testing
   - Projects section: `projects-page`, `projects-analytics-page`, `projects-task-detail-page`

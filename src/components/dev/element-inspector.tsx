@@ -152,8 +152,31 @@ export function ElementInspector() {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [panelPosition, setPanelPosition] = useState({ x: 16, y: 16 });
   const [isDragging, setIsDragging] = useState(false);
+  const [selectedRect, setSelectedRect] = useState<DOMRect | null>(null);
   const dragStartRef = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
   const originalStylesRef = useRef<Map<string, string>>(new Map());
+
+  // Update selected element's rect when it changes or on scroll/resize
+  useEffect(() => {
+    if (!selected) {
+      setSelectedRect(null);
+      return;
+    }
+
+    const updateRect = () => {
+      setSelectedRect(selected.element.getBoundingClientRect());
+    };
+
+    updateRect();
+
+    window.addEventListener("scroll", updateRect, true);
+    window.addEventListener("resize", updateRect);
+
+    return () => {
+      window.removeEventListener("scroll", updateRect, true);
+      window.removeEventListener("resize", updateRect);
+    };
+  }, [selected]);
 
   // Load visibility setting
   useEffect(() => {
@@ -499,7 +522,7 @@ ${Object.entries(styles)
             setIsActive(true);
           }
         }}
-        className={`fixed bottom-4 left-4 z-[10000] flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-all ${
+        className={`fixed bottom-4 left-4 z-[99999] flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-all ${
           isActive
             ? "bg-[var(--primary)] text-white"
             : "bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] hover:bg-[var(--background-elevated)]"
@@ -514,7 +537,7 @@ ${Object.entries(styles)
       {showShortcuts && (
         <div
           data-inspector="shortcuts"
-          className="fixed inset-0 z-[10002] flex items-center justify-center bg-black/50"
+          className="fixed inset-0 z-[100001] flex items-center justify-center bg-black/50"
           onClick={() => setShowShortcuts(false)}
         >
           <div
@@ -557,7 +580,7 @@ ${Object.entries(styles)
       {isActive && hovered && hoverRect && !selected && (
         <div
           data-inspector="highlight"
-          className="fixed pointer-events-none z-[9998] border-2 border-[var(--primary)] bg-[var(--primary)]/10"
+          className="fixed pointer-events-none z-[99997] border-2 border-[var(--primary)] bg-[var(--primary)]/10"
           style={{
             top: hoverRect.top,
             left: hoverRect.left,
@@ -574,11 +597,29 @@ ${Object.entries(styles)
         </div>
       )}
 
+      {/* Selected Element Highlight */}
+      {selected && selectedRect && (
+        <div
+          data-inspector="selected-highlight"
+          className="fixed pointer-events-none z-[99998] border-2 border-[#22c55e] bg-[#22c55e]/15"
+          style={{
+            top: selectedRect.top,
+            left: selectedRect.left,
+            width: selectedRect.width,
+            height: selectedRect.height,
+          }}
+        >
+          <div className="absolute -top-6 left-0 bg-[#22c55e] text-white text-xs px-2 py-1 rounded whitespace-nowrap font-medium">
+            {selected.dataElement || selected.selector}
+          </div>
+        </div>
+      )}
+
       {/* Active Instructions */}
       {isActive && !selected && (
         <div
           data-inspector="hint"
-          className="fixed top-4 left-1/2 -translate-x-1/2 z-[10000] bg-[var(--primary)] text-white px-4 py-2 rounded-lg shadow-lg text-sm flex items-center gap-3"
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-[99999] bg-[var(--primary)] text-white px-4 py-2 rounded-lg shadow-lg text-sm flex items-center gap-3"
         >
           <span>Click element to inspect</span>
           <span className="opacity-60">|</span>
@@ -599,7 +640,7 @@ ${Object.entries(styles)
       {selected && (
         <div
           data-inspector="panel"
-          className="fixed z-[10001] w-96 max-h-[85vh] overflow-hidden bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-2xl flex flex-col"
+          className="fixed z-[100000] w-96 max-h-[85vh] overflow-hidden bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-2xl flex flex-col"
           style={{ top: panelPosition.y, right: panelPosition.x }}
         >
           {/* Draggable Header */}

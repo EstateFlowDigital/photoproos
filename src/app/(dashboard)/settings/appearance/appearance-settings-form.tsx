@@ -1110,7 +1110,7 @@ export function AppearanceSettingsForm({
             onClick={handleResetToDefaults}
             disabled={isPending}
             className={cn(
-              "rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors",
+              "rounded-lg border border-[var(--error)] bg-[var(--error)]/10 px-4 py-2 text-sm font-medium text-[var(--error)] transition-colors",
               "hover:bg-[var(--error)]/20",
               "disabled:opacity-50 disabled:cursor-not-allowed"
             )}
