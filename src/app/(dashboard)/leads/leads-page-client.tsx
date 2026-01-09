@@ -160,51 +160,67 @@ const LeadRow = memo(function LeadRow({ inquiry, onView, isSelected, onToggleSel
 
   return (
     <div className={cn(
-      "grid grid-cols-[40px,120px,1.3fr,2fr,1.1fr,1fr,150px,110px] items-center gap-3 border-b border-[var(--card-border)] px-4 py-3 last:border-b-0 hover:bg-[var(--background-hover)]",
+      "flex flex-col gap-3 border-b border-[var(--card-border)] px-4 py-4 last:border-b-0 hover:bg-[var(--background-hover)] md:grid md:grid-cols-[40px,100px,1.3fr,1.8fr,1fr,100px,130px,80px] md:items-center md:gap-3 md:py-3",
       isSelected && "bg-[var(--primary)]/5"
     )}>
-      <div className="flex items-center justify-center">
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={() => onToggleSelect?.(inquiry.id, inquiry.type)}
-          className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background-elevated)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
-        />
-      </div>
-      <div>
-        <span
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium",
-            inquiry.type === "portfolio"
-              ? "bg-purple-500/10 text-purple-400"
-              : inquiry.type === "chat"
-              ? "bg-cyan-500/10 text-cyan-400"
-              : "bg-orange-500/10 text-orange-400"
-          )}
+      {/* Mobile: Checkbox + Type in row */}
+      <div className="flex items-center justify-between gap-3 md:contents">
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onToggleSelect?.(inquiry.id, inquiry.type)}
+            className="h-5 w-5 rounded border-[var(--card-border)] bg-[var(--background-elevated)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0 md:h-4 md:w-4"
+          />
+          <span
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium",
+              inquiry.type === "portfolio"
+                ? "bg-purple-500/10 text-purple-400"
+                : inquiry.type === "chat"
+                ? "bg-cyan-500/10 text-cyan-400"
+                : "bg-orange-500/10 text-orange-400"
+            )}
+          >
+            {inquiry.type === "portfolio" ? (
+              <GlobeIcon className="h-3 w-3" />
+            ) : inquiry.type === "chat" ? (
+              <ChatIcon className="h-3 w-3" />
+            ) : (
+              <CalendarIcon className="h-3 w-3" />
+            )}
+            {inquiry.type === "portfolio" ? "Portfolio" : inquiry.type === "chat" ? "Chat" : "Booking"}
+          </span>
+        </div>
+        {/* Mobile: View button */}
+        <button
+          onClick={() => onView(inquiry)}
+          className="min-h-[44px] min-w-[44px] rounded-lg bg-[var(--primary)]/10 px-3 py-2 text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/20 md:hidden"
         >
-          {inquiry.type === "portfolio" ? (
-            <GlobeIcon className="h-3 w-3" />
-          ) : inquiry.type === "chat" ? (
-            <ChatIcon className="h-3 w-3" />
-          ) : (
-            <CalendarIcon className="h-3 w-3" />
-          )}
-          {inquiry.type === "portfolio" ? "Portfolio" : inquiry.type === "chat" ? "Chat" : "Booking"}
-        </span>
+          View
+        </button>
       </div>
-      <div className="min-w-0">
-        <div>
+
+      {/* Contact info */}
+      <div className="min-w-0 md:contents">
+        <div className="md:col-span-1">
           <p className="font-medium text-foreground">{name}</p>
           <p className="text-xs text-foreground-muted">{email}</p>
         </div>
       </div>
-      <div className="min-w-0">
+
+      {/* Message - hidden on mobile */}
+      <div className="hidden min-w-0 md:block">
         <p className="truncate text-foreground-secondary">{messageOrDate}</p>
       </div>
-      <div>
+
+      {/* Source - hidden on mobile */}
+      <div className="hidden md:block">
         <p className="text-xs text-foreground-muted">{source}</p>
       </div>
-      <div>
+
+      {/* Status + Date row on mobile */}
+      <div className="flex items-center justify-between gap-2 md:contents">
         <span
           className={cn(
             "inline-flex rounded-full px-2 py-0.5 text-xs font-medium",
@@ -213,16 +229,18 @@ const LeadRow = memo(function LeadRow({ inquiry, onView, isSelected, onToggleSel
         >
           {STATUS_LABELS[inquiry.status]}
         </span>
+        <span className="text-xs text-foreground-muted whitespace-nowrap md:text-sm">
+          {new Date(inquiry.createdAt).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+          })}
+        </span>
       </div>
-      <div className="whitespace-nowrap text-foreground-muted">
-        {new Date(inquiry.createdAt).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-        })}
-      </div>
-      <div className="text-right">
+
+      {/* Desktop only: View button */}
+      <div className="hidden text-right md:block">
         <button
           onClick={() => onView(inquiry)}
           className="text-sm text-[var(--primary)] hover:underline"
@@ -716,7 +734,7 @@ export function LeadsPageClient({
               itemGap={0}
               estimateSize={() => 96}
               prepend={
-                <div className="sticky top-0 z-10 grid grid-cols-[40px,120px,1.3fr,2fr,1.1fr,1fr,150px,110px] items-center gap-3 border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-4 py-3 text-xs font-semibold uppercase text-foreground-muted">
+                <div className="sticky top-0 z-10 hidden border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-4 py-3 text-xs font-semibold uppercase text-foreground-muted md:grid md:grid-cols-[40px,100px,1.3fr,1.8fr,1fr,100px,130px,80px] md:items-center md:gap-3">
                   <span className="flex items-center justify-center">
                     <input
                       type="checkbox"
@@ -756,14 +774,14 @@ export function LeadsPageClient({
         </div>
       ) : (
         /* Kanban Board View */
-        <div className="grid grid-cols-4 gap-4">
+        <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-4">
           {KANBAN_COLUMNS.map((column) => {
             const columnLeads = getKanbanColumnLeads(column.id);
             return (
               <div
                 key={column.id}
                 className={cn(
-                  "flex flex-col rounded-xl border border-[var(--card-border)] bg-[var(--background-secondary)]",
+                  "flex min-w-[280px] flex-shrink-0 flex-col rounded-xl border border-[var(--card-border)] bg-[var(--background-secondary)] sm:min-w-0 sm:flex-shrink",
                   dragOverColumn === column.id && "ring-2 ring-[var(--primary)]"
                 )}
                 onDragOver={(e) => handleDragOver(e, column.id)}
@@ -815,11 +833,11 @@ export function LeadsPageClient({
 
       {/* Bulk Action Bar */}
       {selectedLeadIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 shadow-2xl">
-          <span className="text-sm font-medium text-foreground">
+        <div className="fixed bottom-4 left-4 right-4 z-50 flex flex-wrap items-center justify-center gap-2 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-3 py-3 shadow-2xl sm:bottom-6 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:gap-3 sm:px-4">
+          <span className="text-sm font-medium text-foreground whitespace-nowrap">
             {selectedLeadIds.size} selected
           </span>
-          <div className="h-4 w-px bg-[var(--card-border)]" />
+          <div className="hidden h-4 w-px bg-[var(--card-border)] sm:block" />
           <select
             disabled={isBulkActionPending}
             onChange={(e) => {
@@ -828,7 +846,7 @@ export function LeadsPageClient({
                 e.target.value = "";
               }
             }}
-            className="rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-3 py-1.5 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none disabled:opacity-50"
+            className="min-h-[44px] rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none disabled:opacity-50 sm:min-h-0 sm:py-1.5"
           >
             <option value="">Change Status...</option>
             <option value="new">New</option>
@@ -839,15 +857,16 @@ export function LeadsPageClient({
           <button
             onClick={handleBulkConvertToClient}
             disabled={isBulkActionPending}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-green-500/50 bg-green-500/10 px-3 py-1.5 text-sm font-medium text-green-500 transition-colors hover:bg-green-500/20 disabled:opacity-50"
+            className="min-h-[44px] inline-flex items-center gap-1.5 rounded-lg border border-green-500/50 bg-green-500/10 px-3 py-2 text-sm font-medium text-green-500 transition-colors hover:bg-green-500/20 disabled:opacity-50 sm:min-h-0 sm:py-1.5"
           >
             <UserPlusIcon className="h-4 w-4" />
-            Convert to Client
+            <span className="hidden sm:inline">Convert to Client</span>
+            <span className="sm:hidden">Convert</span>
           </button>
           <button
             onClick={() => setShowDeleteConfirm(true)}
             disabled={isBulkActionPending}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--error)]/50 bg-[var(--error)]/10 px-3 py-1.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20 disabled:opacity-50"
+            className="min-h-[44px] inline-flex items-center gap-1.5 rounded-lg border border-[var(--error)]/50 bg-[var(--error)]/10 px-3 py-2 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20 disabled:opacity-50 sm:min-h-0 sm:py-1.5"
           >
             <TrashIcon className="h-4 w-4" />
             Delete
@@ -855,7 +874,7 @@ export function LeadsPageClient({
           <button
             onClick={clearSelection}
             disabled={isBulkActionPending}
-            className="rounded-lg px-3 py-1.5 text-sm font-medium text-foreground-muted hover:text-foreground disabled:opacity-50"
+            className="min-h-[44px] rounded-lg px-3 py-2 text-sm font-medium text-foreground-muted hover:text-foreground disabled:opacity-50 sm:min-h-0 sm:py-1.5"
           >
             Clear
           </button>
@@ -864,8 +883,8 @@ export function LeadsPageClient({
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4">
+          <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 shadow-2xl sm:p-6">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--error)]/10">
               <TrashIcon className="h-6 w-6 text-[var(--error)]" />
             </div>
@@ -873,17 +892,17 @@ export function LeadsPageClient({
             <p className="mt-2 text-sm text-foreground-muted">
               This action cannot be undone. The selected leads will be permanently removed.
             </p>
-            <div className="mt-6 flex items-center justify-end gap-3">
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                className="min-h-[44px] w-full rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)] sm:w-auto sm:min-h-0"
               >
                 Cancel
               </button>
               <button
                 onClick={handleBulkDelete}
                 disabled={isBulkActionPending}
-                className="rounded-lg bg-[var(--error)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50"
+                className="min-h-[44px] w-full rounded-lg bg-[var(--error)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--error)]/90 disabled:opacity-50 sm:w-auto sm:min-h-0"
               >
                 {isBulkActionPending ? "Deleting..." : "Delete"}
               </button>

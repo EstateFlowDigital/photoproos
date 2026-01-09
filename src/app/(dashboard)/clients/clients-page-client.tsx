@@ -280,31 +280,33 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
       />
 
       {/* Search and Sort Controls */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex-1 min-w-[200px] max-w-md" data-tour="client-search">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="w-full sm:flex-1 sm:min-w-[200px] sm:max-w-md" data-tour="client-search">
           <ClientSearch initialQuery={searchQuery || ""} />
         </div>
 
-        {/* Sort Dropdown */}
-        <select
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value as SortOption)}
-          className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-          aria-label="Sort clients"
-        >
-          <option value="newest">Newest First</option>
-          <option value="oldest">Oldest First</option>
-          <option value="name">Name A-Z</option>
-          <option value="revenueHigh">Revenue: High to Low</option>
-          <option value="revenueLow">Revenue: Low to High</option>
-          <option value="projectsHigh">Projects: Most</option>
-          <option value="projectsLow">Projects: Least</option>
-        </select>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          {/* Sort Dropdown */}
+          <select
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value as SortOption)}
+            className="min-h-[44px] flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] sm:flex-none"
+            aria-label="Sort clients"
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="name">Name A-Z</option>
+            <option value="revenueHigh">Revenue: High to Low</option>
+            <option value="revenueLow">Revenue: Low to High</option>
+            <option value="projectsHigh">Projects: Most</option>
+            <option value="projectsLow">Projects: Least</option>
+          </select>
 
-        {/* Results Count */}
-        <span className="text-sm text-foreground-muted">
-          {clients.length} client{clients.length !== 1 ? "s" : ""}
-        </span>
+          {/* Results Count */}
+          <span className="text-sm text-foreground-muted whitespace-nowrap">
+            {clients.length} client{clients.length !== 1 ? "s" : ""}
+          </span>
+        </div>
       </div>
 
       {/* Tag Filter Pills */}
@@ -503,17 +505,17 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
 
       {/* Bulk Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 shadow-2xl">
-          <span className="text-sm font-medium text-foreground">
+        <div className="fixed bottom-4 left-4 right-4 z-50 flex flex-wrap items-center justify-center gap-2 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-3 py-3 shadow-2xl sm:bottom-6 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:px-4">
+          <span className="text-sm font-medium text-foreground whitespace-nowrap">
             {selectedIds.size} selected
           </span>
-          <div className="h-4 w-px bg-[var(--card-border)]" />
+          <div className="hidden h-4 w-px bg-[var(--card-border)] sm:block" />
 
           {/* Export CSV */}
           <button
             onClick={handleExportCSV}
             disabled={isPending}
-            className="rounded-lg bg-[var(--primary)]/10 px-3 py-1.5 text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/20 disabled:opacity-50"
+            className="min-h-[44px] rounded-lg bg-[var(--primary)]/10 px-3 py-2 text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/20 disabled:opacity-50 sm:min-h-0 sm:py-1.5"
           >
             Export CSV
           </button>
@@ -527,7 +529,7 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
                 setShowDeleteConfirm(false);
               }}
               disabled={isPending}
-              className="rounded-lg bg-[var(--background-secondary)] px-3 py-1.5 text-sm font-medium text-foreground hover:bg-[var(--background-hover)] disabled:opacity-50"
+              className="min-h-[44px] rounded-lg bg-[var(--background-secondary)] px-3 py-2 text-sm font-medium text-foreground hover:bg-[var(--background-hover)] disabled:opacity-50 sm:min-h-0 sm:py-1.5"
             >
               Set Industry
             </button>
@@ -556,7 +558,7 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
                   setShowDeleteConfirm(false);
                 }}
                 disabled={isPending}
-                className="rounded-lg bg-[var(--background-secondary)] px-3 py-1.5 text-sm font-medium text-foreground hover:bg-[var(--background-hover)] disabled:opacity-50"
+                className="min-h-[44px] rounded-lg bg-[var(--background-secondary)] px-3 py-2 text-sm font-medium text-foreground hover:bg-[var(--background-hover)] disabled:opacity-50 sm:min-h-0 sm:py-1.5"
               >
                 Add Tag
               </button>
@@ -583,19 +585,19 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
           {/* Delete with Confirmation */}
           <div className="relative">
             {showDeleteConfirm ? (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-[var(--error)]">Delete {selectedIds.size}?</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm text-[var(--error)] whitespace-nowrap">Delete {selectedIds.size}?</span>
                 <button
                   onClick={handleBulkDelete}
                   disabled={isPending}
-                  className="rounded-lg bg-[var(--error)] px-3 py-1.5 text-sm font-medium text-white hover:bg-[var(--error)]/90 disabled:opacity-50"
+                  className="min-h-[44px] rounded-lg bg-[var(--error)] px-3 py-2 text-sm font-medium text-white hover:bg-[var(--error)]/90 disabled:opacity-50 sm:min-h-0 sm:py-1.5"
                 >
                   {isPending ? "Deleting..." : "Confirm"}
                 </button>
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={isPending}
-                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-foreground-muted hover:text-foreground disabled:opacity-50"
+                  className="min-h-[44px] rounded-lg px-3 py-2 text-sm font-medium text-foreground-muted hover:text-foreground disabled:opacity-50 sm:min-h-0 sm:py-1.5"
                 >
                   Cancel
                 </button>
@@ -608,14 +610,14 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
                   setShowTagDropdown(false);
                 }}
                 disabled={isPending}
-                className="rounded-lg bg-[var(--error)]/10 px-3 py-1.5 text-sm font-medium text-[var(--error)] hover:bg-[var(--error)]/20 disabled:opacity-50"
+                className="min-h-[44px] rounded-lg bg-[var(--error)]/10 px-3 py-2 text-sm font-medium text-[var(--error)] hover:bg-[var(--error)]/20 disabled:opacity-50 sm:min-h-0 sm:py-1.5"
               >
                 Delete
               </button>
             )}
           </div>
 
-          <div className="h-4 w-px bg-[var(--card-border)]" />
+          <div className="hidden h-4 w-px bg-[var(--card-border)] sm:block" />
           <button
             onClick={() => {
               clearSelection();
@@ -624,7 +626,7 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
               setShowTagDropdown(false);
             }}
             disabled={isPending}
-            className="rounded-lg px-3 py-1.5 text-sm font-medium text-foreground-muted hover:text-foreground disabled:opacity-50"
+            className="min-h-[44px] rounded-lg px-3 py-2 text-sm font-medium text-foreground-muted hover:text-foreground disabled:opacity-50 sm:min-h-0 sm:py-1.5"
           >
             Clear
           </button>

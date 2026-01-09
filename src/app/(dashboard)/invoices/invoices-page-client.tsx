@@ -189,9 +189,9 @@ export function InvoicesPageClient({ invoices, statusFilter }: InvoicesPageClien
   return (
     <div className="space-y-4">
       {/* Search and Filters */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         {/* Search */}
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+        <div className="relative w-full sm:flex-1 sm:min-w-[200px] sm:max-w-sm">
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
           <input
             type="text"
@@ -210,35 +210,38 @@ export function InvoicesPageClient({ invoices, statusFilter }: InvoicesPageClien
           )}
         </div>
 
-        {/* Date Range Filter */}
-        <select
-          value={dateRangeFilter}
-          onChange={(e) => setDateRangeFilter(e.target.value as DateRangeFilter)}
-          className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-        >
-          <option value="all">All Time</option>
-          <option value="7days">Last 7 Days</option>
-          <option value="30days">Last 30 Days</option>
-          <option value="90days">Last 90 Days</option>
-        </select>
+        {/* Filter row with selects */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          {/* Date Range Filter */}
+          <select
+            value={dateRangeFilter}
+            onChange={(e) => setDateRangeFilter(e.target.value as DateRangeFilter)}
+            className="min-h-[44px] flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] sm:flex-none"
+          >
+            <option value="all">All Time</option>
+            <option value="7days">Last 7 Days</option>
+            <option value="30days">Last 30 Days</option>
+            <option value="90days">Last 90 Days</option>
+          </select>
 
-        {/* Sort Options */}
-        <select
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value as SortOption)}
-          className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-        >
-          <option value="newest">Newest First</option>
-          <option value="oldest">Oldest First</option>
-          <option value="amountHigh">Amount: High to Low</option>
-          <option value="amountLow">Amount: Low to High</option>
-          <option value="dueDate">Due Date</option>
-        </select>
+          {/* Sort Options */}
+          <select
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value as SortOption)}
+            className="min-h-[44px] flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] sm:flex-none"
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="amountHigh">Amount: High to Low</option>
+            <option value="amountLow">Amount: Low to High</option>
+            <option value="dueDate">Due Date</option>
+          </select>
 
-        {/* Results count */}
-        <span className="text-sm text-foreground-muted">
-          {filteredInvoices.length} of {invoices.length}
-        </span>
+          {/* Results count */}
+          <span className="text-sm text-foreground-muted whitespace-nowrap">
+            {filteredInvoices.length} of {invoices.length}
+          </span>
+        </div>
       </div>
 
       {/* Invoices Table */}
@@ -387,29 +390,29 @@ export function InvoicesPageClient({ invoices, statusFilter }: InvoicesPageClien
 
       {/* Bulk Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 shadow-2xl">
-          <span className="text-sm font-medium text-foreground">
+        <div className="fixed bottom-4 left-4 right-4 z-50 flex flex-wrap items-center justify-center gap-2 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-3 py-3 shadow-2xl sm:bottom-6 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:gap-3 sm:px-4">
+          <span className="text-sm font-medium text-foreground whitespace-nowrap">
             {selectedIds.size} selected
           </span>
-          <div className="h-4 w-px bg-[var(--card-border)]" />
+          <div className="hidden h-4 w-px bg-[var(--card-border)] sm:block" />
           <button
             onClick={handleBulkMarkAsPaid}
             disabled={isBulkActionPending}
-            className="rounded-lg bg-[var(--success)]/10 px-3 py-1.5 text-sm font-medium text-[var(--success)] hover:bg-[var(--success)]/20 disabled:opacity-50"
+            className="min-h-[44px] rounded-lg bg-[var(--success)]/10 px-3 py-2 text-sm font-medium text-[var(--success)] hover:bg-[var(--success)]/20 disabled:opacity-50 sm:min-h-0 sm:py-1.5"
           >
             Mark as Paid
           </button>
           <button
             onClick={handleBulkSendReminder}
             disabled={isBulkActionPending}
-            className="rounded-lg bg-[var(--primary)]/10 px-3 py-1.5 text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/20 disabled:opacity-50"
+            className="min-h-[44px] rounded-lg bg-[var(--primary)]/10 px-3 py-2 text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/20 disabled:opacity-50 sm:min-h-0 sm:py-1.5"
           >
             Send Reminder
           </button>
           <button
             onClick={clearSelection}
             disabled={isBulkActionPending}
-            className="rounded-lg px-3 py-1.5 text-sm font-medium text-foreground-muted hover:text-foreground disabled:opacity-50"
+            className="min-h-[44px] rounded-lg px-3 py-2 text-sm font-medium text-foreground-muted hover:text-foreground disabled:opacity-50 sm:min-h-0 sm:py-1.5"
           >
             Clear
           </button>

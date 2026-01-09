@@ -260,13 +260,18 @@ export function DashboardSidebar({
                     className="sidebar-section-title flex w-full items-center gap-2 px-2 py-1 rounded-md hover:bg-[var(--background-hover)] transition-colors"
                     aria-expanded={isSectionExpanded}
                   >
-                    {section.industryColor && (
+                    {section.industryIcon ? (
+                      <section.industryIcon
+                        className="h-3.5 w-3.5 shrink-0"
+                        style={{ color: section.industryColor }}
+                      />
+                    ) : section.industryColor ? (
                       <span
                         className="h-2 w-2 rounded-full shrink-0"
                         style={{ backgroundColor: section.industryColor }}
                         aria-hidden="true"
                       />
-                    )}
+                    ) : null}
                     <span className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground-muted flex-1 text-left">
                       {section.label}
                     </span>

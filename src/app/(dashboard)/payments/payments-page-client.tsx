@@ -152,49 +152,52 @@ export function PaymentsPageClient({ payments, filter }: PaymentsPageClientProps
   return (
     <div className="space-y-4">
       {/* Search and Filter Controls */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         {/* Search Input */}
-        <div className="relative flex-1 min-w-[200px] max-w-md">
+        <div className="relative w-full sm:flex-1 sm:min-w-[200px] sm:max-w-md">
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
           <input
             type="text"
             placeholder="Search payments..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-2 pl-10 pr-4 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+            className="min-h-[44px] w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-2 pl-10 pr-4 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] sm:min-h-0"
           />
         </div>
 
-        {/* Sort Dropdown */}
-        <select
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value as SortOption)}
-          className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-          aria-label="Sort payments"
-        >
-          <option value="newest">Newest First</option>
-          <option value="oldest">Oldest First</option>
-          <option value="amountHigh">Amount: High to Low</option>
-          <option value="amountLow">Amount: Low to High</option>
-        </select>
+        {/* Filter row */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          {/* Sort Dropdown */}
+          <select
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value as SortOption)}
+            className="min-h-[44px] flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] sm:flex-none sm:min-h-0"
+            aria-label="Sort payments"
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="amountHigh">Amount: High to Low</option>
+            <option value="amountLow">Amount: Low to High</option>
+          </select>
 
-        {/* Date Range Filter */}
-        <select
-          value={dateRangeFilter}
-          onChange={(e) => setDateRangeFilter(e.target.value as DateRangeFilter)}
-          className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-          aria-label="Filter by date range"
-        >
-          <option value="all">All Time</option>
-          <option value="7days">Last 7 Days</option>
-          <option value="30days">Last 30 Days</option>
-          <option value="90days">Last 90 Days</option>
-        </select>
+          {/* Date Range Filter */}
+          <select
+            value={dateRangeFilter}
+            onChange={(e) => setDateRangeFilter(e.target.value as DateRangeFilter)}
+            className="min-h-[44px] flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] sm:flex-none sm:min-h-0"
+            aria-label="Filter by date range"
+          >
+            <option value="all">All Time</option>
+            <option value="7days">Last 7 Days</option>
+            <option value="30days">Last 30 Days</option>
+            <option value="90days">Last 90 Days</option>
+          </select>
 
-        {/* Results Count */}
-        <span className="text-sm text-foreground-muted">
-          {filteredPayments.length} of {payments.length} payments
-        </span>
+          {/* Results Count */}
+          <span className="text-sm text-foreground-muted whitespace-nowrap">
+            {filteredPayments.length} of {payments.length}
+          </span>
+        </div>
       </div>
 
       {/* Empty State for Filtered Results */}
@@ -301,20 +304,20 @@ export function PaymentsPageClient({ payments, filter }: PaymentsPageClientProps
 
       {/* Bulk Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-4 py-3 shadow-2xl">
-          <span className="text-sm font-medium text-foreground">
+        <div className="fixed bottom-4 left-4 right-4 z-50 flex flex-wrap items-center justify-center gap-2 rounded-xl border border-[var(--card-border)] bg-[var(--card)] px-3 py-3 shadow-2xl sm:bottom-6 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:gap-3 sm:px-4">
+          <span className="text-sm font-medium text-foreground whitespace-nowrap">
             {selectedIds.size} selected
           </span>
-          <div className="h-4 w-px bg-[var(--card-border)]" />
+          <div className="hidden h-4 w-px bg-[var(--card-border)] sm:block" />
           <button
             onClick={handleExportCSV}
-            className="rounded-lg bg-[var(--primary)]/10 px-3 py-1.5 text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/20"
+            className="min-h-[44px] rounded-lg bg-[var(--primary)]/10 px-3 py-2 text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/20 sm:min-h-0 sm:py-1.5"
           >
             Export CSV
           </button>
           <button
             onClick={clearSelection}
-            className="rounded-lg px-3 py-1.5 text-sm font-medium text-foreground-muted hover:text-foreground"
+            className="min-h-[44px] rounded-lg px-3 py-2 text-sm font-medium text-foreground-muted hover:text-foreground sm:min-h-0 sm:py-1.5"
           >
             Clear
           </button>

@@ -27,6 +27,7 @@ export type DashboardNavSection = {
   items: DashboardNavItem[];
   industryId?: string;
   industryColor?: string;
+  industryIcon?: ComponentType<{ className?: string }>;
   isIndustrySection?: boolean;
 };
 
@@ -252,6 +253,7 @@ export function buildDashboardNav({
         items: industryItems,
         industryId: industry.id,
         industryColor: industry.color,
+        industryIcon: industry.icon,
         isIndustrySection: true,
       });
     }

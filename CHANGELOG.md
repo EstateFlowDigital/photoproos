@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Mobile Responsiveness Across Dashboard** - Comprehensive mobile-first fixes across major pages
+  - **Invoices Page**: Stack filters vertically on mobile, full-width search, 44px touch targets on selects
+  - **Clients Page**: Responsive filter layout, mobile-friendly bulk action bar with proper margins
+  - **Leads Page**: Complete mobile redesign of lead rows - flex layout on mobile, grid on desktop; hidden desktop-only columns; mobile view button; responsive Kanban board with horizontal scroll
+  - **Payments Page**: Mobile-first filter layout with proper touch targets
+  - **Bulk Action Bars**: All bulk action bars now span full width on mobile with centered wrap, proper bottom margin, hidden dividers, 44px button heights
+  - **Delete Confirmation Modals**: Added `p-3` mobile padding, full-width stacked buttons with `flex-col-reverse` for proper mobile UX
+  - **Touch Targets**: All interactive elements meet 44px minimum on mobile (iOS/WCAG standard)
 - **Dev Tools Flash on Mobile** - Fixed issue where BugProbe, HUD, and DebugBanner would briefly appear on mobile before settings could load and hide them
   - Components now start hidden by default and only show once settings confirm visibility
   - Added custom event dispatch for immediate same-tab settings updates
@@ -30,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Each selected industry gets its own collapsible dropdown section with relevant modules
   - Industry sections are collapsible with click-to-expand/collapse behavior
   - Industry sections auto-expand when containing the currently active page
-  - Industry sections display colored dot indicators matching industry brand colors
+  - Industry sections display their icon (Building, Briefcase, Calendar, etc.) with brand color
   - Simplified industry labels in navigation: "Real Estate", "Commercial", "Events", "Portraits", "Food", "Product"
   - Added `shortName` field to industry definitions for cleaner navigation display
   - Modules can appear in multiple industry sections where relevant (e.g., Galleries in Real Estate and Events)
