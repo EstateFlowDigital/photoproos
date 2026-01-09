@@ -100,7 +100,7 @@ export default async function DeveloperSettingsPage() {
       {/* Lifetime License */}
       <div className="rounded-xl border border-[var(--ai)]/30 bg-[var(--card)] p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--ai)]/30 bg-[var(--ai)]/10 text-[var(--ai)]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--ai)]/10 text-[var(--ai)]">
             <CrownIcon className="h-5 w-5" />
           </div>
           <div>
