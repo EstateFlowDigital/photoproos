@@ -929,6 +929,19 @@ export function ElementInspector() {
   const originalStylesRef = useRef<Map<string, string>>(new Map());
   const originalClassesRef = useRef<string[]>([]);
 
+  // Session-wide change tracker - persists all modifications during the session
+  const sessionChangesRef = useRef<Map<HTMLElement, {
+    selector: string;
+    dataElement: string | null;
+    originalStyles: Map<string, string>;
+    currentStyles: Map<string, string>;
+    originalClasses: string[];
+    currentClasses: string[];
+  }>>(new Map());
+  const [sessionChangeCount, setSessionChangeCount] = useState(0);
+  const [showSessionChanges, setShowSessionChanges] = useState(false);
+  const [sessionCopied, setSessionCopied] = useState(false);
+
   // Update selected element's rect when it changes or on scroll/resize
   useEffect(() => {
     if (!selected) {
@@ -1015,6 +1028,151 @@ export function ElementInspector() {
     return captured;
   }, []);
 
+  // Track changes in session (defined early so addClass/removeClass can use it)
+  const trackSessionChange = useCallback((element: HTMLElement, type: "style" | "class", prop?: string, value?: string) => {
+    const existing = sessionChangesRef.current.get(element);
+
+    if (!existing) {
+      // First change to this element - initialize tracking
+      const computed = window.getComputedStyle(element);
+      const originalStyles = new Map<string, string>();
+      for (const p of ALL_STYLE_PROPS) {
+        const v = computed.getPropertyValue(p);
+        if (v) originalStyles.set(p, v);
+      }
+
+      sessionChangesRef.current.set(element, {
+        selector: generateSelector(element),
+        dataElement: element.getAttribute("data-element"),
+        originalStyles,
+        currentStyles: new Map(originalStyles),
+        originalClasses: Array.from(element.classList),
+        currentClasses: Array.from(element.classList),
+      });
+    }
+
+    const entry = sessionChangesRef.current.get(element)!;
+
+    if (type === "style" && prop && value !== undefined) {
+      entry.currentStyles.set(prop, value);
+    } else if (type === "class") {
+      entry.currentClasses = Array.from(element.classList);
+    }
+
+    // Update the count to trigger re-render
+    setSessionChangeCount(sessionChangesRef.current.size);
+  }, []);
+
+  // Generate copy text for ALL session changes
+  const generateAllSessionChanges = useCallback(() => {
+    if (sessionChangesRef.current.size === 0) return "";
+
+    const changes: string[] = [];
+    changes.push(`## All Style Changes for ${window.location.pathname}\n`);
+    changes.push(`**Page:** ${window.location.pathname}`);
+    changes.push(`**Total Elements Modified:** ${sessionChangesRef.current.size}\n`);
+    changes.push("---\n");
+
+    sessionChangesRef.current.forEach((entry) => {
+      const styleChanges: string[] = [];
+      const classChanges: { added: string[]; removed: string[] } = { added: [], removed: [] };
+
+      // Find style changes
+      entry.currentStyles.forEach((currentValue, prop) => {
+        const originalValue = entry.originalStyles.get(prop);
+        if (originalValue !== currentValue) {
+          styleChanges.push(`  ${prop}: ${currentValue};`);
+        }
+      });
+
+      // Find class changes
+      const addedClasses = entry.currentClasses.filter(c => !entry.originalClasses.includes(c));
+      const removedClasses = entry.originalClasses.filter(c => !entry.currentClasses.includes(c));
+      classChanges.added = addedClasses;
+      classChanges.removed = removedClasses;
+
+      const hasStyleChanges = styleChanges.length > 0;
+      const hasClassChanges = addedClasses.length > 0 || removedClasses.length > 0;
+
+      if (!hasStyleChanges && !hasClassChanges) return;
+
+      changes.push(`### Element: \`${entry.selector}\``);
+      if (entry.dataElement) {
+        changes.push(`**data-element:** \`${entry.dataElement}\``);
+      }
+
+      if (hasStyleChanges) {
+        changes.push("\n**Style Changes:**");
+        changes.push("```css");
+        changes.push(`${entry.selector} {`);
+        changes.push(styleChanges.join("\n"));
+        changes.push("}");
+        changes.push("```");
+      }
+
+      if (hasClassChanges) {
+        changes.push("\n**Class Changes:**");
+        if (addedClasses.length > 0) {
+          changes.push(`- Added: \`${addedClasses.join("`, `")}\``);
+        }
+        if (removedClasses.length > 0) {
+          changes.push(`- Removed: \`${removedClasses.join("`, `")}\``);
+        }
+      }
+
+      changes.push("\n---\n");
+    });
+
+    return changes.join("\n");
+  }, []);
+
+  // Copy all session changes to clipboard
+  const copyAllSessionChanges = useCallback(async () => {
+    const text = generateAllSessionChanges();
+    if (!text) return;
+    await navigator.clipboard.writeText(text);
+    setSessionCopied(true);
+    setTimeout(() => setSessionCopied(false), 2000);
+  }, [generateAllSessionChanges]);
+
+  // Select an element from session changes
+  const selectFromSession = useCallback((element: HTMLElement) => {
+    const classes = Array.from(element.classList);
+    setSelected({
+      element,
+      selector: generateSelector(element),
+      path: getParentPath(element),
+      classes,
+      dataElement: element.getAttribute("data-element"),
+      suggestedComponent: guessComponentName(classes),
+    });
+    setStyles(captureStyles(element));
+    setShowSessionChanges(false);
+    setHovered(null);
+    setNotes("");
+    setCustomProps([]);
+    setNavigationHistory([]);
+  }, [captureStyles]);
+
+  // Clear all session changes
+  const clearSessionChanges = useCallback(() => {
+    // Revert all elements to original state
+    sessionChangesRef.current.forEach((entry, element) => {
+      // Revert styles
+      entry.originalStyles.forEach((value, prop) => {
+        element.style.setProperty(prop, "");
+      });
+      // Revert classes
+      element.className = entry.originalClasses.join(" ");
+    });
+    sessionChangesRef.current.clear();
+    setSessionChangeCount(0);
+    if (selected) {
+      setElementClasses(Array.from(selected.element.classList));
+      setStyles(captureStyles(selected.element));
+    }
+  }, [selected, captureStyles]);
+
   // Add a class to the selected element
   const addClass = useCallback((className: string) => {
     if (!selected || !className.trim()) return;
@@ -1026,7 +1184,8 @@ export function ElementInspector() {
     setElementClasses(Array.from(selected.element.classList));
     setClassSearchQuery("");
     setShowClassSuggestions(false);
-  }, [selected]);
+    trackSessionChange(selected.element, "class");
+  }, [selected, trackSessionChange]);
 
   // Remove a class from the selected element
   const removeClass = useCallback((className: string) => {
@@ -1034,7 +1193,8 @@ export function ElementInspector() {
 
     selected.element.classList.remove(className);
     setElementClasses(Array.from(selected.element.classList));
-  }, [selected]);
+    trackSessionChange(selected.element, "class");
+  }, [selected, trackSessionChange]);
 
   // Get filtered class suggestions based on search query
   const getClassSuggestions = useCallback((query: string) => {
@@ -1226,6 +1386,7 @@ export function ElementInspector() {
     if (!selected) return;
     setStyles((prev) => ({ ...prev, [prop]: value }));
     selected.element.style.setProperty(prop, value);
+    trackSessionChange(selected.element, "style", prop, value);
   };
 
   // Toggle group expansion
