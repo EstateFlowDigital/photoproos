@@ -189,7 +189,7 @@ export function SkillTree({ initialState, className }: SkillTreeProps) {
       </div>
 
       {/* Tree tabs */}
-      <div role="tablist" aria-label="Skill tree categories" className="flex gap-2 border-b border-[var(--card-border)]">
+      <div role="tablist" aria-label="Skill tree categories" className="flex gap-2 overflow-x-auto border-b border-[var(--card-border)]">
         {state.trees.map((tree) => (
           <button
             key={tree.category}
@@ -199,7 +199,7 @@ export function SkillTree({ initialState, className }: SkillTreeProps) {
             id={`tab-${tree.category}`}
             onClick={() => setSelectedTree(tree.category)}
             className={cn(
-              "relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-inset",
+              "relative flex shrink-0 items-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-inset",
               selectedTree === tree.category
                 ? "text-[var(--foreground)]"
                 : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
