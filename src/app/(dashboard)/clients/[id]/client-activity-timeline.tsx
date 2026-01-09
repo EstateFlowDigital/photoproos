@@ -7,7 +7,7 @@ interface ActivityItem {
   type: "payment" | "gallery" | "email" | "booking" | "communication" | "invoice";
   title: string;
   description?: string;
-  timestamp: Date;
+  timestamp: Date | string; // Can be Date or ISO string after server-to-client serialization
   status?: "success" | "pending" | "error" | "info";
   metadata?: Record<string, string | number>;
 }
@@ -41,16 +41,17 @@ const statusColors: Record<NonNullable<ActivityItem["status"]>, string> = {
   info: "bg-blue-500/10 text-blue-400",
 };
 
-function formatRelativeTime(date: Date): string {
+function formatRelativeTime(date: Date | string): string {
   const now = new Date();
-  const diff = now.getTime() - date.getTime();
+  const parsedDate = typeof date === "string" ? new Date(date) : date;
+  const diff = now.getTime() - parsedDate.getTime();
   const seconds = Math.floor(diff / 1000);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
   if (days > 7) {
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: days > 365 ? "numeric" : undefined });
+    return parsedDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: days > 365 ? "numeric" : undefined });
   } else if (days > 0) {
     return `${days}d ago`;
   } else if (hours > 0) {

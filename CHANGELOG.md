@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Gmail OAuth CORS Error** - Fixed CORS errors caused by Next.js Link prefetching OAuth redirect URLs. Changed OAuth authorization links from `<Link>` to `<a>` tags in inbox and email settings pages to prevent prefetch requests that triggered CORS errors
+- **Client Activity Timeline Date Serialization** - Fixed date handling in ClientActivityTimeline component to properly handle both Date objects and ISO strings after server-to-client serialization, preventing React Error #301
 - **Table Horizontal Scrolling** - All data tables across the application now have proper horizontal scrolling with minimum width constraints to prevent column scrunching on smaller screens. Tables updated include: leaderboard, orders, payments, leads, questionnaires, retainers, estimates, credit notes, tax reports, brokerages, blog list, email logs, and more
 - **Gallery Selection Settings Layout** - Removed excessive left margin from selection limit settings panel
 - **Skills Page Tab Scrolling** - Skill tree tabs now scroll horizontally on smaller screens instead of wrapping text
