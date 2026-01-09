@@ -10,7 +10,7 @@ export default async function NewExpensePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="expense-new-page">
       <PageHeader
         title="New Expense"
         subtitle="Record a new business expense"

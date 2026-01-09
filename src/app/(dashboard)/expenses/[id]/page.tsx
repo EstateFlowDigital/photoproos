@@ -15,7 +15,7 @@ export default async function ExpenseDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="expense-detail-page">
       <PageHeader
         title="Expense Details"
         subtitle={`Viewing expense ${id}`}
