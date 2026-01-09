@@ -18,6 +18,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Gallery detail page and public gallery pages updated with media type support
   - Database schema includes all media type fields (videoProvider, tourProvider, floorPlanType, etc.)
 
+### Changed
+- **Icon Container Styling** - Updated icon containers across the application to use muted color backgrounds with `/15` opacity pattern instead of `--background-secondary`. This creates a more subtle, consistent visual treatment for icons in:
+  - Dashboard widgets (activity, messages, bookings, galleries empty states)
+  - Settings pages (reviews, marketing stats, notifications)
+  - Help center pages (categories, FAQ, contact)
+  - Order/invoice detail pages (status icons, split invoicing)
+  - Portfolio sections builder (freeform blocks)
+  - Gamification components (stats, preferences)
+  - Industry selector (unselected state icons)
+  - Integrations page cards
+  - API key manager
+  - Contract activity log
+- **Mobile Search Button Border** - Added border to mobile search button in dashboard topbar to match styling of Quick Actions and Workspace buttons
+
 ### Fixed
 - **Gmail OAuth CORS Error** - Fixed CORS errors caused by Next.js Link prefetching OAuth redirect URLs. Changed OAuth authorization links from `<Link>` to `<a>` tags in inbox and email settings pages to prevent prefetch requests that triggered CORS errors
 - **Table Horizontal Scrolling** - All data tables across the application now have proper horizontal scrolling with minimum width constraints to prevent column scrunching on smaller screens. Tables updated include: leaderboard, orders, payments, leads, questionnaires, retainers, estimates, credit notes, tax reports, brokerages, blog list, email logs, and more

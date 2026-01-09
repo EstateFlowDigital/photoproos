@@ -494,7 +494,7 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
             setSearchOpen(true);
             setTimeout(() => searchInputRef.current?.focus(), 0);
           }}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-[var(--background-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 lg:hidden"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground transition-all hover:border-[var(--primary)] hover:bg-[var(--background-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 lg:hidden"
           aria-label="Search"
         >
           <SearchIcon className="h-4 w-4" />
