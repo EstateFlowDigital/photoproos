@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Conversation Page Buttons** - Info and Add People buttons now work:
+  - Info button opens a slide-in panel showing conversation details and participants
+  - Add People button opens modal (placeholder for future feature)
+  - Info panel shows participant list with roles (Team Member vs Client)
+  - Quick actions available in info panel (Mute, Pin, Add People)
+
 ### Added
 - **Element Inspector Design Tokens Reference** - New "Tokens" tab in the inspector panel showing all design system variables:
   - Colors (backgrounds, foregrounds, primary, status colors, borders)
