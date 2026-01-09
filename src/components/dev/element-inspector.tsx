@@ -22,6 +22,8 @@ import {
   Rows,
   Palette,
   Paintbrush,
+  Layers,
+  Search,
 } from "lucide-react";
 import { getDevSettings } from "@/lib/utils/dev-settings";
 
@@ -206,6 +208,77 @@ const DESIGN_TOKENS = {
     ],
   },
 };
+
+// ============================================
+// COMMON UTILITY CLASSES FOR SUGGESTIONS
+// ============================================
+
+const COMMON_CLASSES = {
+  layout: [
+    "flex", "flex-col", "flex-row", "flex-wrap", "flex-nowrap", "flex-1",
+    "grid", "grid-cols-1", "grid-cols-2", "grid-cols-3", "grid-cols-4",
+    "block", "inline", "inline-block", "inline-flex", "hidden",
+    "items-start", "items-center", "items-end", "items-stretch", "items-baseline",
+    "justify-start", "justify-center", "justify-end", "justify-between", "justify-around", "justify-evenly",
+    "self-start", "self-center", "self-end", "self-stretch",
+  ],
+  spacing: [
+    "p-0", "p-1", "p-2", "p-3", "p-4", "p-5", "p-6", "p-8", "p-10", "p-12",
+    "px-0", "px-1", "px-2", "px-3", "px-4", "px-5", "px-6", "px-8",
+    "py-0", "py-1", "py-2", "py-3", "py-4", "py-5", "py-6", "py-8",
+    "m-0", "m-1", "m-2", "m-3", "m-4", "m-5", "m-6", "m-8", "m-auto",
+    "mx-0", "mx-1", "mx-2", "mx-3", "mx-4", "mx-auto",
+    "my-0", "my-1", "my-2", "my-3", "my-4", "my-auto",
+    "gap-0", "gap-1", "gap-2", "gap-3", "gap-4", "gap-5", "gap-6", "gap-8",
+    "space-y-1", "space-y-2", "space-y-3", "space-y-4", "space-y-6", "space-y-8",
+    "space-x-1", "space-x-2", "space-x-3", "space-x-4", "space-x-6", "space-x-8",
+  ],
+  sizing: [
+    "w-full", "w-auto", "w-1/2", "w-1/3", "w-2/3", "w-1/4", "w-3/4", "w-screen",
+    "h-full", "h-auto", "h-screen", "h-fit",
+    "min-w-0", "min-w-full", "min-h-0", "min-h-full", "min-h-screen",
+    "max-w-sm", "max-w-md", "max-w-lg", "max-w-xl", "max-w-2xl", "max-w-4xl", "max-w-full", "max-w-none",
+  ],
+  typography: [
+    "text-xs", "text-sm", "text-base", "text-lg", "text-xl", "text-2xl", "text-3xl",
+    "font-normal", "font-medium", "font-semibold", "font-bold",
+    "text-left", "text-center", "text-right", "text-justify",
+    "text-foreground", "text-foreground-secondary", "text-foreground-muted",
+    "truncate", "whitespace-nowrap", "whitespace-pre-wrap",
+    "leading-none", "leading-tight", "leading-normal", "leading-relaxed",
+    "tracking-tight", "tracking-normal", "tracking-wide",
+  ],
+  colors: [
+    "bg-background", "bg-card", "bg-transparent",
+    "bg-[var(--background)]", "bg-[var(--card)]", "bg-[var(--background-elevated)]", "bg-[var(--background-tertiary)]",
+    "text-[var(--foreground)]", "text-[var(--foreground-secondary)]", "text-[var(--foreground-muted)]",
+    "text-[var(--primary)]", "text-[var(--success)]", "text-[var(--error)]", "text-[var(--warning)]",
+    "border-[var(--border)]", "border-[var(--card-border)]", "border-[var(--border-emphasis)]",
+  ],
+  borders: [
+    "border", "border-0", "border-2", "border-t", "border-b", "border-l", "border-r",
+    "rounded", "rounded-sm", "rounded-md", "rounded-lg", "rounded-xl", "rounded-2xl", "rounded-full", "rounded-none",
+    "shadow-sm", "shadow", "shadow-md", "shadow-lg", "shadow-xl", "shadow-2xl", "shadow-none",
+  ],
+  positioning: [
+    "relative", "absolute", "fixed", "sticky", "static",
+    "top-0", "right-0", "bottom-0", "left-0", "inset-0",
+    "z-0", "z-10", "z-20", "z-30", "z-40", "z-50",
+    "overflow-hidden", "overflow-auto", "overflow-scroll", "overflow-visible",
+    "overflow-x-auto", "overflow-x-hidden", "overflow-y-auto", "overflow-y-hidden",
+  ],
+  effects: [
+    "opacity-0", "opacity-25", "opacity-50", "opacity-75", "opacity-100",
+    "transition", "transition-all", "transition-colors", "transition-opacity", "transition-transform",
+    "duration-75", "duration-100", "duration-150", "duration-200", "duration-300",
+    "hover:opacity-80", "hover:opacity-90", "hover:scale-105",
+    "cursor-pointer", "cursor-default", "cursor-not-allowed",
+    "pointer-events-none", "pointer-events-auto",
+  ],
+};
+
+// Flatten all classes for search
+const ALL_CLASSES = Object.values(COMMON_CLASSES).flat();
 
 // Token item component with copy functionality
 function TokenItem({
@@ -846,10 +919,15 @@ export function ElementInspector() {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedRect, setSelectedRect] = useState<DOMRect | null>(null);
   const [navigationHistory, setNavigationHistory] = useState<HTMLElement[]>([]);
-  const [activeTab, setActiveTab] = useState<"styles" | "tokens">("styles");
+  const [activeTab, setActiveTab] = useState<"styles" | "classes" | "tokens">("styles");
   const [expandedTokenGroups, setExpandedTokenGroups] = useState<Set<string>>(new Set(["colors"]));
+  const [classSearchQuery, setClassSearchQuery] = useState("");
+  const [showClassSuggestions, setShowClassSuggestions] = useState(false);
+  const [elementClasses, setElementClasses] = useState<string[]>([]);
+  const classInputRef = useRef<HTMLInputElement>(null);
   const dragStartRef = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
   const originalStylesRef = useRef<Map<string, string>>(new Map());
+  const originalClassesRef = useRef<string[]>([]);
 
   // Update selected element's rect when it changes or on scroll/resize
   useEffect(() => {
@@ -915,7 +993,7 @@ export function ElementInspector() {
     return () => window.removeEventListener("keydown", handleGlobalKeyDown);
   }, [hidden, isActive]);
 
-  // Capture element styles
+  // Capture element styles and classes
   const captureStyles = useCallback((el: HTMLElement) => {
     const computed = window.getComputedStyle(el);
     const captured: Record<string, string> = {};
@@ -928,8 +1006,44 @@ export function ElementInspector() {
         originalStylesRef.current.set(prop, value);
       }
     }
+
+    // Capture classes
+    const classes = Array.from(el.classList);
+    originalClassesRef.current = [...classes];
+    setElementClasses(classes);
+
     return captured;
   }, []);
+
+  // Add a class to the selected element
+  const addClass = useCallback((className: string) => {
+    if (!selected || !className.trim()) return;
+
+    const trimmedClass = className.trim();
+    if (selected.element.classList.contains(trimmedClass)) return;
+
+    selected.element.classList.add(trimmedClass);
+    setElementClasses(Array.from(selected.element.classList));
+    setClassSearchQuery("");
+    setShowClassSuggestions(false);
+  }, [selected]);
+
+  // Remove a class from the selected element
+  const removeClass = useCallback((className: string) => {
+    if (!selected) return;
+
+    selected.element.classList.remove(className);
+    setElementClasses(Array.from(selected.element.classList));
+  }, [selected]);
+
+  // Get filtered class suggestions based on search query
+  const getClassSuggestions = useCallback((query: string) => {
+    if (!query.trim()) return [];
+    const lowerQuery = query.toLowerCase();
+    return ALL_CLASSES.filter(
+      (cls) => cls.toLowerCase().includes(lowerQuery) && !elementClasses.includes(cls)
+    ).slice(0, 15);
+  }, [elementClasses]);
 
   // Block all interactions when inspector is active (prevents link navigation)
   const blockInteraction = useCallback(
@@ -1486,6 +1600,23 @@ ${Object.entries(styles)
               Styles
             </button>
             <button
+              onClick={() => setActiveTab("classes")}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${
+                activeTab === "classes"
+                  ? "text-[var(--primary)] border-b-2 border-[var(--primary)] -mb-[1px]"
+                  : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              Classes
+              {elementClasses.length !== originalClassesRef.current.length && (
+                <span className="text-[10px] bg-[var(--primary)]/20 text-[var(--primary)] px-1 rounded">
+                  {elementClasses.length - originalClassesRef.current.length > 0 ? "+" : ""}
+                  {elementClasses.length - originalClassesRef.current.length}
+                </span>
+              )}
+            </button>
+            <button
               onClick={() => setActiveTab("tokens")}
               className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${
                 activeTab === "tokens"
@@ -1603,6 +1734,157 @@ ${Object.entries(styles)
             </div>
               </div>
             </>
+          )}
+
+          {/* Classes Tab Content */}
+          {activeTab === "classes" && (
+            <div className="flex-1 overflow-y-auto">
+              {/* Class Input with Autocomplete */}
+              <div className="p-3 border-b border-[var(--border)]">
+                <label className="text-xs font-medium text-[var(--foreground-muted)] block mb-1.5">
+                  Add Class
+                </label>
+                <div className="relative">
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--foreground-muted)]" />
+                      <input
+                        ref={classInputRef}
+                        type="text"
+                        value={classSearchQuery}
+                        onChange={(e) => {
+                          setClassSearchQuery(e.target.value);
+                          setShowClassSuggestions(e.target.value.length > 0);
+                        }}
+                        onFocus={() => setShowClassSuggestions(classSearchQuery.length > 0)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && classSearchQuery.trim()) {
+                            addClass(classSearchQuery);
+                          }
+                          if (e.key === "Escape") {
+                            setShowClassSuggestions(false);
+                          }
+                        }}
+                        placeholder="Search or type class name..."
+                        className="w-full text-xs pl-8 pr-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                      />
+                    </div>
+                    <button
+                      onClick={() => addClass(classSearchQuery)}
+                      disabled={!classSearchQuery.trim()}
+                      className="px-3 py-2 text-xs rounded-lg bg-[var(--primary)] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Autocomplete Suggestions */}
+                  {showClassSuggestions && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--card)] border border-[var(--border)] rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+                      {getClassSuggestions(classSearchQuery).length > 0 ? (
+                        getClassSuggestions(classSearchQuery).map((cls) => (
+                          <button
+                            key={cls}
+                            onClick={() => addClass(cls)}
+                            className="w-full text-left px-3 py-2 text-xs text-[var(--foreground)] hover:bg-[var(--background-elevated)] transition-colors"
+                          >
+                            <code className="text-[var(--primary)]">{cls}</code>
+                          </button>
+                        ))
+                      ) : classSearchQuery.trim() ? (
+                        <div className="px-3 py-2 text-xs text-[var(--foreground-muted)]">
+                          Press Enter to add &quot;<code className="text-[var(--primary)]">{classSearchQuery}</code>&quot;
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Current Classes */}
+              <div className="p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-[var(--foreground-muted)]">
+                    Current Classes ({elementClasses.length})
+                  </span>
+                  {elementClasses.length !== originalClassesRef.current.length && (
+                    <button
+                      onClick={() => {
+                        if (!selected) return;
+                        // Reset to original classes
+                        selected.element.className = originalClassesRef.current.join(" ");
+                        setElementClasses([...originalClassesRef.current]);
+                      }}
+                      className="text-[10px] text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+
+                {elementClasses.length === 0 ? (
+                  <p className="text-xs text-[var(--foreground-muted)] italic">No classes applied</p>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5">
+                    {elementClasses.map((cls) => {
+                      const isNew = !originalClassesRef.current.includes(cls);
+                      return (
+                        <div
+                          key={cls}
+                          className={`group flex items-center gap-1 px-2 py-1 text-xs rounded-md border transition-colors ${
+                            isNew
+                              ? "bg-[var(--primary)]/10 border-[var(--primary)]/30 text-[var(--primary)]"
+                              : "bg-[var(--background-elevated)] border-[var(--border)] text-[var(--foreground)]"
+                          }`}
+                        >
+                          <code className="text-[11px]">{cls}</code>
+                          <button
+                            onClick={() => removeClass(cls)}
+                            className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-[var(--background-hover)] transition-opacity"
+                            title="Remove class"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Quick Add Categories */}
+              <div className="p-3 border-t border-[var(--border)]">
+                <p className="text-xs font-medium text-[var(--foreground-muted)] mb-2">Quick Add</p>
+                {Object.entries(COMMON_CLASSES).map(([category, classes]) => (
+                  <details key={category} className="mb-2">
+                    <summary className="text-xs text-[var(--foreground-secondary)] cursor-pointer hover:text-[var(--foreground)] capitalize">
+                      {category} ({classes.length})
+                    </summary>
+                    <div className="flex flex-wrap gap-1 mt-2 pl-2">
+                      {classes.slice(0, 12).map((cls) => (
+                        <button
+                          key={cls}
+                          onClick={() => addClass(cls)}
+                          disabled={elementClasses.includes(cls)}
+                          className={`px-1.5 py-0.5 text-[10px] rounded border transition-colors ${
+                            elementClasses.includes(cls)
+                              ? "bg-[var(--primary)]/10 border-[var(--primary)]/30 text-[var(--primary)] cursor-default"
+                              : "bg-[var(--background)] border-[var(--border)] text-[var(--foreground-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
+                          }`}
+                        >
+                          {cls}
+                        </button>
+                      ))}
+                      {classes.length > 12 && (
+                        <span className="text-[10px] text-[var(--foreground-muted)] self-center">
+                          +{classes.length - 12} more
+                        </span>
+                      )}
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </div>
           )}
 
           {/* Tokens Tab Content */}

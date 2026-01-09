@@ -29,6 +29,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Font size slider with presets
   - Sizing presets (auto, 100%, fit-content, max-content)
 - **Element Inspector Navigation History** - When navigating to parent elements, the previously selected child is remembered so you can navigate back to it with the "Back" button
+- **Element Inspector Class Manager** - New "Classes" tab for Webflow-style class management:
+  - View all current classes applied to the selected element
+  - Add new classes with search/autocomplete from common utility classes
+  - Remove classes with hover-to-reveal X button
+  - Reset to original classes with one click
+  - Quick Add categories: Layout, Spacing, Sizing, Typography, Colors, Borders, Positioning, Effects
+  - Newly added classes highlighted in primary color
+  - Tab badge shows class count changes
 - **Data Element Attributes** - Added `data-element` identifiers across the entire application for consistent Element Inspector identification:
   - **Layout Components**: dashboard-shell, dashboard-sidebar, dashboard-sidebar-container, dashboard-main, dashboard-topbar, dashboard-content
   - **UI Primitives**: card, card-header, card-title, card-description, card-content, card-footer, button (with variant suffix), badge (with variant suffix), input, textarea, input-wrapper, textarea-wrapper
