@@ -1147,7 +1147,9 @@ export function ElementInspector() {
       suggestedComponent: guessComponentName(classes),
     });
     setStyles(captureStyles(element));
+    setElementClasses(classes);
     setShowSessionChanges(false);
+    setIsActive(true); // Ensure inspector is active
     setHovered(null);
     setNotes("");
     setCustomProps([]);
@@ -1528,6 +1530,160 @@ ${Object.entries(styles)
         <MousePointer2 className="w-4 h-4" />
         <span className="hidden sm:inline">{isActive ? "Inspecting..." : "Inspect"}</span>
       </button>
+
+      {/* Session Changes Button */}
+      {sessionChangeCount > 0 && (
+        <button
+          data-inspector="session-changes"
+          onClick={() => setShowSessionChanges(true)}
+          className="fixed bottom-4 left-36 z-[99999] flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium shadow-lg transition-all bg-[var(--success)] text-white hover:bg-[var(--success)]/90"
+          title="View all session changes"
+        >
+          <Layers className="w-4 h-4" />
+          <span>{sessionChangeCount} change{sessionChangeCount !== 1 ? "s" : ""}</span>
+        </button>
+      )}
+
+      {/* Session Changes Modal */}
+      {showSessionChanges && (
+        <div
+          data-inspector="session-modal"
+          className="fixed inset-0 z-[100001] flex items-center justify-center bg-black/50"
+          onClick={() => setShowSessionChanges(false)}
+        >
+          <div
+            className="bg-[var(--card)] border border-[var(--border)] rounded-xl w-[500px] max-h-[80vh] shadow-2xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between gap-4 flex-wrap p-4 border-b border-[var(--border)]">
+              <div>
+                <h3 className="font-semibold text-[var(--foreground)]">Session Changes</h3>
+                <p className="text-xs text-[var(--foreground-muted)] mt-0.5">
+                  {sessionChangeCount} element{sessionChangeCount !== 1 ? "s" : ""} modified on this page
+                </p>
+              </div>
+              <button onClick={() => setShowSessionChanges(false)} className="text-[var(--foreground-muted)] hover:text-[var(--foreground)]">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Changes List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {Array.from(sessionChangesRef.current.entries()).map(([element, entry]) => {
+                const styleChanges = Array.from(entry.currentStyles.entries())
+                  .filter(([prop, val]) => entry.originalStyles.get(prop) !== val);
+                const addedClasses = entry.currentClasses.filter(c => !entry.originalClasses.includes(c));
+                const removedClasses = entry.originalClasses.filter(c => !entry.currentClasses.includes(c));
+                const hasChanges = styleChanges.length > 0 || addedClasses.length > 0 || removedClasses.length > 0;
+
+                if (!hasChanges) return null;
+
+                return (
+                  <div
+                    key={entry.selector}
+                    className="p-3 rounded-lg border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--background-elevated)] cursor-pointer transition-colors"
+                    onClick={() => selectFromSession(element)}
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="min-w-0">
+                        <code className="text-xs text-[var(--primary)] break-all">{entry.selector}</code>
+                        {entry.dataElement && (
+                          <span className="ml-2 text-[10px] text-[var(--foreground-muted)]">
+                            data-element=&quot;{entry.dataElement}&quot;
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-[var(--foreground-muted)] whitespace-nowrap">
+                        Click to edit
+                      </span>
+                    </div>
+
+                    {/* Style changes */}
+                    {styleChanges.length > 0 && (
+                      <div className="mt-2">
+                        <span className="text-[10px] font-medium text-[var(--foreground-muted)] uppercase">Styles</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {styleChanges.slice(0, 5).map(([prop]) => (
+                            <span
+                              key={prop}
+                              className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--primary)]/10 text-[var(--primary)]"
+                            >
+                              {prop}
+                            </span>
+                          ))}
+                          {styleChanges.length > 5 && (
+                            <span className="text-[10px] text-[var(--foreground-muted)]">
+                              +{styleChanges.length - 5} more
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Class changes */}
+                    {(addedClasses.length > 0 || removedClasses.length > 0) && (
+                      <div className="mt-2">
+                        <span className="text-[10px] font-medium text-[var(--foreground-muted)] uppercase">Classes</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {addedClasses.slice(0, 3).map((cls) => (
+                            <span
+                              key={cls}
+                              className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--success)]/10 text-[var(--success)]"
+                            >
+                              +{cls}
+                            </span>
+                          ))}
+                          {removedClasses.slice(0, 3).map((cls) => (
+                            <span
+                              key={cls}
+                              className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--error)]/10 text-[var(--error)]"
+                            >
+                              -{cls}
+                            </span>
+                          ))}
+                          {(addedClasses.length + removedClasses.length) > 6 && (
+                            <span className="text-[10px] text-[var(--foreground-muted)]">
+                              +{(addedClasses.length + removedClasses.length) - 6} more
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Footer with actions */}
+            <div className="p-4 border-t border-[var(--border)] flex items-center justify-between gap-3">
+              <button
+                onClick={clearSessionChanges}
+                className="px-3 py-2 text-xs rounded-lg border border-[var(--error)]/30 text-[var(--error)] hover:bg-[var(--error)]/10 transition-colors"
+              >
+                <Trash2 className="w-3.5 h-3.5 inline mr-1.5" />
+                Revert All
+              </button>
+              <button
+                onClick={copyAllSessionChanges}
+                className="flex-1 px-4 py-2 text-sm rounded-lg bg-[var(--primary)] text-white hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+              >
+                {sessionCopied ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    Copy All Changes
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Keyboard Shortcuts Modal */}
       {showShortcuts && (

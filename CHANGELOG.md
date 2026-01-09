@@ -37,6 +37,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Quick Add categories: Layout, Spacing, Sizing, Typography, Colors, Borders, Positioning, Effects
   - Newly added classes highlighted in primary color
   - Tab badge shows class count changes
+- **Element Inspector Session Changes** - Persistent change tracking during your session:
+  - All style and class modifications persist when clicking off elements
+  - Green floating button shows count of modified elements
+  - Session Changes modal lists all modified elements with their changes
+  - Click any element in the list to re-select and continue editing
+  - Style changes shown as property badges (padding, color, etc.)
+  - Class changes shown as +added (green) and -removed (red) badges
+  - "Copy All Changes" button generates formatted markdown for all modifications on the page
+  - "Revert All" button to reset all elements to their original state
+  - Changes automatically persist until page refresh (no need to save)
 - **Data Element Attributes** - Added `data-element` identifiers across the entire application for consistent Element Inspector identification:
   - **Layout Components**: dashboard-shell, dashboard-sidebar, dashboard-sidebar-container, dashboard-main, dashboard-topbar, dashboard-content
   - **UI Primitives**: card, card-header, card-title, card-description, card-content, card-footer, button (with variant suffix), badge (with variant suffix), input, textarea, input-wrapper, textarea-wrapper
