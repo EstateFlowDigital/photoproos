@@ -22,7 +22,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="services-detail-page">
       <PageHeader
         title={service.isDefault ? "View Template" : "Edit Service"}
         subtitle={service.isDefault ? "Template services are read-only. Duplicate to customize." : "Update your service package details"}

@@ -112,7 +112,7 @@ export default async function PaymentsPage({ searchParams }: PaymentsPageProps) 
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="payments-page">
       <PageHeader
         title="Payments"
         subtitle="Track and manage your payment history"

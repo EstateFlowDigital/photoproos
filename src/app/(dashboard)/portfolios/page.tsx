@@ -10,7 +10,7 @@ export default async function PortfolioWebsitesPage() {
   const publishedCount = websites.filter((site) => site.isPublished).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="portfolios-page">
       <PageHeader
         title="Portfolio Websites"
         subtitle={`${websites.length} site${websites.length !== 1 ? "s" : ""} • ${publishedCount} published`}

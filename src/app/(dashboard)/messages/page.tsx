@@ -18,7 +18,7 @@ export default async function MessagesPage() {
   // Empty state - shown in main content area when no conversation is selected
   // On mobile, users see the sidebar. On desktop, they see this.
   return (
-    <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
+    <div data-element="messages-page" className="flex flex-1 flex-col items-center justify-center p-8 text-center">
       <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-hover)]">
         <MessageSquare className="h-12 w-12 text-white" />
       </div>

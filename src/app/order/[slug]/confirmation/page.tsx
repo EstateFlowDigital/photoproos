@@ -33,21 +33,23 @@ export default async function OrderConfirmationPage({ params, searchParams }: Pa
   }
 
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
-            <p className="text-[var(--foreground-muted)]">Loading confirmation...</p>
+    <div data-element="order-confirmation-page">
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              <p className="text-[var(--foreground-muted)]">Loading confirmation...</p>
+            </div>
           </div>
-        </div>
-      }
-    >
-      <OrderConfirmationClient
-        orderPage={orderPage}
-        orderId={orderId}
-        sessionId={sessionId}
-      />
-    </Suspense>
+        }
+      >
+        <OrderConfirmationClient
+          orderPage={orderPage}
+          orderId={orderId}
+          sessionId={sessionId}
+        />
+      </Suspense>
+    </div>
   );
 }

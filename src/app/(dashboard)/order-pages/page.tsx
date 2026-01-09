@@ -10,7 +10,7 @@ export default async function OrderPagesPage() {
   const publishedCount = orderPages.filter((p) => p.isPublished).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="order-pages-page">
       <PageHeader
         title="Order Pages"
         subtitle={`${orderPages.length} page${orderPages.length !== 1 ? "s" : ""} • ${publishedCount} published`}

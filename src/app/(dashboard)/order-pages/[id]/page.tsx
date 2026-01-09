@@ -19,7 +19,7 @@ export default async function OrderPageDetailPage({ params }: OrderPageDetailPag
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="order-pages-detail-page">
       <PageHeader
         title="Edit Order Page"
         subtitle="Update your order page settings"

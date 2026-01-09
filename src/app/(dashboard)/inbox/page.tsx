@@ -174,12 +174,14 @@ export default async function InboxPage() {
   });
 
   return (
-    <InboxPageClient
-      accounts={accounts}
-      threads={threads}
-      totalThreads={total}
-      unreadCount={unreadCount}
-      organizationId={auth.organizationId}
-    />
+    <div data-element="inbox-page">
+      <InboxPageClient
+        accounts={accounts}
+        threads={threads}
+        totalThreads={total}
+        unreadCount={unreadCount}
+        organizationId={auth.organizationId}
+      />
+    </div>
   );
 }

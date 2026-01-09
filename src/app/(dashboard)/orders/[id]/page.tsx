@@ -42,7 +42,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
   const clientName = order.clientName || "Guest";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="orders-detail-page">
       <PageHeader
         title={order.orderNumber}
         subtitle={`Order from ${clientName}`}

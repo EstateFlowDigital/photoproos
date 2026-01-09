@@ -62,7 +62,7 @@ export default async function NewQuestionnaireTemplatePage({ searchParams }: Pro
 
     const source = sourceResult.data;
     return (
-      <div className="space-y-6">
+      <div className="space-y-6" data-element="questionnaires-templates-new-page">
         <PageHeader
           title="Duplicate Template"
           subtitle={`Creating a copy of "${source.name}"`}
@@ -125,7 +125,7 @@ export default async function NewQuestionnaireTemplatePage({ searchParams }: Pro
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="questionnaires-templates-new-page">
       <PageHeader
         title="Create New Template"
         subtitle="Design a questionnaire to collect information from your clients"

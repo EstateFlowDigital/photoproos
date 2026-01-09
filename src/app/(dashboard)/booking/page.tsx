@@ -12,7 +12,7 @@ export default async function BookingPage() {
   const recentForms = bookingForms.slice(0, 6);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="booking-dashboard-page">
       <PageHeader
         title="Booking Hub"
         subtitle="Create and manage client booking forms and links"

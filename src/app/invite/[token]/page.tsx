@@ -14,5 +14,9 @@ export default async function InvitePage({ params }: InvitePageProps) {
     notFound();
   }
 
-  return <InviteAcceptClient invitation={invitation} token={token} />;
+  return (
+    <div data-element="invite-page">
+      <InviteAcceptClient invitation={invitation} token={token} />
+    </div>
+  );
 }

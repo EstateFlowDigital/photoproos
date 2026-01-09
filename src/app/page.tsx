@@ -66,7 +66,7 @@ export default async function Home() {
   }
 
   return (
-    <main id="main-content" className="relative min-h-screen overflow-hidden bg-background">
+    <main id="main-content" data-element="homepage" className="relative min-h-screen overflow-hidden bg-background">
       {/* Scroll Progress Indicator */}
       <ScrollProgress color="linear-gradient(90deg, #3b82f6, #8b5cf6)" height={2} />
 

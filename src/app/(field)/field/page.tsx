@@ -19,9 +19,11 @@ export default async function FieldSchedulePage() {
   const upcomingBookings = upcomingResult.success ? upcomingResult.data : [];
 
   return (
-    <FieldScheduleClient
-      todaysBookings={todaysBookings || []}
-      upcomingBookings={upcomingBookings || []}
-    />
+    <div data-element="field-page">
+      <FieldScheduleClient
+        todaysBookings={todaysBookings || []}
+        upcomingBookings={upcomingBookings || []}
+      />
+    </div>
   );
 }

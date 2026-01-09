@@ -30,7 +30,7 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
     const leads = await getAllPropertyLeads(auth.organizationId);
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-6" data-element="properties-page">
         <PageHeader
           title="Property Leads"
           subtitle="Manage all leads from your property websites"
@@ -52,7 +52,7 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
     const analytics = await getAggregateAnalytics(auth.organizationId);
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-6" data-element="properties-page">
         <PageHeader
           title="Property Analytics"
           subtitle="Performance overview across all properties"
@@ -84,11 +84,13 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
   };
 
   return (
-    <PropertiesPageClient
-      websites={websites}
-      projects={projects}
-      stats={stats}
-    />
+    <div data-element="properties-page">
+      <PropertiesPageClient
+        websites={websites}
+        projects={projects}
+        stats={stats}
+      />
+    </div>
   );
 }
 

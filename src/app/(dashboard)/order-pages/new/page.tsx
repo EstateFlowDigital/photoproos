@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function NewOrderPagePage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="order-pages-new-page">
       <PageHeader
         title="Create Order Page"
         subtitle="Create a custom branded order page for clients"

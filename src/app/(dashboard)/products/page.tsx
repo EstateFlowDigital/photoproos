@@ -14,5 +14,9 @@ export default async function ProductsPage() {
 
   const catalogs = await listProductCatalogs();
 
-  return <ProductsClient catalogs={catalogs} />;
+  return (
+    <div data-element="products-page">
+      <ProductsClient catalogs={catalogs} />
+    </div>
+  );
 }

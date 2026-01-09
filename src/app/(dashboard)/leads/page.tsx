@@ -18,7 +18,7 @@ export default async function LeadsPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="leads-page">
       <PageHeader
         title="Leads"
         subtitle="Manage inquiries from your portfolio websites, chat widget, and booking forms"

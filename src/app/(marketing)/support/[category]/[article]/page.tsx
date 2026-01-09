@@ -50,7 +50,7 @@ export default async function HelpArticlePage({ params }: PageProps) {
   const categoryArticles = getArticlesByCategory(category).filter((a) => a.slug !== article);
 
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="support-article-page">
       {/* Header */}
       <section className="border-b border-[var(--card-border)]">
         <div className="mx-auto max-w-[1512px] px-6 py-8 lg:px-[124px]">

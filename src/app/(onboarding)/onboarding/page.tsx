@@ -134,10 +134,12 @@ export default async function OnboardingPage() {
   };
 
   return (
-    <OnboardingWizard
-      organization={organization}
-      onboardingProgress={onboardingProgress}
-      user={userInfo}
-    />
+    <div data-element="onboarding-page">
+      <OnboardingWizard
+        organization={organization}
+        onboardingProgress={onboardingProgress}
+        user={userInfo}
+      />
+    </div>
   );
 }

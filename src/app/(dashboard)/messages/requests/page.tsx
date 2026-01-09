@@ -38,7 +38,7 @@ export default async function ChatRequestsPage({ searchParams }: PageProps) {
   const pendingRequestCount = pendingRequestsResult.success ? pendingRequestsResult.data : 0;
 
   return (
-    <div className="space-y-6">
+    <div data-element="messages-requests-page" className="space-y-6">
       <PageHeader
         title="Chat Requests"
         subtitle="Review and approve client conversation requests"

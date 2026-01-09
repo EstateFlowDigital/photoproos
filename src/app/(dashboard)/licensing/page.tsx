@@ -28,7 +28,7 @@ export default async function LicensingPage() {
   const sentCount = contracts.filter((c) => c.status === "sent").length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="licensing-page">
       <PageHeader
         title="Licensing"
         subtitle="Track usage rights and attach licensing terms to contracts"

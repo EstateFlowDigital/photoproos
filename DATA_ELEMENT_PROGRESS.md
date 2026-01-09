@@ -483,20 +483,20 @@ Tracking progress of adding `data-element` attributes across the application for
 52. [x] `/guides` - Search, categories, featured guides, all guides, CTA
 53. [x] `/blog/[slug]` - Blog post detail with author, related posts, CTA
 
-### Next Steps:
-1. [x] ~~Marketing Site main pages~~ DONE (15/15 main pages complete)
+### All Complete - January 2026 Session:
+1. [x] ~~Marketing Site main pages~~ DONE (17/17 - including /support/article, /webinars/[slug])
 2. [x] ~~Features pages (8 pages)~~ DONE (8/8 complete)
 3. [x] ~~Industries pages (6 pages)~~ DONE (6/6 complete)
 4. [x] ~~Legal pages (5 pages)~~ DONE (5/5 complete)
-5. [x] ~~Super Admin Other pages~~ DONE (14/14 complete)
-6. [x] ~~Dashboard pages~~ DONE (98 pages complete)
-   - Core pages: 3 pages
-   - Clients/CRM: 6 pages
-   - Billing/Invoicing: 17 pages
-   - Galleries: 4 pages
-   - Scheduling: 10 pages
-   - Contracts: 7 pages
-   - Settings: 51 pages
+5. [x] ~~Super Admin pages~~ DONE (19/19 complete)
+6. [x] ~~Dashboard pages~~ DONE (189/189 complete)
+   - Core: 3 | Clients: 6 | Billing: 17 | Galleries: 4 | Scheduling: 10 | Contracts: 7 | Settings: 51
+   - Services: 8 | Properties: 4 | Orders: 8 | Questionnaires: 5 | Messages: 9 | Help: 5
+   - Brokerages: 4 | Leads: 2 | Analytics: 1 | Inbox: 1 | Feedback: 1 | Payments: 2 | Forms: 2
+   - Projects: 3 | Portfolios: 3 | Achievements: 2 | Gamification: 3 | AI: 1 | Batch: 1
+   - Licensing: 1 | Mini-sessions: 1 | Booking: 1 | Expenses: 1 | Mileage: 1
+7. [x] ~~Auth/Onboarding/Portal pages~~ DONE (9/9 complete)
+8. [x] ~~Public pages~~ DONE (18/18 complete)
 
 ---
 
@@ -506,7 +506,7 @@ Tracking progress of adding `data-element` attributes across the application for
 |---------|-------------|----------|-----------|
 | **Super Admin Marketing CMS** | **5** | **5** | **0** |
 | **Super Admin Other** | **14** | **14** | **0** |
-| **Marketing Site Main Pages** | **15** | **15** | **0** |
+| **Marketing Site Main Pages** | **17** | **17** | **0** |
 | **Marketing Site Features** | **8** | **8** | **0** |
 | **Marketing Site Industries** | **6** | **6** | **0** |
 | **Marketing Site Legal** | **5** | **5** | **0** |
@@ -517,8 +517,19 @@ Tracking progress of adding `data-element` attributes across the application for
 | **Dashboard Scheduling** | **10** | **10** | **0** |
 | **Dashboard Contracts** | **7** | **7** | **0** |
 | **Dashboard Settings** | **51** | **51** | **0** |
+| **Dashboard Services** | **8** | **8** | **0** |
+| **Dashboard Properties** | **4** | **4** | **0** |
+| **Dashboard Orders/Products** | **8** | **8** | **0** |
+| **Dashboard Questionnaires** | **5** | **5** | **0** |
+| **Dashboard Messages** | **4** | **4** | **0** |
+| **Dashboard Help** | **5** | **5** | **0** |
+| **Dashboard Other** | **22** | **22** | **0** |
+| **Auth/Onboarding** | **4** | **4** | **0** |
+| **Client Portal** | **3** | **3** | **0** |
+| **Field App** | **2** | **2** | **0** |
+| **Public Pages** | **18** | **18** | **0** |
 | Shared Components | TBD | 0 | TBD |
 
-**Total Complete: 151 pages**
+**Total Complete: 244 pages**
 
 *Last updated: January 2026*

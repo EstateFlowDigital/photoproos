@@ -69,5 +69,9 @@ export default async function PortfolioPublicPage({
       | null,
   };
 
-  return <PortfolioRenderer website={portfolioData} />;
+  return (
+    <div data-element="portfolio-public-page">
+      <PortfolioRenderer website={portfolioData} />
+    </div>
+  );
 }

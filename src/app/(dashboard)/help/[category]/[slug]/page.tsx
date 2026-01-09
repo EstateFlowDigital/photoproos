@@ -39,7 +39,7 @@ export default async function HelpArticlePage({ params }: ArticlePageProps) {
   const relatedArticles = getRelatedArticles(slug, 3);
 
   return (
-    <div className="space-y-8">
+    <div data-element="help-article-page" className="space-y-8">
       {/* Breadcrumb */}
       <HelpBreadcrumb
         items={[

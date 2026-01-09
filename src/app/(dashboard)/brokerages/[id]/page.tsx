@@ -35,7 +35,7 @@ export default async function BrokerageDetailPage({ params }: BrokerageDetailPag
   const activeContracts = contracts.filter((c) => c.isActive);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="brokerages-detail-page">
       <Breadcrumb
         items={[
           { label: "Brokerages", href: "/brokerages" },

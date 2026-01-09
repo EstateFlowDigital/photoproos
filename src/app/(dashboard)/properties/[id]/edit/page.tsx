@@ -16,5 +16,9 @@ export default async function PropertyEditPage({ params }: PropertyEditPageProps
     notFound();
   }
 
-  return <PropertyEditForm website={website} />;
+  return (
+    <div data-element="properties-edit-page">
+      <PropertyEditForm website={website} />
+    </div>
+  );
 }

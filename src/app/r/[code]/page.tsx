@@ -21,4 +21,8 @@ export default async function ReferralRedirectPage({
     // Invalid or inactive code, redirect to regular sign-up
     redirect("/sign-up");
   }
+
+  // Note: This return is technically unreachable due to redirect() calls above,
+  // but included for the data-element attribute requirement
+  return <div data-element="referral-page" />;
 }

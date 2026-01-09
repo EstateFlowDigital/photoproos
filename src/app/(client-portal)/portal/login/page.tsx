@@ -165,9 +165,11 @@ function LoginPageLoading() {
 
 export default function ClientPortalLoginPage() {
   return (
-    <Suspense fallback={<LoginPageLoading />}>
-      <ClientPortalLoginContent />
-    </Suspense>
+    <div data-element="portal-login-page">
+      <Suspense fallback={<LoginPageLoading />}>
+        <ClientPortalLoginContent />
+      </Suspense>
+    </div>
   );
 }
 

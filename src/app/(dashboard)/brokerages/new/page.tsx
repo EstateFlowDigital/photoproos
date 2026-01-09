@@ -29,7 +29,7 @@ export default async function NewBrokeragePage() {
   const stats = await getStats(auth.organizationId);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="brokerages-new-page">
       <PageHeader
         title="New Brokerage"
         subtitle="Add a new brokerage partner to your network"

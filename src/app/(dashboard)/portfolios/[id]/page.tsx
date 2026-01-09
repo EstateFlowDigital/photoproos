@@ -35,7 +35,7 @@ export default async function PortfolioDetailPage({ params }: { params: Promise<
     : null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="portfolios-detail-page">
       <PageHeader
         title={data.website.name}
         subtitle={data.website.isPublished ? "Published portfolio website" : "Draft portfolio website"}

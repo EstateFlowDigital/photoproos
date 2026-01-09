@@ -33,10 +33,12 @@ export default async function NewConversationPage({ searchParams }: PageProps) {
     }));
 
   return (
-    <NewConversationPageClient
-      type={type}
-      teamMembers={teamMembers}
-      currentUserId={auth.userId}
-    />
+    <div data-element="messages-new-page">
+      <NewConversationPageClient
+        type={type}
+        teamMembers={teamMembers}
+        currentUserId={auth.userId}
+      />
+    </div>
   );
 }

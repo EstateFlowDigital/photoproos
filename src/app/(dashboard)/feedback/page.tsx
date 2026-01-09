@@ -101,11 +101,13 @@ export default async function FeedbackPage({ searchParams }: FeedbackPageProps) 
   }));
 
   return (
-    <FeedbackInboxClient
-      feedback={feedback}
-      counts={counts}
-      currentFilter={filter}
-      currentType={typeFilter}
-    />
+    <div data-element="feedback-page">
+      <FeedbackInboxClient
+        feedback={feedback}
+        counts={counts}
+        currentFilter={filter}
+        currentType={typeFilter}
+      />
+    </div>
   );
 }

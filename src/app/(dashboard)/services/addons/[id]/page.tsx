@@ -19,7 +19,7 @@ export default async function AddonDetailPage({ params }: AddonDetailPageProps) 
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="services-addons-detail-page">
       <PageHeader
         title="Edit Addon"
         subtitle="Update your service addon"

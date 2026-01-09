@@ -71,14 +71,16 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
   }
 
   return (
-    <ReviewClient
-      token={token}
-      organizationName={request.organization.name}
-      logoUrl={request.organization.logoUrl}
-      primaryColor={request.organization.primaryColor || "#3b82f6"}
-      clientName={request.clientName}
-      platforms={request.platforms}
-      preferredPlatform={request.preferredPlatform}
-    />
+    <div data-element="review-page">
+      <ReviewClient
+        token={token}
+        organizationName={request.organization.name}
+        logoUrl={request.organization.logoUrl}
+        primaryColor={request.organization.primaryColor || "#3b82f6"}
+        clientName={request.clientName}
+        platforms={request.platforms}
+        preferredPlatform={request.preferredPlatform}
+      />
+    </div>
   );
 }

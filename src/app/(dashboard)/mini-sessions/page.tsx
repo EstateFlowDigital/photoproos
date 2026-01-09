@@ -15,7 +15,7 @@ export default async function MiniSessionsPage() {
   const totalSubmissions = miniForms.reduce((sum, form) => sum + form.submissionCount, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="mini-sessions-page">
       <PageHeader
         title="Mini Sessions"
         subtitle="Launch high-volume session days with streamlined booking and delivery"

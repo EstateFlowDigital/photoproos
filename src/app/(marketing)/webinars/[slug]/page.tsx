@@ -42,7 +42,7 @@ export default async function WebinarPage({ params }: PageProps) {
   const isUpcoming = webinar.status === "upcoming";
 
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="webinar-detail-page">
       {/* Header */}
       <section className="border-b border-[var(--card-border)]">
         <div className="mx-auto max-w-[1512px] px-6 py-8 lg:px-[124px]">

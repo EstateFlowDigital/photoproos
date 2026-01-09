@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function NewBundlePage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="services-bundles-new-page">
       <PageHeader
         title="Create Bundle"
         subtitle="Create a new service bundle package"

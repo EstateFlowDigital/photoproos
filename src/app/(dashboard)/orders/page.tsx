@@ -52,7 +52,7 @@ export default async function OrdersPage({ searchParams }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="orders-page">
       <PageHeader
         title="Orders"
         subtitle={`${orders.length} order${orders.length !== 1 ? "s" : ""}`}

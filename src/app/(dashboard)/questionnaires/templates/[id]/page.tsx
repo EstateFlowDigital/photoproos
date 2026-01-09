@@ -21,7 +21,7 @@ export default async function QuestionnaireTemplateEditPage({ params }: Props) {
   // System templates cannot be edited directly - redirect to duplicate flow
   if (template.isSystemTemplate) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" data-element="questionnaires-templates-edit-page">
         <div className="text-center max-w-md">
           <h1 className="text-xl font-semibold text-foreground mb-2">
             System Template

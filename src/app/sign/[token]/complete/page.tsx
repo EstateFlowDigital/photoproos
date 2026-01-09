@@ -75,7 +75,7 @@ export default function SigningCompletePage() {
   });
 
   return (
-    <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
+    <div data-element="contract-sign-complete-page" className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
       <div className="max-w-lg w-full">
         {/* Success Card */}
         <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-hidden">

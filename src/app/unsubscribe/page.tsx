@@ -354,14 +354,16 @@ function MailIcon({ className }: { className?: string }) {
 
 export default function UnsubscribePage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
-          <LoadingSpinner className="h-8 w-8 text-white" />
-        </div>
-      }
-    >
-      <UnsubscribeContent />
-    </Suspense>
+    <div data-element="unsubscribe-page">
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
+            <LoadingSpinner className="h-8 w-8 text-white" />
+          </div>
+        }
+      >
+        <UnsubscribeContent />
+      </Suspense>
+    </div>
   );
 }

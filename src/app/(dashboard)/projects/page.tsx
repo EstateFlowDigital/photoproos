@@ -53,11 +53,13 @@ export default async function ProjectsPage() {
   }));
 
   return (
-    <ProjectsClient
-      board={board}
-      teamMembers={teamMembers}
-      clients={clients}
-      galleries={galleries}
-    />
+    <div data-element="projects-page">
+      <ProjectsClient
+        board={board}
+        teamMembers={teamMembers}
+        clients={clients}
+        galleries={galleries}
+      />
+    </div>
   );
 }

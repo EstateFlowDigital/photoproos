@@ -7,5 +7,9 @@ export default async function FormsPage() {
   const result = await getForms();
   const forms = result.success ? result.data : [];
 
-  return <FormsPageClient forms={forms} />;
+  return (
+    <div data-element="forms-page">
+      <FormsPageClient forms={forms} />
+    </div>
+  );
 }

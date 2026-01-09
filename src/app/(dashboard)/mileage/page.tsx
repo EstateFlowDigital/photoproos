@@ -10,7 +10,7 @@ export default async function MileagePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="mileage-page">
       <PageHeader
         title="Mileage Tracking"
         subtitle="Log and track business mileage for tax deductions"

@@ -23,7 +23,7 @@ export default async function AnalyticsPage() {
     : "open";
 
   return (
-    <>
+    <div data-element="analytics-page">
       {/* Page Walkthrough */}
       <WalkthroughWrapper
         pageId="analytics"
@@ -37,7 +37,7 @@ export default async function AnalyticsPage() {
           ltvData={ltvData}
         />
       </Suspense>
-    </>
+    </div>
   );
 }
 

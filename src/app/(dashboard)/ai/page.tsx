@@ -45,7 +45,7 @@ function LoadingSkeleton() {
 
 export default function AIPage() {
   return (
-    <div>
+    <div data-element="ai-page">
       <Suspense fallback={<LoadingSkeleton />}>
         <AILoader />
       </Suspense>

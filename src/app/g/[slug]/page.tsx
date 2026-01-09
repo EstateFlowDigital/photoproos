@@ -123,7 +123,7 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
   );
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: colors.bgColor, color: colors.textColor }}>
+    <div data-element="gallery-public-page" className="min-h-screen" style={{ backgroundColor: colors.bgColor, color: colors.textColor }}>
       {/* Preview Mode Banner */}
       {isPreview && (
         <div className="sticky top-0 z-[60] bg-amber-500 text-black px-4 py-2 text-center text-sm font-medium">

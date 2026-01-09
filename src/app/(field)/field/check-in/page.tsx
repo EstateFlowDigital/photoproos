@@ -13,5 +13,9 @@ export default async function CheckInPage() {
   const result = await getTodaysBookings();
   const bookings = result.success ? result.data : [];
 
-  return <CheckInClient bookings={bookings || []} />;
+  return (
+    <div data-element="field-check-in-page">
+      <CheckInClient bookings={bookings || []} />
+    </div>
+  );
 }

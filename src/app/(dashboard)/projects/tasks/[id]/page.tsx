@@ -98,7 +98,7 @@ export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="projects-task-detail-page">
       <Breadcrumb
         items={[
           { label: "Projects", href: "/projects" },

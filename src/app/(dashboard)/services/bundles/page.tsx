@@ -10,7 +10,7 @@ export default async function BundlesPage() {
   const activeCount = bundles.filter((b) => b.isActive).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="services-bundles-page">
       <PageHeader
         title="Service Bundles"
         subtitle={`${bundles.length} bundle${bundles.length !== 1 ? "s" : ""} • ${activeCount} active`}

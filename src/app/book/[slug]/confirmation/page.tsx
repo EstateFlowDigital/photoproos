@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function ConfirmationPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-12">
+    <div data-element="booking-confirmation-page" className="min-h-screen flex items-center justify-center px-6 py-12">
       <div className="max-w-md w-full text-center">
         {/* Success Icon */}
         <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">

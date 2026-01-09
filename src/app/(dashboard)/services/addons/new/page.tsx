@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function NewAddonPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="services-addons-new-page">
       <PageHeader
         title="Create Addon"
         subtitle="Create a new service addon for upselling"

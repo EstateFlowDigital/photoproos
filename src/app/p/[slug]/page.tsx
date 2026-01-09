@@ -252,6 +252,7 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
 
   return (
     <main
+      data-element="gallery-short-page"
       className={styles.main}
       style={{
         ...(customAccentColor ? { "--custom-accent": customAccentColor } : {}),

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function ScheduleLandingPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 text-center">
+    <div data-element="schedule-page" className="flex min-h-screen flex-col items-center justify-center bg-background p-6 text-center">
       <div className="mx-auto max-w-md">
         <div className="rounded-full bg-primary/10 p-6 mx-auto w-fit">
           <Calendar className="h-12 w-12 text-primary" />

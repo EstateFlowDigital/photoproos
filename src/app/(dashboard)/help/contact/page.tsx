@@ -10,7 +10,7 @@ import { HelpBreadcrumb } from "@/components/help";
 
 export default function ContactSupportPage() {
   return (
-    <div className="space-y-8">
+    <div data-element="help-contact-page" className="space-y-8">
       {/* Breadcrumb */}
       <HelpBreadcrumb
         items={[

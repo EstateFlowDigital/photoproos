@@ -207,7 +207,7 @@ export default function ContractSigningPage() {
   const primaryColor = organization?.primaryColor || "#3b82f6";
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div data-element="contract-sign-page" className="min-h-screen bg-[var(--background)]">
       {/* Header */}
       <header className="bg-[var(--card)] border-b border-[var(--card-border)] sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">

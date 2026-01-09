@@ -18,7 +18,7 @@ export default async function ServicesPage() {
   const activeCount = services.filter((s) => s.isActive).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="services-page">
       <PageHeader
         title="Services"
         subtitle={`${services.length} service${services.length !== 1 ? "s" : ""} • ${activeCount} active`}

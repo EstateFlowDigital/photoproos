@@ -20,7 +20,7 @@ export default async function QuestionnaireTemplatePreviewPage({ params }: Props
   const template = result.data;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <div className="min-h-screen bg-[#0a0a0a]" data-element="questionnaires-templates-preview-page">
       {/* Preview Banner */}
       <div className="sticky top-0 z-50 bg-gradient-to-r from-[#8b5cf6] to-[#6366f1] text-white">
         <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

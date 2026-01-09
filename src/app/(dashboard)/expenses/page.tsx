@@ -10,7 +10,7 @@ export default async function ExpensesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="expenses-page">
       <PageHeader
         title="Expenses"
         subtitle="Track and manage business expenses"

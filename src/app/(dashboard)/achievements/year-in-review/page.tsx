@@ -35,7 +35,7 @@ export default async function YearInReviewPage({
   const data = result.data;
 
   return (
-    <div className="flex flex-col density-gap-section">
+    <div className="flex flex-col density-gap-section" data-element="achievements-year-in-review-page">
       {/* Back link */}
       <Link
         href="/achievements"

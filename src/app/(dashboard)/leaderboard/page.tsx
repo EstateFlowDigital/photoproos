@@ -37,7 +37,7 @@ export default async function LeaderboardPage() {
   const myState = stateResult.success ? stateResult.data : null;
 
   return (
-    <div className="flex flex-col density-gap-section">
+    <div className="flex flex-col density-gap-section" data-element="leaderboard-page">
       <PageHeader
         title="Leaderboard"
         subtitle="See how you stack up against your team members."

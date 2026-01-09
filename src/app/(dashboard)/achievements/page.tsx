@@ -68,7 +68,7 @@ export default async function AchievementsPage() {
   const percentComplete = Math.round((totalUnlocked / totalAchievements) * 100);
 
   return (
-    <div className="flex flex-col density-gap-section">
+    <div className="flex flex-col density-gap-section" data-element="achievements-page">
       <PageHeader
         title="Achievements"
         subtitle="Track your progress and unlock achievements as you use the platform."

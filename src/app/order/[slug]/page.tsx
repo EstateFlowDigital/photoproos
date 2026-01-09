@@ -44,5 +44,9 @@ export default async function OrderPage({ params }: PageProps) {
   // Note: requireLogin field exists on OrderPage model but isn't returned by getOrderPageBySlug
   // For now, we'll skip this check - can be added later if needed
 
-  return <OrderPageClient orderPage={orderPage} />;
+  return (
+    <div data-element="order-page">
+      <OrderPageClient orderPage={orderPage} />
+    </div>
+  );
 }

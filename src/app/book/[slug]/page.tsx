@@ -58,10 +58,12 @@ export default async function BookingPage({ params }: BookingPageProps) {
     : null;
 
   return (
-    <BookingFormPublic
-      form={form}
-      organization={form.organization}
-      clientProfile={clientProfile}
-    />
+    <div data-element="booking-page">
+      <BookingFormPublic
+        form={form}
+        organization={form.organization}
+        clientProfile={clientProfile}
+      />
+    </div>
   );
 }

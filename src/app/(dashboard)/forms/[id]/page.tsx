@@ -16,5 +16,9 @@ export default async function FormEditorPage({ params }: PageProps) {
     notFound();
   }
 
-  return <FormEditorClient form={result.data} />;
+  return (
+    <div data-element="forms-detail-page">
+      <FormEditorClient form={result.data} />
+    </div>
+  );
 }

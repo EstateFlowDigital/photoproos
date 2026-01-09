@@ -32,7 +32,7 @@ export default async function SkillsPage() {
   const gamificationState = stateResult.success ? stateResult.data : null;
 
   return (
-    <div className="flex flex-col density-gap-section">
+    <div className="flex flex-col density-gap-section" data-element="skills-page">
       {/* Back link */}
       <Link
         href="/achievements"

@@ -22,5 +22,9 @@ export default async function CatalogPage({ params }: PageProps) {
     notFound();
   }
 
-  return <CatalogClient catalog={catalog} />;
+  return (
+    <div data-element="products-catalog-page">
+      <CatalogClient catalog={catalog} />
+    </div>
+  );
 }

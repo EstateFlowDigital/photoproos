@@ -36,7 +36,7 @@ export default async function BrokeragesPage({ searchParams }: BrokeragesPagePro
   const totalRevenue = brokerages.reduce((sum, b) => sum + b.totalRevenueCents, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="brokerages-page">
       <PageHeader
         title="Brokerages"
         subtitle={`${totalBrokerages} brokerage${totalBrokerages !== 1 ? "s" : ""}`}

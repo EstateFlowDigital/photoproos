@@ -19,7 +19,7 @@ export default async function QuestionnaireCompletionPage({ params }: Props) {
 
   if (!result.data) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div data-element="portal-questionnaire-page" className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-xl font-semibold text-white">Questionnaire Not Found</h1>
           <p className="mt-2 text-[#7c7c7c]">
@@ -36,5 +36,9 @@ export default async function QuestionnaireCompletionPage({ params }: Props) {
     );
   }
 
-  return <QuestionnaireForm questionnaire={result.data} />;
+  return (
+    <div data-element="portal-questionnaire-page">
+      <QuestionnaireForm questionnaire={result.data} />
+    </div>
+  );
 }

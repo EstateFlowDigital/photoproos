@@ -129,7 +129,7 @@ export function QuestionnaireResponseViewer({
     (questionnaire.status === "pending" || questionnaire.status === "in_progress");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="questionnaires-assigned-detail-page">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>

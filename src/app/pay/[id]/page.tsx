@@ -95,7 +95,8 @@ export default async function PayInvoicePage({ params, searchParams }: PageProps
     invoice.organization.stripeConnectOnboarded;
 
   return (
-    <PayInvoiceClient
+    <div data-element="payment-page">
+      <PayInvoiceClient
       invoice={{
         id: invoice.id,
         invoiceNumber: invoice.invoiceNumber,
@@ -132,5 +133,6 @@ export default async function PayInvoicePage({ params, searchParams }: PageProps
       paymentStatus={payment || null}
       sessionId={session_id || null}
     />
+    </div>
   );
 }

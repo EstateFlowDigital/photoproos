@@ -2,7 +2,7 @@ import { Heart } from "lucide-react";
 
 export default function ThankYouPage() {
   return (
-    <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-4">
+    <div data-element="review-thank-you-page" className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-4">
       <div className="max-w-md w-full text-center">
         {/* Heart Icon */}
         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-pink-500/20 to-red-500/20">

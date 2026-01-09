@@ -4,7 +4,7 @@ import { NewPortfolioClient } from "./new-portfolio-client";
 
 export default function NewPortfolioPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="portfolios-new-page">
       <PageHeader
         title="Create Portfolio Website"
         subtitle="Build a public showcase for your photography work"

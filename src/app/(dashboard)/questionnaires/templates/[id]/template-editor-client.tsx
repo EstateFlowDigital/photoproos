@@ -360,7 +360,7 @@ export function TemplateEditorClient({ template }: TemplateEditorClientProps) {
   // ============================================================================
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" data-element="questionnaires-templates-edit-page">
       {/* Header */}
       <div className="sticky top-0 z-10 border-b border-[var(--card-border)] bg-[var(--background)] px-6 py-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

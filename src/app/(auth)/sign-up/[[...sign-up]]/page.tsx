@@ -34,12 +34,14 @@ function SignUpContent() {
 
 export default function SignUpPage() {
   return (
-    <Suspense fallback={
-      <div className="w-full flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    }>
-      <SignUpContent />
-    </Suspense>
+    <div data-element="sign-up-page">
+      <Suspense fallback={
+        <div className="w-full flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      }>
+        <SignUpContent />
+      </Suspense>
+    </div>
   );
 }

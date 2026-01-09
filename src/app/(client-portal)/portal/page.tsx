@@ -12,14 +12,16 @@ export default async function ClientPortalPage() {
   }
 
   return (
-    <PortalClient
-      client={data.client}
-      stats={data.stats}
-      properties={data.properties}
-      galleries={data.galleries}
-      invoices={data.invoices}
-      leads={data.leads}
-      questionnaires={data.questionnaires ?? []}
-    />
+    <div data-element="portal-page">
+      <PortalClient
+        client={data.client}
+        stats={data.stats}
+        properties={data.properties}
+        galleries={data.galleries}
+        invoices={data.invoices}
+        leads={data.leads}
+        questionnaires={data.questionnaires ?? []}
+      />
+    </div>
   );
 }

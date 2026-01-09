@@ -10,7 +10,7 @@ export default async function AddonsPage() {
   const activeCount = addons.filter((a) => a.isActive).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="services-addons-page">
       <PageHeader
         title="Service Addons"
         subtitle={`${addons.length} addon${addons.length !== 1 ? "s" : ""} • ${activeCount} active`}

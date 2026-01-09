@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Data Element Attributes** - Added `data-element` attributes to 18 dashboard pages for improved analytics and testing
+  - Projects section: `projects-page`, `projects-analytics-page`, `projects-task-detail-page`
+  - Portfolios section: `portfolios-page`, `portfolios-new-page`, `portfolios-detail-page`
+  - Gamification section: `achievements-page`, `achievements-year-in-review-page`, `quests-page`, `skills-page`, `leaderboard-page`
+  - Tools section: `ai-page`, `batch-page`, `licensing-page`, `mini-sessions-page`, `booking-dashboard-page`
+  - Finance section: `expenses-page`, `mileage-page`
+
+### Added
 - **Dashboard Widget System** - Fully customizable drag-and-drop dashboard with resizable widgets
   - Widget types system in `src/lib/dashboard-types.ts`:
     - 22+ widget types across 5 categories (core, content, analytics, productivity, engagement)
@@ -55,17 +63,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Onboarding progress widget
     - Messages widget for recent conversations
 
-- **Element Inspector data-element Attributes** - Added `data-element` attributes across 151 pages for Element Inspector tool
-  - Marketing site pages (34): about, affiliates, blog, blog/[slug], careers, changelog, contact, guides, integrations, partners, press, pricing, roadmap, support, webinars, 8 features pages, 6 industries pages, 5 legal pages
-  - Super Admin pages (19): dashboard, users, support, feedback, config, developer, logs, discounts, revenue, engagement, roadmap, announcements, 5 marketing CMS pages
-  - Dashboard pages (98):
-    - Core pages: dashboard, create, notifications
-    - Clients/CRM: 6 pages (list, new, merge, import, detail, edit)
-    - Billing/Invoicing: 17 pages (billing, analytics, reports, estimates, credit-notes, retainers, invoices)
-    - Galleries: 4 pages (list, new, detail, edit)
-    - Scheduling: 10 pages (calendar, bookings, availability, types, time-off, booking-forms)
-    - Contracts: 7 pages (list, new, detail, edit, templates)
-    - Settings: 51 pages (all settings categories and integrations)
+- **Element Inspector data-element Attributes** - Added `data-element` attributes across 244 pages for Element Inspector tool
+  - Marketing site (36 pages): about, affiliates, blog, blog/[slug], careers, changelog, contact, guides, integrations, partners, press, pricing, roadmap, support, support/article, webinars, webinars/[slug], 8 features pages, 6 industries pages, 5 legal pages
+  - Super Admin (19 pages): dashboard, users, support, feedback, config, developer, logs, discounts, revenue, engagement, roadmap, announcements, 5 marketing CMS pages
+  - Dashboard (189 pages):
+    - Core: 3 | Clients/CRM: 6 | Billing/Invoicing: 17 | Galleries: 4 | Scheduling: 10 | Contracts: 7 | Settings: 51
+    - Services: 8 (list, new, detail, bundles, addons) | Properties: 4 | Orders/Products: 8 | Questionnaires: 5
+    - Messages: 4 | Help: 5 | Brokerages: 4 | Leads: 2 | Analytics: 1 | Inbox: 1 | Feedback: 1 | Payments: 2 | Forms: 2
+    - Projects: 3 | Portfolios: 3 | Achievements: 2 | Gamification: 3 | AI: 1 | Batch: 1 | Licensing: 1
+    - Mini-sessions: 1 | Booking: 1 | Expenses: 1 | Mileage: 1
+  - Auth/Onboarding (4 pages): sign-in, sign-up, signup, onboarding
+  - Client Portal (3 pages): portal, portal/login, portal/questionnaires/[id]
+  - Field App (2 pages): field, field/check-in
+  - Public (18 pages): homepage, booking, order, sign, pay, gallery (g/ and p/), portfolio, review, invite, referral, track, schedule, unsubscribe
 
 - **Multi-Media Gallery Support** - Comprehensive support for videos, 3D tours, and floor plans in galleries
   - New Prisma enums: `AssetMediaType`, `VideoProvider`, `TourProvider`, `FloorPlanType`

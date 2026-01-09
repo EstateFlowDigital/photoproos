@@ -23,7 +23,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="properties-detail-page">
       <Breadcrumb
         items={[
           { label: "Properties", href: "/properties" },

@@ -70,7 +70,7 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
   const netCents = payment.amountCents - feeCents;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="payments-detail-page">
       <PageHeader
         title={`Payment #${payment.id.slice(0, 8)}`}
         subtitle={payment.description || payment.project?.name || "Payment"}

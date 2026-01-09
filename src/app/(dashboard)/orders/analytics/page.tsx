@@ -10,7 +10,7 @@ export default async function OrdersAnalyticsPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="orders-analytics-page">
       <PageHeader
         title="Order Analytics"
         subtitle="Square footage and pricing insights"

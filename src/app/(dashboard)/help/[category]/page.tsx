@@ -38,7 +38,7 @@ export default async function HelpCategoryPage({ params }: CategoryPageProps) {
   const articles = getArticlesByCategory(categorySlug);
 
   return (
-    <div className="space-y-8">
+    <div data-element="help-category-page" className="space-y-8">
       {/* Breadcrumb */}
       <HelpBreadcrumb
         items={[

@@ -8,7 +8,7 @@ export default async function ProjectsAnalyticsPage() {
   const result = await getTaskAnalytics();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="projects-analytics-page">
       <PageHeader
         title="Projects Analytics"
         subtitle="Task completion and productivity insights"

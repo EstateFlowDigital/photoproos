@@ -44,7 +44,7 @@ export default async function NewPropertyWebsitePage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="properties-new-page">
       <PageHeader
         title="Create Property Website"
         subtitle="Create a dedicated marketing page for a property"

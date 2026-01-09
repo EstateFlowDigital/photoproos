@@ -33,10 +33,12 @@ export default async function ConversationPage({ params }: PageProps) {
   const messages = messagesResult.success ? messagesResult.data.messages : [];
 
   return (
-    <ConversationPageClient
-      conversation={conversationResult.data}
-      initialMessages={messages}
-      currentUserId={auth.userId}
-    />
+    <div data-element="messages-conversation-page">
+      <ConversationPageClient
+        conversation={conversationResult.data}
+        initialMessages={messages}
+        currentUserId={auth.userId}
+      />
+    </div>
   );
 }

@@ -9,7 +9,7 @@ export default async function LeadsAnalyticsPage() {
 
   if (!result.success || !result.data) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6" data-element="leads-analytics-page">
         <Breadcrumb
           items={[
             { label: "Leads", href: "/leads" },
@@ -28,7 +28,7 @@ export default async function LeadsAnalyticsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="leads-analytics-page">
       <Breadcrumb
         items={[
           { label: "Leads", href: "/leads" },

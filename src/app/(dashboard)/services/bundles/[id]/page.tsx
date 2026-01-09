@@ -19,7 +19,7 @@ export default async function BundleDetailPage({ params }: BundleDetailPageProps
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="services-bundles-detail-page">
       <PageHeader
         title="Edit Bundle"
         subtitle="Update your service bundle package"

@@ -33,7 +33,7 @@ export default async function BatchProcessingPage() {
   const totalDownloads = recentGalleries.reduce((sum: number, gallery) => sum + gallery.downloadCount, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="batch-page">
       <PageHeader
         title="Batch Processing"
         subtitle="Bulk export, download, and deliver galleries faster"

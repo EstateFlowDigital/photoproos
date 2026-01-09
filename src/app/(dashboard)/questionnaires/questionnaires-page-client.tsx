@@ -98,7 +98,7 @@ export function QuestionnairesPageClient({
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="questionnaires-page">
       <div className="stack-header">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Questionnaires</h1>

@@ -33,7 +33,7 @@ export default function HelpPage() {
   );
 
   return (
-    <div className="space-y-10">
+    <div data-element="help-page" className="space-y-10">
       <PageHeader
         title="Help & Support"
         subtitle="Find answers, guides, and tutorials for PhotoProOS"

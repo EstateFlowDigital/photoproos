@@ -44,7 +44,7 @@ export default async function EditBrokeragePage({ params }: EditBrokeragePagePro
   const stats = await getStats(auth.organizationId, id);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="brokerages-edit-page">
       <PageHeader
         title="Edit Brokerage"
         subtitle={`Editing ${brokerage.name}`}
