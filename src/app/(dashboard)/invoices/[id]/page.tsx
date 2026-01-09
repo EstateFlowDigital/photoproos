@@ -85,7 +85,7 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
   const outstandingBalance = totalDue - invoice.paidAmountCents;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="invoices-detail-page">
       <PageHeader
         title={invoice.invoiceNumber}
         subtitle={`Invoice for ${invoice.clientName || "Unknown Client"}`}

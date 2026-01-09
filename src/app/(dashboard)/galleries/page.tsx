@@ -161,7 +161,7 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
   }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="galleries-page">
       {/* Page Walkthrough */}
       <WalkthroughWrapper
         pageId="galleries"

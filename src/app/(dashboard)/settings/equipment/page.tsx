@@ -9,7 +9,7 @@ export default async function EquipmentSettingsPage() {
   const equipmentByCategory = await getEquipmentByCategory();
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-equipment-page" className="space-y-6">
       <PageHeader
         title="Equipment"
         subtitle="Manage your photography equipment inventory"

@@ -71,7 +71,7 @@ export default async function ContractEditPage({ params }: PageProps) {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="contracts-edit-page">
       <PageHeader
         title="Edit Contract"
         subtitle={contract.name}

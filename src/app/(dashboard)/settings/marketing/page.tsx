@@ -50,7 +50,7 @@ export default async function MarketingSettingsPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-marketing-page" className="space-y-6">
       <PageHeader
         title="Marketing Kit"
         subtitle="Generate social media content, flyers, and marketing materials for your listings"

@@ -22,7 +22,7 @@ export default async function PhotographerPayPage() {
     : { totalEarned: 0, pendingAmount: 0, approvedAmount: 0, paidAmount: 0 };
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-photographer-pay-page" className="space-y-6">
       <PageHeader
         title="Photographer Pay"
         subtitle="Configure pay rates and track earnings for team members"

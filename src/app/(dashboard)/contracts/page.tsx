@@ -95,7 +95,7 @@ export default async function ContractsPage({ searchParams }: PageProps) {
     : "open";
 
   return (
-    <>
+    <div data-element="contracts-page">
       {/* Page Walkthrough */}
       <WalkthroughWrapper
         pageId="contracts"
@@ -108,6 +108,6 @@ export default async function ContractsPage({ searchParams }: PageProps) {
         statusCounts={statusCounts}
         statusFilter={statusFilter}
       />
-    </>
+    </div>
   );
 }

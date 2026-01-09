@@ -50,7 +50,7 @@ export default async function NewInvoicePage({ searchParams }: PageProps) {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="invoices-new-page">
       <PageHeader
         title={orderData ? `Invoice from ${orderData.orderNumber}` : "Create Invoice"}
         subtitle={orderData ? "Generate an invoice from order details" : "Generate a new invoice for your client"}

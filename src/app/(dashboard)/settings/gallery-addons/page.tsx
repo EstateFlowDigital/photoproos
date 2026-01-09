@@ -28,7 +28,7 @@ export default async function GalleryAddonsSettingsPage() {
   });
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div data-element="settings-gallery-addons-page" className="max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-[var(--foreground)]">
           Gallery Add-ons

@@ -19,9 +19,11 @@ export default async function TerritoriesPage() {
   const mappedServices = (services || []).map((s) => ({ id: s.id, name: s.name }));
 
   return (
-    <TerritoriesClient
-      initialTerritories={territories || []}
-      services={mappedServices}
-    />
+    <div data-element="settings-territories-page">
+      <TerritoriesClient
+        initialTerritories={territories || []}
+        services={mappedServices}
+      />
+    </div>
   );
 }

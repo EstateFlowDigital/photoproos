@@ -11,7 +11,7 @@ export default function ApiDocumentationPage() {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://your-domain.com";
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-developer-api-page" className="space-y-6">
       <PageHeader
         title="API Documentation"
         subtitle="Integrate PhotoProOS with your applications"

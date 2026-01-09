@@ -12,7 +12,7 @@ export default async function CalendlySettingsPage() {
   const config = null;
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-calendly-page" className="space-y-6">
       <PageHeader
         title="Calendly Integration"
         subtitle="Import bookings from your Calendly scheduling pages"

@@ -137,7 +137,7 @@ export default async function SchedulingPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="scheduling-page">
       {/* Page Walkthrough */}
       <WalkthroughWrapper
         pageId="calendar"

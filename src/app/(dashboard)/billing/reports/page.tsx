@@ -156,7 +156,7 @@ export default async function TaxReportsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6" data-element="billing-reports-page">
       <PageHeader
         title="Tax Reports"
         subtitle="Track and export tax collected on invoices"

@@ -33,7 +33,7 @@ export default async function OnboardingSettingsPage() {
   const firstIncomplete = enabledItems.find((item) => !item.isCompleted);
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-onboarding-page" className="space-y-6">
       <PageHeader
         title="Onboarding Checklist"
         subtitle="Customize the getting started checklist that appears on your dashboard"

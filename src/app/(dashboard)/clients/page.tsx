@@ -42,7 +42,7 @@ export default async function ClientsPage({ searchParams }: PageProps) {
     const tags = tagsResult.success ? tagsResult.data : [];
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-6" data-element="clients-tags-page">
         <PageHeader
           title="Clients"
           subtitle="Manage client tags and categories"
@@ -136,7 +136,7 @@ export default async function ClientsPage({ searchParams }: PageProps) {
     : "open";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="clients-page">
       {/* Page Walkthrough */}
       <WalkthroughWrapper
         pageId="clients"

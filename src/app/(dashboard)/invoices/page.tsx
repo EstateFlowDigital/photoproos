@@ -90,7 +90,7 @@ export default async function InvoicesPage({ searchParams }: PageProps) {
     : "open";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="invoices-page">
       {/* Page Walkthrough */}
       <WalkthroughWrapper
         pageId="invoices"

@@ -19,7 +19,7 @@ export default async function TravelSettingsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-travel-page" className="space-y-6">
       <PageHeader
         title="Travel & Mileage"
         subtitle="Configure travel fees, mileage rates, and home base location"

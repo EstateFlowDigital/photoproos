@@ -186,7 +186,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="clients-detail-page">
       <Breadcrumb
         items={[
           { label: "Clients", href: "/clients" },

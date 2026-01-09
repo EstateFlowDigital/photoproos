@@ -20,7 +20,7 @@ export default async function EditContractTemplatePage({ params }: Props) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="contracts-templates-edit-page">
       <PageHeader
         title="Edit Template"
         subtitle={template.name}

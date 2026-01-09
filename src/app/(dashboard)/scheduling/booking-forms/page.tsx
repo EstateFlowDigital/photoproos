@@ -23,11 +23,13 @@ export default async function BookingFormsPage() {
   ]);
 
   return (
+    <div data-element="scheduling-booking-forms-page">
     <BookingFormsPageClient
       bookingForms={bookingForms}
       services={services}
       organizationIndustries={organization?.industries || []}
       primaryIndustry={organization?.primaryIndustry || "real_estate"}
     />
+    </div>
   );
 }

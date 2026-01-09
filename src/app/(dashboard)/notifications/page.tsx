@@ -29,10 +29,12 @@ export default async function NotificationsPage() {
     : [];
 
   return (
-    <NotificationsPageClient
-      notifications={notifications}
-      unreadCount={unreadCount}
-      activities={activities}
-    />
+    <div data-element="notifications-page">
+      <NotificationsPageClient
+        notifications={notifications}
+        unreadCount={unreadCount}
+        activities={activities}
+      />
+    </div>
   );
 }

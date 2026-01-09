@@ -14,7 +14,7 @@ export default async function BookingTypesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="scheduling-types-page">
       <PageHeader
         title="Booking Types"
         subtitle="Manage your booking categories and default durations"

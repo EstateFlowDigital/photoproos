@@ -56,7 +56,7 @@ export default async function BillingSettingsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-billing-page" className="space-y-6">
       <PageHeader
         title="Billing & Subscription"
         subtitle="Manage your plan and payment methods"

@@ -133,7 +133,7 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="galleries-detail-page">
       <Breadcrumb
         items={[
           { label: "Galleries", href: "/galleries" },

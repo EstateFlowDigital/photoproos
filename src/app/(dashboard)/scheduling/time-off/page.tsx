@@ -21,10 +21,12 @@ export default async function TimeOffPage() {
   const allRequests = allRequestsResult.success ? allRequestsResult.data : [];
 
   return (
+    <div data-element="scheduling-time-off-page">
     <TimeOffPageClient
       pendingRequests={pendingRequests}
       allRequests={allRequests}
       currentUserId={auth.userId}
     />
+    </div>
   );
 }

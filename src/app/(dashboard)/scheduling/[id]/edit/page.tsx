@@ -84,7 +84,7 @@ export default async function BookingEditPage({ params }: BookingEditPageProps) 
   }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="scheduling-edit-page">
       <PageHeader
         title={`Edit: ${booking.title}`}
         subtitle="Update booking details and settings"

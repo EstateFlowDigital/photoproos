@@ -18,7 +18,7 @@ export default async function ContractTemplatesPage() {
     const seededTemplates = seededResult.success ? seededResult.data : [];
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-6" data-element="contracts-templates-page">
         <PageHeader
           title="Contract Templates"
           subtitle="Create and manage reusable contract templates"
@@ -66,7 +66,7 @@ export default async function ContractTemplatesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="contracts-templates-page">
       <PageHeader
         title="Contract Templates"
         subtitle="Create and manage reusable contract templates"

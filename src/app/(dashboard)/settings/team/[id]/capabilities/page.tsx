@@ -48,7 +48,7 @@ export default async function TeamMemberCapabilitiesPage({ params }: PageProps) 
   ]);
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-team-capabilities-page" className="space-y-6">
       <PageHeader
         title={`${user.fullName || user.email}'s Capabilities`}
         subtitle="Manage service skills and equipment assignments"

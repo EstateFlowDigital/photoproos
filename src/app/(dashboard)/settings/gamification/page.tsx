@@ -11,7 +11,7 @@ export const metadata = {
 
 export default function GamificationSettingsPage() {
   return (
-    <div className="space-y-6">
+    <div data-element="settings-gamification-page" className="space-y-6">
       <PageHeader
         title="Gamification"
         subtitle="Customize your XP, achievements, and rewards experience"

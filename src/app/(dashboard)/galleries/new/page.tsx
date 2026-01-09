@@ -83,7 +83,7 @@ export default async function NewGalleryPage() {
   const templates = templatesResult.success ? templatesResult.data : [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="galleries-new-page">
       <PageHeader
         title="Create New Gallery"
         subtitle="Set up a new photo gallery for your client"

@@ -139,6 +139,28 @@ interface SortableWidgetProps {
   onResize: (size: WidgetSize) => void;
 }
 
+/**
+ * Get responsive grid span classes for a widget size
+ * - Mobile (1 col): All widgets full width
+ * - Tablet (2 cols): Widgets span min(cols, 2)
+ * - Desktop (4 cols): Widgets use their full size
+ */
+function getResponsiveGridSpan(size: WidgetSize): string {
+  const { cols, rows } = parseWidgetSize(size);
+
+  // Column spans: mobile=1, tablet=min(cols, 2), desktop=cols
+  const colClasses = [
+    "col-span-1", // Mobile: always 1 column
+    cols >= 2 ? "sm:col-span-2" : "sm:col-span-1", // Tablet: up to 2
+    `lg:col-span-${cols}`, // Desktop: actual size
+  ];
+
+  // Row spans remain consistent
+  const rowClasses = rows > 1 ? [`row-span-${rows}`] : [];
+
+  return cn(...colClasses, ...rowClasses);
+}
+
 function SortableWidget({
   widget,
   dashboardData,
@@ -163,20 +185,16 @@ function SortableWidget({
     transition,
   };
 
-  const { cols, rows } = parseWidgetSize(widget.size);
   const widgetDef = WIDGET_REGISTRY[widget.type];
 
   return (
     <div
       ref={setNodeRef}
-      style={{
-        ...style,
-        gridColumn: `span ${cols}`,
-        gridRow: `span ${rows}`,
-      }}
+      style={style}
       className={cn(
         "group relative rounded-xl border border-[var(--card-border)] bg-[var(--card)]",
         "transition-all duration-200",
+        getResponsiveGridSpan(widget.size),
         isDragging && "opacity-50 ring-2 ring-[var(--primary)] shadow-lg z-50",
         isEditing && "ring-1 ring-[var(--border-hover)]"
       )}
@@ -885,7 +903,7 @@ export function WidgetDashboard({
         )}
       </div>
 
-      {/* Widget Grid */}
+      {/* Widget Grid - Responsive: 1 col mobile, 2 tablet, 4 desktop */}
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -894,10 +912,7 @@ export function WidgetDashboard({
       >
         <SortableContext items={widgetIds} strategy={rectSortingStrategy}>
           <div
-            className="grid gap-4"
-            style={{
-              gridTemplateColumns: `repeat(${config.gridColumns}, minmax(0, 1fr))`,
-            }}
+            className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
           >
             {widgets.map((widget) => (
               <SortableWidget

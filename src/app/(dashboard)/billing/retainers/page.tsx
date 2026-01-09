@@ -96,7 +96,7 @@ export default async function RetainersPage({ searchParams }: PageProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="billing-retainers-page">
       <PageHeader
         title="Retainers"
         subtitle={`${filteredRetainers.length} retainer account${filteredRetainers.length !== 1 ? "s" : ""}`}

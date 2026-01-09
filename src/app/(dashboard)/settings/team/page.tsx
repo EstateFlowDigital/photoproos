@@ -14,10 +14,12 @@ export default async function TeamSettingsPage() {
   const memberLimit = billingStats?.usage?.members?.limit || 1;
 
   return (
-    <TeamPageClient
-      members={members}
-      pendingInvitations={pendingInvitations}
-      memberLimit={memberLimit}
-    />
+    <div data-element="settings-team-page">
+      <TeamPageClient
+        members={members}
+        pendingInvitations={pendingInvitations}
+        memberLimit={memberLimit}
+      />
+    </div>
   );
 }

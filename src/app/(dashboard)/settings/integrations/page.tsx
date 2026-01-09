@@ -129,7 +129,7 @@ export default async function IntegrationsSettingsPage() {
   const data = await getIntegrationsData();
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-integrations-page" className="space-y-6">
       <PageHeader
         title="Integrations"
         subtitle="Connect third-party apps and services to extend PhotoProOS"

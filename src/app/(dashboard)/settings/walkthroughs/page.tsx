@@ -37,7 +37,7 @@ export default async function WalkthroughSettingsPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-walkthroughs-page" className="space-y-6">
       <PageHeader
         title="Walkthroughs & Guides"
         subtitle="Control which tutorials and guides appear throughout the app"

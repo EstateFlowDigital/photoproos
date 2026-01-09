@@ -35,13 +35,15 @@ export default async function MyReferralsPage() {
   const leaderboard = leaderboardResult.success ? leaderboardResult.data : [];
 
   return (
-    <MyReferralsClient
-      profile={profile}
-      stats={stats}
-      referrals={referrals}
-      rewards={rewards}
-      referralLink={referralLink}
-      leaderboard={leaderboard}
-    />
+    <div data-element="settings-my-referrals-page">
+      <MyReferralsClient
+        profile={profile}
+        stats={stats}
+        referrals={referrals}
+        rewards={rewards}
+        referralLink={referralLink}
+        leaderboard={leaderboard}
+      />
+    </div>
   );
 }

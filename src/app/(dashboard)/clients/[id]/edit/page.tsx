@@ -38,7 +38,7 @@ export default async function ClientEditPage({ params }: ClientEditPageProps) {
   }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="clients-edit-page">
       <PageHeader
         title={`Edit ${client.fullName || client.email}`}
         subtitle="Update client information and settings"

@@ -12,7 +12,7 @@ export default async function ZapierSettingsPage() {
   const apiKeys = apiKeysResult.success && apiKeysResult.apiKeys ? apiKeysResult.apiKeys : [];
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-zapier-page" className="space-y-6">
       <PageHeader
         title="Zapier Integration"
         subtitle="Connect PhotoProOS with 5000+ apps via Zapier"

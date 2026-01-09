@@ -30,7 +30,7 @@ export default async function NewContractTemplatePage() {
   const stats = await getStats(auth.organizationId);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="contracts-templates-new-page">
       <PageHeader
         title="Create Template"
         subtitle="Create a reusable contract template for your business"

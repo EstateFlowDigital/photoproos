@@ -14,7 +14,7 @@ export default async function MlsPresetsPage() {
   const providers = providersResult.success ? providersResult.data : [];
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-mls-presets-page" className="space-y-6">
       <Breadcrumb
         items={[
           { label: "Settings", href: "/settings" },

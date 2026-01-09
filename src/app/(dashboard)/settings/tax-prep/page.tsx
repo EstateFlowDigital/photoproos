@@ -32,7 +32,7 @@ export default async function TaxPrepPage() {
     : [];
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-tax-prep-page" className="space-y-6">
       <PageHeader
         title="Tax Preparation"
         subtitle={`Prepare your ${taxYear} business expenses and documents for tax season`}

@@ -29,7 +29,7 @@ export default async function ReviewsSettingsPage() {
   const stats = statsResult.success ? statsResult.data : null;
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-reviews-page" className="space-y-6">
       <Breadcrumb
         items={[
           { label: "Settings", href: "/settings" },

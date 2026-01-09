@@ -256,7 +256,7 @@ export default function EmailLogsPage() {
   const resendableCount = getResendableSelection().length;
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-email-logs-page" className="space-y-6">
       <PageHeader
         title="Email Logs"
         subtitle="Track all emails sent from your organization"

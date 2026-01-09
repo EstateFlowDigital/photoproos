@@ -9,7 +9,7 @@ export default async function CalendarSettingsPage() {
   const config = configResult.success ? configResult.data : null;
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-calendar-page" className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>

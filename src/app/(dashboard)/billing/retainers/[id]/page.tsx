@@ -84,7 +84,7 @@ export default async function RetainerDetailPage({ params }: Props) {
     retainer.balanceCents <= retainer.lowBalanceThresholdCents;
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6" data-element="billing-retainers-detail-page">
       <PageHeader
         title={`Retainer for ${retainer.client.fullName || retainer.client.company || retainer.client.email}`}
         subtitle="Prepaid balance and transaction history"

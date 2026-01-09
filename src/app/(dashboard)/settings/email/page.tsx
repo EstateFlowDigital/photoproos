@@ -194,7 +194,7 @@ export default function EmailSettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-email-page" className="space-y-6">
       <PageHeader
         title="Email Settings"
         subtitle="Configure how emails are sent from your organization"

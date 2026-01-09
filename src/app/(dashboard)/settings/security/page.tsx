@@ -10,7 +10,7 @@ export default async function SecuritySettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-security-page" className="space-y-6">
       <PageHeader
         title="Security Settings"
         subtitle="Manage account security and access"

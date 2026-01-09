@@ -9,7 +9,7 @@ export default async function CannedResponsesPage() {
   const responses = result.success ? result.data : [];
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-canned-responses-page" className="space-y-6">
       <Breadcrumb
         items={[
           { label: "Settings", href: "/settings" },

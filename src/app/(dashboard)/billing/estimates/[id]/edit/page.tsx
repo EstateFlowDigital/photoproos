@@ -75,7 +75,7 @@ export default async function EditEstimatePage({ params }: Props) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="billing-estimates-edit-page">
       <PageHeader
         title={`Edit ${estimate.estimateNumber}`}
         subtitle="Update estimate details"

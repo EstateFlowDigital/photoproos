@@ -64,7 +64,7 @@ export default async function NewEstimatePage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="billing-estimates-new-page">
       <PageHeader
         title="New Estimate"
         subtitle="Create a quote for your client"

@@ -9,7 +9,7 @@ export default async function WatermarkTemplatesPage() {
   const templates = templatesResult.success ? templatesResult.data : [];
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-watermarks-page" className="space-y-6">
       <Breadcrumb
         items={[
           { label: "Settings", href: "/settings" },

@@ -18,7 +18,7 @@ export default async function QuickBooksSettingsPage() {
   const syncHistory = historyResult.success ? historyResult.data : [];
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-quickbooks-page" className="space-y-6">
       <PageHeader
         title="QuickBooks Integration"
         subtitle="Sync invoices and payments to QuickBooks Online"

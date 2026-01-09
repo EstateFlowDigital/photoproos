@@ -246,7 +246,7 @@ export default async function BillingOverviewPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6" data-element="billing-page">
       <PageHeader
         title="Billing"
         subtitle="Manage invoices, estimates, credits, and payments"

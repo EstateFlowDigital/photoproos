@@ -255,7 +255,7 @@ export default async function BillingAnalyticsPage({ searchParams }: PageProps) 
       : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="billing-analytics-page">
       <PageHeader
         title="Billing Analytics"
         subtitle="Revenue trends, aging reports, and financial insights"

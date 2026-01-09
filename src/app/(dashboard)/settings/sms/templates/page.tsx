@@ -12,7 +12,7 @@ export default async function SMSTemplatesPage() {
   const templates = result.success ? result.data : [];
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-sms-templates-page" className="space-y-6">
       <Breadcrumb
         items={[
           { label: "Settings", href: "/settings" },

@@ -64,7 +64,7 @@ export default async function NewCreditNotePage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="billing-credit-notes-new-page">
       <PageHeader
         title="Issue Credit Note"
         subtitle="Create a credit note for a client refund or credit"

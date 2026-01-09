@@ -45,7 +45,7 @@ export default async function EstimatesListPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6" data-element="billing-estimates-page">
       <PageHeader
         title="Estimates"
         subtitle="Create and manage quotes and proposals"

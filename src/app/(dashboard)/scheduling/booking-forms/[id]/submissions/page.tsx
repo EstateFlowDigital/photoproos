@@ -21,9 +21,11 @@ export default async function SubmissionsPage({ params }: SubmissionsPageProps) 
   }
 
   return (
-    <SubmissionsPageClient
-      bookingForm={bookingForm}
-      submissions={submissions}
-    />
+    <div data-element="scheduling-booking-forms-submissions-page">
+      <SubmissionsPageClient
+        bookingForm={bookingForm}
+        submissions={submissions}
+      />
+    </div>
   );
 }

@@ -35,13 +35,15 @@ export default async function ReferralsPage() {
   }));
 
   return (
-    <ReferralsClient
-      initialProgram={program}
-      initialReferrers={referrers || []}
-      initialReferrals={referrals || []}
-      stats={stats}
-      clients={mappedClients}
-    />
+    <div data-element="settings-referrals-page">
+      <ReferralsClient
+        initialProgram={program}
+        initialReferrers={referrers || []}
+        initialReferrals={referrals || []}
+        stats={stats}
+        clients={mappedClients}
+      />
+    </div>
   );
 }
 export const dynamic = "force-dynamic";

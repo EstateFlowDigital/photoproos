@@ -12,7 +12,7 @@ export default async function DropboxSettingsPage() {
   const config = configResult.success ? configResult.data : null;
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-dropbox-page" className="space-y-6">
       <PageHeader
         title="Dropbox Integration"
         subtitle="Sync photos and deliverables with Dropbox"

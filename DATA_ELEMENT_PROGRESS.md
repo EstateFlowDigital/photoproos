@@ -292,19 +292,134 @@ Tracking progress of adding `data-element` attributes across the application for
 
 ---
 
-## Dashboard - Implemented Pages Only
+## Dashboard Pages [COMPLETE]
 
-*(Will add detailed tracking as we work through each section)*
+### Core Pages (3 pages)
+| Page | Status | Notes |
+|------|--------|-------|
+| `/dashboard` | [x] | Main dashboard page wrapper |
+| `/create` | [x] | Create wizard page wrapper |
+| `/notifications` | [x] | Notifications page wrapper |
 
-### Priority Order for Dashboard:
-1. Core pages (dashboard, create, notifications)
-2. Clients & CRM
-3. Billing & Invoicing
-4. Galleries
-5. Scheduling
-6. Contracts
-7. Settings
-8. Remaining pages
+### Clients/CRM (6 pages)
+| Page | Status | Notes |
+|------|--------|-------|
+| `/clients` | [x] | Clients list page |
+| `/clients?view=tags` | [x] | Tags management view |
+| `/clients/new` | [x] | New client page |
+| `/clients/merge` | [x] | Merge clients page |
+| `/clients/import` | [x] | Import clients page |
+| `/clients/[id]` | [x] | Client detail page |
+| `/clients/[id]/edit` | [x] | Edit client page |
+
+### Billing/Invoicing (17 pages)
+| Page | Status | Notes |
+|------|--------|-------|
+| `/billing` | [x] | Billing overview page |
+| `/billing/analytics` | [x] | Billing analytics page |
+| `/billing/reports` | [x] | Tax reports page |
+| `/billing/estimates` | [x] | Estimates list page |
+| `/billing/estimates/new` | [x] | New estimate page |
+| `/billing/estimates/[id]` | [x] | Estimate detail page |
+| `/billing/estimates/[id]/edit` | [x] | Edit estimate page |
+| `/billing/credit-notes` | [x] | Credit notes list page |
+| `/billing/credit-notes/new` | [x] | New credit note page |
+| `/billing/credit-notes/[id]` | [x] | Credit note detail page |
+| `/billing/retainers` | [x] | Retainers list page |
+| `/billing/retainers/[id]` | [x] | Retainer detail page |
+| `/invoices` | [x] | Invoices list page |
+| `/invoices/new` | [x] | New invoice page |
+| `/invoices/[id]` | [x] | Invoice detail page |
+| `/invoices/[id]/edit` | [x] | Edit invoice page |
+| `/invoices/recurring` | [x] | Recurring invoices page |
+
+### Galleries (4 pages)
+| Page | Status | Notes |
+|------|--------|-------|
+| `/galleries` | [x] | Galleries list page |
+| `/galleries/new` | [x] | New gallery page |
+| `/galleries/[id]` | [x] | Gallery detail page |
+| `/galleries/[id]/edit` | [x] | Edit gallery page |
+
+### Scheduling (10 pages)
+| Page | Status | Notes |
+|------|--------|-------|
+| `/scheduling` | [x] | Calendar/scheduling page |
+| `/scheduling/new` | [x] | New booking page |
+| `/scheduling/[id]` | [x] | Booking detail page |
+| `/scheduling/[id]/edit` | [x] | Edit booking page |
+| `/scheduling/availability` | [x] | Availability page |
+| `/scheduling/types` | [x] | Booking types page |
+| `/scheduling/time-off` | [x] | Time off page |
+| `/scheduling/booking-forms` | [x] | Booking forms page |
+| `/scheduling/booking-forms/[id]` | [x] | Edit booking form page |
+| `/scheduling/booking-forms/[id]/submissions` | [x] | Form submissions page |
+
+### Contracts (7 pages)
+| Page | Status | Notes |
+|------|--------|-------|
+| `/contracts` | [x] | Contracts list page |
+| `/contracts/new` | [x] | New contract page |
+| `/contracts/[id]` | [x] | Contract detail page |
+| `/contracts/[id]/edit` | [x] | Edit contract page |
+| `/contracts/templates` | [x] | Contract templates page |
+| `/contracts/templates/new` | [x] | New template page |
+| `/contracts/templates/[id]` | [x] | Edit template page |
+
+### Settings (51 pages)
+| Page | Status | Notes |
+|------|--------|-------|
+| `/settings` | [x] | Settings main page |
+| `/settings/profile` | [x] | Profile settings |
+| `/settings/billing` | [x] | Billing settings |
+| `/settings/billing/upgrade` | [x] | Upgrade subscription |
+| `/settings/branding` | [x] | Branding settings |
+| `/settings/appearance` | [x] | Appearance settings |
+| `/settings/security` | [x] | Security settings |
+| `/settings/notifications` | [x] | Notification settings |
+| `/settings/team` | [x] | Team management |
+| `/settings/team/[id]/capabilities` | [x] | Team member capabilities |
+| `/settings/calendar` | [x] | Calendar settings |
+| `/settings/booking` | [x] | Booking settings |
+| `/settings/integrations` | [x] | Integrations hub |
+| `/settings/payments` | [x] | Payment settings |
+| `/settings/payouts` | [x] | Payout settings |
+| `/settings/travel` | [x] | Travel settings |
+| `/settings/email` | [x] | Email settings |
+| `/settings/email-logs` | [x] | Email logs |
+| `/settings/sms` | [x] | SMS settings |
+| `/settings/sms/templates` | [x] | SMS templates |
+| `/settings/canned-responses` | [x] | Canned responses |
+| `/settings/gallery-templates` | [x] | Gallery templates |
+| `/settings/gallery-addons` | [x] | Gallery addons |
+| `/settings/watermarks` | [x] | Watermark settings |
+| `/settings/mls-presets` | [x] | MLS presets |
+| `/settings/discounts` | [x] | Discount codes |
+| `/settings/referrals` | [x] | Referral program |
+| `/settings/my-referrals` | [x] | My referrals |
+| `/settings/territories` | [x] | Service territories |
+| `/settings/equipment` | [x] | Equipment tracking |
+| `/settings/photographer-pay` | [x] | Photographer pay rates |
+| `/settings/tax-prep` | [x] | Tax preparation |
+| `/settings/features` | [x] | Feature flags |
+| `/settings/roadmap` | [x] | Roadmap voting |
+| `/settings/support` | [x] | Support center |
+| `/settings/reviews` | [x] | Reviews settings |
+| `/settings/reviews/requests` | [x] | Review requests |
+| `/settings/gamification` | [x] | Gamification settings |
+| `/settings/walkthroughs` | [x] | Walkthrough preferences |
+| `/settings/onboarding` | [x] | Onboarding setup |
+| `/settings/dropbox` | [x] | Dropbox integration |
+| `/settings/calendly` | [x] | Calendly integration |
+| `/settings/zapier` | [x] | Zapier integration |
+| `/settings/quickbooks` | [x] | QuickBooks integration |
+| `/settings/mailchimp` | [x] | Mailchimp integration |
+| `/settings/slack` | [x] | Slack integration |
+| `/settings/developer` | [x] | Developer settings |
+| `/settings/developer/api` | [x] | API settings |
+| `/settings/data` | [x] | Data management |
+| `/settings/marketing` | [x] | Marketing settings |
+| `/settings/media` | [x] | Media settings |
 
 ---
 
@@ -372,7 +487,14 @@ Tracking progress of adding `data-element` attributes across the application for
 3. [x] ~~Industries pages (6 pages)~~ DONE (6/6 complete)
 4. [x] ~~Legal pages (5 pages)~~ DONE (5/5 complete)
 5. [x] ~~Super Admin Other pages~~ DONE (14/14 complete)
-6. [ ] Dashboard pages
+6. [x] ~~Dashboard pages~~ DONE (98 pages complete)
+   - Core pages: 3 pages
+   - Clients/CRM: 6 pages
+   - Billing/Invoicing: 17 pages
+   - Galleries: 4 pages
+   - Scheduling: 10 pages
+   - Contracts: 7 pages
+   - Settings: 51 pages
 
 ---
 
@@ -386,7 +508,15 @@ Tracking progress of adding `data-element` attributes across the application for
 | **Marketing Site Features** | **8** | **8** | **0** |
 | **Marketing Site Industries** | **6** | **6** | **0** |
 | **Marketing Site Legal** | **5** | **5** | **0** |
-| Dashboard (implemented) | ~153 | 0 | ~153 |
+| **Dashboard Core** | **3** | **3** | **0** |
+| **Dashboard Clients/CRM** | **6** | **6** | **0** |
+| **Dashboard Billing/Invoicing** | **17** | **17** | **0** |
+| **Dashboard Galleries** | **4** | **4** | **0** |
+| **Dashboard Scheduling** | **10** | **10** | **0** |
+| **Dashboard Contracts** | **7** | **7** | **0** |
+| **Dashboard Settings** | **51** | **51** | **0** |
 | Shared Components | TBD | 0 | TBD |
+
+**Total Complete: 149 pages**
 
 *Last updated: January 2026*

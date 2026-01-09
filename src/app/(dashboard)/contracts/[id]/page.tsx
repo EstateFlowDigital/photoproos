@@ -96,7 +96,7 @@ export default async function ContractDetailPage({ params }: ContractDetailPageP
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="contracts-detail-page">
       <Breadcrumb
         items={[
           { label: "Contracts", href: "/contracts" },

@@ -21,7 +21,7 @@ export default async function PayoutsPage() {
     : { totalPaidOut: 0, pendingAmount: 0, totalBatches: 0, completedBatches: 0, failedBatches: 0, photographersWithPendingPayouts: 0 };
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-payouts-page" className="space-y-6">
       <PageHeader
         title="Payouts"
         subtitle="Process and track photographer payouts"

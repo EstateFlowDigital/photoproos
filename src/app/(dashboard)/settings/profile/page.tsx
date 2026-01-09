@@ -32,7 +32,7 @@ export default async function ProfileSettingsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-profile-page" className="space-y-6">
       <PageHeader
         title="Profile Settings"
         subtitle="Manage your personal information and preferences"

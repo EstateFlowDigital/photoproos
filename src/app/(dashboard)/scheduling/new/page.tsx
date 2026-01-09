@@ -78,7 +78,7 @@ export default async function NewBookingPage({ searchParams }: PageProps) {
   } : undefined;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="scheduling-new-page">
       <PageHeader
         title={orderData ? `Booking from ${orderData.orderNumber}` : "New Booking"}
         subtitle={orderData ? "Schedule from order details" : "Schedule a new photography session"}

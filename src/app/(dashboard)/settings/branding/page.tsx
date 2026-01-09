@@ -25,7 +25,7 @@ export default async function BrandingSettingsPage() {
     org?.plan === "pro" || org?.plan === "studio" || org?.plan === "enterprise";
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-branding-page" className="space-y-6">
       <PageHeader
         title="Branding"
         subtitle="Customize your logo, colors, and how your portal appears to clients"

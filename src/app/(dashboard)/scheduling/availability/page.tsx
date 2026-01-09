@@ -68,7 +68,7 @@ export default async function AvailabilityPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="scheduling-availability-page">
       <AvailabilityPageClient
         availabilityBlocks={availabilityBlocks}
         defaultBuffer={bookingBuffer}

@@ -18,7 +18,7 @@ export const metadata = {
 
 export default function RoadmapPage() {
   return (
-    <div className="space-y-6">
+    <div data-element="settings-roadmap-page" className="space-y-6">
       <PageHeader
         title="Roadmap"
         subtitle="Explore upcoming features and improvements we're building for you"

@@ -20,11 +20,13 @@ export default async function CreatePage() {
   }
 
   return (
-    <CreateWizardClient
-      clients={data.clients}
-      services={data.services}
-      locations={data.locations}
-      bookingTypes={data.bookingTypes}
-    />
+    <div data-element="create-page">
+      <CreateWizardClient
+        clients={data.clients}
+        services={data.services}
+        locations={data.locations}
+        bookingTypes={data.bookingTypes}
+      />
+    </div>
   );
 }

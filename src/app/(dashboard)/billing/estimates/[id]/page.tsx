@@ -62,7 +62,7 @@ export default async function EstimateDetailPage({ params }: Props) {
   const isExpired = estimate.validUntil < new Date() && !["approved", "rejected", "converted"].includes(estimate.status);
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6" data-element="billing-estimates-detail-page">
       <PageHeader
         title={`Estimate ${estimate.estimateNumber}`}
         subtitle={estimate.title || "Estimate details"}

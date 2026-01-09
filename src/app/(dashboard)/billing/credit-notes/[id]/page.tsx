@@ -87,7 +87,7 @@ export default async function CreditNoteDetailPage({ params }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6" data-element="billing-credit-notes-detail-page">
       <PageHeader
         title={creditNote.creditNoteNumber}
         subtitle="Credit note details"

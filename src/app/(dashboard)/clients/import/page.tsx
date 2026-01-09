@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function ClientImportPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="clients-import-page">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Import Clients</h1>
         <p className="mt-1 text-foreground-muted">

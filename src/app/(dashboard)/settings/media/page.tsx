@@ -17,7 +17,7 @@ export default async function MediaSettingsPage() {
   const tourSettings = tourResult.success ? tourResult.data : null;
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-media-page" className="space-y-6">
       <PageHeader
         title="Media Settings"
         subtitle="Configure video hosting and 3D tour providers for your galleries"

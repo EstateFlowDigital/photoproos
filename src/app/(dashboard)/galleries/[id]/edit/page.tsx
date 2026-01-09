@@ -114,7 +114,7 @@ export default async function EditGalleryPage({ params }: EditGalleryPageProps) 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="galleries-edit-page">
       <PageHeader
         title="Edit Gallery"
         subtitle={`Editing: ${gallery.name}`}

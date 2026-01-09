@@ -67,7 +67,7 @@ export default async function NewContractPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="contracts-new-page">
       <PageHeader
         title="Create Contract"
         subtitle="Create a new contract from scratch or use a template"

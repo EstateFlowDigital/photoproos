@@ -18,7 +18,7 @@ export default async function GalleryTemplatesPage() {
   const services = Array.isArray(servicesData) ? servicesData : [];
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-gallery-templates-page" className="space-y-6">
       <Breadcrumb
         items={[
           { label: "Settings", href: "/settings" },

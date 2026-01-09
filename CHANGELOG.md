@@ -8,13 +8,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Element Inspector data-element Attributes** - Added `data-element` attributes across marketing site and Super Admin pages for Element Inspector tool
-  - All 6 industries pages: architecture, commercial, events, food, portraits, real-estate
-  - All 5 legal pages: cookies, dpa, privacy, security, terms
-  - All 14 Super Admin pages: dashboard, users, user detail, support, ticket detail, feedback, config, developer, logs, discounts, revenue, engagement, roadmap, announcements
-  - Each page includes page wrapper, headers, and section elements
-  - Real estate page includes additional stats, workflow, and testimonial sections
-  - Security page includes certifications, stats, features, and data ownership sections
+- **Dashboard Widget System** - Fully customizable drag-and-drop dashboard with resizable widgets
+  - Widget types system in `src/lib/dashboard-types.ts`:
+    - 22+ widget types across 5 categories (core, content, analytics, productivity, engagement)
+    - Widget size options (1x1, 2x1, 2x2, 3x1, 3x2, 4x1, 4x2)
+    - Widget instance management with unique IDs and positions
+    - Legacy config migration utilities for existing users
+  - Widget registry in `src/lib/widget-registry.ts`:
+    - Complete widget definitions with labels, descriptions, icons, and size constraints
+    - Category metadata for organizing widgets in the add modal
+    - Max instances support (e.g., only one "Revenue" stat widget allowed)
+    - Helper functions for widget validation and lookup
+  - Server actions in `src/lib/actions/dashboard.ts`:
+    - `getDashboardWidgets()` - Fetch normalized widget config
+    - `saveDashboardLayout()` - Persist widget positions and sizes
+    - `addWidget()` / `addWidgets()` - Add single or multiple widgets with auto-positioning
+    - `removeWidget()` - Remove a widget from the dashboard
+    - `updateWidgetSize()` / `updateWidgetPosition()` - Update individual widget properties
+    - `resetDashboardWidgets()` - Reset to default widget layout
+    - Collision detection and auto-layout for new widgets
+  - Widget Dashboard component in `src/components/dashboard/widget-dashboard.tsx`:
+    - Drag-and-drop reordering with @dnd-kit
+    - Edit mode toggle for customization
+    - Widget resize selector dropdown
+    - Widget removal with confirmation
+    - Responsive grid: 1 column on mobile, 2 on tablet, 4 on desktop
+    - Real-time save with optimistic updates
+    - Empty state with "Add Your First Widget" CTA
+  - Add Widget Modal in `src/components/dashboard/add-widget-modal.tsx`:
+    - Category-based widget browsing with tabs
+    - Multi-select mode for adding multiple widgets at once
+    - Widget availability tracking (grayed out when max instances reached)
+    - Search filtering for widgets
+    - Size indicators and resizable badges
+  - 13+ pre-built widget components:
+    - Stats widgets (Revenue, Galleries, Clients, Invoices)
+    - Quick Actions widget with common shortcuts
+    - Calendar preview widget
+    - Upcoming Bookings widget
+    - Recent Galleries widget with thumbnails
+    - Recent Activity feed widget
+    - Overdue Invoices widget with alerts
+    - Expiring Galleries widget with countdown
+    - Gamification widget (level, XP, streaks)
+    - Daily Bonus widget with claim CTA
+    - Onboarding progress widget
+    - Messages widget for recent conversations
+
+- **Element Inspector data-element Attributes** - Added `data-element` attributes across 149 pages for Element Inspector tool
+  - Marketing site pages (32): about, affiliates, blog, careers, changelog, contact, integrations, partners, press, pricing, roadmap, support, webinars, 8 features pages, 6 industries pages, 5 legal pages
+  - Super Admin pages (19): dashboard, users, support, feedback, config, developer, logs, discounts, revenue, engagement, roadmap, announcements, 5 marketing CMS pages
+  - Dashboard pages (98):
+    - Core pages: dashboard, create, notifications
+    - Clients/CRM: 6 pages (list, new, merge, import, detail, edit)
+    - Billing/Invoicing: 17 pages (billing, analytics, reports, estimates, credit-notes, retainers, invoices)
+    - Galleries: 4 pages (list, new, detail, edit)
+    - Scheduling: 10 pages (calendar, bookings, availability, types, time-off, booking-forms)
+    - Contracts: 7 pages (list, new, detail, edit, templates)
+    - Settings: 51 pages (all settings categories and integrations)
 
 - **Multi-Media Gallery Support** - Comprehensive support for videos, 3D tours, and floor plans in galleries
   - New Prisma enums: `AssetMediaType`, `VideoProvider`, `TourProvider`, `FloorPlanType`

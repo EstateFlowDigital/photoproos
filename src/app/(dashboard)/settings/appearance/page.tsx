@@ -13,7 +13,7 @@ export default async function AppearanceSettingsPage() {
     : DEFAULT_APPEARANCE;
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-appearance-page" className="space-y-6">
       <PageHeader
         title="Appearance"
         subtitle="Personalize your dashboard look and feel"

@@ -41,7 +41,7 @@ export default async function CreditNotesPage({ searchParams }: Props) {
   });
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6" data-element="billing-credit-notes-page">
       <PageHeader
         title="Credit Notes"
         subtitle="Manage refunds and credits for clients"

@@ -201,7 +201,7 @@ export default function NotificationsSettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-notifications-page" className="space-y-6">
       <PageHeader
         title="Notification Preferences"
         subtitle="Choose how you want to be notified"

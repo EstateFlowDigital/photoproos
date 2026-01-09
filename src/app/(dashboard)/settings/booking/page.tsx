@@ -10,7 +10,7 @@ export default async function BookingSettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-booking-page" className="space-y-6">
       <PageHeader
         title="Booking Settings"
         subtitle="Configure booking behavior"

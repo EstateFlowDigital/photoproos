@@ -34,10 +34,12 @@ export default async function BookingFormEditPage({
   }
 
   return (
-    <BookingFormEditClient
-      bookingForm={bookingForm}
-      services={services}
-      organizationIndustries={organization?.industries || []}
-    />
+    <div data-element="scheduling-booking-forms-edit-page">
+      <BookingFormEditClient
+        bookingForm={bookingForm}
+        services={services}
+        organizationIndustries={organization?.industries || []}
+      />
+    </div>
   );
 }

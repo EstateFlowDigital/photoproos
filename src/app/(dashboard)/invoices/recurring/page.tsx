@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function RecurringInvoicesPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="invoices-recurring-page">
       <Suspense
         fallback={
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-8">

@@ -79,7 +79,7 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
   const price = booking.service?.priceCents || 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="scheduling-detail-page">
       <PageHeader
         title={booking.title}
         subtitle={`${booking.service?.name || booking.bookingType?.name || "Session"} • ${formatDate(booking.startTime)}`}

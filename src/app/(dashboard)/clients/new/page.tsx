@@ -77,7 +77,7 @@ export default async function NewClientPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="clients-new-page">
       <PageHeader
         title="Add New Client"
         subtitle="Create a new client profile"

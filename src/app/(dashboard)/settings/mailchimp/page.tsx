@@ -12,7 +12,7 @@ export default async function MailchimpSettingsPage() {
   const initialConfig = configResult.success ? configResult.data : null;
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-mailchimp-page" className="space-y-6">
       <PageHeader
         title="Mailchimp Integration"
         subtitle="Sync your clients with Mailchimp for email marketing campaigns"

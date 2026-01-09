@@ -405,7 +405,7 @@ export default async function DashboardPage() {
 
   return (
     <ErrorBoundary label="dashboard-page">
-      <div className="flex flex-col density-gap-section">
+      <div className="flex flex-col density-gap-section" data-element="dashboard-page">
         <Suspense fallback={null}>
           <TourStarter />
         </Suspense>

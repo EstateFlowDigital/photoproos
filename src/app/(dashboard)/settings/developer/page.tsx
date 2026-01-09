@@ -27,7 +27,7 @@ export default async function DeveloperSettingsPage() {
   const experiments = experimentsResult.success ? experimentsResult.data : [];
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-developer-page" className="space-y-6">
       <PageHeader
         title="Developer Tools"
         subtitle="Database seeding and testing utilities"
@@ -98,7 +98,7 @@ export default async function DeveloperSettingsPage() {
       </div>
 
       {/* Lifetime License */}
-      <div className="rounded-xl border border-[var(--ai)]/30 bg-gradient-to-br from-[var(--ai)]/5 to-[var(--primary)]/5 p-6">
+      <div className="rounded-xl border border-[var(--ai)]/30 bg-[var(--card)] p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--ai)]/30 bg-[var(--ai)]/10 text-[var(--ai)]">
             <CrownIcon className="h-5 w-5" />

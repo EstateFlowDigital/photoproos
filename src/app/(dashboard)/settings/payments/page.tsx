@@ -16,7 +16,7 @@ export default async function PaymentsSettingsPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-payments-page" className="space-y-6">
       <PageHeader
         title="Payment Settings"
         subtitle="Connect your Stripe account to accept payments from clients"

@@ -106,7 +106,7 @@ export default async function EditInvoicePage({ params }: EditInvoicePageProps) 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="invoices-edit-page">
       <PageHeader
         title={`Edit ${invoice.invoiceNumber}`}
         subtitle="Modify invoice details and line items"

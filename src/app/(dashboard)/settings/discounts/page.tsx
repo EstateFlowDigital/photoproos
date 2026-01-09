@@ -72,8 +72,10 @@ async function DiscountsLoader() {
 
 export default function DiscountsSettingsPage() {
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
-      <DiscountsLoader />
-    </Suspense>
+    <div data-element="settings-discounts-page">
+      <Suspense fallback={<LoadingSkeleton />}>
+        <DiscountsLoader />
+      </Suspense>
+    </div>
   );
 }

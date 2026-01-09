@@ -36,7 +36,7 @@ export default async function FeaturesSettingsPage() {
   const allModules = getModulesArray().filter((m) => !CORE_MODULES.includes(m.id));
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-features-page" className="space-y-6">
       <div className="flex items-center gap-2 text-sm text-foreground-muted">
         <Link href="/settings" className="hover:text-foreground transition-colors">
           Settings

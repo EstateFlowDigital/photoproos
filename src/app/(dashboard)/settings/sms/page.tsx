@@ -30,7 +30,7 @@ export default async function SMSSettingsPage() {
     : [];
 
   return (
-    <div className="space-y-6">
+    <div data-element="settings-sms-page" className="space-y-6">
       <Breadcrumb
         items={[
           { label: "Settings", href: "/settings" },
