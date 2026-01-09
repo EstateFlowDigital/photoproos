@@ -40,12 +40,13 @@ interface Props {
   faqs: FAQ[];
 }
 
-export function FAQsClient({ faqs: initialFaqs }: Props) {
+export function FAQsClient({ faqs: initialFaqs = [] }: Props) {
   const router = useRouter();
   const formId = useId();
   const filterId = useId();
   const [isPending, startTransition] = useTransition();
-  const [faqs] = useState(initialFaqs);
+  // Ensure faqs is always an array
+  const [faqs] = useState(Array.isArray(initialFaqs) ? initialFaqs : []);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<FAQCategory | "all">("all");

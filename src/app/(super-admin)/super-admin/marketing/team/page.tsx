@@ -34,9 +34,14 @@ function LoadingSkeleton() {
 }
 
 async function TeamLoader() {
-  const result = await getTeamMembers({ visibleOnly: false });
-  const members = result.success ? result.data : [];
-  return <TeamClient members={members} />;
+  try {
+    const result = await getTeamMembers({ visibleOnly: false });
+    const members = (result?.success && Array.isArray(result.data)) ? result.data : [];
+    return <TeamClient members={members} />;
+  } catch (error) {
+    console.error("Error fetching team members (table may not exist):", error);
+    return <TeamClient members={[]} />;
+  }
 }
 
 export default function TeamPage() {

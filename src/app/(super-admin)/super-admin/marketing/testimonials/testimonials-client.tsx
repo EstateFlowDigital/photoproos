@@ -36,11 +36,12 @@ interface Props {
   testimonials: Testimonial[];
 }
 
-export function TestimonialsClient({ testimonials: initialTestimonials }: Props) {
+export function TestimonialsClient({ testimonials: initialTestimonials = [] }: Props) {
   const router = useRouter();
   const formId = useId();
   const [isPending, startTransition] = useTransition();
-  const [testimonials] = useState(initialTestimonials);
+  // Ensure testimonials is always an array
+  const [testimonials] = useState(Array.isArray(initialTestimonials) ? initialTestimonials : []);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
 

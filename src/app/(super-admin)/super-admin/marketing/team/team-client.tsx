@@ -29,11 +29,12 @@ interface Props {
   members: TeamMember[];
 }
 
-export function TeamClient({ members: initialMembers }: Props) {
+export function TeamClient({ members: initialMembers = [] }: Props) {
   const router = useRouter();
   const formId = useId();
   const [isPending, startTransition] = useTransition();
-  const [members] = useState(initialMembers);
+  // Ensure members is always an array
+  const [members] = useState(Array.isArray(initialMembers) ? initialMembers : []);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
 

@@ -22,9 +22,14 @@ function LoadingSkeleton() {
 }
 
 async function TestimonialsLoader() {
-  const result = await getTestimonials({ visibleOnly: false });
-  const testimonials = result.success ? result.data : [];
-  return <TestimonialsClient testimonials={testimonials} />;
+  try {
+    const result = await getTestimonials({ visibleOnly: false });
+    const testimonials = (result?.success && Array.isArray(result.data)) ? result.data : [];
+    return <TestimonialsClient testimonials={testimonials} />;
+  } catch (error) {
+    console.error("Error fetching testimonials (table may not exist):", error);
+    return <TestimonialsClient testimonials={[]} />;
+  }
 }
 
 export default function TestimonialsPage() {

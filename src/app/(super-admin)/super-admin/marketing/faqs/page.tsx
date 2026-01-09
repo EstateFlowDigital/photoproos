@@ -22,9 +22,14 @@ function LoadingSkeleton() {
 }
 
 async function FAQsLoader() {
-  const result = await getFAQs({ visibleOnly: false });
-  const faqs = result.success ? result.data : [];
-  return <FAQsClient faqs={faqs} />;
+  try {
+    const result = await getFAQs({ visibleOnly: false });
+    const faqs = (result?.success && Array.isArray(result.data)) ? result.data : [];
+    return <FAQsClient faqs={faqs} />;
+  } catch (error) {
+    console.error("Error fetching FAQs (table may not exist):", error);
+    return <FAQsClient faqs={[]} />;
+  }
 }
 
 export default function FAQsPage() {

@@ -27,10 +27,14 @@ function LoadingSkeleton() {
 }
 
 async function BlogLoader() {
-  const result = await getBlogPosts();
-  const posts = result.success ? result.data : [];
-
-  return <BlogListClient posts={posts} />;
+  try {
+    const result = await getBlogPosts();
+    const posts = (result?.success && Array.isArray(result.data)) ? result.data : [];
+    return <BlogListClient posts={posts} />;
+  } catch (error) {
+    console.error("Error fetching blog posts (table may not exist):", error);
+    return <BlogListClient posts={[]} />;
+  }
 }
 
 export default function BlogPage() {

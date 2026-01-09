@@ -69,13 +69,16 @@ interface Props {
   posts: BlogPost[];
 }
 
-export function BlogListClient({ posts }: Props) {
+export function BlogListClient({ posts = [] }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [filter, setFilter] = useState<BlogCategory | "all">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
 
-  const filteredPosts = posts.filter((post) => {
+  // Ensure posts is always an array
+  const safePosts = Array.isArray(posts) ? posts : [];
+
+  const filteredPosts = safePosts.filter((post) => {
     if (filter !== "all" && post.category !== filter) return false;
     if (statusFilter !== "all" && post.status !== statusFilter) return false;
     return true;
@@ -126,7 +129,7 @@ export function BlogListClient({ posts }: Props) {
           <div>
             <h1 className="text-2xl font-bold text-[var(--foreground)]">Blog Posts</h1>
             <p className="text-[var(--foreground-muted)]">
-              {posts.length} posts total
+              {safePosts.length} posts total
             </p>
           </div>
         </div>
