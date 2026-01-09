@@ -64,6 +64,10 @@ export function updateDevSettings(updates: Partial<DevSettings>): DevSettings {
         localStorage.removeItem("ppos_nav_debug");
       }
     }
+
+    // Dispatch custom event for same-tab component updates
+    // (storage event only fires for other tabs/windows)
+    window.dispatchEvent(new CustomEvent("ppos_dev_settings_changed"));
   } catch {
     // Ignore storage errors
   }

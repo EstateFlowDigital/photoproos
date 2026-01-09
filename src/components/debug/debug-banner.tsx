@@ -20,13 +20,16 @@ export function DebugBanner({ route: routeProp }: DebugBannerProps) {
   const route = routeProp || pathname;
   const [open, setOpen] = useState(false);
   const [errors, setErrors] = useState<CapturedError[]>([]);
-  const [isHidden, setIsHidden] = useState(false);
+  // Start hidden until we confirm settings allow showing (prevents flash on mobile)
+  const [isHidden, setIsHidden] = useState(true);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   // Load dev settings on mount and listen for changes
   useEffect(() => {
     const loadSettings = () => {
       const settings = getDevSettings();
       setIsHidden(settings.hideDebugBanner);
+      setSettingsLoaded(true);
     };
 
     loadSettings();
@@ -38,8 +41,15 @@ export function DebugBanner({ route: routeProp }: DebugBannerProps) {
       }
     };
 
+    // Also listen for custom event for same-tab updates
+    const handleCustomEvent = () => loadSettings();
+    window.addEventListener("ppos_dev_settings_changed", handleCustomEvent);
+
     window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("ppos_dev_settings_changed", handleCustomEvent);
+    };
   }, []);
 
   const addError = useCallback((err: CapturedError) => {
@@ -87,8 +97,8 @@ export function DebugBanner({ route: routeProp }: DebugBannerProps) {
     };
   }, [addError]);
 
-  // If hidden via dev settings, render nothing
-  if (isHidden) return null;
+  // If hidden via dev settings or settings not yet loaded, render nothing
+  if (isHidden || !settingsLoaded) return null;
 
   if (!open && errors.length === 0) {
     return (

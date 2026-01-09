@@ -93,9 +93,10 @@ export function BugProbe() {
   const [isDraggingHud, setIsDraggingHud] = useState(false);
   const hudDragStartRef = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
 
-  // Dev settings visibility state
-  const [hideBugProbe, setHideBugProbe] = useState(false);
-  const [hideHUD, setHideHUD] = useState(false);
+  // Dev settings visibility state - start hidden to prevent flash on mobile
+  const [hideBugProbe, setHideBugProbe] = useState(true);
+  const [hideHUD, setHideHUD] = useState(true);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   // Generate session ID on client only to avoid hydration mismatch
   useEffect(() => {
@@ -110,6 +111,7 @@ export function BugProbe() {
       const settings = getDevSettings();
       setHideBugProbe(settings.hideBugProbe);
       setHideHUD(settings.hideHUD);
+      setSettingsLoaded(true);
     };
 
     loadSettings();
@@ -121,8 +123,15 @@ export function BugProbe() {
       }
     };
 
+    // Also listen for custom event for same-tab updates
+    const handleCustomEvent = () => loadSettings();
+    window.addEventListener("ppos_dev_settings_changed", handleCustomEvent);
+
     window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("ppos_dev_settings_changed", handleCustomEvent);
+    };
   }, []);
 
   const isDeveloper =
@@ -544,6 +553,9 @@ export function BugProbe() {
   }, [pathname]);
 
   if (!isDeveloper) return null;
+
+  // Wait for settings to load before showing anything (prevents flash on mobile)
+  if (!settingsLoaded) return null;
 
   // If both are hidden via dev settings, render nothing
   if (hideBugProbe && hideHUD) return null;
