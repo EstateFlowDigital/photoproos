@@ -298,13 +298,14 @@ export function InboxPageClient({
             automatically.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link
+            {/* Use <a> instead of <Link> for OAuth redirects to avoid prefetch CORS issues */}
+            <a
               href="/api/integrations/gmail/authorize"
               className="inline-flex items-center gap-3 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
             >
               <GoogleIcon className="h-5 w-5" />
               Connect Gmail
-            </Link>
+            </a>
             <button
               disabled
               className="inline-flex items-center gap-3 rounded-lg bg-[#0078d4]/50 px-6 py-3 text-sm font-medium text-white cursor-not-allowed"

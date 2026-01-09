@@ -452,7 +452,7 @@ export default function EmailLogsPage() {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[850px] text-sm">
                 <thead>
                   <tr className="border-b border-[var(--card-border)] bg-[var(--background)]">
                     <th className="w-10 px-4 py-3">

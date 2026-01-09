@@ -164,7 +164,7 @@ export default async function RetainerDetailPage({ params }: Props) {
               </div>
             ) : (
               <div className="overflow-x-auto rounded-lg border border-[var(--card-border)]">
-                <table className="w-full">
+                <table className="w-full min-w-[650px]">
                   <thead>
                     <tr className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
                       <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-foreground-muted">

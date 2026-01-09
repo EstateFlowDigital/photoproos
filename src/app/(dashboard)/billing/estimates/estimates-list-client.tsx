@@ -375,7 +375,7 @@ export function EstimatesListClient({ estimates, stats }: EstimatesListClientPro
       {/* Table */}
       <div className="overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)]" id="estimates-table" role="tabpanel">
         <div className="overflow-x-auto">
-          <table className="w-full" aria-label="Estimates list">
+          <table className="w-full min-w-[900px]" aria-label="Estimates list">
             <thead>
               <tr className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
                 <th scope="col" className="w-10 px-4 py-3">

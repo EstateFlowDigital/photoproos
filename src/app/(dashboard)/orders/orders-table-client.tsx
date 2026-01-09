@@ -374,9 +374,9 @@ export function OrdersTableClient({
 
       {/* Orders List */}
       {filteredOrders.length > 0 && (
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
           <VirtualList
-            className="max-h-[70vh]"
+            className="max-h-[70vh] min-w-[900px]"
             items={filteredOrders}
             estimateSize={() => 112}
             itemGap={0}

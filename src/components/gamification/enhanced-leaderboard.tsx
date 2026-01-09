@@ -242,12 +242,12 @@ export const EnhancedLeaderboard = memo(function EnhancedLeaderboard({
       {/* Leaderboard Table */}
       <div
         className={cn(
-          "rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden",
+          "rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto",
           isPending && "opacity-60"
         )}
       >
         {/* Header */}
-        <div className="grid grid-cols-[60px_1fr_100px_100px_120px] gap-4 border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-4 py-3 text-sm font-medium text-[var(--foreground-muted)]">
+        <div className="grid min-w-[600px] grid-cols-[60px_1fr_100px_100px_120px] gap-4 border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-4 py-3 text-sm font-medium text-[var(--foreground-muted)]">
           <div>Rank</div>
           <div>Member</div>
           <div className="text-center">Level</div>
@@ -371,7 +371,7 @@ const LeaderboardRow = memo(function LeaderboardRow({
       animate={{ opacity: 1, x: 0 }}
       transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2 }}
       className={cn(
-        "grid grid-cols-[60px_1fr_100px_100px_120px] gap-4 px-4 py-3 items-center transition-colors",
+        "grid min-w-[600px] grid-cols-[60px_1fr_100px_100px_120px] gap-4 px-4 py-3 items-center transition-colors",
         entry.isCurrentUser
           ? "bg-[var(--primary)]/5 border-l-2 border-l-[var(--primary)]"
           : "hover:bg-[var(--background-hover)]"

@@ -55,6 +55,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { AssetRenderer, getAssetIcon, getAssetTypeLabel } from "@/components/media";
 import {
   EditIcon,
   PlusIcon,
@@ -96,11 +97,18 @@ import {
   ListIcon,
 } from "./gallery-detail-icons";
 
+// Media type definitions for multi-media gallery support
+type AssetMediaType = "photo" | "video" | "video_tour" | "floor_plan" | "aerial" | "virtual_tour" | "other";
+type VideoProvider = "vimeo" | "youtube" | "bunny" | "mux" | "cloudflare" | "wistia" | "sprout" | "direct";
+type TourProvider = "matterport" | "iguide" | "cupix" | "zillow_3d" | "ricoh" | "kuula" | "other";
+type FloorPlanType = "two_d" | "three_d" | "interactive";
+
 interface Photo {
   id: string;
   url: string;
   thumbnailUrl?: string | null;
   mediumUrl?: string | null;
+  watermarkedUrl?: string | null;
   filename: string;
   isFavorite?: boolean;
   downloads?: number;
@@ -111,6 +119,24 @@ interface Photo {
   width?: number | null;
   height?: number | null;
   exifData?: Record<string, unknown> | null;
+  // Media type fields
+  mediaType?: AssetMediaType | null;
+  caption?: string | null;
+  isFeatured?: boolean;
+  // Video fields
+  videoProvider?: VideoProvider | null;
+  videoExternalId?: string | null;
+  videoEmbedUrl?: string | null;
+  videoDuration?: number | null;
+  videoAutoplay?: boolean;
+  videoMuted?: boolean;
+  // Tour fields (Matterport, iGuide, etc.)
+  tourProvider?: TourProvider | null;
+  tourExternalId?: string | null;
+  tourEmbedUrl?: string | null;
+  // Floor plan fields
+  floorPlanType?: FloorPlanType | null;
+  floorPlanLabel?: string | null;
 }
 
 interface PhotoComment {
@@ -2129,7 +2155,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                   />
 
                   {settings.allowSelections && (
-                    <div className="ml-8 pt-3 border-t border-[var(--card-border)]">
+                    <div className="pt-3 border-t border-[var(--card-border)]">
                       <label className="block text-sm font-medium text-foreground mb-1.5">
                         Selection Limit
                       </label>

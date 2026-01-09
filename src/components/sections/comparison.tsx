@@ -167,7 +167,7 @@ export function ComparisonSection() {
         >
           {/* Desktop Table */}
           <div className="hidden lg:block overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[700px]">
               <thead>
                 <tr className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
                   <th className="px-6 py-4 text-left text-sm font-medium text-foreground-muted">Feature</th>

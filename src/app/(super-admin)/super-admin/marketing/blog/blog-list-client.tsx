@@ -180,7 +180,7 @@ export function BlogListClient({ posts = [] }: Props) {
 
       {/* Posts Table */}
       <div className="rounded-lg border border-[var(--border)] overflow-x-auto" data-element="blog-list-table">
-        <table className="w-full">
+        <table className="w-full min-w-[800px]">
           <thead className="bg-[var(--card)]">
             <tr>
               <th className="text-left px-4 py-3 text-sm font-medium text-[var(--foreground-muted)]">

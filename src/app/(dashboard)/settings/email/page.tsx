@@ -266,10 +266,11 @@ export default function EmailSettingsPage() {
                         size="sm"
                         asChild
                       >
-                        <Link href="/api/integrations/gmail/authorize">
+                        {/* Use <a> instead of <Link> for OAuth redirects to avoid prefetch CORS issues */}
+                        <a href="/api/integrations/gmail/authorize">
                           <RefreshCw className="h-4 w-4 mr-1" />
                           Reconnect
-                        </Link>
+                        </a>
                       </Button>
                     )}
                     <Button
@@ -293,12 +294,14 @@ export default function EmailSettingsPage() {
 
           {/* Connect Buttons */}
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button variant="outline" asChild className="gap-2">
-              <Link href="/api/integrations/gmail/authorize">
-                <GoogleIcon className="h-5 w-5" />
-                Connect Gmail
-              </Link>
-            </Button>
+            {/* Use <a> instead of <Link> for OAuth redirects to avoid prefetch CORS issues */}
+            <a
+              href="/api/integrations/gmail/authorize"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--card-border)] bg-transparent px-4 py-2 text-sm font-medium text-foreground hover:bg-[var(--background-hover)] transition-colors"
+            >
+              <GoogleIcon className="h-5 w-5" />
+              Connect Gmail
+            </a>
             <Button variant="outline" disabled className="gap-2 opacity-50 cursor-not-allowed">
               <MicrosoftIcon className="h-5 w-5" />
               Connect Outlook

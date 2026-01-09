@@ -3001,7 +3001,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                   <h4 className="font-semibold text-foreground">Category Details</h4>
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full min-w-[500px]">
                     <thead>
                       <tr className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
                         <th className="text-left p-3 text-xs font-medium text-foreground-muted">Category</th>
@@ -5085,8 +5085,8 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                 <p className="text-sm text-foreground-muted">
                   Review the expenses to be imported. <strong>{csvPreviewData.length}</strong> valid rows found.
                 </p>
-                <div className="max-h-64 overflow-y-auto border border-[var(--card-border)] rounded-lg">
-                  <table className="w-full text-sm">
+                <div className="max-h-64 overflow-y-auto overflow-x-auto border border-[var(--card-border)] rounded-lg">
+                  <table className="w-full min-w-[600px] text-sm">
                     <thead className="bg-[var(--background-secondary)] sticky top-0">
                       <tr>
                         <th className="px-3 py-2 text-left font-medium text-foreground">Description</th>

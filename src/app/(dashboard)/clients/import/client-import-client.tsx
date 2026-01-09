@@ -198,7 +198,7 @@ export function ClientImportClient() {
               Your CSV file should have the following columns (email is required):
             </p>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[400px] text-sm">
                 <thead>
                   <tr className="border-b border-[var(--card-border)]">
                     <th className="py-2 px-3 text-left text-foreground">Column</th>

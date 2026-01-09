@@ -725,10 +725,10 @@ export function LeadsPageClient({
 
       {/* Inquiries List or Kanban Board */}
       {viewMode === "list" ? (
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
           {sortedFilteredInquiries.length > 0 ? (
             <VirtualList
-              className="max-h-[70vh]"
+              className="max-h-[70vh] min-w-[950px]"
               items={sortedFilteredInquiries}
               getItemKey={(inquiry) => `${inquiry.type}-${inquiry.id}`}
               itemGap={0}

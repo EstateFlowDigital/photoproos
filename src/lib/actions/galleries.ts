@@ -958,18 +958,37 @@ export async function getGallery(id: string) {
       service: gallery.service,
       location: gallery.location,
       deliverySlug: gallery.deliveryLinks[0]?.slug || null,
-      // Assets/photos
+      // Assets/media (photos, videos, tours, floor plans, etc.)
       photos: gallery.assets.map((asset) => ({
         id: asset.id,
         filename: asset.filename,
         url: asset.originalUrl,
         thumbnailUrl: asset.thumbnailUrl,
         mediumUrl: asset.mediumUrl,
+        watermarkedUrl: asset.watermarkedUrl,
         width: asset.width,
         height: asset.height,
         sortOrder: asset.sortOrder,
         collectionId: asset.collectionId,
         exifData: asset.exifData as Record<string, unknown> | null,
+        // Media type fields
+        mediaType: asset.mediaType,
+        caption: asset.caption,
+        isFeatured: asset.isFeatured,
+        // Video fields
+        videoProvider: asset.videoProvider,
+        videoExternalId: asset.videoExternalId,
+        videoEmbedUrl: asset.videoEmbedUrl,
+        videoDuration: asset.videoDuration,
+        videoAutoplay: asset.videoAutoplay,
+        videoMuted: asset.videoMuted,
+        // Tour fields (Matterport, iGuide, etc.)
+        tourProvider: asset.tourProvider,
+        tourExternalId: asset.tourExternalId,
+        tourEmbedUrl: asset.tourEmbedUrl,
+        // Floor plan fields
+        floorPlanType: asset.floorPlanType,
+        floorPlanLabel: asset.floorPlanLabel,
       })),
       // Payments
       payments: gallery.payments,

@@ -342,7 +342,7 @@ export function RetainersPageClient({ retainers, filter: _filter }: RetainersPag
         {/* Table View */}
         {viewMode === "table" && filteredAndSorted.length > 0 && (
           <div className="overflow-x-auto rounded-xl border border-[var(--card-border)]">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[800px] text-sm">
               <thead className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
                 <tr>
                   <th className="px-4 py-3 text-left">

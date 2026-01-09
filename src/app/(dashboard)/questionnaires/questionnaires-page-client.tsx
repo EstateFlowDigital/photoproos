@@ -305,9 +305,9 @@ export function QuestionnairesPageClient({
               </button>
             </div>
           ) : (
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
               <VirtualList
-                className="max-h-[70vh]"
+                className="max-h-[70vh] min-w-[600px]"
                 items={filteredQuestionnaires}
                 getItemKey={(q) => q.id}
                 estimateSize={() => 96}

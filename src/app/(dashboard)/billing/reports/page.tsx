@@ -217,7 +217,7 @@ export default async function TaxReportsPage() {
           <p className="text-sm text-foreground-muted">{now.getFullYear()} tax collected by month</p>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[700px]">
             <thead>
               <tr className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-foreground-muted">
