@@ -44,8 +44,8 @@ export default async function DeveloperSettingsPage() {
 
       {/* API Section */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
               <CodeIcon className="h-5 w-5" />
             </div>
@@ -54,7 +54,7 @@ export default async function DeveloperSettingsPage() {
               <p className="text-sm text-foreground-muted">Integrate with external applications</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center flex-wrap">
             <Link
               href="/settings/integrations"
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
@@ -139,7 +139,7 @@ export default async function DeveloperSettingsPage() {
       <div className="grid gap-6 md:grid-cols-2">
         {/* Seed Database */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-start gap-3 mb-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
               <DatabaseIcon className="h-5 w-5" />
             </div>
@@ -218,7 +218,7 @@ export default async function DeveloperSettingsPage() {
 
         {/* Clear Data */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-start gap-3 mb-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--error)]/10 text-[var(--error)]">
               <TrashIcon className="h-5 w-5" />
             </div>
