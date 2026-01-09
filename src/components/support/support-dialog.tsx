@@ -309,7 +309,7 @@ export function SupportDialog({ open, onOpenChange }: SupportDialogProps) {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="grid gap-2 mt-4">
+              <div className="grid gap-2 py-4 px-4">
                 {CATEGORIES.map((category) => (
                   <button
                     key={category.value}

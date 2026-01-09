@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Sizing presets (auto, 100%, fit-content, max-content)
 - **Element Inspector Navigation History** - When navigating to parent elements, the previously selected child is remembered so you can navigate back to it with the "Back" button
 
+### Changed
+- **Support Dialog Styling** - Updated category grid container padding from `mt-4` to `py-4 px-4` for consistent spacing
+
 ### Fixed
 - **Element Inspector link/button blocking** - When inspector is active, clicking links and buttons no longer navigates away from the page. Added mousedown, pointerdown, and auxclick event blockers in capture phase to prevent all default interactions while inspecting elements
 - **Element Inspector z-index** - Increased z-index values from 9998-10002 to 99997-100001 so the inspector stays above modals and doesn't accidentally close them when clicked
