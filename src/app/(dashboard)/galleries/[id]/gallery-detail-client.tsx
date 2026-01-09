@@ -2059,7 +2059,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
                   {/* Password Input - shows when password protected is enabled */}
                   {settings.passwordProtected && (
-                    <div className="ml-8 mt-3 pt-3 border-t border-[var(--card-border)]">
+                    <div className="pt-3 border-t border-[var(--card-border)]">
                       <label className="block text-sm font-medium text-foreground mb-1.5">
                         Gallery Password
                       </label>
@@ -2995,23 +2995,71 @@ function SortablePhotoItem({ photo, isCover, isFavorite }: SortablePhotoItemProp
     transition,
   };
 
+  // Determine if this is a non-photo media type
+  const mediaType = photo.mediaType || "photo";
+  const isPhoto = mediaType === "photo" || !photo.mediaType;
+
+  // Get the media type icon for overlay
+  const MediaTypeIcon = getAssetIcon(mediaType);
+  const mediaTypeLabel = getAssetTypeLabel(mediaType);
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group relative aspect-[4/3] overflow-x-auto rounded-lg bg-[var(--background)] cursor-grab active:cursor-grabbing",
+        "group relative aspect-[4/3] overflow-hidden rounded-lg bg-[var(--background)] cursor-grab active:cursor-grabbing",
         isDragging && "ring-2 ring-[var(--primary)] ring-offset-2 ring-offset-[var(--card)] opacity-90 z-50 shadow-xl"
       )}
       {...attributes}
       {...listeners}
     >
-      <img
-        src={photo.thumbnailUrl || photo.url}
-        alt={photo.filename}
-        className="h-full w-full object-cover pointer-events-none"
-        draggable={false}
-      />
+      {/* Render based on media type */}
+      {isPhoto ? (
+        <img
+          src={photo.thumbnailUrl || photo.url}
+          alt={photo.filename}
+          className="h-full w-full object-cover pointer-events-none"
+          draggable={false}
+        />
+      ) : (
+        <AssetRenderer
+          asset={{
+            id: photo.id,
+            mediaType,
+            filename: photo.filename,
+            originalUrl: photo.url,
+            thumbnailUrl: photo.thumbnailUrl,
+            mediumUrl: photo.mediumUrl,
+            width: photo.width,
+            height: photo.height,
+            videoProvider: photo.videoProvider,
+            videoExternalId: photo.videoExternalId,
+            videoEmbedUrl: photo.videoEmbedUrl,
+            videoDuration: photo.videoDuration,
+            videoAutoplay: photo.videoAutoplay,
+            videoMuted: photo.videoMuted,
+            tourProvider: photo.tourProvider,
+            tourExternalId: photo.tourExternalId,
+            tourEmbedUrl: photo.tourEmbedUrl,
+            floorPlanType: photo.floorPlanType,
+            floorPlanLabel: photo.floorPlanLabel,
+            caption: photo.caption,
+            isFeatured: photo.isFeatured,
+          }}
+          mode="thumbnail"
+          className="h-full w-full pointer-events-none"
+        />
+      )}
+
+      {/* Media type badge for non-photo assets */}
+      {!isPhoto && (
+        <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-[var(--background)]/90 backdrop-blur-sm px-2 py-1 text-xs font-medium text-foreground shadow-lg border border-[var(--card-border)]">
+          <MediaTypeIcon className="h-3 w-3" />
+          {mediaTypeLabel}
+        </div>
+      )}
+
       {/* Cover badge */}
       {isCover && (
         <div className="absolute top-2 left-2 flex items-center gap-1 rounded-full bg-[var(--primary)] px-2 py-1 text-xs font-medium text-white">
@@ -3019,9 +3067,12 @@ function SortablePhotoItem({ photo, isCover, isFavorite }: SortablePhotoItemProp
           Cover
         </div>
       )}
-      {/* Favorite badge */}
+      {/* Favorite badge - shift down if media type badge is present */}
       {isFavorite && (
-        <div className="absolute top-2 right-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--error)] text-white shadow-lg">
+        <div className={cn(
+          "absolute right-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--error)] text-white shadow-lg",
+          !isPhoto ? "top-10" : "top-2"
+        )}>
           <HeartIcon className="h-4 w-4" filled />
         </div>
       )}
@@ -3080,6 +3131,12 @@ function SortableListItem({
     transition,
   };
 
+  // Determine if this is a non-photo media type
+  const mediaType = photo.mediaType || "photo";
+  const isPhoto = mediaType === "photo" || !photo.mediaType;
+  const MediaTypeIcon = getAssetIcon(mediaType);
+  const mediaTypeLabel = getAssetTypeLabel(mediaType);
+
   return (
     <div
       ref={setNodeRef}
@@ -3103,14 +3160,40 @@ function SortableListItem({
 
       {/* Thumbnail */}
       <div
-        className="relative h-10 w-14 shrink-0 overflow-x-auto rounded-md bg-[var(--background)] cursor-pointer"
+        className="relative h-10 w-14 shrink-0 overflow-hidden rounded-md bg-[var(--background)] cursor-pointer"
         onClick={isSelectMode ? onToggleSelect : onClick}
       >
-        <img
-          src={photo.thumbnailUrl || photo.url}
-          alt={photo.filename}
-          className="h-full w-full object-cover"
-        />
+        {isPhoto ? (
+          <img
+            src={photo.thumbnailUrl || photo.url}
+            alt={photo.filename}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <AssetRenderer
+            asset={{
+              id: photo.id,
+              mediaType,
+              filename: photo.filename,
+              originalUrl: photo.url,
+              thumbnailUrl: photo.thumbnailUrl,
+              mediumUrl: photo.mediumUrl,
+              width: photo.width,
+              height: photo.height,
+              videoProvider: photo.videoProvider,
+              videoExternalId: photo.videoExternalId,
+              videoEmbedUrl: photo.videoEmbedUrl,
+              videoDuration: photo.videoDuration,
+              tourProvider: photo.tourProvider,
+              tourExternalId: photo.tourExternalId,
+              tourEmbedUrl: photo.tourEmbedUrl,
+              floorPlanType: photo.floorPlanType,
+              floorPlanLabel: photo.floorPlanLabel,
+            }}
+            mode="thumbnail"
+            className="h-full w-full"
+          />
+        )}
         {isSelectMode && (
           <div className={cn(
             "absolute inset-0 flex items-center justify-center",
@@ -3128,12 +3211,18 @@ function SortableListItem({
         )}
       </div>
 
-      {/* Filename */}
+      {/* Filename & Media Type */}
       <div
         className="flex-1 min-w-0 cursor-pointer"
         onClick={isSelectMode ? onToggleSelect : onClick}
       >
         <p className="text-sm font-medium text-foreground truncate">{photo.filename}</p>
+        {!isPhoto && (
+          <p className="text-xs text-foreground-muted flex items-center gap-1">
+            <MediaTypeIcon className="h-3 w-3" />
+            {mediaTypeLabel}
+          </p>
+        )}
       </div>
 
       {/* Status Badges */}

@@ -1175,10 +1175,29 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
               originalUrl: true,
               thumbnailUrl: true,
               mediumUrl: true,
+              watermarkedUrl: true,
               width: true,
               height: true,
               collectionId: true,
               blurDataUrl: true,
+              // Media type fields
+              mediaType: true,
+              caption: true,
+              isFeatured: true,
+              // Video fields
+              videoProvider: true,
+              videoExternalId: true,
+              videoEmbedUrl: true,
+              videoDuration: true,
+              videoAutoplay: true,
+              videoMuted: true,
+              // Tour fields (Matterport, iGuide, etc.)
+              tourProvider: true,
+              tourExternalId: true,
+              tourEmbedUrl: true,
+              // Floor plan fields
+              floorPlanType: true,
+              floorPlanLabel: true,
             },
           },
           collections: {
@@ -1261,10 +1280,29 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
                   originalUrl: true,
                   thumbnailUrl: true,
                   mediumUrl: true,
+                  watermarkedUrl: true,
                   width: true,
                   height: true,
                   collectionId: true,
                   blurDataUrl: true,
+                  // Media type fields
+                  mediaType: true,
+                  caption: true,
+                  isFeatured: true,
+                  // Video fields
+                  videoProvider: true,
+                  videoExternalId: true,
+                  videoEmbedUrl: true,
+                  videoDuration: true,
+                  videoAutoplay: true,
+                  videoMuted: true,
+                  // Tour fields (Matterport, iGuide, etc.)
+                  tourProvider: true,
+                  tourExternalId: true,
+                  tourEmbedUrl: true,
+                  // Floor plan fields
+                  floorPlanType: true,
+                  floorPlanLabel: true,
                 },
               },
               collections: {
@@ -1374,11 +1412,30 @@ export async function getPublicGallery(slugOrId: string, isPreview: boolean = fa
           thumbnailUrl: signedThumbnailUrl,
           mediumUrl: signedMediumUrl,
           originalUrl: signedOriginalUrl,
+          watermarkedUrl: asset.watermarkedUrl,
           filename: asset.filename,
           width: asset.width || 4,
           height: asset.height || 3,
           collectionId: asset.collectionId,
           blurDataUrl: asset.blurDataUrl,
+          // Media type fields
+          mediaType: asset.mediaType,
+          caption: asset.caption,
+          isFeatured: asset.isFeatured,
+          // Video fields
+          videoProvider: asset.videoProvider,
+          videoExternalId: asset.videoExternalId,
+          videoEmbedUrl: asset.videoEmbedUrl,
+          videoDuration: asset.videoDuration,
+          videoAutoplay: asset.videoAutoplay,
+          videoMuted: asset.videoMuted,
+          // Tour fields
+          tourProvider: asset.tourProvider,
+          tourExternalId: asset.tourExternalId,
+          tourEmbedUrl: asset.tourEmbedUrl,
+          // Floor plan fields
+          floorPlanType: asset.floorPlanType,
+          floorPlanLabel: asset.floorPlanLabel,
         };
       })
     );

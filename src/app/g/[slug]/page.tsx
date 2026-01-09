@@ -7,16 +7,41 @@ import { PayButton } from "./pay-button";
 import { GalleryClient } from "./gallery-client";
 import { PasswordGate } from "./password-gate";
 
+// Media type definitions
+type AssetMediaType = "photo" | "video" | "video_tour" | "floor_plan" | "aerial" | "virtual_tour" | "other";
+type VideoProvider = "vimeo" | "youtube" | "bunny" | "mux" | "cloudflare" | "wistia" | "sprout" | "direct";
+type TourProvider = "matterport" | "iguide" | "cupix" | "zillow_3d" | "ricoh" | "kuula" | "other";
+type FloorPlanType = "two_d" | "three_d" | "interactive";
+
 interface Photo {
   id: string;
   url: string;
   thumbnailUrl?: string | null;
   mediumUrl?: string | null;
   originalUrl: string;
+  watermarkedUrl?: string | null;
   filename: string;
   width: number;
   height: number;
   blurDataUrl?: string | null;
+  // Media type fields
+  mediaType?: AssetMediaType | null;
+  caption?: string | null;
+  isFeatured?: boolean;
+  // Video fields
+  videoProvider?: VideoProvider | null;
+  videoExternalId?: string | null;
+  videoEmbedUrl?: string | null;
+  videoDuration?: number | null;
+  videoAutoplay?: boolean;
+  videoMuted?: boolean;
+  // Tour fields
+  tourProvider?: TourProvider | null;
+  tourExternalId?: string | null;
+  tourEmbedUrl?: string | null;
+  // Floor plan fields
+  floorPlanType?: FloorPlanType | null;
+  floorPlanLabel?: string | null;
 }
 
 interface PublicGalleryPageProps {

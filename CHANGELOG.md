@@ -7,7 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Multi-Media Gallery Support** - Galleries now support videos, virtual tours (Matterport, iGuide, etc.), floor plans, and aerial footage alongside photos:
+  - `AssetRenderer` component renders all media types with appropriate players
+  - `VideoEmbed` supports 8 video providers: Vimeo, YouTube, Bunny, Mux, Cloudflare, Wistia, Sprout, and direct URLs
+  - `TourEmbed` supports 7 tour providers: Matterport, iGuide, Cupix, Zillow 3D, Ricoh, Kuula, and custom
+  - `FloorPlanViewer` with zoom, pan, and keyboard navigation for 2D/3D/interactive floor plans
+  - Media type badges automatically displayed on thumbnails for non-photo assets
+  - Both grid and masonry layouts updated to render all media types
+  - Gallery detail page and public gallery pages updated with media type support
+  - Database schema includes all media type fields (videoProvider, tourProvider, floorPlanType, etc.)
+
 ### Fixed
+- **Gmail OAuth CORS Error** - Fixed CORS errors caused by Next.js Link prefetching OAuth redirect URLs. Changed OAuth authorization links from `<Link>` to `<a>` tags in inbox and email settings pages to prevent prefetch requests that triggered CORS errors
 - **Table Horizontal Scrolling** - All data tables across the application now have proper horizontal scrolling with minimum width constraints to prevent column scrunching on smaller screens. Tables updated include: leaderboard, orders, payments, leads, questionnaires, retainers, estimates, credit notes, tax reports, brokerages, blog list, email logs, and more
 - **Gallery Selection Settings Layout** - Removed excessive left margin from selection limit settings panel
 - **Skills Page Tab Scrolling** - Skill tree tabs now scroll horizontally on smaller screens instead of wrapping text

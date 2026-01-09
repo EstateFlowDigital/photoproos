@@ -398,7 +398,7 @@ export function SupportDialog({ open, onOpenChange }: SupportDialogProps) {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-4 mt-4">
+              <div className="space-y-4 p-5">
                 <div className="space-y-2">
                   <Label htmlFor="subject">Subject</Label>
                   <Input

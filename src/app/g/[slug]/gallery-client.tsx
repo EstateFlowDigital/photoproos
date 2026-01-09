@@ -9,6 +9,7 @@ import { Confetti } from "@/components/ui/confetti";
 import { useCelebration, celebrations } from "@/hooks/use-celebration";
 import { useViewMilestone, getMilestoneCelebration } from "@/hooks/use-view-milestone";
 import { MasonryGrid, LayoutToggle, type LayoutType } from "@/components/gallery/masonry-grid";
+import { AssetRenderer, getAssetIcon, getAssetTypeLabel } from "@/components/media";
 import { LiveViewers } from "@/components/gallery/live-viewers";
 import { R2BlurImage } from "@/components/ui/r2-blur-image";
 import { PayButton } from "./pay-button";
@@ -71,18 +72,43 @@ interface ExifData {
   dateTaken?: string;
 }
 
+// Media type definitions
+type AssetMediaType = "photo" | "video" | "video_tour" | "floor_plan" | "aerial" | "virtual_tour" | "other";
+type VideoProvider = "vimeo" | "youtube" | "bunny" | "mux" | "cloudflare" | "wistia" | "sprout" | "direct";
+type TourProvider = "matterport" | "iguide" | "cupix" | "zillow_3d" | "ricoh" | "kuula" | "other";
+type FloorPlanType = "two_d" | "three_d" | "interactive";
+
 interface Photo {
   id: string;
   url: string;
   thumbnailUrl?: string | null;
   mediumUrl?: string | null;
   originalUrl: string;
+  watermarkedUrl?: string | null;
   filename: string;
   width: number;
   height: number;
   exif?: ExifData;
   collectionId?: string | null;
   blurDataUrl?: string | null;
+  // Media type fields
+  mediaType?: AssetMediaType | null;
+  caption?: string | null;
+  isFeatured?: boolean;
+  // Video fields
+  videoProvider?: VideoProvider | null;
+  videoExternalId?: string | null;
+  videoEmbedUrl?: string | null;
+  videoDuration?: number | null;
+  videoAutoplay?: boolean;
+  videoMuted?: boolean;
+  // Tour fields
+  tourProvider?: TourProvider | null;
+  tourExternalId?: string | null;
+  tourEmbedUrl?: string | null;
+  // Floor plan fields
+  floorPlanType?: FloorPlanType | null;
+  floorPlanLabel?: string | null;
 }
 
 interface Collection {
@@ -1947,18 +1973,65 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     }
                   }}
                 >
-                  <R2BlurImage
-                    src={photo.thumbnailUrl || photo.url}
-                    blurDataUrl={photo.blurDataUrl}
-                    alt={photo.filename}
-                    className={cn(
-                      "h-full w-full transition-transform duration-500 ease-out group-hover:scale-105",
-                      !gallery.isPaid && gallery.price > 0 && gallery.showWatermark && "blur-sm"
-                    )}
-                    style={{
-                      aspectRatio: `${photo.width} / ${photo.height}`,
-                    }}
-                  />
+                  {/* Render based on media type */}
+                  {(!photo.mediaType || photo.mediaType === "photo") ? (
+                    <R2BlurImage
+                      src={photo.thumbnailUrl || photo.url}
+                      blurDataUrl={photo.blurDataUrl}
+                      alt={photo.filename}
+                      className={cn(
+                        "h-full w-full transition-transform duration-500 ease-out group-hover:scale-105",
+                        !gallery.isPaid && gallery.price > 0 && gallery.showWatermark && "blur-sm"
+                      )}
+                      style={{
+                        aspectRatio: `${photo.width} / ${photo.height}`,
+                      }}
+                    />
+                  ) : (
+                    <AssetRenderer
+                      asset={{
+                        id: photo.id,
+                        mediaType: photo.mediaType,
+                        filename: photo.filename,
+                        originalUrl: photo.url,
+                        thumbnailUrl: photo.thumbnailUrl,
+                        mediumUrl: photo.mediumUrl,
+                        width: photo.width,
+                        height: photo.height,
+                        videoProvider: photo.videoProvider,
+                        videoExternalId: photo.videoExternalId,
+                        videoEmbedUrl: photo.videoEmbedUrl,
+                        videoDuration: photo.videoDuration,
+                        videoAutoplay: photo.videoAutoplay,
+                        videoMuted: photo.videoMuted,
+                        tourProvider: photo.tourProvider,
+                        tourExternalId: photo.tourExternalId,
+                        tourEmbedUrl: photo.tourEmbedUrl,
+                        floorPlanType: photo.floorPlanType,
+                        floorPlanLabel: photo.floorPlanLabel,
+                        caption: photo.caption,
+                        isFeatured: photo.isFeatured,
+                      }}
+                      mode="thumbnail"
+                      className={cn(
+                        "h-full w-full transition-transform duration-500 ease-out",
+                        !gallery.isPaid && gallery.price > 0 && gallery.showWatermark && "blur-sm"
+                      )}
+                    />
+                  )}
+
+                  {/* Media type badge for non-photo assets */}
+                  {photo.mediaType && photo.mediaType !== "photo" && !compareMode && !selectionMode && (
+                    <div className="absolute top-3 left-3 z-10">
+                      <span className="flex items-center gap-1 rounded-full bg-black/70 backdrop-blur-sm px-2 py-1 text-xs font-medium text-white">
+                        {(() => {
+                          const MediaIcon = getAssetIcon(photo.mediaType);
+                          return <MediaIcon className="h-3 w-3" />;
+                        })()}
+                        {getAssetTypeLabel(photo.mediaType)}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Compare mode indicator */}
                   {compareMode && (
@@ -2100,15 +2173,62 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     }
                   }}
                 >
-                  <R2BlurImage
-                    src={photo.thumbnailUrl || photo.url}
-                    blurDataUrl={photo.blurDataUrl}
-                    alt={photo.filename}
-                    className={cn(
-                      "h-full w-full transition-transform duration-500 ease-out group-hover:scale-105",
-                      !gallery.isPaid && gallery.price > 0 && gallery.showWatermark && "blur-sm"
-                    )}
-                  />
+                  {/* Render based on media type */}
+                  {(!photo.mediaType || photo.mediaType === "photo") ? (
+                    <R2BlurImage
+                      src={photo.thumbnailUrl || photo.url}
+                      blurDataUrl={photo.blurDataUrl}
+                      alt={photo.filename}
+                      className={cn(
+                        "h-full w-full transition-transform duration-500 ease-out group-hover:scale-105",
+                        !gallery.isPaid && gallery.price > 0 && gallery.showWatermark && "blur-sm"
+                      )}
+                    />
+                  ) : (
+                    <AssetRenderer
+                      asset={{
+                        id: photo.id,
+                        mediaType: photo.mediaType,
+                        filename: photo.filename,
+                        originalUrl: photo.url,
+                        thumbnailUrl: photo.thumbnailUrl,
+                        mediumUrl: photo.mediumUrl,
+                        width: photo.width,
+                        height: photo.height,
+                        videoProvider: photo.videoProvider,
+                        videoExternalId: photo.videoExternalId,
+                        videoEmbedUrl: photo.videoEmbedUrl,
+                        videoDuration: photo.videoDuration,
+                        videoAutoplay: photo.videoAutoplay,
+                        videoMuted: photo.videoMuted,
+                        tourProvider: photo.tourProvider,
+                        tourExternalId: photo.tourExternalId,
+                        tourEmbedUrl: photo.tourEmbedUrl,
+                        floorPlanType: photo.floorPlanType,
+                        floorPlanLabel: photo.floorPlanLabel,
+                        caption: photo.caption,
+                        isFeatured: photo.isFeatured,
+                      }}
+                      mode="thumbnail"
+                      className={cn(
+                        "h-full w-full transition-transform duration-500 ease-out",
+                        !gallery.isPaid && gallery.price > 0 && gallery.showWatermark && "blur-sm"
+                      )}
+                    />
+                  )}
+
+                  {/* Media type badge for non-photo assets */}
+                  {photo.mediaType && photo.mediaType !== "photo" && !compareMode && !selectionMode && (
+                    <div className="absolute top-3 left-3 z-10">
+                      <span className="flex items-center gap-1 rounded-full bg-black/70 backdrop-blur-sm px-2 py-1 text-xs font-medium text-white">
+                        {(() => {
+                          const MediaIcon = getAssetIcon(photo.mediaType);
+                          return <MediaIcon className="h-3 w-3" />;
+                        })()}
+                        {getAssetTypeLabel(photo.mediaType)}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Compare mode indicator */}
                   {compareMode && (
