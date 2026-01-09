@@ -1218,6 +1218,17 @@ export function ElementInspector() {
       e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation();
+
+      // For links and buttons, also try to prevent any queued navigations
+      const link = target.closest("a");
+      const button = target.closest("button");
+      if (link) {
+        link.onclick = (ev) => { ev.preventDefault(); return false; };
+      }
+      if (button) {
+        button.onclick = (ev) => { ev.preventDefault(); return false; };
+      }
+
       return false;
     },
     [isActive]
@@ -1327,16 +1338,52 @@ export function ElementInspector() {
     [isActive, selected, customProps, captureStyles]
   );
 
+  // Handle touch tap for element selection (mobile)
+  const handleTouchEnd = useCallback(
+    (e: TouchEvent) => {
+      if (!isActive) return;
+
+      const target = e.target as HTMLElement;
+      if (target.closest("[data-inspector]")) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+
+      const classes = Array.from(target.classList);
+
+      const info: ElementInfo = {
+        element: target,
+        selector: generateSelector(target),
+        path: getParentPath(target),
+        classes,
+        dataElement: target.getAttribute("data-element"),
+        suggestedComponent: guessComponentName(classes),
+      };
+
+      setSelected(info);
+      setStyles(captureStyles(target));
+      setHovered(null);
+      setNotes("");
+      setCustomProps([]);
+      setNavigationHistory([]);
+    },
+    [isActive, captureStyles]
+  );
+
   // Event listeners
   useEffect(() => {
     if (isActive) {
-      // Block mousedown and pointerdown to prevent link navigation before click fires
+      // Block all interaction events to prevent link navigation
       document.addEventListener("mousedown", blockInteraction, true);
       document.addEventListener("pointerdown", blockInteraction, true);
       document.addEventListener("auxclick", blockInteraction, true); // Middle-click
       document.addEventListener("click", handleClick, true);
       document.addEventListener("mousemove", handleMouseMove, true);
       document.addEventListener("keydown", handleKeyDown);
+      // Touch events for mobile - block touchstart to prevent default behaviors
+      document.addEventListener("touchstart", blockInteraction, { capture: true, passive: false });
+      document.addEventListener("touchend", handleTouchEnd, { capture: true, passive: false });
       document.body.style.cursor = "crosshair";
     }
     return () => {
@@ -1346,9 +1393,11 @@ export function ElementInspector() {
       document.removeEventListener("click", handleClick, true);
       document.removeEventListener("mousemove", handleMouseMove, true);
       document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("touchstart", blockInteraction, true);
+      document.removeEventListener("touchend", handleTouchEnd, true);
       document.body.style.cursor = "";
     };
-  }, [isActive, blockInteraction, handleClick, handleMouseMove, handleKeyDown]);
+  }, [isActive, blockInteraction, handleClick, handleMouseMove, handleKeyDown, handleTouchEnd]);
 
   // Dragging logic - supports both mouse and touch
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
@@ -1544,8 +1593,107 @@ ${Object.entries(styles)
     Object.entries(styles).filter(([prop, value]) => originalStylesRef.current.get(prop) !== value).length +
     customProps.filter((p) => p.prop && p.value).length;
 
+  // Handle overlay click to select element underneath
+  const handleOverlayClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Get the element under the cursor by temporarily hiding the overlay
+      const overlay = e.currentTarget as HTMLElement;
+      overlay.style.pointerEvents = "none";
+
+      // Get element at click position
+      const elementUnder = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+
+      // Restore overlay
+      overlay.style.pointerEvents = "auto";
+
+      if (!elementUnder || elementUnder.closest("[data-inspector]")) return;
+
+      const classes = Array.from(elementUnder.classList);
+
+      const info: ElementInfo = {
+        element: elementUnder,
+        selector: generateSelector(elementUnder),
+        path: getParentPath(elementUnder),
+        classes,
+        dataElement: elementUnder.getAttribute("data-element"),
+        suggestedComponent: guessComponentName(classes),
+      };
+
+      setSelected(info);
+      setStyles(captureStyles(elementUnder));
+      setHovered(null);
+      setNotes("");
+      setCustomProps([]);
+      setNavigationHistory([]);
+    },
+    [captureStyles]
+  );
+
+  // Handle overlay hover to highlight element underneath
+  const handleOverlayMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (selected) return;
+
+      const overlay = e.currentTarget as HTMLElement;
+      overlay.style.pointerEvents = "none";
+      const elementUnder = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+      overlay.style.pointerEvents = "auto";
+
+      if (!elementUnder || elementUnder.closest("[data-inspector]")) {
+        setHovered(null);
+        return;
+      }
+
+      setHovered(elementUnder);
+    },
+    [selected]
+  );
+
   return (
     <>
+      {/* Click-blocking overlay - prevents all navigation when inspector is active */}
+      {isActive && (
+        <div
+          data-inspector="overlay"
+          className="fixed inset-0 z-[99996] cursor-crosshair"
+          style={{ background: "transparent" }}
+          onClick={handleOverlayClick}
+          onMouseMove={handleOverlayMouseMove}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const touch = e.changedTouches[0];
+            if (!touch) return;
+
+            const overlay = e.currentTarget as HTMLElement;
+            overlay.style.pointerEvents = "none";
+            const elementUnder = document.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement | null;
+            overlay.style.pointerEvents = "auto";
+
+            if (!elementUnder || elementUnder.closest("[data-inspector]")) return;
+
+            const classes = Array.from(elementUnder.classList);
+            setSelected({
+              element: elementUnder,
+              selector: generateSelector(elementUnder),
+              path: getParentPath(elementUnder),
+              classes,
+              dataElement: elementUnder.getAttribute("data-element"),
+              suggestedComponent: guessComponentName(classes),
+            });
+            setStyles(captureStyles(elementUnder));
+            setHovered(null);
+            setNotes("");
+            setCustomProps([]);
+            setNavigationHistory([]);
+          }}
+          onContextMenu={(e) => e.preventDefault()}
+        />
+      )}
+
       {/* Toggle Button */}
       <button
         data-inspector="toggle"
