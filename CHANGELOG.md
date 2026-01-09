@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Skills Page Tab Scrolling** - Skill tree tabs now scroll horizontally on smaller screens instead of wrapping text
 - **Conversation Page Buttons** - Info and Add People buttons now work:
   - Info button opens a slide-in panel showing conversation details and participants
   - Add People button opens modal (placeholder for future feature)
