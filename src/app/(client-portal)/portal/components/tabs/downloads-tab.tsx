@@ -208,7 +208,7 @@ function FavoritesSection({ photos, downloadingGallery: _downloadingGallery, dow
         {photos.slice(0, 10).map((photo) => (
           <div
             key={photo.id}
-            className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg ring-2 ring-[var(--error)]/30"
+            className="relative h-14 w-14 flex-shrink-0 overflow-x-auto rounded-lg ring-2 ring-[var(--error)]/30"
           >
             <Image
               src={photo.thumbnailUrl || photo.url}
@@ -291,7 +291,7 @@ function DownloadCard({
   const favoriteCount = gallery.photos.filter((p) => favorites.has(p.id)).length;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+    <div className="overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
       {/* Header */}
       <div className="border-b border-[var(--card-border)] p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -372,7 +372,7 @@ function DownloadCard({
               <button
                 key={photo.id}
                 onClick={() => togglePhoto(photo.id)}
-                className={`group relative aspect-square overflow-hidden rounded-lg transition-all ${
+                className={`group relative aspect-square overflow-x-auto rounded-lg transition-all ${
                   selectedPhotos.has(photo.id)
                     ? "ring-2 ring-[var(--primary)] ring-offset-2 ring-offset-[var(--background-tertiary)]"
                     : "hover:ring-2 hover:ring-[var(--foreground-muted)]/50"

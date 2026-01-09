@@ -382,13 +382,13 @@ function GalleryCard({
   const expirationInfo = getExpirationInfo();
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+    <div className="overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
       <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           {gallery.photos.length > 0 && gallery.photos[0].thumbnailUrl ? (
             <button
               onClick={() => onPhotoClick(0)}
-              className="relative h-14 w-14 overflow-hidden rounded-lg transition-transform hover:scale-105"
+              className="relative h-14 w-14 overflow-x-auto rounded-lg transition-transform hover:scale-105"
             >
               <Image
                 src={gallery.photos[0].thumbnailUrl}
@@ -461,7 +461,7 @@ function GalleryCard({
               <button
                 key={photo.id}
                 onClick={() => onPhotoClick(index)}
-                className="group relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-[var(--card)]"
+                className="group relative h-16 w-16 flex-shrink-0 overflow-x-auto rounded-lg transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-[var(--card)]"
               >
                 <Image
                   src={photo.thumbnailUrl || photo.url}
@@ -666,7 +666,7 @@ function GalleryGridCard({
     : false;
 
   return (
-    <div className="group overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] transition-all hover:border-[var(--primary)]/30">
+    <div className="group overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] transition-all hover:border-[var(--primary)]/30">
       {/* Cover Image */}
       <button
         onClick={() => onPhotoClick(0)}

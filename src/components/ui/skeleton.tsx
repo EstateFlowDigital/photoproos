@@ -74,7 +74,7 @@ export function ImageSkeleton({ className, aspectRatio = "video", delay = 0 }: I
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-lg bg-[var(--background-elevated)]",
+        "relative overflow-x-auto rounded-lg bg-[var(--background-elevated)]",
         aspectStyles[aspectRatio],
         className
       )}

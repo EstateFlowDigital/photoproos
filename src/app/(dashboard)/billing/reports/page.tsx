@@ -323,7 +323,7 @@ export default async function TaxReportsPage() {
                     </p>
                   </div>
                   <div className="hidden w-48 sm:block">
-                    <div className="h-2 overflow-hidden rounded-full bg-[var(--background-secondary)]">
+                    <div className="h-2 overflow-x-auto rounded-full bg-[var(--background-secondary)]">
                       <div
                         className="h-full rounded-full bg-[var(--primary)]"
                         style={{ width: `${barWidth}%` }}

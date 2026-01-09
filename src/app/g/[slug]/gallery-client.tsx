@@ -1929,7 +1929,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
               renderItem={(photo, index) => (
                 <div
                   className={cn(
-                    "group relative overflow-hidden rounded-lg cursor-pointer transition-all duration-300 ease-out",
+                    "group relative overflow-x-auto rounded-lg cursor-pointer transition-all duration-300 ease-out",
                     comparePhotos.find((p) => p.id === photo.id) && "ring-4",
                     selectedPhotoIds.has(photo.id) && "ring-4"
                   )}
@@ -2080,7 +2080,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 <div
                   key={photo.id}
                   className={cn(
-                    "group relative aspect-[4/3] overflow-hidden rounded-lg cursor-pointer transition-all duration-300 ease-out opacity-0 animate-fade-in-up",
+                    "group relative aspect-[4/3] overflow-x-auto rounded-lg cursor-pointer transition-all duration-300 ease-out opacity-0 animate-fade-in-up",
                     comparePhotos.find((p) => p.id === photo.id) && "ring-4",
                     selectedPhotoIds.has(photo.id) && "ring-4"
                   )}
@@ -2238,7 +2238,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
           onClick={handleClosePhotoModal}
         >
           <div
-            className="relative flex h-[90vh] w-[95vw] max-w-6xl flex-col overflow-hidden rounded-lg lg:flex-row"
+            className="relative flex h-[90vh] w-[95vw] max-w-6xl flex-col overflow-x-auto rounded-lg lg:flex-row"
             style={{ backgroundColor: colors.cardBg }}
             onClick={(e) => e.stopPropagation()}
           >

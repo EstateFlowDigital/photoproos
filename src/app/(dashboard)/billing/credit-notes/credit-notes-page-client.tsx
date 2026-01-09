@@ -350,7 +350,7 @@ export function CreditNotesPageClient({ creditNotes, statusFilter: initialStatus
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]" id="credit-notes-table" role="tabpanel">
+      <div className="overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)]" id="credit-notes-table" role="tabpanel">
         <div className="overflow-x-auto">
           <table className="w-full" aria-label="Credit notes list">
             <thead>

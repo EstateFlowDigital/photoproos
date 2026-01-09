@@ -203,7 +203,7 @@ export default function HelpPage() {
               <Link
                 key={video.title}
                 href={video.href}
-                className="group overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] transition-colors hover:border-[var(--border-hover)]"
+                className="group overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] transition-colors hover:border-[var(--border-hover)]"
                 data-element={`support-video-${video.id}`}
               >
                 <div className="relative aspect-video bg-[var(--background-tertiary)]">

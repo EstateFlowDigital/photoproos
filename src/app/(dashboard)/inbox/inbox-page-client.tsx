@@ -360,7 +360,7 @@ export function InboxPageClient({
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-1 gap-4 overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+      <div className="flex flex-1 gap-4 overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
         {/* Thread List */}
         <div
           className={`flex w-full flex-col border-r border-[var(--card-border)] lg:w-[400px] ${

@@ -67,7 +67,7 @@ export const ChallengeCard = memo(function ChallengeCard({
           aria-valuemin={0}
           aria-valuemax={targetCount}
           aria-label={`Challenge progress: ${currentCount} of ${targetCount} (${Math.round(progressPercent)}%)${completed ? " - Completed" : ""}`}
-          className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--background-secondary)]"
+          className="mt-2 h-2 overflow-x-auto rounded-full bg-[var(--background-secondary)]"
         >
           <div
             className={cn(

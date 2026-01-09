@@ -82,7 +82,7 @@ export function PropertyCard<T extends PropertyWebsite>({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-xl border bg-[var(--card)] transition-all hover:border-[var(--border-hover)]",
+        "group relative overflow-x-auto rounded-xl border bg-[var(--card)] transition-all hover:border-[var(--border-hover)]",
         isSelected
           ? "border-[var(--primary)] ring-1 ring-[var(--primary)]"
           : "border-[var(--card-border)]"

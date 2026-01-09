@@ -58,7 +58,7 @@ export function VideoModal({ isOpen, onClose, videoUrl }: VideoModalProps) {
         </button>
 
         {/* Video container */}
-        <div className="relative aspect-video overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
+        <div className="relative aspect-video overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
           {videoUrl ? (
             <iframe
               src={videoUrl}

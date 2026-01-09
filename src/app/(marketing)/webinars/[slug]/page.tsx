@@ -121,7 +121,7 @@ export default async function WebinarPage({ params }: PageProps) {
                 </p>
               </div>
             ) : (
-              <div className="mb-8 overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+              <div className="mb-8 overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
                 <div className="relative aspect-video bg-[var(--background-tertiary)]">
                   {webinar.videoUrl ? (
                     <div className="flex h-full items-center justify-center">

@@ -157,7 +157,7 @@ export function DownloadHistoryPanel({
                   className="flex items-center gap-4 rounded-lg border border-white/10 bg-white/5 p-4"
                 >
                   {/* Thumbnail or icon */}
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-x-auto rounded-lg bg-white/10">
                     {download.thumbnailUrl ? (
                       <img
                         src={download.thumbnailUrl}

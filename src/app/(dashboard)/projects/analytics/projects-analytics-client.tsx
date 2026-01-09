@@ -82,7 +82,7 @@ export function ProjectsAnalyticsClient({ analytics }: ProjectsAnalyticsClientPr
           <p className="mt-2 text-2xl font-semibold text-[var(--success)]">
             {summary.completionRate}%
           </p>
-          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--background-hover)]">
+          <div className="mt-2 h-2 w-full overflow-x-auto rounded-full bg-[var(--background-hover)]">
             <div
               className="h-full rounded-full bg-[var(--success)] transition-all"
               style={{ width: `${summary.completionRate}%` }}
@@ -136,7 +136,7 @@ export function ProjectsAnalyticsClient({ analytics }: ProjectsAnalyticsClientPr
                     {column.count} ({column.percentage}%)
                   </span>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--background-hover)]">
+                <div className="h-2 w-full overflow-x-auto rounded-full bg-[var(--background-hover)]">
                   <div
                     className="h-full rounded-full transition-all"
                     style={{
@@ -300,7 +300,7 @@ export function ProjectsAnalyticsClient({ analytics }: ProjectsAnalyticsClientPr
                       {assignee.completionRate}%
                     </td>
                     <td className="py-3 pl-4" style={{ width: "120px" }}>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--background-hover)]">
+                      <div className="h-2 w-full overflow-x-auto rounded-full bg-[var(--background-hover)]">
                         <div
                           className="h-full rounded-full bg-[var(--success)] transition-all"
                           style={{ width: `${assignee.completionRate}%` }}

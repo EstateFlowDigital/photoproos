@@ -88,7 +88,7 @@ export function SectionConfigModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="mx-4 flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+      <div className="mx-4 flex max-h-[90vh] w-full max-w-2xl flex-col overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-6 py-4">
           <div>

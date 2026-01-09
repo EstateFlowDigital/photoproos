@@ -106,7 +106,7 @@ export function ChatWidget({ delay = 3000 }: ChatWidgetProps) {
             : "translate-y-4 opacity-0 pointer-events-none"
         )}
       >
-        <div className="overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
+        <div className="overflow-x-auto rounded-2xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
           {/* Header */}
           <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--ai)] p-4">
             <div className="flex items-center gap-3">

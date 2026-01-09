@@ -163,7 +163,7 @@ export default async function RetainerDetailPage({ params }: Props) {
                 <p className="text-foreground-muted">No transactions yet</p>
               </div>
             ) : (
-              <div className="overflow-hidden rounded-lg border border-[var(--card-border)]">
+              <div className="overflow-x-auto rounded-lg border border-[var(--card-border)]">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">

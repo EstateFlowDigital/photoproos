@@ -157,7 +157,7 @@ export function PercentageCounter({
           className="font-semibold text-foreground"
         />
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-[var(--background-elevated)]">
+      <div className="h-2 overflow-x-auto rounded-full bg-[var(--background-elevated)]">
         <div
           className="h-full rounded-full transition-all duration-1000 ease-out"
           style={{

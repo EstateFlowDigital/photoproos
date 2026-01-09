@@ -197,7 +197,7 @@ export function SettingsSearch({
           id="settings-search-results"
           role="listbox"
           className={cn(
-            "absolute z-50 mt-2 w-full overflow-hidden rounded-xl border border-[var(--card-border)]",
+            "absolute z-50 mt-2 w-full overflow-x-auto rounded-xl border border-[var(--card-border)]",
             "bg-[var(--card)] shadow-lg",
             "animate-in fade-in-0 slide-in-from-top-2 duration-150"
           )}

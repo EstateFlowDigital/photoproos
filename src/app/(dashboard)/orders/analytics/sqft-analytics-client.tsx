@@ -214,7 +214,7 @@ export function SqftAnalyticsClient({ analytics, totalOrders }: SqftAnalyticsCli
                       <span>{formatCurrency(tier.avgPricePerSqft)}/sqft</span>
                     </div>
                     <div className="mt-2">
-                      <div className="h-1.5 overflow-hidden rounded-full bg-[var(--background-secondary)]">
+                      <div className="h-1.5 overflow-x-auto rounded-full bg-[var(--background-secondary)]">
                         <div
                           className="h-full rounded-full bg-[var(--primary)]"
                           style={{ width: `${(tier.revenue / maxTierRevenue) * 100}%` }}
@@ -255,7 +255,7 @@ export function SqftAnalyticsClient({ analytics, totalOrders }: SqftAnalyticsCli
                       <span>{formatCurrency(range.revenue)}</span>
                     </div>
                     <div className="mt-2">
-                      <div className="h-1.5 overflow-hidden rounded-full bg-[var(--background-secondary)]">
+                      <div className="h-1.5 overflow-x-auto rounded-full bg-[var(--background-secondary)]">
                         <div
                           className="h-full rounded-full bg-[var(--warning)]"
                           style={{ width: `${(range.count / maxDistributionCount) * 100}%` }}

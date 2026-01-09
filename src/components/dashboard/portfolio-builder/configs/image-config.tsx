@@ -100,7 +100,7 @@ export function ImageConfigForm({ config, updateConfig }: ImageConfigFormProps) 
       {url && (
         <div>
           <label className="text-sm font-medium text-foreground">Preview</label>
-          <div className="mt-2 overflow-hidden rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
+          <div className="mt-2 overflow-x-auto rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
             <img
               src={url}
               alt={alt || "Preview"}

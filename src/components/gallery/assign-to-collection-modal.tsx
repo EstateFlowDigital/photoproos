@@ -262,7 +262,7 @@ export function AssignToCollectionModal({
                         : "border-[var(--card-border)] hover:border-[var(--border-hover)]"
                     )}
                   >
-                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-md bg-[var(--background)]">
+                    <div className="h-10 w-10 shrink-0 overflow-x-auto rounded-md bg-[var(--background)]">
                       {coverImage ? (
                         <img
                           src={coverImage}

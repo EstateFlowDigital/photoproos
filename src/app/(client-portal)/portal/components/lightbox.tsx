@@ -477,7 +477,7 @@ export function Lightbox({
                   setCurrentIndex(index);
                   setIsLoading(true);
                 }}
-                className={`relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg transition-all ${
+                className={`relative h-14 w-14 flex-shrink-0 overflow-x-auto rounded-lg transition-all ${
                   index === currentIndex
                     ? "ring-2 ring-white ring-offset-2 ring-offset-black"
                     : "opacity-50 hover:opacity-75"
@@ -589,7 +589,7 @@ export function Lightbox({
 
           {/* Progress */}
           <div className="flex items-center gap-2">
-            <div className="h-1 w-24 overflow-hidden rounded-full bg-white/20">
+            <div className="h-1 w-24 overflow-x-auto rounded-full bg-white/20">
               <div
                 className="h-full bg-white transition-all duration-300"
                 style={{ width: `${((currentIndex + 1) / photos.length) * 100}%` }}

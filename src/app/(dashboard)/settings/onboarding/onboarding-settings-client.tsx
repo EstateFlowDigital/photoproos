@@ -365,7 +365,7 @@ export function OnboardingSettingsClient({
               </div>
               {/* Progress Bar with Milestones */}
               <div className="mt-3">
-                <div className="relative h-3 w-64 overflow-hidden rounded-full bg-[var(--background-secondary)]">
+                <div className="relative h-3 w-64 overflow-x-auto rounded-full bg-[var(--background-secondary)]">
                   <div
                     className={cn(
                       "h-full rounded-full transition-all duration-500",

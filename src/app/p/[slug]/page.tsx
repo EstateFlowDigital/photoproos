@@ -449,7 +449,7 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
                 {website.project.assets.map((asset) => (
                   <div
                     key={asset.id}
-                    className={`group relative aspect-square cursor-pointer overflow-hidden rounded-lg ${styles.heroImage}`}
+                    className={`group relative aspect-square cursor-pointer overflow-x-auto rounded-lg ${styles.heroImage}`}
                   >
                     {asset.thumbnailUrl ? (
                       <img
@@ -666,7 +666,7 @@ function MediaEmbed({ url, type }: { url: string; type: "video" | "tour" }) {
   // For known embeddable sources, show iframe
   if (embedInfo.type !== "unknown") {
     return (
-      <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-[var(--card)]">
+      <div className="relative aspect-video w-full overflow-x-auto rounded-lg bg-[var(--card)]">
         <iframe
           src={embedInfo.embedUrl}
           className="absolute inset-0 h-full w-full"

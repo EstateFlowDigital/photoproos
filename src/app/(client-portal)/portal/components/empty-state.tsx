@@ -118,7 +118,7 @@ export function EmptyState({
     const progressPercent = Math.round((progress.current / progress.total) * 100);
 
     return (
-      <div className="relative overflow-hidden rounded-xl border border-[var(--primary)]/30 bg-gradient-to-br from-[var(--primary)]/5 to-[var(--card)] p-8 text-center sm:p-12">
+      <div className="relative overflow-x-auto rounded-xl border border-[var(--primary)]/30 bg-gradient-to-br from-[var(--primary)]/5 to-[var(--card)] p-8 text-center sm:p-12">
         <div className="pointer-events-none absolute -right-4 -top-4 h-32 w-32 rounded-full bg-gradient-to-br from-[var(--primary)]/20 to-transparent blur-2xl" />
 
         <div className="relative z-10">
@@ -172,7 +172,7 @@ export function EmptyState({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-dashed border-[var(--card-border)] bg-gradient-to-br from-[var(--card)] via-[var(--card)] to-[var(--background-tertiary)] p-8 text-center sm:p-12">
+    <div className="relative overflow-x-auto rounded-xl border border-dashed border-[var(--card-border)] bg-gradient-to-br from-[var(--card)] via-[var(--card)] to-[var(--background-tertiary)] p-8 text-center sm:p-12">
       {/* Background Pattern */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.03]">
         <BackgroundPattern />

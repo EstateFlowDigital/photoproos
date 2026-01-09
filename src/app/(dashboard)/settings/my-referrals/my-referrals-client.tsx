@@ -757,7 +757,7 @@ export function MyReferralsClient({
                     {pendingRewards.map((reward) => (
                       <div
                         key={reward.id}
-                        className="relative overflow-hidden rounded-xl border border-[var(--success)]/30 bg-gradient-to-br from-[var(--success)]/10 to-transparent p-5"
+                        className="relative overflow-x-auto rounded-xl border border-[var(--success)]/30 bg-gradient-to-br from-[var(--success)]/10 to-transparent p-5"
                       >
                         <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-[var(--success)]/10 blur-2xl" />
                         <div className="relative">

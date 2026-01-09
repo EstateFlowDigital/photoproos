@@ -74,7 +74,7 @@ export function MessagesLayout({ conversations, children }: MessagesLayoutProps)
   );
 
   return (
-    <div className="messages-container flex h-[calc(100vh-120px)] overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+    <div className="messages-container flex h-[calc(100vh-120px)] overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
       {/* Sidebar - Conversation List (iMessage style) */}
       <aside
         className={`messages-sidebar flex flex-col border-r border-[var(--card-border)] bg-[var(--background)] transition-all duration-300 ${

@@ -108,7 +108,7 @@ export function RecentGalleriesWidget({
           key={gallery.id}
           href={`/galleries/${gallery.id}`}
           className={cn(
-            "group overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] transition-all hover:border-[var(--primary)]/50",
+            "group overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] transition-all hover:border-[var(--primary)]/50",
             showThumbnails && "flex flex-col"
           )}
         >

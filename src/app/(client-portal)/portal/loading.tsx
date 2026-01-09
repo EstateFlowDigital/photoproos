@@ -52,7 +52,7 @@ export default function PortalLoading() {
         {/* Content Skeleton - Property cards */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+            <div key={i} className="overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
               <Skeleton variant="image" className="aspect-video w-full" />
               <div className="p-4">
                 <Skeleton variant="text" className="h-5 w-24" />

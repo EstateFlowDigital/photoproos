@@ -133,7 +133,7 @@ export function ShimmerButton({
 
   return (
     <div
-      className="shimmer-container group relative inline-block overflow-hidden rounded-lg"
+      className="shimmer-container group relative inline-block overflow-x-auto rounded-lg"
       onMouseEnter={(e) => e.currentTarget.classList.add("is-hovered")}
       onMouseLeave={(e) => e.currentTarget.classList.remove("is-hovered")}
     >

@@ -454,7 +454,7 @@ export function SkillTreeWidget({ state, className }: SkillTreeWidgetProps) {
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-label={`${tree.name} progress: ${tree.completion}%`}
-                className="h-1.5 w-16 overflow-hidden rounded-full bg-[var(--background-secondary)]"
+                className="h-1.5 w-16 overflow-x-auto rounded-full bg-[var(--background-secondary)]"
               >
                 <div
                   className="h-full rounded-full transition-all duration-500"

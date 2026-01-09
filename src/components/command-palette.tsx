@@ -186,7 +186,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 
       {/* Modal */}
       <div className="absolute left-1/2 top-[20%] w-full max-w-xl -translate-x-1/2 px-4">
-        <div className="overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
+        <div className="overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
           {/* Search Input */}
           <div className="flex items-center gap-3 border-b border-[var(--card-border)] px-4 py-3">
             <SearchIcon className="h-5 w-5 text-foreground-muted shrink-0" />

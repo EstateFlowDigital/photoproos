@@ -164,7 +164,7 @@ export function GalleryHeatMap({
           <div
             key={photo.id}
             className={cn(
-              "group relative aspect-square overflow-hidden rounded-lg ring-2 transition-all hover:ring-4 hover:scale-105 cursor-pointer",
+              "group relative aspect-square overflow-x-auto rounded-lg ring-2 transition-all hover:ring-4 hover:scale-105 cursor-pointer",
               heatColors[photo.heatLevel as keyof typeof heatColors]
             )}
             title={`${photo.filename}\n${photo.score} engagement score (${photo.percentage}%)`}

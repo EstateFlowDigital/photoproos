@@ -173,7 +173,7 @@ export default function GuidesPage() {
               <Link
                 key={guide.slug}
                 href={`/guides/${guide.slug}`}
-                className="group relative overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 transition-all hover:border-[var(--border-hover)]"
+                className="group relative overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 transition-all hover:border-[var(--border-hover)]"
               >
                 <div className="mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-2xl font-bold text-[var(--primary)]">
                   {index + 1}

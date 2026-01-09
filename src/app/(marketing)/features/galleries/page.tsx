@@ -94,7 +94,7 @@ export default function GalleriesFeaturePage() {
       {/* Gallery Preview */}
       <section className="py-16 lg:py-24" data-element="features-galleries-preview-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="relative mx-auto max-w-4xl overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card)]" data-element="features-galleries-preview-card">
+          <div className="relative mx-auto max-w-4xl overflow-x-auto rounded-2xl border border-[var(--card-border)] bg-[var(--card)]" data-element="features-galleries-preview-card">
             <div className="flex items-center gap-2 border-b border-[var(--card-border)] px-4 py-3">
               <div className="flex gap-1.5">
                 <div className="h-3 w-3 rounded-full bg-[var(--error)]" />

@@ -891,7 +891,7 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
             <h2 className="text-lg font-semibold text-foreground mb-4">Gallery Photos</h2>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {website.project.assets.slice(0, 6).map((asset) => (
-                <div key={asset.id} className="aspect-square overflow-hidden rounded-lg bg-[var(--background)]">
+                <div key={asset.id} className="aspect-square overflow-x-auto rounded-lg bg-[var(--background)]">
                   <img
                     src={asset.thumbnailUrl || asset.originalUrl}
                     alt=""
@@ -982,7 +982,7 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
               </div>
             </div>
           </DialogHeader>
-          <div className="flex-1 overflow-hidden rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
+          <div className="flex-1 overflow-x-auto rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
             <iframe
               key={previewKey}
               src={`/p/${website.slug}`}

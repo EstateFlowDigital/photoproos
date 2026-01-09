@@ -401,7 +401,7 @@ export function OnboardingChecklist({
 
         {/* Progress indicator */}
         <div className="mt-4 flex items-center gap-4">
-          <div className="flex-1 h-3 overflow-hidden rounded-full bg-[var(--background-secondary)]">
+          <div className="flex-1 h-3 overflow-x-auto rounded-full bg-[var(--background-secondary)]">
             <div
               className="h-full rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--ai)] transition-all duration-1000"
               style={{ width: `${milestoneCelebration}%` }}
@@ -494,7 +494,7 @@ export function OnboardingChecklist({
         </div>
 
         {/* Progress Bar - Full */}
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--background-secondary)]">
+        <div className="mt-3 h-2 overflow-x-auto rounded-full bg-[var(--background-secondary)]">
           <div className="h-full w-full rounded-full bg-[var(--success)]" />
         </div>
 
@@ -572,7 +572,7 @@ export function OnboardingChecklist({
         </div>
 
         {/* Progress Bar */}
-        <div className="h-2.5 overflow-hidden rounded-full bg-[var(--background-tertiary)]">
+        <div className="h-2.5 overflow-x-auto rounded-full bg-[var(--background-tertiary)]">
           <div
             className="h-full rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--ai)] transition-all duration-500"
             style={{ width: `${progress}%` }}

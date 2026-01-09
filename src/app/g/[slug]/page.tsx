@@ -330,7 +330,7 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
           {gallery.photos.map((photo: Photo) => (
             <div
               key={photo.id}
-              className="group relative aspect-[4/3] overflow-hidden rounded-lg cursor-pointer"
+              className="group relative aspect-[4/3] overflow-x-auto rounded-lg cursor-pointer"
               style={{ backgroundColor: colors.cardBg }}
             >
               <img

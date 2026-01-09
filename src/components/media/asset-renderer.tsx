@@ -372,7 +372,7 @@ function renderPhoto(
         type="button"
         onClick={onClick}
         className={cn(
-          "photo-thumbnail group relative w-full overflow-hidden rounded-lg bg-[var(--background-secondary)]",
+          "photo-thumbnail group relative w-full overflow-x-auto rounded-lg bg-[var(--background-secondary)]",
           aspectClass || "aspect-[4/3]",
           className
         )}
@@ -396,7 +396,7 @@ function renderPhoto(
   return (
     <div
       className={cn(
-        "photo-renderer relative overflow-hidden rounded-xl bg-[var(--background-secondary)]",
+        "photo-renderer relative overflow-x-auto rounded-xl bg-[var(--background-secondary)]",
         onClick && "cursor-pointer",
         className
       )}
@@ -436,7 +436,7 @@ function renderPlaceholder(
       type="button"
       onClick={onClick}
       className={cn(
-        "placeholder-asset group relative flex aspect-video w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-xl bg-[var(--background-secondary)] border border-dashed border-[var(--card-border)]",
+        "placeholder-asset group relative flex aspect-video w-full flex-col items-center justify-center gap-3 overflow-x-auto rounded-xl bg-[var(--background-secondary)] border border-dashed border-[var(--card-border)]",
         className
       )}
       aria-label={title}

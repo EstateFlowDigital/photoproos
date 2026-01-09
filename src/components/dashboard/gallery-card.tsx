@@ -120,7 +120,7 @@ export function GalleryCard({ id, title, client, photos, status, revenue, thumbn
 
       <Link href={`/galleries/${id}`} className="block">
         {/* Thumbnail */}
-        <div className="relative mb-3 aspect-video overflow-hidden rounded-lg bg-gradient-to-br from-[var(--primary)]/20 via-[var(--background-tertiary)] to-[var(--ai)]/20">
+        <div className="relative mb-3 aspect-video overflow-x-auto rounded-lg bg-gradient-to-br from-[var(--primary)]/20 via-[var(--background-tertiary)] to-[var(--ai)]/20">
           {thumbnailUrl ? (
             <>
               <img

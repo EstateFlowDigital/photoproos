@@ -137,7 +137,7 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
                 <span className="text-foreground">New</span>
                 <span className="font-medium text-foreground">{funnel.new}</span>
               </div>
-              <div className="h-8 overflow-hidden rounded-lg bg-[var(--background-secondary)]" role="progressbar" aria-valuenow={100} aria-valuemin={0} aria-valuemax={100}>
+              <div className="h-8 overflow-x-auto rounded-lg bg-[var(--background-secondary)]" role="progressbar" aria-valuenow={100} aria-valuemin={0} aria-valuemax={100}>
                 <div
                   className="flex h-full items-center justify-end rounded-lg bg-[var(--primary)] px-3 transition-all"
                   style={{ width: `${(funnel.new / funnelMax) * 100}%` }}
@@ -153,7 +153,7 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
                 <span className="text-foreground">Contacted</span>
                 <span className="font-medium text-foreground">{funnel.contacted}</span>
               </div>
-              <div className="h-8 overflow-hidden rounded-lg bg-[var(--background-secondary)]" role="progressbar" aria-valuenow={funnel.new > 0 ? Math.round((funnel.contacted / funnel.new) * 100) : 0} aria-valuemin={0} aria-valuemax={100}>
+              <div className="h-8 overflow-x-auto rounded-lg bg-[var(--background-secondary)]" role="progressbar" aria-valuenow={funnel.new > 0 ? Math.round((funnel.contacted / funnel.new) * 100) : 0} aria-valuemin={0} aria-valuemax={100}>
                 <div
                   className="flex h-full items-center justify-end rounded-lg bg-[var(--warning)] px-3 transition-all"
                   style={{ width: `${(funnel.contacted / funnelMax) * 100}%` }}
@@ -173,7 +173,7 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
                 <span className="text-foreground">Qualified</span>
                 <span className="font-medium text-foreground">{funnel.qualified}</span>
               </div>
-              <div className="h-8 overflow-hidden rounded-lg bg-[var(--background-secondary)]" role="progressbar" aria-valuenow={funnel.new > 0 ? Math.round((funnel.qualified / funnel.new) * 100) : 0} aria-valuemin={0} aria-valuemax={100}>
+              <div className="h-8 overflow-x-auto rounded-lg bg-[var(--background-secondary)]" role="progressbar" aria-valuenow={funnel.new > 0 ? Math.round((funnel.qualified / funnel.new) * 100) : 0} aria-valuemin={0} aria-valuemax={100}>
                 <div
                   className="flex h-full items-center justify-end rounded-lg bg-[var(--success)] px-3 transition-all"
                   style={{ width: `${(funnel.qualified / funnelMax) * 100}%` }}
@@ -193,7 +193,7 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
                 <span className="text-foreground">Converted</span>
                 <span className="font-medium text-foreground">{funnel.converted}</span>
               </div>
-              <div className="h-8 overflow-hidden rounded-lg bg-[var(--background-secondary)]" role="progressbar" aria-valuenow={funnel.new > 0 ? Math.round((funnel.converted / funnel.new) * 100) : 0} aria-valuemin={0} aria-valuemax={100}>
+              <div className="h-8 overflow-x-auto rounded-lg bg-[var(--background-secondary)]" role="progressbar" aria-valuenow={funnel.new > 0 ? Math.round((funnel.converted / funnel.new) * 100) : 0} aria-valuemin={0} aria-valuemax={100}>
                 <div
                   className="flex h-full items-center justify-end rounded-lg bg-[var(--ai)] px-3 transition-all"
                   style={{ width: `${(funnel.converted / funnelMax) * 100}%` }}
@@ -236,7 +236,7 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
                     </span>
                   </div>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-[var(--background-secondary)]" role="progressbar" aria-valuenow={Math.round((source.count / maxSourceCount) * 100)} aria-valuemin={0} aria-valuemax={100} aria-label={`${source.count} leads`}>
+                <div className="h-2 overflow-x-auto rounded-full bg-[var(--background-secondary)]" role="progressbar" aria-valuenow={Math.round((source.count / maxSourceCount) * 100)} aria-valuemin={0} aria-valuemax={100} aria-label={`${source.count} leads`}>
                   <div
                     className={cn("h-full rounded-full transition-all", SOURCE_TYPE_COLORS[source.sourceType])}
                     style={{ width: `${(source.count / maxSourceCount) * 100}%` }}
@@ -330,7 +330,7 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
           <h3 id="status-heading" className="text-sm font-semibold text-foreground">Status Distribution</h3>
           <div className="mt-6">
             {/* Visual bar */}
-            <div className="flex h-8 overflow-hidden rounded-lg" role="img" aria-label={`Status distribution: ${byStatus.map(s => `${s.status} ${formatPercent(s.percentage)}`).join(', ')}`}>
+            <div className="flex h-8 overflow-x-auto rounded-lg" role="img" aria-label={`Status distribution: ${byStatus.map(s => `${s.status} ${formatPercent(s.percentage)}`).join(', ')}`}>
               {byStatus.map((status) => (
                 <div
                   key={status.status}

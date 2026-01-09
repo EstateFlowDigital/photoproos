@@ -115,7 +115,7 @@ export default async function AchievementsPage() {
               <span className="text-3xl font-bold text-[var(--foreground)]">{totalUnlocked}</span>
               <span className="text-lg text-[var(--foreground-muted)]">/ {totalAchievements}</span>
             </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--background-secondary)]">
+            <div className="mt-2 h-2 overflow-x-auto rounded-full bg-[var(--background-secondary)]">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--ai)] transition-all duration-500"
                 style={{ width: `${percentComplete}%` }}

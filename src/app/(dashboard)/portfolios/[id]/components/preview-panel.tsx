@@ -114,7 +114,7 @@ export function PreviewPanel({
         {/* Device Frame */}
         <div
           className={cn(
-            "relative h-full overflow-hidden rounded-lg border border-[var(--border-visible)] bg-white shadow-2xl transition-all duration-300",
+            "relative h-full overflow-x-auto rounded-lg border border-[var(--border-visible)] bg-white shadow-2xl transition-all duration-300",
             viewport === "desktop" && "w-full",
             viewport === "tablet" && "w-[768px] max-w-full",
             viewport === "mobile" && "w-[375px] max-w-full"

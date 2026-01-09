@@ -1353,7 +1353,7 @@ export function RoadmapClient() {
     <div className="space-y-8">
       {/* Hero Section */}
       <section
-        className="relative overflow-hidden rounded-2xl border border-[var(--card-border)] bg-gradient-to-br from-[var(--primary)]/5 via-[var(--card)] to-[var(--ai)]/5 p-6 lg:p-8"
+        className="relative overflow-x-auto rounded-2xl border border-[var(--card-border)] bg-gradient-to-br from-[var(--primary)]/5 via-[var(--card)] to-[var(--ai)]/5 p-6 lg:p-8"
         aria-labelledby="roadmap-hero-title"
       >
         <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-[var(--primary)]/10 blur-3xl" aria-hidden="true" />

@@ -373,7 +373,7 @@ export function EstimatesListClient({ estimates, stats }: EstimatesListClientPro
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]" id="estimates-table" role="tabpanel">
+      <div className="overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)]" id="estimates-table" role="tabpanel">
         <div className="overflow-x-auto">
           <table className="w-full" aria-label="Estimates list">
             <thead>

@@ -263,7 +263,7 @@ export function SelectionPanel({
                   {selections.map((selection) => (
                     <div
                       key={selection.id}
-                      className="group relative overflow-hidden rounded-lg border border-[var(--card-border)] bg-[var(--card)]"
+                      className="group relative overflow-x-auto rounded-lg border border-[var(--card-border)] bg-[var(--card)]"
                     >
                       <div className="aspect-[4/3] overflow-hidden">
                         <img

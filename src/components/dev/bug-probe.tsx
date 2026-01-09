@@ -723,7 +723,7 @@ export function BugProbe() {
                       )}
                     </p>
                     {entry.meta?.screenshot && (
-                      <div className="overflow-hidden rounded-lg border border-[rgba(255,255,255,0.08)]">
+                      <div className="overflow-x-auto rounded-lg border border-[rgba(255,255,255,0.08)]">
                         <img src={entry.meta.screenshot} alt="Screenshot" className="max-h-40 w-full object-contain" />
                       </div>
                     )}

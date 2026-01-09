@@ -412,7 +412,7 @@ export function PhotoComparisonModal({
                 <button
                   key={photo.id}
                   onClick={() => swapPhoto(activeSlot, photo)}
-                  className="aspect-square overflow-hidden rounded-lg border-2 border-transparent hover:border-white transition-colors"
+                  className="aspect-square overflow-x-auto rounded-lg border-2 border-transparent hover:border-white transition-colors"
                 >
                   <img
                     src={photo.thumbnailUrl || photo.url}

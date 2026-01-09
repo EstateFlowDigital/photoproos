@@ -129,7 +129,7 @@ export default function BlogPage() {
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <Link
             href={`/blog/${featuredPost.slug}`}
-            className="group block overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card)] transition-all hover:border-[var(--border-hover)]"
+            className="group block overflow-x-auto rounded-2xl border border-[var(--card-border)] bg-[var(--card)] transition-all hover:border-[var(--border-hover)]"
             data-element="blog-featured-post"
           >
             <div className="grid gap-6 lg:grid-cols-2">

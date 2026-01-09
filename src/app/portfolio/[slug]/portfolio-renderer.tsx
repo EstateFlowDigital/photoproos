@@ -546,7 +546,7 @@ function LegacyRenderer({ website, projects, templateConfig }: LegacyRendererPro
               return (
                 <div
                   key={project.id}
-                  className="overflow-hidden rounded-2xl border transition-transform hover:-translate-y-1"
+                  className="overflow-x-auto rounded-2xl border transition-transform hover:-translate-y-1"
                   style={{
                     backgroundColor: templateConfig.colors.card,
                     borderColor: templateConfig.colors.cardBorder,

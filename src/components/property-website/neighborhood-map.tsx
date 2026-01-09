@@ -297,7 +297,7 @@ export function NeighborhoodMap({
                       {neighborhoodData.walkScore}
                     </span>
                   </div>
-                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--background-tertiary)]">
+                  <div className="mt-2 h-2 overflow-x-auto rounded-full bg-[var(--background-tertiary)]">
                     <div
                       className="h-full rounded-full bg-[#4CAF50]"
                       style={{ width: `${neighborhoodData.walkScore}%` }}
@@ -321,7 +321,7 @@ export function NeighborhoodMap({
                       {neighborhoodData.bikeScore}
                     </span>
                   </div>
-                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--background-tertiary)]">
+                  <div className="mt-2 h-2 overflow-x-auto rounded-full bg-[var(--background-tertiary)]">
                     <div
                       className="h-full rounded-full bg-[#2196F3]"
                       style={{ width: `${neighborhoodData.bikeScore}%` }}
@@ -347,7 +347,7 @@ export function NeighborhoodMap({
                       {neighborhoodData.transitScore}
                     </span>
                   </div>
-                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--background-tertiary)]">
+                  <div className="mt-2 h-2 overflow-x-auto rounded-full bg-[var(--background-tertiary)]">
                     <div
                       className="h-full rounded-full bg-[#9C27B0]"
                       style={{ width: `${neighborhoodData.transitScore}%` }}
@@ -379,7 +379,7 @@ export function NeighborhoodMap({
                       {getCrimeSafetyLabel(neighborhoodData.crimeIndex).label}
                     </span>
                   </div>
-                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--background-tertiary)]">
+                  <div className="mt-2 h-2 overflow-x-auto rounded-full bg-[var(--background-tertiary)]">
                     <div
                       className="h-full rounded-full"
                       style={{
@@ -507,7 +507,7 @@ export function NeighborhoodMap({
           }
         >
           <div
-            className={`relative overflow-hidden rounded-xl border border-[var(--card-border)] ${mapHeightClass}`}
+            className={`relative overflow-x-auto rounded-xl border border-[var(--card-border)] ${mapHeightClass}`}
           >
             {mapError ? (
               <div className="flex h-full items-center justify-center bg-[var(--card)]">

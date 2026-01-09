@@ -215,7 +215,7 @@ function LeadCard({ lead, isExpanded, onToggle, hydrated }: LeadCardProps) {
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+    <div className="overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
       <button
         onClick={onToggle}
         className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-[var(--background-hover)]"

@@ -198,7 +198,7 @@ export function TestimonialsSection() {
           <div className="shrink-0 flex flex-col items-center lg:items-start gap-4">
             {/* Avatar with animated gradient */}
             <div
-              className={`h-24 w-24 overflow-hidden rounded-full bg-gradient-to-br ${avatarGradients[activeIndex]} lg:h-32 lg:w-32`}
+              className={`h-24 w-24 overflow-x-auto rounded-full bg-gradient-to-br ${avatarGradients[activeIndex]} lg:h-32 lg:w-32`}
               style={{
                 transition: "all 500ms cubic-bezier(0.4, 0, 0.2, 1)",
                 transform: isAnimating ? "scale(0.9)" : "scale(1)",
@@ -297,7 +297,7 @@ export function TestimonialsSection() {
 
               {/* Progress bar for active */}
               {index === activeIndex && (
-                <div className="relative h-1 w-10 overflow-hidden rounded-full bg-[var(--border-visible)]">
+                <div className="relative h-1 w-10 overflow-x-auto rounded-full bg-[var(--border-visible)]">
                   <div
                     className="absolute left-0 top-0 h-full rounded-full bg-[var(--primary)] transition-all duration-75 ease-linear"
                     style={{ width: `${progress}%` }}

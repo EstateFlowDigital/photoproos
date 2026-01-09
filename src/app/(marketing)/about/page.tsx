@@ -199,7 +199,7 @@ export default function AboutPage() {
       {/* CTA Section */}
       <section className="py-20 lg:py-28" data-element="about-cta-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--ai)] p-12 text-center lg:p-20" data-element="about-cta-card">
+          <div className="relative overflow-x-auto rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--ai)] p-12 text-center lg:p-20" data-element="about-cta-card">
             <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10" />
             <div className="relative z-10">
               <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl" data-element="about-cta-heading">

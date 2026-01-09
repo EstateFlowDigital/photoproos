@@ -465,7 +465,7 @@ export function GalleryEditForm({ gallery, clients, services }: GalleryEditFormP
 
         {gallery.coverImageUrl ? (
           <div className="space-y-4">
-            <div className="relative aspect-video overflow-hidden rounded-lg bg-[var(--background)]">
+            <div className="relative aspect-video overflow-x-auto rounded-lg bg-[var(--background)]">
               <img
                 src={gallery.coverImageUrl}
                 alt="Cover"

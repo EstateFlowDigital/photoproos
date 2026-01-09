@@ -573,7 +573,7 @@ export function ImageLightbox({
                 goToIndex(index);
               }}
               className={cn(
-                "relative h-14 w-14 shrink-0 overflow-hidden rounded-lg transition-all duration-200",
+                "relative h-14 w-14 shrink-0 overflow-x-auto rounded-lg transition-all duration-200",
                 index === currentIndex
                   ? "ring-2 ring-white ring-offset-2 ring-offset-black/50 scale-110"
                   : "opacity-50 hover:opacity-80 hover:scale-105"

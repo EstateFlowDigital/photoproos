@@ -309,7 +309,7 @@ export function SmartCollectionsPanel({
                       {suggestion.previewPhotos.slice(0, 3).map((photo) => (
                         <div
                           key={photo.id}
-                          className="h-8 w-8 overflow-hidden rounded-md border-2 border-[var(--card)] bg-[var(--background-elevated)]"
+                          className="h-8 w-8 overflow-x-auto rounded-md border-2 border-[var(--card)] bg-[var(--background-elevated)]"
                         >
                           {photo.thumbnailUrl && (
                             <img

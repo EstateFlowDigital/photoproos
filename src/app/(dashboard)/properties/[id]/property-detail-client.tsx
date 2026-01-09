@@ -520,7 +520,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                   {website.project.assets.slice(0, 8).map((asset, i) => (
                     <div
                       key={asset.id}
-                      className={`relative aspect-square overflow-hidden rounded-lg bg-[var(--background-tertiary)] ${
+                      className={`relative aspect-square overflow-x-auto rounded-lg bg-[var(--background-tertiary)] ${
                         i === 0 ? "col-span-2 row-span-2" : ""
                       }`}
                     >
@@ -762,7 +762,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                 {website.project.assets.map((asset, i) => (
                   <div
                     key={asset.id}
-                    className="group relative aspect-square overflow-hidden rounded-lg bg-[var(--background-tertiary)]"
+                    className="group relative aspect-square overflow-x-auto rounded-lg bg-[var(--background-tertiary)]"
                   >
                     {asset.thumbnailUrl || asset.originalUrl ? (
                       <img

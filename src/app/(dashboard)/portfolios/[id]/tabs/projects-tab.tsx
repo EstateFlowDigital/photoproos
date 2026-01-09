@@ -151,7 +151,7 @@ export function ProjectsTab({
                   });
                 }}
                 className={cn(
-                  "group relative flex flex-col overflow-hidden rounded-xl border-2 text-left transition-all",
+                  "group relative flex flex-col overflow-x-auto rounded-xl border-2 text-left transition-all",
                   isSelected
                     ? "border-[var(--primary)] bg-[var(--primary)]/5"
                     : "border-[var(--card-border)] hover:border-[var(--border-hover)]"

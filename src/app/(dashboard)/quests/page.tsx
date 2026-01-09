@@ -75,7 +75,7 @@ export default async function QuestsPage() {
                 / {questState.categories.reduce((sum, c) => sum + c.totalCount, 0)}
               </span>
             </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--background-secondary)]">
+            <div className="mt-2 h-2 overflow-x-auto rounded-full bg-[var(--background-secondary)]">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--ai)] transition-all duration-500"
                 style={{ width: `${questState.overallProgress}%` }}
@@ -146,7 +146,7 @@ export default async function QuestsPage() {
                 <span className="text-sm font-medium" style={{ color: category.color }}>
                   {category.completedCount}/{category.totalCount}
                 </span>
-                <div className="h-2 w-24 overflow-hidden rounded-full bg-[var(--background-secondary)]">
+                <div className="h-2 w-24 overflow-x-auto rounded-full bg-[var(--background-secondary)]">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{

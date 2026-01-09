@@ -157,7 +157,7 @@ export function ComparisonSection() {
 
         {/* Comparison Table */}
         <div
-          className="overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]"
+          className="overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)]"
           style={{
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? "none" : "translateY(30px)",

@@ -106,7 +106,7 @@ export function RevenueWidget({
               {goalProgress}% of {formatCurrencyWhole(monthlyGoal)}
             </span>
           </div>
-          <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-[var(--background-secondary)]">
+          <div className="mt-1.5 h-2 overflow-x-auto rounded-full bg-[var(--background-secondary)]">
             <div
               className={cn(
                 "h-full rounded-full transition-all",

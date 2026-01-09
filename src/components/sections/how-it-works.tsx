@@ -187,7 +187,7 @@ export function HowItWorksSection() {
 
                     {/* Progress indicator */}
                     {isActive && (
-                      <div className="absolute bottom-0 left-0 h-1 w-full overflow-hidden rounded-b-xl bg-[var(--background-elevated)]">
+                      <div className="absolute bottom-0 left-0 h-1 w-full overflow-x-auto rounded-b-xl bg-[var(--background-elevated)]">
                         <div
                           className="h-full bg-[var(--primary)] animate-progress-bar"
                           style={{ animationDuration: "5s" }}
@@ -210,7 +210,7 @@ export function HowItWorksSection() {
               transitionDelay: "500ms",
             }}
           >
-            <div className="sticky top-24 overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl shadow-black/20">
+            <div className="sticky top-24 overflow-x-auto rounded-2xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl shadow-black/20">
               {/* Browser Chrome */}
               <div className="flex items-center gap-2 border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-4 py-3">
                 <div className="flex gap-1.5">
@@ -270,7 +270,7 @@ function UploadDemo() {
           <span className="text-foreground">Uploading 24 photos...</span>
           <span className="text-[var(--primary)]">67%</span>
         </div>
-        <div className="h-2 overflow-hidden rounded-full bg-[var(--background-elevated)]">
+        <div className="h-2 overflow-x-auto rounded-full bg-[var(--background-elevated)]">
           <div className="h-full w-2/3 rounded-full bg-[var(--primary)] animate-pulse" />
         </div>
         <div className="mt-2 flex gap-2">

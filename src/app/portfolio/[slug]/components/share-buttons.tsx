@@ -82,7 +82,7 @@ export function ShareButtons({
       {/* Share Menu */}
       <div
         className={cn(
-          "absolute bottom-14 right-0 mb-2 overflow-hidden rounded-xl border border-white/10 bg-black/90 shadow-2xl backdrop-blur-md transition-all duration-200",
+          "absolute bottom-14 right-0 mb-2 overflow-x-auto rounded-xl border border-white/10 bg-black/90 shadow-2xl backdrop-blur-md transition-all duration-200",
           isOpen
             ? "scale-100 opacity-100"
             : "pointer-events-none scale-95 opacity-0"

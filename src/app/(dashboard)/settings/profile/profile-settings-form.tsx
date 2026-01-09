@@ -165,7 +165,7 @@ export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormP
         <h2 className="text-lg font-semibold text-foreground mb-4">Profile Photo</h2>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
           {avatarUrl ? (
-            <div className="relative h-20 w-20 overflow-hidden rounded-full">
+            <div className="relative h-20 w-20 overflow-x-auto rounded-full">
               <Image
                 src={avatarUrl}
                 alt="Profile photo"

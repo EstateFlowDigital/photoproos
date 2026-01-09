@@ -118,7 +118,7 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl max-h-[80vh] overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl mx-4">
+      <div className="relative w-full max-w-2xl max-h-[80vh] overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl mx-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 flex-wrap px-6 py-4 border-b border-[var(--card-border)]">
           <div className="flex items-center gap-3">

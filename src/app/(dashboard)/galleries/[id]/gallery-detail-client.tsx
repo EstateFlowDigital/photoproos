@@ -1588,7 +1588,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                         key={photo.id}
                         onClick={() => isSelectMode ? togglePhotoSelection(photo.id) : handlePhotoClick(index)}
                         className={cn(
-                          "group relative aspect-[4/3] overflow-hidden rounded-lg bg-[var(--background)] cursor-pointer focus:outline-none",
+                          "group relative aspect-[4/3] overflow-x-auto rounded-lg bg-[var(--background)] cursor-pointer focus:outline-none",
                           isSelectMode && selectedPhotos.has(photo.id) && "ring-2 ring-[var(--primary)] ring-offset-2 ring-offset-[var(--card)]"
                         )}
                       >
@@ -1824,7 +1824,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                     .map((photo, index) => (
                       <div
                         key={photo.id}
-                        className="group relative aspect-square cursor-pointer overflow-hidden rounded-lg bg-[var(--background)]"
+                        className="group relative aspect-square cursor-pointer overflow-x-auto rounded-lg bg-[var(--background)]"
                         onClick={() => {
                           if (isSelectMode) {
                             togglePhotoSelection(photo.id);
@@ -2974,7 +2974,7 @@ function SortablePhotoItem({ photo, isCover, isFavorite }: SortablePhotoItemProp
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group relative aspect-[4/3] overflow-hidden rounded-lg bg-[var(--background)] cursor-grab active:cursor-grabbing",
+        "group relative aspect-[4/3] overflow-x-auto rounded-lg bg-[var(--background)] cursor-grab active:cursor-grabbing",
         isDragging && "ring-2 ring-[var(--primary)] ring-offset-2 ring-offset-[var(--card)] opacity-90 z-50 shadow-xl"
       )}
       {...attributes}
@@ -3077,7 +3077,7 @@ function SortableListItem({
 
       {/* Thumbnail */}
       <div
-        className="relative h-10 w-14 shrink-0 overflow-hidden rounded-md bg-[var(--background)] cursor-pointer"
+        className="relative h-10 w-14 shrink-0 overflow-x-auto rounded-md bg-[var(--background)] cursor-pointer"
         onClick={isSelectMode ? onToggleSelect : onClick}
       >
         <img

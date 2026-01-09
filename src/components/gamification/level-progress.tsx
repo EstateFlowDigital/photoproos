@@ -81,7 +81,7 @@ export function LevelProgress({
             aria-valuemin={0}
             aria-valuemax={requiredXp}
             aria-label={`Level ${level} progress: ${currentXp} of ${requiredXp} XP (${Math.round(progressPercent)}%)`}
-            className={cn("mt-1 w-full overflow-hidden rounded-full bg-[var(--background-secondary)]", styles.bar)}
+            className={cn("mt-1 w-full overflow-x-auto rounded-full bg-[var(--background-secondary)]", styles.bar)}
           >
             <div
               className={cn("h-full rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--ai)] transition-all duration-500")}

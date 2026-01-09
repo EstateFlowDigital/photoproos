@@ -3336,7 +3336,7 @@ function TemplateLibraryModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
       <div
-        className="relative max-h-[80vh] w-full max-w-lg overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl"
+        className="relative max-h-[80vh] w-full max-w-lg overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

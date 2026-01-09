@@ -185,7 +185,7 @@ function PropertyCard({
 
   return (
     <div
-      className={`overflow-hidden rounded-xl border bg-[var(--card)] transition-all ${
+      className={`overflow-x-auto rounded-xl border bg-[var(--card)] transition-all ${
         isSelectedForComparison
           ? "border-[var(--primary)] ring-2 ring-[var(--primary)]/20"
           : "border-[var(--card-border)]"
@@ -368,7 +368,7 @@ function PropertyComparisonModal({ properties, onClose }: PropertyComparisonModa
             {properties.map((property) => (
               <div key={property.id} className="space-y-4">
                 {/* Image */}
-                <div className="relative aspect-video overflow-hidden rounded-lg bg-[var(--background-tertiary)]">
+                <div className="relative aspect-video overflow-x-auto rounded-lg bg-[var(--background-tertiary)]">
                   {property.thumbnailUrl ? (
                     <Image
                       src={property.thumbnailUrl}

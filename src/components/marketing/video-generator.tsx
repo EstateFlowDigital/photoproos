@@ -173,7 +173,7 @@ function TimelineSlide({
   return (
     <div
       onClick={onSelect}
-      className={`relative flex h-20 w-28 shrink-0 cursor-pointer flex-col overflow-hidden rounded-lg border-2 transition-all ${
+      className={`relative flex h-20 w-28 shrink-0 cursor-pointer flex-col overflow-x-auto rounded-lg border-2 transition-all ${
         isSelected
           ? "border-[var(--primary)] ring-2 ring-[var(--primary)]/30"
           : "border-[var(--card-border)] hover:border-[var(--border-hover)]"
@@ -605,7 +605,7 @@ export function VideoGenerator({
         <div className="flex flex-1 items-center justify-center bg-[var(--background-tertiary)] p-6">
           <div
             ref={previewRef}
-            className="relative overflow-hidden rounded-lg bg-black shadow-xl"
+            className="relative overflow-x-auto rounded-lg bg-black shadow-xl"
             style={{
               width: canvasDimensions.width,
               height: canvasDimensions.height,

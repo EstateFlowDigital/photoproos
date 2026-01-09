@@ -207,7 +207,7 @@ export function FloorPlanViewer({
     <div
       ref={containerRef}
       className={cn(
-        "floor-plan-viewer group relative overflow-hidden rounded-xl bg-[var(--background-secondary)] border border-[var(--card-border)]",
+        "floor-plan-viewer group relative overflow-x-auto rounded-xl bg-[var(--background-secondary)] border border-[var(--card-border)]",
         responsive && "w-full",
         className
       )}
@@ -357,7 +357,7 @@ export function FloorPlanThumbnail({
       type="button"
       onClick={onClick}
       className={cn(
-        "floor-plan-thumbnail group relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-[var(--background-secondary)] border border-[var(--card-border)] transition-all hover:border-[var(--border-hover)] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2",
+        "floor-plan-thumbnail group relative aspect-[4/3] w-full overflow-x-auto rounded-lg bg-[var(--background-secondary)] border border-[var(--card-border)] transition-all hover:border-[var(--border-hover)] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2",
         className
       )}
       aria-label={`View ${label || "Floor Plan"}`}

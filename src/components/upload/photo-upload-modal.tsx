@@ -404,7 +404,7 @@ export function PhotoUploadModal({
       />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
+      <div className="relative z-10 w-full max-w-2xl max-h-[90vh] overflow-x-auto rounded-2xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-6 py-4">
           <div>
@@ -514,7 +514,7 @@ export function PhotoUploadModal({
                     )}
                   >
                     {/* Preview */}
-                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[var(--background-hover)]">
+                    <div className="relative h-12 w-12 shrink-0 overflow-x-auto rounded-lg bg-[var(--background-hover)]">
                       {uploadFile.preview ? (
                         <img
                           src={uploadFile.preview}
@@ -544,7 +544,7 @@ export function PhotoUploadModal({
                         </p>
                       ) : uploadFile.status === "uploading" ? (
                         <div className="mt-1">
-                          <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--background-hover)]">
+                          <div className="h-1.5 w-full overflow-x-auto rounded-full bg-[var(--background-hover)]">
                             <div
                               className="h-full rounded-full bg-[var(--primary)] transition-all duration-150"
                               style={{ width: `${uploadFile.progress}%` }}

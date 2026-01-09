@@ -117,7 +117,7 @@ function SortableCollectionItem({
       {/* Cover thumbnail */}
       <div
         onClick={onSelect}
-        className="h-12 w-12 shrink-0 cursor-pointer overflow-hidden rounded-md bg-[var(--background)]"
+        className="h-12 w-12 shrink-0 cursor-pointer overflow-x-auto rounded-md bg-[var(--background)]"
       >
         {coverImage ? (
           <img

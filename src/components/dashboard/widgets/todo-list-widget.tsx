@@ -71,7 +71,7 @@ export function TodoListWidget({
           <span className="text-xs text-foreground-muted">
             {completedCount} of {totalCount} complete
           </span>
-          <div className="h-1.5 w-24 overflow-hidden rounded-full bg-[var(--background-secondary)]">
+          <div className="h-1.5 w-24 overflow-x-auto rounded-full bg-[var(--background-secondary)]">
             <div
               className="h-full rounded-full bg-[var(--success)] transition-all"
               style={{

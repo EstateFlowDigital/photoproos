@@ -20,7 +20,7 @@ export function Skeleton({ className = "" }: { className?: string }) {
 // Skeleton for property cards
 export function PropertyCardSkeleton() {
   return (
-    <div className="overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+    <div className="overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
       <Skeleton className="aspect-video w-full rounded-none" />
       <div className="p-4">
         <Skeleton className="h-5 w-24" />
@@ -50,7 +50,7 @@ export function PropertiesTabSkeleton() {
 // Skeleton for gallery cards
 export function GalleryCardSkeleton() {
   return (
-    <div className="overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+    <div className="overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
       <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <Skeleton className="h-14 w-14" />
@@ -88,7 +88,7 @@ export function GalleriesTabSkeleton() {
 // Skeleton for download cards
 export function DownloadCardSkeleton() {
   return (
-    <div className="overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
+    <div className="overflow-x-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
       <div className="border-b border-[var(--card-border)] p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>

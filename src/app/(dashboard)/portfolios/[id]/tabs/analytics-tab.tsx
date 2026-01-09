@@ -228,7 +228,7 @@ export function AnalyticsTab({ website, isPending: parentPending }: AnalyticsTab
                   <span className="text-xs text-foreground-muted">Scroll Depth</span>
                   <span className="text-sm font-medium text-foreground">{analytics.avgScrollDepth}%</span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-[var(--background-tertiary)]">
+                <div className="h-2 overflow-x-auto rounded-full bg-[var(--background-tertiary)]">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--success)]"
                     style={{ width: `${analytics.avgScrollDepth}%` }}
@@ -245,7 +245,7 @@ export function AnalyticsTab({ website, isPending: parentPending }: AnalyticsTab
                   <span className="text-xs text-foreground-muted">Avg. Session</span>
                   <span className="text-sm font-medium text-foreground">{formatDuration(analytics.avgDuration)}</span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-[var(--background-tertiary)]">
+                <div className="h-2 overflow-x-auto rounded-full bg-[var(--background-tertiary)]">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-[var(--warning)] to-[var(--primary)]"
                     style={{ width: `${Math.min((analytics.avgDuration / 180) * 100, 100)}%` }}
@@ -266,7 +266,7 @@ export function AnalyticsTab({ website, isPending: parentPending }: AnalyticsTab
                       : 0}%
                   </span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-[var(--background-tertiary)]">
+                <div className="h-2 overflow-x-auto rounded-full bg-[var(--background-tertiary)]">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-[var(--success)] to-[var(--primary)]"
                     style={{
