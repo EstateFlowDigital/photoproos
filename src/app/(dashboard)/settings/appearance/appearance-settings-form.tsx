@@ -502,8 +502,9 @@ export function AppearanceSettingsForm({
               return (
                 <div
                   key={preset.id}
+                  onClick={() => !isPending && handleThemePreview(preset.id)}
                   className={cn(
-                    "group relative flex flex-col rounded-xl border p-4 text-left transition-all",
+                    "group relative flex flex-col rounded-xl border p-4 text-left transition-all cursor-pointer",
                     isPreviewing
                       ? "border-[var(--primary)] bg-[var(--primary)]/5 ring-2 ring-[var(--primary)]/20"
                       : isSaved
@@ -512,12 +513,7 @@ export function AppearanceSettingsForm({
                   )}
                 >
                   {/* Color Preview */}
-                  <button
-                    type="button"
-                    onClick={() => handleThemePreview(preset.id)}
-                    disabled={isPending}
-                    className="flex items-center gap-3 mb-3"
-                  >
+                  <div className="flex items-center gap-3 mb-3">
                     <div
                       className="h-10 w-10 rounded-lg shadow-inner"
                       style={{ backgroundColor: preset.accent }}
@@ -526,7 +522,7 @@ export function AppearanceSettingsForm({
                       className="h-10 w-10 rounded-lg opacity-60"
                       style={{ backgroundColor: preset.preview.secondary }}
                     />
-                  </button>
+                  </div>
 
                   {/* Name and Description */}
                   <h3 className="font-medium text-foreground">{preset.name}</h3>
@@ -550,7 +546,7 @@ export function AppearanceSettingsForm({
                   {isPreviewing && !isSaved && (
                     <button
                       type="button"
-                      onClick={() => handleThemeSave(preset.id)}
+                      onClick={(e) => { e.stopPropagation(); handleThemeSave(preset.id); }}
                       disabled={isPending}
                       className="mt-3 w-full rounded-lg bg-[var(--primary)] px-3 py-1.5 text-sm font-medium text-white hover:bg-[var(--primary-hover)] disabled:opacity-50"
                     >
@@ -674,8 +670,9 @@ export function AppearanceSettingsForm({
             return (
               <div
                 key={font.id}
+                onClick={() => !isPending && handleFontPreview(font.id)}
                 className={cn(
-                  "group relative flex flex-col rounded-xl border p-4 text-left transition-all",
+                  "group relative flex flex-col rounded-xl border p-4 text-left transition-all cursor-pointer",
                   isPreviewing
                     ? "border-[var(--primary)] bg-[var(--primary)]/5 ring-2 ring-[var(--primary)]/20"
                     : isSaved
@@ -684,15 +681,12 @@ export function AppearanceSettingsForm({
                 )}
               >
                 {/* Font Preview */}
-                <button
-                  type="button"
-                  onClick={() => handleFontPreview(font.id)}
-                  disabled={isPending}
+                <div
                   className="text-2xl mb-2 text-foreground text-left"
                   style={{ fontFamily: font.fontFamily }}
                 >
                   Aa
-                </button>
+                </div>
 
                 {/* Name and Description */}
                 <h3 className="font-medium text-foreground">{font.name}</h3>
@@ -716,7 +710,7 @@ export function AppearanceSettingsForm({
                 {isPreviewing && !isSaved && (
                   <button
                     type="button"
-                    onClick={() => handleFontSave(font.id)}
+                    onClick={(e) => { e.stopPropagation(); handleFontSave(font.id); }}
                     disabled={isPending}
                     className="mt-3 w-full rounded-lg bg-[var(--primary)] px-3 py-1.5 text-sm font-medium text-white hover:bg-[var(--primary-hover)] disabled:opacity-50"
                   >

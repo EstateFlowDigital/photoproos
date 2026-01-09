@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Element Inspector Design Tokens Reference** - New "Tokens" tab in the inspector panel showing all design system variables:
+  - Colors (backgrounds, foregrounds, primary, status colors, borders)
+  - Spacing scale (--space-1 through --space-24, card/section/item gaps)
+  - Border radius presets (--radius-xs through --radius-full)
+  - Typography (font sizes, weights, line heights)
+  - Shadows (--shadow-xs through --shadow-2xl)
+  - Z-index scale (base through toast)
+  - Animation durations and easing functions
+  - Click any token to copy `var(--token-name)` to clipboard
+  - Color tokens show visual swatches for easy identification
 - **Element Inspector Smart Inputs** - Webflow-style intuitive controls for CSS properties:
   - Color picker with swatch preview for color properties
   - Slider + presets for spacing (padding, margin, gap) with unit selector

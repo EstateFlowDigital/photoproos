@@ -20,6 +20,8 @@ import {
   ArrowDown,
   Columns,
   Rows,
+  Palette,
+  Paintbrush,
 } from "lucide-react";
 import { getDevSettings } from "@/lib/utils/dev-settings";
 
@@ -72,6 +74,183 @@ const TEXT_ALIGN_OPTIONS = [
   { value: "right", icon: AlignRight },
   { value: "justify", icon: AlignJustify },
 ];
+
+// ============================================
+// DESIGN SYSTEM TOKENS REFERENCE
+// ============================================
+
+const DESIGN_TOKENS = {
+  colors: {
+    label: "Colors",
+    tokens: [
+      // Backgrounds
+      { name: "--background", value: "#0a0a0a", desc: "Page background" },
+      { name: "--background-secondary", value: "#141414", desc: "Cards, elevated" },
+      { name: "--background-tertiary", value: "#191919", desc: "Nested elements" },
+      { name: "--background-elevated", value: "#1e1e1e", desc: "Buttons, inputs" },
+      { name: "--background-hover", value: "#2a2a2a", desc: "Hover state" },
+      { name: "--card", value: "#141414", desc: "Card background" },
+      // Foregrounds
+      { name: "--foreground", value: "#ffffff", desc: "Primary text" },
+      { name: "--foreground-secondary", value: "#a3a3a3", desc: "Secondary text" },
+      { name: "--foreground-muted", value: "#8b8b8b", desc: "Muted text" },
+      // Primary
+      { name: "--primary", value: "#3b82f6", desc: "Primary actions" },
+      { name: "--primary-hover", value: "#2563eb", desc: "Primary hover" },
+      { name: "--primary-muted", value: "rgba(59, 130, 246, 0.15)", desc: "Primary bg" },
+      // Status
+      { name: "--success", value: "#22c55e", desc: "Success state" },
+      { name: "--success-muted", value: "rgba(34, 197, 94, 0.15)", desc: "Success bg" },
+      { name: "--warning", value: "#f97316", desc: "Warning state" },
+      { name: "--warning-muted", value: "rgba(249, 115, 22, 0.15)", desc: "Warning bg" },
+      { name: "--error", value: "#ef4444", desc: "Error state" },
+      { name: "--error-muted", value: "rgba(239, 68, 68, 0.15)", desc: "Error bg" },
+      { name: "--destructive", value: "#ef4444", desc: "Destructive" },
+      { name: "--ai", value: "#8b5cf6", desc: "AI features" },
+      { name: "--ai-muted", value: "rgba(139, 92, 246, 0.15)", desc: "AI bg" },
+      // Borders
+      { name: "--border", value: "rgba(255, 255, 255, 0.10)", desc: "Default border" },
+      { name: "--border-visible", value: "#333333", desc: "Visible border" },
+      { name: "--card-border", value: "rgba(255, 255, 255, 0.10)", desc: "Card border" },
+    ],
+  },
+  spacing: {
+    label: "Spacing",
+    tokens: [
+      { name: "--space-1", value: "0.25rem", desc: "4px" },
+      { name: "--space-2", value: "0.5rem", desc: "8px" },
+      { name: "--space-3", value: "0.75rem", desc: "12px" },
+      { name: "--space-4", value: "1rem", desc: "16px" },
+      { name: "--space-5", value: "1.25rem", desc: "20px" },
+      { name: "--space-6", value: "1.5rem", desc: "24px" },
+      { name: "--space-8", value: "2rem", desc: "32px" },
+      { name: "--space-10", value: "2.5rem", desc: "40px" },
+      { name: "--space-12", value: "3rem", desc: "48px" },
+      { name: "--space-16", value: "4rem", desc: "64px" },
+      { name: "--space-20", value: "5rem", desc: "80px" },
+      { name: "--space-24", value: "6rem", desc: "96px" },
+      { name: "--card-padding", value: "24px", desc: "Card padding" },
+      { name: "--section-gap", value: "24px", desc: "Section gap" },
+      { name: "--item-gap", value: "16px", desc: "Item gap" },
+    ],
+  },
+  radius: {
+    label: "Border Radius",
+    tokens: [
+      { name: "--radius-xs", value: "2px", desc: "Extra small" },
+      { name: "--radius-sm", value: "4px", desc: "Small" },
+      { name: "--radius-md", value: "8px", desc: "Medium" },
+      { name: "--radius-lg", value: "12px", desc: "Large" },
+      { name: "--radius-xl", value: "16px", desc: "Extra large" },
+      { name: "--radius-2xl", value: "24px", desc: "2XL" },
+      { name: "--radius-full", value: "9999px", desc: "Full round" },
+      { name: "--card-radius", value: "var(--radius-lg)", desc: "Card radius" },
+      { name: "--button-radius", value: "var(--radius-md)", desc: "Button radius" },
+      { name: "--input-radius", value: "var(--radius-md)", desc: "Input radius" },
+    ],
+  },
+  typography: {
+    label: "Typography",
+    tokens: [
+      { name: "--text-xs", value: "0.75rem", desc: "12px" },
+      { name: "--text-sm", value: "0.875rem", desc: "14px" },
+      { name: "--text-base", value: "1rem", desc: "16px" },
+      { name: "--text-lg", value: "1.125rem", desc: "18px" },
+      { name: "--text-xl", value: "1.25rem", desc: "20px" },
+      { name: "--text-2xl", value: "1.5rem", desc: "24px" },
+      { name: "--text-3xl", value: "1.875rem", desc: "30px" },
+      { name: "--text-4xl", value: "2.25rem", desc: "36px" },
+      { name: "--font-normal", value: "400", desc: "Normal weight" },
+      { name: "--font-medium", value: "500", desc: "Medium weight" },
+      { name: "--font-semibold", value: "600", desc: "Semi bold" },
+      { name: "--font-bold", value: "700", desc: "Bold weight" },
+      { name: "--leading-tight", value: "1.25", desc: "Tight line-height" },
+      { name: "--leading-normal", value: "1.5", desc: "Normal line-height" },
+      { name: "--leading-relaxed", value: "1.625", desc: "Relaxed" },
+    ],
+  },
+  shadows: {
+    label: "Shadows",
+    tokens: [
+      { name: "--shadow-xs", value: "0 1px 2px rgba(0, 0, 0, 0.3)", desc: "Extra small" },
+      { name: "--shadow-sm", value: "0 1px 3px rgba(0, 0, 0, 0.4)", desc: "Small" },
+      { name: "--shadow-md", value: "0 4px 6px rgba(0, 0, 0, 0.4)", desc: "Medium" },
+      { name: "--shadow-lg", value: "0 4px 12px rgba(0, 0, 0, 0.5)", desc: "Large" },
+      { name: "--shadow-xl", value: "0 8px 24px rgba(0, 0, 0, 0.5)", desc: "Extra large" },
+      { name: "--shadow-2xl", value: "0 16px 48px rgba(0, 0, 0, 0.6)", desc: "2XL" },
+    ],
+  },
+  zIndex: {
+    label: "Z-Index",
+    tokens: [
+      { name: "--z-base", value: "0", desc: "Base layer" },
+      { name: "--z-dropdown", value: "100", desc: "Dropdowns" },
+      { name: "--z-sticky", value: "200", desc: "Sticky elements" },
+      { name: "--z-overlay", value: "300", desc: "Overlays" },
+      { name: "--z-modal", value: "400", desc: "Modals" },
+      { name: "--z-popover", value: "500", desc: "Popovers" },
+      { name: "--z-tooltip", value: "600", desc: "Tooltips" },
+      { name: "--z-toast", value: "700", desc: "Toasts" },
+    ],
+  },
+  animation: {
+    label: "Animation",
+    tokens: [
+      { name: "--duration-instant", value: "50ms", desc: "Instant" },
+      { name: "--duration-fast", value: "150ms", desc: "Fast" },
+      { name: "--duration-base", value: "200ms", desc: "Base" },
+      { name: "--duration-slow", value: "300ms", desc: "Slow" },
+      { name: "--duration-slower", value: "500ms", desc: "Slower" },
+      { name: "--ease-out", value: "cubic-bezier(0.33, 1, 0.68, 1)", desc: "Ease out" },
+      { name: "--ease-spring", value: "cubic-bezier(0.34, 1.56, 0.64, 1)", desc: "Spring" },
+    ],
+  },
+};
+
+// Token item component with copy functionality
+function TokenItem({
+  name,
+  value,
+  desc,
+  isColor = false
+}: {
+  name: string;
+  value: string;
+  desc: string;
+  isColor?: boolean;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(`var(${name})`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--background-elevated)] transition-colors text-left group"
+    >
+      {isColor && (
+        <div
+          className="w-6 h-6 rounded border border-[var(--border)] flex-shrink-0"
+          style={{ backgroundColor: value.startsWith("rgba") || value.startsWith("#") ? value : `var(${name})` }}
+        />
+      )}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <code className="text-[11px] text-[var(--primary)] truncate">{name}</code>
+          {copied && <Check className="w-3 h-3 text-[var(--success)]" />}
+        </div>
+        <div className="text-[10px] text-[var(--foreground-muted)] truncate">{desc}</div>
+      </div>
+      <div className="text-[10px] text-[var(--foreground-muted)] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+        Click to copy
+      </div>
+    </button>
+  );
+}
 
 // Parse numeric value and unit from CSS value
 function parseValueUnit(value: string): { num: number; unit: string } {
@@ -667,6 +846,8 @@ export function ElementInspector() {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedRect, setSelectedRect] = useState<DOMRect | null>(null);
   const [navigationHistory, setNavigationHistory] = useState<HTMLElement[]>([]);
+  const [activeTab, setActiveTab] = useState<"styles" | "tokens">("styles");
+  const [expandedTokenGroups, setExpandedTokenGroups] = useState<Set<string>>(new Set(["colors"]));
   const dragStartRef = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
   const originalStylesRef = useRef<Map<string, string>>(new Map());
 
@@ -1291,21 +1472,50 @@ ${Object.entries(styles)
             </button>
           </div>
 
-          {/* Notes Section */}
-          <div className="p-3 border-b border-[var(--border)]">
-            <label className="text-xs font-medium text-[var(--foreground-muted)] block mb-1.5">
-              Notes (what do you want to change?)
-            </label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g., Make padding larger, change to blue..."
-              className="w-full h-16 text-sm px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] resize-none"
-            />
+          {/* Tab Toggle */}
+          <div className="flex border-b border-[var(--border)]">
+            <button
+              onClick={() => setActiveTab("styles")}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${
+                activeTab === "styles"
+                  ? "text-[var(--primary)] border-b-2 border-[var(--primary)] -mb-[1px]"
+                  : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              <Paintbrush className="w-3.5 h-3.5" />
+              Styles
+            </button>
+            <button
+              onClick={() => setActiveTab("tokens")}
+              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors ${
+                activeTab === "tokens"
+                  ? "text-[var(--primary)] border-b-2 border-[var(--primary)] -mb-[1px]"
+                  : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              <Palette className="w-3.5 h-3.5" />
+              Tokens
+            </button>
           </div>
 
-          {/* Grouped Style Editor */}
-          <div className="flex-1 overflow-y-auto">
+          {/* Styles Tab Content */}
+          {activeTab === "styles" && (
+            <>
+              {/* Notes Section */}
+              <div className="p-3 border-b border-[var(--border)]">
+                <label className="text-xs font-medium text-[var(--foreground-muted)] block mb-1.5">
+                  Notes (what do you want to change?)
+                </label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="e.g., Make padding larger, change to blue..."
+                  className="w-full h-16 text-sm px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] resize-none"
+                />
+              </div>
+
+              {/* Grouped Style Editor */}
+              <div className="flex-1 overflow-y-auto">
             {Object.entries(STYLE_GROUPS).map(([groupKey, group]) => {
               const groupStyles = group.props.filter((p) => styles[p] !== undefined);
               if (groupStyles.length === 0) return null;
@@ -1391,7 +1601,66 @@ ${Object.entries(styles)
                 <Plus className="w-3 h-3" /> Add property
               </button>
             </div>
-          </div>
+              </div>
+            </>
+          )}
+
+          {/* Tokens Tab Content */}
+          {activeTab === "tokens" && (
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-3 border-b border-[var(--border)] bg-[var(--background-tertiary)]">
+                <p className="text-xs text-[var(--foreground-muted)]">
+                  Click any token to copy <code className="text-[var(--primary)]">var(--token-name)</code> to clipboard
+                </p>
+              </div>
+              {Object.entries(DESIGN_TOKENS).map(([groupKey, group]) => {
+                const isExpanded = expandedTokenGroups.has(groupKey);
+                const isColorGroup = groupKey === "colors";
+
+                return (
+                  <div key={groupKey} className="border-b border-[var(--border)]">
+                    <button
+                      onClick={() => {
+                        setExpandedTokenGroups((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(groupKey)) {
+                            next.delete(groupKey);
+                          } else {
+                            next.add(groupKey);
+                          }
+                          return next;
+                        });
+                      }}
+                      className="w-full flex items-center justify-between px-3 py-2 hover:bg-[var(--background-elevated)] transition-colors"
+                    >
+                      <span className="text-xs font-medium text-[var(--foreground-muted)]">
+                        {group.label}
+                        <span className="ml-1 text-[10px] opacity-60">({group.tokens.length})</span>
+                      </span>
+                      {isExpanded ? (
+                        <ChevronUp className="w-3 h-3 text-[var(--foreground-muted)]" />
+                      ) : (
+                        <ChevronDown className="w-3 h-3 text-[var(--foreground-muted)]" />
+                      )}
+                    </button>
+                    {isExpanded && (
+                      <div className="px-2 pb-2">
+                        {group.tokens.map((token) => (
+                          <TokenItem
+                            key={token.name}
+                            name={token.name}
+                            value={token.value}
+                            desc={token.desc}
+                            isColor={isColorGroup}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Footer */}
           <div className="p-2 border-t border-[var(--border)] bg-[var(--background-tertiary)] text-center">
