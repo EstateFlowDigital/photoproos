@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { QuickThemeSwitcher } from "@/components/ui/quick-theme-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { KeyboardShortcutsModal } from "@/components/ui/keyboard-shortcuts-modal";
-import { ChevronDown, Bell, HelpCircle, Search } from "lucide-react";
+import { ChevronDown, Bell, HelpCircle } from "lucide-react";
 import {
   getNotifications,
   markNotificationAsRead,
@@ -485,20 +485,35 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
           className
         )}
       >
-      {/* Left side - search icon */}
+      {/* Left side - search */}
       <div className="order-2 flex w-full flex-1 items-center gap-2 sm:order-1 sm:w-auto">
+        {/* Mobile: Icon only */}
         <button
           type="button"
           onClick={() => {
             setSearchOpen(true);
             setTimeout(() => searchInputRef.current?.focus(), 0);
           }}
-          className="flex h-10 w-10 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-[var(--background-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-[var(--background-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 lg:hidden"
           aria-label="Search"
         >
-          <IconBadge size="sm" tone={searchOpen ? "primary" : "default"}>
-            <Search className="h-3.5 w-3.5" />
-          </IconBadge>
+          <SearchIcon className="h-4 w-4" />
+        </button>
+        {/* Desktop: Search bar style */}
+        <button
+          type="button"
+          onClick={() => {
+            setSearchOpen(true);
+            setTimeout(() => searchInputRef.current?.focus(), 0);
+          }}
+          className="hidden lg:flex h-9 items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 text-sm text-foreground-muted transition-all hover:border-[var(--primary)] hover:text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
+          aria-label="Search"
+        >
+          <SearchIcon className="h-4 w-4" />
+          <span className="text-foreground-muted">Search...</span>
+          <kbd className="ml-auto hidden xl:inline-flex h-5 items-center gap-1 rounded border border-[var(--card-border)] bg-[var(--background-tertiary)] px-1.5 font-mono text-[10px] font-medium text-foreground-muted">
+            <span className="text-xs">⌘</span>K
+          </kbd>
         </button>
       </div>
 
