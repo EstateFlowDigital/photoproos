@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
-type Tone = "default" | "primary" | "success" | "danger" | "warning" | "muted";
+type Tone = "default" | "primary" | "success" | "danger" | "warning" | "muted" | "ghost";
 type Size = "sm" | "md" | "lg";
 
 interface IconBadgeProps {
@@ -22,6 +22,7 @@ const toneClasses: Record<Tone, string> = {
   success: "bg-[var(--success)]/10 border-[var(--card-border)] text-[var(--success)]",
   danger: "bg-[var(--error)]/10 border-[var(--card-border)] text-[var(--error)]",
   warning: "bg-[var(--warning)]/10 border-[var(--card-border)] text-[var(--warning)]",
+  ghost: "bg-transparent border-transparent text-foreground-muted shadow-none",
 };
 
 const sizeClasses: Record<Size, string> = {

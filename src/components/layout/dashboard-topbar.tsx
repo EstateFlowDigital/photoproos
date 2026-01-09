@@ -512,7 +512,7 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
           onClick={() => setQuickActionsOpen((prev) => !prev)}
           className="flex h-9 items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 text-sm font-medium text-foreground transition-all hover:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
         >
-          <IconBadge size="sm" tone={quickActionsOpen ? "primary" : "default"}>
+          <IconBadge size="sm" tone={quickActionsOpen ? "primary" : "ghost"}>
             <Zap className="h-3.5 w-3.5" />
           </IconBadge>
           <span className="hidden lg:inline">Quick Actions</span>
