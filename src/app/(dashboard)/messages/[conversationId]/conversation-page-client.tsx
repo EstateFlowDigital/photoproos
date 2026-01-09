@@ -158,6 +158,12 @@ export function ConversationPageClient({
   // Forward modal state
   const [forwardingMessage, setForwardingMessage] = useState<MessageWithDetails | null>(null);
 
+  // Info panel state
+  const [showInfoPanel, setShowInfoPanel] = useState(false);
+
+  // Add people modal state
+  const [showAddPeopleModal, setShowAddPeopleModal] = useState(false);
+
   // Starred messages state (track locally for optimistic updates)
   const [starredMessageIds, setStarredMessageIds] = useState<Set<string>>(new Set());
 
@@ -609,7 +615,7 @@ export function ConversationPageClient({
             <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[var(--card)] bg-green-500" />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-1">
             <h2 className="font-semibold text-[var(--foreground)]">{displayName}</h2>
             <p className="text-xs text-[var(--foreground-muted)]">
               {conversation.type === "direct"
@@ -663,8 +669,12 @@ export function ConversationPageClient({
             <Video className="h-5 w-5" aria-hidden="true" />
           </button>
           <button
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
+            onClick={() => setShowInfoPanel(!showInfoPanel)}
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
+              showInfoPanel ? "bg-[var(--primary)]/10 text-[var(--primary)]" : "text-[var(--foreground-muted)] hover:bg-[var(--background-hover)]"
+            }`}
             aria-label="View conversation info"
+            aria-pressed={showInfoPanel}
           >
             <Info className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -706,6 +716,7 @@ export function ConversationPageClient({
                     Mute Notifications
                   </button>
                   <button
+                    onClick={() => { setShowAddPeopleModal(true); setShowMenu(false); }}
                     className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-[var(--foreground)] hover:bg-[var(--background-hover)]"
                     role="menuitem"
                   >
@@ -1102,6 +1113,176 @@ export function ConversationPageClient({
           onClose={() => setForwardingMessage(null)}
           onForwarded={() => setForwardingMessage(null)}
         />
+      )}
+
+      {/* Conversation Info Panel */}
+      {showInfoPanel && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setShowInfoPanel(false)} />
+          <div className="fixed inset-y-0 right-0 z-50 w-full max-w-sm border-l border-[var(--card-border)] bg-[var(--card)] md:relative md:z-auto md:w-80">
+            <div className="flex h-full flex-col">
+              {/* Info Panel Header */}
+              <div className="flex items-center justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-4 py-3">
+                <h3 className="font-semibold text-[var(--foreground)]">Conversation Info</h3>
+                <button
+                  onClick={() => setShowInfoPanel(false)}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
+                  aria-label="Close info panel"
+                >
+                  <X className="h-5 w-5" aria-hidden="true" />
+                </button>
+              </div>
+
+              {/* Conversation Avatar & Name */}
+              <div className="flex flex-col items-center gap-3 px-4 py-6 border-b border-[var(--card-border)]">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-blue-600 text-white font-medium text-2xl">
+                  {conversation.avatarUrl ? (
+                    <img
+                      src={conversation.avatarUrl}
+                      alt={displayName}
+                      className="h-full w-full rounded-full object-cover"
+                    />
+                  ) : conversation.type === "direct" ? (
+                    initials
+                  ) : (
+                    icon
+                  )}
+                </div>
+                <div className="text-center">
+                  <h4 className="font-semibold text-lg text-[var(--foreground)]">{displayName}</h4>
+                  <p className="text-sm text-[var(--foreground-muted)]">
+                    {conversation.type === "direct" ? "Direct Message" :
+                     conversation.type === "group" ? "Group Chat" :
+                     conversation.type === "channel" ? "Channel" : "Support"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Participants */}
+              <div className="flex-1 overflow-y-auto">
+                <div className="px-4 py-3">
+                  <h4 className="text-xs font-medium uppercase tracking-wide text-[var(--foreground-muted)] mb-3">
+                    Participants ({conversation.participants.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {conversation.participants.map((participant) => {
+                      const name = participant.user?.fullName || participant.client?.fullName || "Unknown";
+                      const participantInitials = name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
+                      const isCurrentUser = participant.userId === currentUserId;
+
+                      return (
+                        <div
+                          key={participant.id}
+                          className="flex items-center gap-3 rounded-lg p-2 hover:bg-[var(--background-hover)]"
+                        >
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gray-400 to-gray-500 text-white text-sm font-medium">
+                            {participantInitials}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm text-[var(--foreground)] truncate">
+                              {name} {isCurrentUser && "(You)"}
+                            </p>
+                            <p className="text-xs text-[var(--foreground-muted)]">
+                              {participant.userId ? "Team Member" : "Client"}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="px-4 py-3 border-t border-[var(--card-border)]">
+                  <h4 className="text-xs font-medium uppercase tracking-wide text-[var(--foreground-muted)] mb-3">
+                    Actions
+                  </h4>
+                  <div className="space-y-1">
+                    {conversation.type !== "direct" && (
+                      <button
+                        onClick={() => { setShowAddPeopleModal(true); setShowInfoPanel(false); }}
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--foreground)] hover:bg-[var(--background-hover)]"
+                      >
+                        <UserPlus className="h-4 w-4 shrink-0" aria-hidden="true" />
+                        Add People
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { handleToggleMute(); setShowInfoPanel(false); }}
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--foreground)] hover:bg-[var(--background-hover)]"
+                    >
+                      <BellOff className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      Mute Notifications
+                    </button>
+                    <button
+                      onClick={() => { handleTogglePin(); setShowInfoPanel(false); }}
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--foreground)] hover:bg-[var(--background-hover)]"
+                    >
+                      <Pin className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      Pin Conversation
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Add People Modal */}
+      {showAddPeopleModal && (
+        <>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowAddPeopleModal(false)}>
+            <div
+              className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="add-people-title"
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-4 py-3">
+                <h3 id="add-people-title" className="font-semibold text-[var(--foreground)]">Add People</h3>
+                <button
+                  onClick={() => setShowAddPeopleModal(false)}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
+                  aria-label="Close modal"
+                >
+                  <X className="h-5 w-5" aria-hidden="true" />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-4">
+                <p className="text-sm text-[var(--foreground-muted)] mb-4">
+                  {conversation.type === "direct"
+                    ? "Adding people will convert this to a group conversation."
+                    : "Select team members or clients to add to this conversation."}
+                </p>
+
+                <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-8 text-center">
+                  <Users className="mx-auto h-10 w-10 text-[var(--foreground-muted)] mb-3" />
+                  <p className="text-sm text-[var(--foreground-muted)]">
+                    This feature is coming soon.
+                  </p>
+                  <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                    You&apos;ll be able to add team members and clients to conversations.
+                  </p>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex justify-end gap-2 border-t border-[var(--card-border)] px-4 py-3">
+                <button
+                  onClick={() => setShowAddPeopleModal(false)}
+                  className="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-[var(--foreground)] hover:bg-[var(--background-hover)] transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
