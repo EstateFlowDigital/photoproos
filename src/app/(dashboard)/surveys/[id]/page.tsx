@@ -15,7 +15,7 @@ export default async function SurveyDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="survey-detail-page">
       <PageHeader
         title="Survey Results"
         subtitle={`Viewing survey ${id}`}

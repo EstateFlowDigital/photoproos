@@ -15,7 +15,7 @@ export default async function ShotListDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="shot-list-detail-page" className="space-y-6">
       <PageHeader
         title="Shot List Details"
         subtitle={`Managing shot list ${id}`}

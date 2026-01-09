@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default async function UploadPage() {
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-4" data-element="field-upload-page">
       <div className="max-w-lg mx-auto">
         <h1 className="text-2xl font-bold text-foreground mb-2">Quick Upload</h1>
         <p className="text-foreground-muted mb-8">Upload photos directly from your device</p>

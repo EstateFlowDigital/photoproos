@@ -10,7 +10,7 @@ export default async function GettingStartedPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="getting-started-page" className="space-y-6">
       <PageHeader
         title="Getting Started"
         subtitle="Quick start guide for new users"

@@ -10,7 +10,7 @@ export default async function WaitlistPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="waitlist-page">
       <PageHeader
         title="Waitlist"
         subtitle="Booking waitlist management"

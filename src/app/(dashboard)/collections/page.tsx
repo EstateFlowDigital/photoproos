@@ -10,7 +10,7 @@ export default async function CollectionsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="collections-page">
       <PageHeader
         title="Collections"
         subtitle="Curated photo collections"

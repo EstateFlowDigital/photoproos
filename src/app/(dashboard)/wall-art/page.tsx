@@ -10,7 +10,7 @@ export default async function WallArtPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="wall-art-page" className="space-y-6">
       <PageHeader
         title="Wall Art"
         subtitle="Canvas, metal prints, and framed products"

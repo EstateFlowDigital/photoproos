@@ -205,7 +205,7 @@ export function SupportChat({ ticket, onMessageSent }: SupportChatProps) {
       {/* Header */}
       <div
         className={cn(
-          "flex items-start justify-between gap-4 p-4",
+          "flex items-start justify-between gap-4 flex-wrap p-4",
           "border-b border-[var(--border)]"
         )}
       >

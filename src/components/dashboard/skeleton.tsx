@@ -54,7 +54,7 @@ export function QuickActionsSkeleton() {
 export function RevenueChartSkeleton() {
   return (
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between gap-3 flex-wrap mb-6">
         <div className="space-y-2">
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-8 w-36" />

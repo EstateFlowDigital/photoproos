@@ -10,7 +10,7 @@ export default async function FilesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="files-page" className="space-y-6">
       <PageHeader
         title="Files"
         subtitle="Manage all your uploaded files"

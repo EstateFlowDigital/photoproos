@@ -10,7 +10,7 @@ export default async function FailedPaymentsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="failed-payments-page" className="space-y-6">
       <PageHeader
         title="Failed Payments"
         subtitle="Recover failed payment attempts"

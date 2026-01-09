@@ -10,7 +10,7 @@ export default async function EmailInboxPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="email-inbox-page">
       <PageHeader
         title="Email Inbox"
         subtitle="Manage client emails in one place"

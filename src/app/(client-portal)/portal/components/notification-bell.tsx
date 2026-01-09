@@ -261,7 +261,7 @@ function ActivityItem({ activity, onRead }: ActivityItemProps) {
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start justify-between gap-2 flex-wrap">
           <div>
             <p
               className={`text-sm font-medium ${

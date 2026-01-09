@@ -345,7 +345,7 @@ export function AIPageClient({ conversations, stats }: AIPageClientProps) {
               aria-selected={activeConversation === conv.id}
               aria-label={`${conv.title || "New Conversation"}, ${conv.messageCount} messages`}
             >
-              <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start justify-between gap-2 flex-wrap">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">
                     {conv.title || "New Conversation"}

@@ -10,7 +10,7 @@ export default async function AssignmentsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="assignments-page">
       <PageHeader
         title="Job Assignments"
         subtitle="Assign team members to shoots"

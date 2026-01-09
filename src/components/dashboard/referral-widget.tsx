@@ -77,7 +77,7 @@ export function ReferralWidget({
   if (!referralCode) {
     return (
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
             <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
               <span className="text-xl">🎁</span>

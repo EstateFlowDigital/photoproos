@@ -619,7 +619,7 @@ function ResponseCard({
       )}
     >
       {/* Header */}
-      <div className="mb-2 flex items-start justify-between gap-2">
+      <div className="mb-2 flex items-start justify-between gap-2 flex-wrap">
         <div className="min-w-0 flex-1">
           <h3 className="font-medium text-[var(--foreground)] truncate">
             {response.title}

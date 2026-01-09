@@ -10,7 +10,7 @@ export default async function CampaignsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="campaigns-page">
       <PageHeader
         title="Marketing Campaigns"
         subtitle="Plan and track marketing initiatives"

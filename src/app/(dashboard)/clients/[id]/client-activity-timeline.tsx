@@ -101,7 +101,7 @@ export function ClientActivityTimeline({ activities }: ClientActivityTimelinePro
 
               {/* Content */}
               <div className="flex-1 min-w-0 pb-4">
-                <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start justify-between gap-2 flex-wrap">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-foreground truncate">{activity.title}</p>
                     {activity.description && (

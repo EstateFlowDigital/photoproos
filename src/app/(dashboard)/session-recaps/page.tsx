@@ -10,7 +10,7 @@ export default async function SessionRecapsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="session-recaps-page" className="space-y-6">
       <PageHeader
         title="Session Recaps"
         subtitle="Post-session summaries for clients"

@@ -10,7 +10,7 @@ export default async function GoogleIntegrationPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="google-integration-page" className="space-y-6">
       <PageHeader
         title="Google Integration"
         subtitle="Sync with Google Calendar and Drive"

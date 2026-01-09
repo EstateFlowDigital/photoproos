@@ -10,7 +10,7 @@ export default async function ReportsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="reports-page" className="space-y-6">
       <PageHeader
         title="Reports"
         subtitle="Business analytics and insights"

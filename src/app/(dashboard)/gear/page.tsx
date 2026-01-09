@@ -10,7 +10,7 @@ export default async function GearPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="gear-page" className="space-y-6">
       <PageHeader
         title="Gear"
         subtitle="Equipment inventory and tracking"

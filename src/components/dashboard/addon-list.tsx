@@ -303,7 +303,7 @@ export function AddonList({ initialAddons }: AddonListProps) {
                 </div>
 
                 <Link href={`/services/addons/${addon.id}`} className="block pl-4">
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", triggerInfo.color)}>

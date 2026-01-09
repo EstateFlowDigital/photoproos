@@ -378,7 +378,7 @@ export function RoadmapPageClient({
                               : "border-[var(--card-border)] bg-[var(--card)]"
                           )}
                         >
-                          <div className="mb-4 flex items-start justify-between">
+                          <div className="mb-4 flex items-start justify-between gap-3 flex-wrap">
                             <div className="flex items-center gap-3">
                               <div
                                 className={cn(
@@ -521,7 +521,7 @@ export function RoadmapPageClient({
 
                           {/* Content */}
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2 mb-1">
+                            <div className="flex items-start justify-between gap-2 flex-wrap mb-1">
                               <h3 className="font-medium text-foreground">
                                 {feature.title}
                               </h3>

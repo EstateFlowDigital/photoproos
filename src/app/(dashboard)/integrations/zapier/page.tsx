@@ -10,7 +10,7 @@ export default async function ZapierIntegrationPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="zapier-integration-page" className="space-y-6">
       <PageHeader
         title="Zapier Integration"
         subtitle="Connect to thousands of apps via Zapier"

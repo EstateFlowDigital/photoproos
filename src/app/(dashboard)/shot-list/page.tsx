@@ -10,7 +10,7 @@ export default async function ShotListPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="shot-list-page" className="space-y-6">
       <PageHeader
         title="Shot Lists"
         subtitle="Create and manage shot lists for shoots"

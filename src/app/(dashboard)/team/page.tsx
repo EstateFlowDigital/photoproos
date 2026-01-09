@@ -10,7 +10,7 @@ export default async function TeamPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="team-page">
       <PageHeader
         title="Team"
         subtitle="Manage team members and roles"

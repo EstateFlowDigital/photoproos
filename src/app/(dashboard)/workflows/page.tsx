@@ -10,7 +10,7 @@ export default async function WorkflowsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="workflows-page">
       <PageHeader
         title="Workflows"
         subtitle="Create and manage automated workflows"

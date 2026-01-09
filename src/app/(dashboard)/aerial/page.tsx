@@ -10,7 +10,7 @@ export default async function AerialPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="aerial-page" className="space-y-6">
       <PageHeader
         title="Aerial & Drone"
         subtitle="Manage drone photography and video projects"

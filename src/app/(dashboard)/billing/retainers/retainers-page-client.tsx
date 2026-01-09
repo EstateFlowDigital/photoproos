@@ -451,7 +451,7 @@ export function RetainersPageClient({ retainers, filter: _filter }: RetainersPag
               )}
             >
               {/* Header */}
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div>
                   <Link
                     href={`/clients/${retainer.client.id}`}

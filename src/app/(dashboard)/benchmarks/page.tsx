@@ -10,7 +10,7 @@ export default async function BenchmarksPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="benchmarks-page" className="space-y-6">
       <PageHeader
         title="Industry Benchmarks"
         subtitle="Compare your performance to industry standards"

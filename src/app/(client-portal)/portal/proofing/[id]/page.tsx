@@ -16,7 +16,7 @@ export default async function PortalProofingSessionPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" data-element="portal-proofing-session-page">
       <div className="max-w-4xl mx-auto px-4 py-12">
         <h1 className="text-2xl font-bold text-foreground mb-2">Proofing Session</h1>
         <p className="text-foreground-muted mb-8">Session {id}</p>

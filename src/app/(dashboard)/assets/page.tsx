@@ -10,7 +10,7 @@ export default async function AssetsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="assets-page" className="space-y-6">
       <PageHeader
         title="Brand Assets"
         subtitle="Manage logos, watermarks, and brand materials"

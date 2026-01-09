@@ -10,7 +10,7 @@ export default async function CommissionsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="commissions-page" className="space-y-6">
       <PageHeader
         title="Commissions"
         subtitle="Track referral and associate commissions"

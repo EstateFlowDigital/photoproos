@@ -10,7 +10,7 @@ export default async function BackupsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="backups-page">
       <PageHeader
         title="Backups"
         subtitle="Manage data backups and exports"

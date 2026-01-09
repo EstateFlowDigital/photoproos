@@ -10,7 +10,7 @@ export default async function NewSupportTicketPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="new-support-ticket-page">
       <PageHeader
         title="New Support Ticket"
         subtitle="Submit a support request"

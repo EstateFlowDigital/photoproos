@@ -68,7 +68,7 @@ export function ExpiringGalleriesWidget({ galleries }: ExpiringGalleriesWidgetPr
             className="rounded-lg border border-[var(--card-border)] p-4 hover:border-[var(--border-hover)] hover:bg-[var(--background-hover)] transition-colors"
           >
             <Link href={`/galleries/${gallery.id}`} className="block">
-              <div className="flex items-start justify-between gap-3 mb-2">
+              <div className="flex items-start justify-between gap-3 flex-wrap mb-2">
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-foreground truncate">
                     {gallery.name}

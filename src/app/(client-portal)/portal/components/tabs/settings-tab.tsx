@@ -242,7 +242,7 @@ export function SettingsTab({ client, onPreferencesChange }: SettingsTabProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h2 className="text-lg font-semibold text-[var(--foreground)]">
               Notification Preferences
@@ -347,7 +347,7 @@ export function SettingsTab({ client, onPreferencesChange }: SettingsTabProps) {
 
       {/* Shoot Preferences */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h3 className="text-sm font-semibold text-[var(--foreground)]">
               Shoot Preferences

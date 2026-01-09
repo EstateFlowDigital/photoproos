@@ -10,7 +10,7 @@ export default async function VipPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="vip-page">
       <PageHeader
         title="VIP Clients"
         subtitle="Manage top-tier client relationships"

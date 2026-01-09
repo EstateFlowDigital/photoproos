@@ -10,7 +10,7 @@ export default async function SneakPeeksPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="sneak-peeks-page">
       <PageHeader
         title="Sneak Peeks"
         subtitle="Quick preview galleries for clients"

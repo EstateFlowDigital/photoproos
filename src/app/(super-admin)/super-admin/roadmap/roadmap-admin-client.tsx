@@ -389,7 +389,7 @@ export function RoadmapAdminClient({
                   "bg-[var(--card)]"
                 )}
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-medium text-[var(--foreground)]">
@@ -487,7 +487,7 @@ export function RoadmapAdminClient({
                   "bg-[var(--card)]"
                 )}
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-medium text-[var(--foreground)]">

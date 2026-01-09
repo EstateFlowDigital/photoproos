@@ -10,7 +10,7 @@ export default async function PrintsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="prints-page" className="space-y-6">
       <PageHeader
         title="Print Products"
         subtitle="Manage print orders and fulfillment"

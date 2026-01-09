@@ -207,7 +207,7 @@ export function GalleryTemplatesClient({ templates: initialTemplates, services }
               key={template.id}
               className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 hover:border-[var(--border-hover)] transition-colors"
             >
-              <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
                 <div className="flex items-center gap-2">
                   <h3 className="text-base font-semibold text-foreground">{template.name}</h3>
                   {template.isDefault && (

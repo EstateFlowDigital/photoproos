@@ -10,7 +10,7 @@ export default async function CouponsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="coupons-page">
       <PageHeader
         title="Coupons & Promo Codes"
         subtitle="Create and manage discount codes"

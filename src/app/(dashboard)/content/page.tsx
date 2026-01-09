@@ -10,7 +10,7 @@ export default async function ContentPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="content-page">
       <PageHeader
         title="Content Calendar"
         subtitle="Plan and schedule your content"

@@ -10,7 +10,7 @@ export default async function AvailabilityPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="availability-page">
       <PageHeader
         title="Availability"
         subtitle="Set your booking availability"

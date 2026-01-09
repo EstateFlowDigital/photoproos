@@ -236,7 +236,7 @@ export function WatermarkTemplatesClient({ templates: initialTemplates }: Waterm
               className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 hover:border-[var(--border-hover)] transition-colors"
             >
               {/* Template Header */}
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold text-foreground truncate">

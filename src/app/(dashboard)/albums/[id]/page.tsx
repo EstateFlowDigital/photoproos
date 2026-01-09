@@ -15,7 +15,7 @@ export default async function AlbumDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="album-detail-page">
       <PageHeader
         title="Album Designer"
         subtitle={`Editing album ${id}`}

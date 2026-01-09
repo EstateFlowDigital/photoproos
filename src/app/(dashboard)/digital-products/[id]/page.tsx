@@ -15,7 +15,7 @@ export default async function DigitalProductDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="digital-product-detail-page">
       <PageHeader
         title="Digital Product"
         subtitle={`Product ${id}`}

@@ -10,7 +10,7 @@ export default async function LandingPagesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="landing-pages-page">
       <PageHeader
         title="Landing Pages"
         subtitle="Create custom landing pages for lead generation"

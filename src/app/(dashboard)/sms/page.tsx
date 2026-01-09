@@ -10,7 +10,7 @@ export default async function SmsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="sms-page">
       <PageHeader
         title="SMS Messaging"
         subtitle="Send and receive text messages with clients"

@@ -86,7 +86,7 @@ export default function ClientsFeaturePage() {
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <div className="mx-auto max-w-2xl">
             <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6" data-element="features-clients-preview-card">
-              <div className="mb-6 flex items-start justify-between">
+              <div className="mb-6 flex items-start justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-4">
                   <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--primary)]/10 text-xl font-bold text-[var(--primary)]">
                     SC

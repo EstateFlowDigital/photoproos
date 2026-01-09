@@ -10,7 +10,7 @@ export default async function CoursesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="courses-page">
       <PageHeader
         title="Courses"
         subtitle="Educational content and tutorials"

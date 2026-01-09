@@ -15,7 +15,7 @@ export default async function ReleaseDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="release-detail-page" className="space-y-6">
       <PageHeader
         title="Release Details"
         subtitle={`Viewing release ${id}`}

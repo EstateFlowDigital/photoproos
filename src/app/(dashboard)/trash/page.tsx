@@ -10,7 +10,7 @@ export default async function TrashPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="trash-page">
       <PageHeader
         title="Trash"
         subtitle="Recently deleted items"

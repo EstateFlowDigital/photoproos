@@ -98,7 +98,7 @@ export function UpcomingBookings({ bookings, className }: UpcomingBookingsProps)
           href={`/scheduling/${booking.id}`}
           className="group block p-4 transition-colors hover:bg-[var(--background-hover)]"
         >
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-3 flex-wrap">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <h4

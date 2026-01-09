@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default async function ChecklistPage() {
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-4" data-element="field-checklist-page">
       <div className="max-w-lg mx-auto">
         <h1 className="text-2xl font-bold text-foreground mb-2">Shoot Checklist</h1>
         <p className="text-foreground-muted mb-8">Track tasks and equipment for your shoot</p>

@@ -10,7 +10,7 @@ export default async function TeamReportPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="reports-team-page" className="space-y-6">
       <PageHeader
         title="Team Performance"
         subtitle="Track team productivity and workload"

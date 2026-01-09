@@ -296,7 +296,7 @@ export function RevenuePageClient({
               "bg-[var(--card)]"
             )}
           >
-            <div className="flex items-start justify-between mb-3">
+            <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
               <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", card.bgColor)}>
                 <card.icon className={cn("w-5 h-5", card.color)} aria-hidden="true" />
               </div>

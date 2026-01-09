@@ -10,7 +10,7 @@ export default async function GearMaintenancePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="gear-maintenance-page" className="space-y-6">
       <PageHeader
         title="Gear Maintenance"
         subtitle="Equipment maintenance and service schedule"

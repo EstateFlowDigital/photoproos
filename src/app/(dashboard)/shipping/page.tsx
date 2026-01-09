@@ -10,7 +10,7 @@ export default async function ShippingPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="shipping-page" className="space-y-6">
       <PageHeader
         title="Shipping"
         subtitle="Manage shipments and tracking"

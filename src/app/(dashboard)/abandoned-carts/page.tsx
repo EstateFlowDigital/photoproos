@@ -10,7 +10,7 @@ export default async function AbandonedCartsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="abandoned-carts-page">
       <PageHeader
         title="Abandoned Carts"
         subtitle="Recover lost sales"

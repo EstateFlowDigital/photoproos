@@ -90,7 +90,7 @@ export function SettingsField({
   return (
     <div
       className={cn(
-        horizontal ? "flex items-start justify-between gap-4" : "space-y-2",
+        horizontal ? "flex items-start justify-between gap-4 flex-wrap" : "space-y-2",
         className
       )}
     >

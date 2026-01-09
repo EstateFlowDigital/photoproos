@@ -10,7 +10,7 @@ export default async function NewBlogPostPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="blog-new-page">
       <PageHeader
         title="New Blog Post"
         subtitle="Create a new blog post"

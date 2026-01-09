@@ -10,7 +10,7 @@ export default async function StyleGuidesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="style-guides-page">
       <PageHeader
         title="Style Guides"
         subtitle="Create client-specific editing style guides"

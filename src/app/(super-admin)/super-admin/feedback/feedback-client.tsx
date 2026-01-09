@@ -425,7 +425,7 @@ export function FeedbackPageClient({ feedback, stats }: FeedbackPageClientProps)
                 !item.isReviewed && "border-l-4 border-l-[var(--primary)]"
               )}
             >
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div className="flex items-start gap-3">
                   {item.user?.avatarUrl ? (
                     <img

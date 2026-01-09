@@ -15,7 +15,7 @@ export default async function CollectionDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="collection-detail-page">
       <PageHeader
         title="Collection"
         subtitle={`Viewing collection ${id}`}

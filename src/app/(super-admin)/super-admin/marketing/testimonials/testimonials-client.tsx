@@ -410,7 +410,7 @@ export function TestimonialsClient({ testimonials: initialTestimonials = [] }: P
                 data-element={`testimonial-card-${testimonial.id}`}
               >
                 {/* Header */}
-                <div className="flex items-start justify-between mb-4 gap-2">
+                <div className="flex items-start justify-between mb-4 gap-2 flex-wrap">
                   <div className="flex items-center gap-2 flex-wrap">
                     {testimonial.isFeatured && (
                       <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-600 dark:text-yellow-400">

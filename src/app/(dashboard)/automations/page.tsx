@@ -10,7 +10,7 @@ export default async function AutomationsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="automations-page">
       <PageHeader
         title="Automations"
         subtitle="Automated actions and triggers"

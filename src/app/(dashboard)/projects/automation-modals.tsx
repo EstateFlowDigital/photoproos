@@ -241,7 +241,7 @@ export function AutomationRulesModal({
                       key={automation.id}
                       className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-4"
                     >
-                      <div className="flex items-start justify-between">
+                      <div className="flex items-start justify-between gap-3 flex-wrap">
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-foreground">{automation.name}</span>
@@ -641,7 +641,7 @@ export function RecurringTasksModal({
                       key={task.id}
                       className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-4"
                     >
-                      <div className="flex items-start justify-between">
+                      <div className="flex items-start justify-between gap-3 flex-wrap">
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-foreground">{task.title}</span>

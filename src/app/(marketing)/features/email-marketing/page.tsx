@@ -190,7 +190,7 @@ export default function EmailMarketingFeaturePage() {
                 key={feature.title}
                 className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5"
               >
-                <div className="flex items-start justify-between mb-3">
+                <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--ai)]/10">
                     <feature.icon className="h-5 w-5 text-[var(--ai)]" />
                   </div>

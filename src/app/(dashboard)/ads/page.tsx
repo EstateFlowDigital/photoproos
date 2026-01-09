@@ -10,7 +10,7 @@ export default async function AdsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="ads-page">
       <PageHeader
         title="Ad Campaigns"
         subtitle="Manage paid advertising"

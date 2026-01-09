@@ -541,7 +541,7 @@ export function ClientAddonPanel({
                         key={request.id}
                         className="p-4 rounded-lg border border-[var(--card-border)] bg-[var(--card)]"
                       >
-                        <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start justify-between gap-4 flex-wrap">
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="font-medium text-[var(--foreground)]">

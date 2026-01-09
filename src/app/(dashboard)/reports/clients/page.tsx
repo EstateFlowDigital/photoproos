@@ -10,7 +10,7 @@ export default async function ClientsReportPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="reports-clients-page" className="space-y-6">
       <PageHeader
         title="Client Analytics"
         subtitle="Client acquisition and retention metrics"

@@ -10,7 +10,7 @@ export default async function LicensesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="licenses-page">
       <PageHeader
         title="Usage Licenses"
         subtitle="Photo licensing and usage rights"

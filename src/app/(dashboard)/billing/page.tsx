@@ -321,7 +321,7 @@ export default async function BillingOverviewPage() {
             href={module.href}
             className="group rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 transition-all hover:border-[var(--primary)]/50 hover:shadow-lg"
           >
-            <div className="flex items-start justify-between">
+            <div className="flex items-start justify-between gap-3 flex-wrap">
               <div className="rounded-lg bg-[var(--background-secondary)] p-3">
                 <module.icon className="h-6 w-6 text-foreground" />
               </div>

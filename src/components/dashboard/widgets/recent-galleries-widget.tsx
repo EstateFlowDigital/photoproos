@@ -164,7 +164,7 @@ export function RecentGalleriesWidget({
 
           {/* Content */}
           <div className="flex flex-1 flex-col p-3">
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start justify-between gap-2 flex-wrap">
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium text-foreground">{gallery.name}</p>
                 <p className="mt-0.5 truncate text-xs text-foreground-muted">

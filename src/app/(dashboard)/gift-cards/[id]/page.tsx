@@ -15,7 +15,7 @@ export default async function GiftCardDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="gift-card-detail-page" className="space-y-6">
       <PageHeader
         title="Gift Card Details"
         subtitle={`Card ${id}`}

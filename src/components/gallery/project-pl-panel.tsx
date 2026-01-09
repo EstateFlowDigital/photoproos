@@ -5205,7 +5205,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
 
             {/* Expense info panel */}
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg">
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                   <h4 className="text-white font-semibold text-lg">
                     {selectedReceipt.expense.description}

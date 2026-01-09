@@ -2831,7 +2831,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                               : "bg-[var(--primary)]/10 border border-[var(--primary)]/20"
                           )}
                         >
-                          <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start justify-between gap-3 flex-wrap">
                             <div className="flex items-center gap-2">
                               <div
                                 className={cn(

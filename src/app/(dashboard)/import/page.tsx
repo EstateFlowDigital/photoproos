@@ -10,7 +10,7 @@ export default async function ImportPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="import-page" className="space-y-6">
       <PageHeader
         title="Import Data"
         subtitle="Import from other systems"

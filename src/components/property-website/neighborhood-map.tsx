@@ -609,7 +609,7 @@ export function NeighborhoodMap({
                           )
                         }
                       >
-                        <div className="flex items-start justify-between">
+                        <div className="flex items-start justify-between gap-3 flex-wrap">
                           <div className="flex-1">
                             <p className="font-medium text-foreground">
                               {poi.name}

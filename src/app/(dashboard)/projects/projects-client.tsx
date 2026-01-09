@@ -3383,7 +3383,7 @@ function TemplateLibraryModal({
                         onClick={() => onSelectTemplate(template.id)}
                         className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 text-left transition-colors hover:border-[var(--primary)] hover:bg-[var(--background-hover)]"
                       >
-                        <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start justify-between gap-3 flex-wrap">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               {template.icon && (

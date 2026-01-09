@@ -27,7 +27,7 @@ export default async function CustomDomainPage({ searchParams }: CustomDomainPag
   if (!result.success || !result.slug) {
     // Domain not found or not verified - show a friendly error
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0A0A0A] px-6">
+      <div className="flex min-h-screen items-center justify-center bg-[#0A0A0A] px-6" data-element="custom-domain-error-page">
         <div className="max-w-md text-center">
           <h1 className="text-2xl font-bold text-white">Domain Not Connected</h1>
           <p className="mt-3 text-gray-400">

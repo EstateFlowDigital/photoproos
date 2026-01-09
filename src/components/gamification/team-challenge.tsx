@@ -129,7 +129,7 @@ export const TeamChallengeCard = memo(function TeamChallengeCard({
       )}
     >
       {/* Header */}
-      <div className="flex items-start justify-between gap-3 p-4 border-b border-[var(--card-border)]">
+      <div className="flex items-start justify-between gap-3 flex-wrap p-4 border-b border-[var(--card-border)]">
         <div className="flex items-start gap-3">
           <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg", colorClass)}>
             <Icon className="h-5 w-5" aria-hidden="true" />

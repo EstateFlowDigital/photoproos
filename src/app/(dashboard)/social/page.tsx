@@ -10,7 +10,7 @@ export default async function SocialPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="social-page" className="space-y-6">
       <PageHeader
         title="Social Media"
         subtitle="Manage social media content and scheduling"

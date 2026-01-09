@@ -10,7 +10,7 @@ export default async function NewWorkflowPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="workflow-new-page">
       <PageHeader
         title="New Workflow"
         subtitle="Create a new automated workflow"

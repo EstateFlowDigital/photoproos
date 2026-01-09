@@ -10,7 +10,7 @@ export default async function SurveysPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="surveys-page">
       <PageHeader
         title="Surveys"
         subtitle="Client satisfaction surveys"

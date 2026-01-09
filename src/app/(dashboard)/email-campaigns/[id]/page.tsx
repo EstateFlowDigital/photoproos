@@ -15,7 +15,7 @@ export default async function EmailCampaignDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="email-campaign-detail-page">
       <PageHeader
         title="Email Campaign"
         subtitle={`Managing campaign ${id}`}

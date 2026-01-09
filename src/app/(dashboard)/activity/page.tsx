@@ -10,7 +10,7 @@ export default async function ActivityPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="activity-page">
       <PageHeader
         title="Activity Feed"
         subtitle="Recent activity across your account"

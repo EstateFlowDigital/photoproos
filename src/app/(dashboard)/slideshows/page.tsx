@@ -10,7 +10,7 @@ export default async function SlideshowsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="slideshows-page" className="space-y-6">
       <PageHeader
         title="Slideshows"
         subtitle="Create and share photo slideshows"

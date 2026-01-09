@@ -182,7 +182,7 @@ export function ChallengeCardSkeleton({ className }: { className?: string }) {
       aria-label="Loading challenge"
     >
       {/* Header */}
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-start justify-between gap-2 flex-wrap">
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-2">
             <Skeleton width={24} height={24} className="rounded" />

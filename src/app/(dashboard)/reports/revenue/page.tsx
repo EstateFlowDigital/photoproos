@@ -10,7 +10,7 @@ export default async function RevenueReportPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="reports-revenue-page" className="space-y-6">
       <PageHeader
         title="Revenue Report"
         subtitle="Track income and revenue trends"

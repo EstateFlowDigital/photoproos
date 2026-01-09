@@ -420,7 +420,7 @@ export function OrdersTableClient({
                         aria-label={`Select order ${order.orderNumber}`}
                       />
                     </div>
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
                       <div>
                         <p className="font-medium text-foreground">{order.orderNumber}</p>
                         <p className="text-xs text-foreground-muted">{formatDate(order.createdAt)}</p>

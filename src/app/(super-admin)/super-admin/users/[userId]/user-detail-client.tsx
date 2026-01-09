@@ -709,7 +709,7 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
                     "transition-colors"
                   )}
                 >
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start justify-between gap-2 flex-wrap">
                     <span className="font-medium text-[var(--foreground)] text-sm">
                       {ticket.subject}
                     </span>
@@ -766,7 +766,7 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
                   challenge.isCompleted && "opacity-60"
                 )}
               >
-                <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex items-start justify-between gap-2 flex-wrap mb-2">
                   <span className="font-medium text-[var(--foreground)]">
                     {challenge.title}
                   </span>

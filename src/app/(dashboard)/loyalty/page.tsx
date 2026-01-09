@@ -10,7 +10,7 @@ export default async function LoyaltyPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="loyalty-page" className="space-y-6">
       <PageHeader
         title="Loyalty Program"
         subtitle="Reward repeat clients"

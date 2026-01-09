@@ -193,7 +193,7 @@ function StatCard({ icon, label, value, format = "default", iconColor, iconBg, b
 
   return (
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${iconBg}`}>
           <span className={iconColor}>{icon}</span>
         </div>

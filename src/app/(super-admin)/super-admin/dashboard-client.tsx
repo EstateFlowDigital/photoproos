@@ -445,7 +445,7 @@ export function SuperAdminDashboardClient({
               "bg-[var(--card)]"
             )}
           >
-            <div className="flex items-start justify-between mb-3">
+            <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
               <div
                 className={cn(
                   "w-10 h-10 rounded-lg flex items-center justify-center",
@@ -534,7 +534,7 @@ export function SuperAdminDashboardClient({
                     "transition-colors"
                   )}
                 >
-                  <div className="flex items-start justify-between gap-2 mb-1">
+                  <div className="flex items-start justify-between gap-2 flex-wrap mb-1">
                     <span className="font-medium text-[var(--foreground)] text-sm truncate">
                       {ticket.subject}
                     </span>

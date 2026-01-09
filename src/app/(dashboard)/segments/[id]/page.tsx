@@ -15,7 +15,7 @@ export default async function SegmentDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="segment-detail-page" className="space-y-6">
       <PageHeader
         title="Segment"
         subtitle={`Segment ${id}`}

@@ -111,7 +111,7 @@ export function MapPreview({
         </div>
 
         {(showAddress || showDirectionsLink) && (
-          <div className="mt-3 flex items-start justify-between gap-3">
+          <div className="mt-3 flex items-start justify-between gap-3 flex-wrap">
             {showAddress && address && (
               <div className="flex items-start gap-2 flex-1 min-w-0">
                 <MapPinIcon className="h-4 w-4 text-foreground-muted mt-0.5 shrink-0" />
@@ -173,7 +173,7 @@ export function MapPreview({
       </div>
 
       {(showAddress || showDirectionsLink) && (
-        <div className="mt-3 flex items-start justify-between gap-3">
+        <div className="mt-3 flex items-start justify-between gap-3 flex-wrap">
           {showAddress && address && (
             <div className="flex items-start gap-2 flex-1 min-w-0">
               <MapPinIcon className="h-4 w-4 text-foreground-muted mt-0.5 shrink-0" />

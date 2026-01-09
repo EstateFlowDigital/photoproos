@@ -10,7 +10,7 @@ export default async function TimelinePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="timeline-page" className="space-y-6">
       <PageHeader
         title="Event Timeline"
         subtitle="Create and manage event day timelines"

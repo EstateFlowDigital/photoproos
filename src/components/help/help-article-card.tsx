@@ -88,7 +88,7 @@ export function HelpArticleCard({
         className
       )}
     >
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-start justify-between gap-2 flex-wrap">
         <h4 className="text-sm font-medium text-foreground group-hover:text-[var(--primary)]">
           {title}
         </h4>

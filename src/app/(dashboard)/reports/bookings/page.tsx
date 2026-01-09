@@ -10,7 +10,7 @@ export default async function BookingsReportPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="reports-bookings-page" className="space-y-6">
       <PageHeader
         title="Booking Analytics"
         subtitle="Track booking patterns and conversion"

@@ -1376,7 +1376,7 @@ function KanbanCard({
         isSelected && "ring-2 ring-[var(--primary)]"
       )}
     >
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-start justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
           <input
             type="checkbox"

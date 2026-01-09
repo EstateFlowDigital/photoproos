@@ -10,7 +10,7 @@ export default async function TimesheetsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="timesheets-page">
       <PageHeader
         title="Timesheets"
         subtitle="Track team hours and project time"

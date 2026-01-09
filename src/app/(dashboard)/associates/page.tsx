@@ -10,7 +10,7 @@ export default async function AssociatesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="associates-page">
       <PageHeader
         title="Associates"
         subtitle="Second shooters and associate photographers"

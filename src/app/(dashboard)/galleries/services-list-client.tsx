@@ -270,7 +270,7 @@ function ServiceCard({ service }: { service: Service }) {
       )}
     >
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", categoryInfo.color)}>

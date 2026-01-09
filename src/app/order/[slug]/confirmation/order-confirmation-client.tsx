@@ -186,7 +186,7 @@ export function OrderConfirmationClient({
               {orderDetails.items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-start justify-between text-sm"
+                  className="flex items-start justify-between gap-3 flex-wrap text-sm"
                 >
                   <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-2">

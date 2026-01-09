@@ -202,7 +202,7 @@ export function InvoiceSplitSection({
   if (existingSplit && !isEditing) {
     return (
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
           <div className="flex items-start gap-3">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
               <SplitIcon className="h-4 w-4 text-[var(--primary)]" />
@@ -257,7 +257,7 @@ export function InvoiceSplitSection({
   // Edit/Create mode
   return (
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
         <div className="flex items-start gap-3">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
             <SplitIcon className="h-4 w-4 text-foreground-muted" />

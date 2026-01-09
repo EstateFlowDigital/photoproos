@@ -413,7 +413,7 @@ export function TeamClient({ members: initialMembers = [] }: Props) {
                 data-element={`team-card-${member.id}`}
               >
                 {/* Header with actions */}
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
                   <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                     {member.imageUrl ? (
                       <img

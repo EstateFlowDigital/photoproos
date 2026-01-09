@@ -10,7 +10,7 @@ export default async function SegmentsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="segments-page" className="space-y-6">
       <PageHeader
         title="Client Segments"
         subtitle="Group clients for targeted marketing"

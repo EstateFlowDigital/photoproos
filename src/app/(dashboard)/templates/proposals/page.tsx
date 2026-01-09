@@ -10,7 +10,7 @@ export default async function ProposalTemplatesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="proposal-templates-page">
       <PageHeader
         title="Proposal Templates"
         subtitle="Create reusable proposal templates"

@@ -10,7 +10,7 @@ export default async function RentalsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="rentals-page" className="space-y-6">
       <PageHeader
         title="Equipment Rentals"
         subtitle="Track gear rentals and equipment loans"

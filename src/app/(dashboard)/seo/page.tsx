@@ -10,7 +10,7 @@ export default async function SeoPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="seo-page" className="space-y-6">
       <PageHeader
         title="SEO"
         subtitle="Search engine optimization settings"

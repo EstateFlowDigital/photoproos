@@ -312,7 +312,7 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
                             agreement.requiresSignature ? "bg-[var(--background)] -mx-6 px-6 py-6 first:-mt-2" : ""
                           }`}
                         >
-                          <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-start justify-between gap-4 flex-wrap">
                             <div>
                               <h3 className="font-medium text-white">
                                 {agreement.title}

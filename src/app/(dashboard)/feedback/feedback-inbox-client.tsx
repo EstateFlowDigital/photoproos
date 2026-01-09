@@ -219,7 +219,7 @@ export function FeedbackInboxClient({
                     if (!item.isRead) handleMarkAsRead(item.id);
                   }}
                 >
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         {!item.isRead && (

@@ -10,7 +10,7 @@ export default async function ArchivePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="archive-page">
       <PageHeader
         title="Archive"
         subtitle="Archived projects and data"

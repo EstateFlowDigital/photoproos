@@ -10,7 +10,7 @@ export default async function CommunicationsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="communications-page">
       <PageHeader
         title="Client Communications"
         subtitle="All client communication history"

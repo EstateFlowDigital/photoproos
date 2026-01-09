@@ -15,7 +15,7 @@ export default async function GearDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="gear-detail-page" className="space-y-6">
       <PageHeader
         title="Gear Details"
         subtitle={`Equipment ${id}`}

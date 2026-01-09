@@ -10,7 +10,7 @@ export default async function QuickBooksIntegrationPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="quickbooks-integration-page" className="space-y-6">
       <PageHeader
         title="QuickBooks Integration"
         subtitle="Sync invoices and expenses with QuickBooks"

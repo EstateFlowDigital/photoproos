@@ -15,7 +15,7 @@ export default async function WorkflowDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="workflow-detail-page">
       <PageHeader
         title="Workflow Editor"
         subtitle={`Editing workflow ${id}`}

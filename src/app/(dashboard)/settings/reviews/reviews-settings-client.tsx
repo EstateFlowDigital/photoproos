@@ -317,7 +317,7 @@ export function ReviewsSettingsClient({
 
       {/* Master Toggle */}
       <section className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h2 className="text-lg font-semibold text-foreground">
               Review Collection
@@ -467,7 +467,7 @@ export function ReviewsSettingsClient({
 
           {/* Follow-up Email */}
           <div className="p-4">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)] text-foreground-muted">
                   <Clock className="h-5 w-5" />
@@ -728,7 +728,7 @@ function TouchpointSetting({
   disabled?: boolean;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 p-4">
+    <div className="flex items-start justify-between gap-4 flex-wrap p-4">
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)] text-foreground-muted">
           {icon}

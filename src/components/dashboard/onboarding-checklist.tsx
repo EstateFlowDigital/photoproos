@@ -374,7 +374,7 @@ export function OnboardingChecklist({
           className
         )}
       >
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-start gap-3">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--primary)]/10 text-3xl">
               {emoji}
@@ -455,7 +455,7 @@ export function OnboardingChecklist({
           className
         )}
       >
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--success)]/10 text-[var(--success)]">
               <PartyPopper className="h-5 w-5" />
@@ -526,7 +526,7 @@ export function OnboardingChecklist({
       )}
     >
       {/* Header */}
-      <div className="flex items-start justify-between gap-2 sm:gap-4">
+      <div className="flex items-start justify-between gap-2 flex-wrap sm:gap-4">
         <div className="flex items-start gap-2 sm:gap-3 min-w-0">
           <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
             <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />

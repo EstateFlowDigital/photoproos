@@ -10,7 +10,7 @@ export default async function TagsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="tags-page" className="space-y-6">
       <PageHeader
         title="Tags"
         subtitle="Manage tags and labels"

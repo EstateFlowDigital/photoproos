@@ -15,7 +15,7 @@ export default async function AssociateDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="associate-detail-page">
       <PageHeader
         title="Associate Profile"
         subtitle={`Managing associate ${id}`}

@@ -202,7 +202,7 @@ function ConversationCard({
         <MessageSquare className="h-5 w-5" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start justify-between gap-2 flex-wrap">
           <span className="font-medium text-[var(--foreground)]">
             {conversation.name || "Support Chat"}
           </span>
@@ -267,7 +267,7 @@ function ChatRequestCard({
 
   return (
     <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4">
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-start justify-between gap-2 flex-wrap">
         <div>
           <div className="flex items-center gap-2">
             <span className="font-medium text-[var(--foreground)]">

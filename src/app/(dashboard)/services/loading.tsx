@@ -28,7 +28,7 @@ export default function ServicesLoading() {
             className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6"
           >
             {/* Service Header */}
-            <div className="flex items-start justify-between mb-4">
+            <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
               <div>
                 <div className="h-5 w-32 rounded bg-[var(--background-secondary)] animate-pulse" />
                 <div className="mt-2 h-4 w-20 rounded bg-[var(--background-secondary)] animate-pulse" />

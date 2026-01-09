@@ -1497,7 +1497,7 @@ function PolicyModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-xl rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
             <h3 className="text-lg font-semibold text-foreground">Policies & Agreements</h3>
             <p className="mt-1 text-sm text-foreground-muted">Version {POLICY_VERSION}</p>

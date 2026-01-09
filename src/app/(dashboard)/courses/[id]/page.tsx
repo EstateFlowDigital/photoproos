@@ -15,7 +15,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="course-detail-page">
       <PageHeader
         title="Course"
         subtitle={`Viewing course ${id}`}

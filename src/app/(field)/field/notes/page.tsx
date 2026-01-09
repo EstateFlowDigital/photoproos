@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default async function NotesPage() {
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-4" data-element="field-notes-page">
       <div className="max-w-lg mx-auto">
         <h1 className="text-2xl font-bold text-foreground mb-2">Field Notes</h1>
         <p className="text-foreground-muted mb-8">Capture notes and observations during shoots</p>

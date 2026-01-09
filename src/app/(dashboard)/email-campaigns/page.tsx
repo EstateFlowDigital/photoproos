@@ -10,7 +10,7 @@ export default async function EmailCampaignsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="email-campaigns-page">
       <PageHeader
         title="Email Campaigns"
         subtitle="Create and send email marketing campaigns"

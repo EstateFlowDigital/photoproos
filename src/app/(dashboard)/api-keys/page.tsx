@@ -10,7 +10,7 @@ export default async function ApiKeysPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="api-keys-page">
       <PageHeader
         title="API Keys"
         subtitle="Manage API access and authentication"

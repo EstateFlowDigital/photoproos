@@ -10,7 +10,7 @@ export default async function WorkshopsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="workshops-page">
       <PageHeader
         title="Workshops"
         subtitle="Create and sell photography workshops"

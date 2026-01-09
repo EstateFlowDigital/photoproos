@@ -10,7 +10,7 @@ export default async function FloorPlansPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="floor-plans-page" className="space-y-6">
       <PageHeader
         title="Floor Plans"
         subtitle="Create and manage property floor plans"

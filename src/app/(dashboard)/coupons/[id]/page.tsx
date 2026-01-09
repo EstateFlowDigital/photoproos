@@ -15,7 +15,7 @@ export default async function CouponDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="coupon-detail-page">
       <PageHeader
         title="Coupon Details"
         subtitle={`Coupon ${id}`}

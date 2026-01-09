@@ -10,7 +10,7 @@ export default async function ClientJourneyPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="client-journey-page" className="space-y-6">
       <PageHeader
         title="Client Journey"
         subtitle="Visualize the client lifecycle"

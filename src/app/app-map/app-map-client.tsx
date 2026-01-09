@@ -764,7 +764,7 @@ export function AppMapClient() {
     );
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
+    <div className="min-h-screen bg-[#0A0A0A]" data-element="app-map-page">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-[#0A0A0A]/95 backdrop-blur-sm border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-4">

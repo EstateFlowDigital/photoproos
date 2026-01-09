@@ -15,7 +15,7 @@ export default async function SneakPeekDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="sneak-peek-detail-page">
       <PageHeader
         title="Sneak Peek"
         subtitle={`Preview ${id}`}

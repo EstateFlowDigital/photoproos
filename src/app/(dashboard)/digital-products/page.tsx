@@ -10,7 +10,7 @@ export default async function DigitalProductsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="digital-products-page">
       <PageHeader
         title="Digital Products"
         subtitle="Sell presets, guides, and digital downloads"

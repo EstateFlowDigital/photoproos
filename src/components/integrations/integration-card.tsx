@@ -74,7 +74,7 @@ export function IntegrationCard({
       )}
     >
       {/* Header */}
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
           <div
             className={cn(

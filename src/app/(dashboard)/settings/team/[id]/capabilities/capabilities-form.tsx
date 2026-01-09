@@ -176,7 +176,7 @@ export function CapabilitiesForm({
 
               return (
                 <div key={service.id} className="px-6 py-4">
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-foreground">{service.name}</h4>
                       <p className="text-sm text-foreground-muted mt-0.5">

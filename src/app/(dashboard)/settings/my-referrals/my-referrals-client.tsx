@@ -761,7 +761,7 @@ export function MyReferralsClient({
                       >
                         <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-[var(--success)]/10 blur-2xl" />
                         <div className="relative">
-                          <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
                             <div>
                               <p className="text-2xl font-bold text-foreground">
                                 {formatCurrency(reward.valueCents)}

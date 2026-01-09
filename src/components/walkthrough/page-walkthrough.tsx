@@ -279,7 +279,7 @@ export function PageWalkthrough({
         )}
       >
         <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10">
                 <HelpCircle className="h-5 w-5 text-[var(--primary)]" />

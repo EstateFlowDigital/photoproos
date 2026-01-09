@@ -93,7 +93,7 @@ export function ServicesConfigForm({
               key={item.id}
               className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
             >
-              <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start justify-between gap-2 flex-wrap">
                 <div className="flex-1 space-y-3">
                   <input
                     type="text"

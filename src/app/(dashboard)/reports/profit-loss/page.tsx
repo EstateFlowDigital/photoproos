@@ -10,7 +10,7 @@ export default async function ProfitLossPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="reports-profit-loss-page" className="space-y-6">
       <PageHeader
         title="Profit & Loss"
         subtitle="View your business income and expenses"

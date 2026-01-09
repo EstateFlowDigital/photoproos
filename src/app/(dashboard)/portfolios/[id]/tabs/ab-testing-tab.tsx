@@ -321,7 +321,7 @@ export function ABTestingTab({ website, isPending: externalPending }: ABTestingT
               key={test.id}
               className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6"
             >
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="font-semibold text-foreground">{test.name}</h4>

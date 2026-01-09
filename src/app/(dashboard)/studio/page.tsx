@@ -10,7 +10,7 @@ export default async function StudioPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="studio-page">
       <PageHeader
         title="Studio"
         subtitle="Manage studio space and bookings"

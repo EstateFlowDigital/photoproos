@@ -10,7 +10,7 @@ export default async function CustomFieldsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="custom-fields-page" className="space-y-6">
       <PageHeader
         title="Custom Fields"
         subtitle="Create custom data fields"

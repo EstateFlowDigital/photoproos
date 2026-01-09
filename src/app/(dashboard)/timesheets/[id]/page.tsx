@@ -15,7 +15,7 @@ export default async function TimesheetDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="timesheet-detail-page">
       <PageHeader
         title="Timesheet Details"
         subtitle={`Viewing timesheet ${id}`}

@@ -10,7 +10,7 @@ export default async function WebhooksPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="webhooks-page">
       <PageHeader
         title="Webhooks"
         subtitle="Configure webhook endpoints"

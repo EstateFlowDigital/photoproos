@@ -222,7 +222,7 @@ export function ClientMergeClient() {
                   : "border-[var(--card-border)] bg-[var(--card)] hover:border-[var(--border-hover)]"
               )}
             >
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                   <div className="flex items-center gap-2">
                     <span
@@ -303,7 +303,7 @@ export function ClientMergeClient() {
                         : "border-[var(--card-border)] bg-[var(--background-secondary)]"
                   )}
                 >
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div className="flex-1">
                       <p className="font-medium text-foreground">
                         {client.fullName || "No name"}

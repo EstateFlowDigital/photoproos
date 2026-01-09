@@ -10,7 +10,7 @@ export default async function TaxSummaryPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="reports-tax-summary-page" className="space-y-6">
       <PageHeader
         title="Tax Summary"
         subtitle="Tax-ready reports and deductions overview"

@@ -10,7 +10,7 @@ export default async function WaiversPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="waivers-page">
       <PageHeader
         title="Waivers"
         subtitle="Liability waivers and agreements"

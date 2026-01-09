@@ -10,7 +10,7 @@ export default async function EmailTemplatesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="email-templates-page">
       <PageHeader
         title="Email Templates"
         subtitle="Create reusable email templates"

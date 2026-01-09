@@ -10,7 +10,7 @@ export default async function BookingRulesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="booking-rules-page">
       <PageHeader
         title="Booking Rules"
         subtitle="Configure booking policies and limits"

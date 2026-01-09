@@ -10,7 +10,7 @@ export default async function NewReleasePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="new-release-page" className="space-y-6">
       <PageHeader
         title="New Release"
         subtitle="Create a new release form"

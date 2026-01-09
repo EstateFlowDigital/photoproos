@@ -11,7 +11,7 @@ export default async function PortalDownloadsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" data-element="portal-downloads-page">
       <div className="max-w-4xl mx-auto px-4 py-12">
         <h1 className="text-2xl font-bold text-foreground mb-2">Downloads</h1>
         <p className="text-foreground-muted mb-8">Your download history and available files</p>

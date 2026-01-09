@@ -10,7 +10,7 @@ export default async function StoragePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="storage-page">
       <PageHeader
         title="Storage"
         subtitle="Monitor storage usage and manage space"

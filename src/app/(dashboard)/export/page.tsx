@@ -10,7 +10,7 @@ export default async function ExportPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div data-element="export-page" className="space-y-6">
       <PageHeader
         title="Export Data"
         subtitle="Export your data"

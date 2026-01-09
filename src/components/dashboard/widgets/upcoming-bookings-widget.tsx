@@ -100,7 +100,7 @@ export function UpcomingBookingsWidget({
           href={`/scheduling/${booking.id}`}
           className="block rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-3 transition-colors hover:bg-[var(--background-elevated)]"
         >
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-3 flex-wrap">
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium text-foreground">
                 {booking.title}

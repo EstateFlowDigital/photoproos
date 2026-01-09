@@ -45,7 +45,7 @@ export function ClientGrowthWidget({
   return (
     <div className={cn("space-y-4", className)}>
       {/* Main Stats */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-bold text-foreground">

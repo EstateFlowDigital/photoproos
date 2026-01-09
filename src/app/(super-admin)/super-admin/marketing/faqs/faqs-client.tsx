@@ -393,7 +393,7 @@ export function FAQsClient({ faqs: initialFaqs = [] }: Props) {
                       )}
                       data-element={`faq-card-${faq.id}`}
                     >
-                      <div className="flex items-start justify-between gap-3 sm:gap-4">
+                      <div className="flex items-start justify-between gap-3 flex-wrap sm:gap-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-2">
                             <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", CATEGORY_COLORS[faq.category])}>
