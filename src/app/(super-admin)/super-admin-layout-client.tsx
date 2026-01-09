@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 import { useEffect, useState, useTransition } from "react";
 import { getActiveImpersonation, endImpersonation } from "@/lib/actions/super-admin";
 import { toast } from "sonner";
+import { ElementInspector } from "@/components/dev/element-inspector";
+import { ErrorTracker } from "@/components/dev/error-tracker";
 
 // Icons
 function LayoutDashboardIcon({ className }: { className?: string }) {
@@ -466,6 +468,10 @@ export function SuperAdminLayoutClient({
         {/* Main content */}
         <main className="flex-1 min-w-0 p-6">{children}</main>
       </div>
+
+      {/* Dev Tools */}
+      <ElementInspector />
+      <ErrorTracker />
     </div>
   );
 }

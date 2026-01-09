@@ -14,6 +14,8 @@ export interface DevSettings {
   hideDebugBanner: boolean;
   /** Enable verbose navigation debugging in console */
   enableNavDebug: boolean;
+  /** Hide the Element Inspector tool */
+  hideElementInspector: boolean;
 }
 
 const DEFAULT_SETTINGS: DevSettings = {
@@ -21,6 +23,7 @@ const DEFAULT_SETTINGS: DevSettings = {
   hideHUD: false,
   hideDebugBanner: false,
   enableNavDebug: false,
+  hideElementInspector: false,
 };
 
 /**
@@ -96,6 +99,6 @@ export function resetDevSettings(): DevSettings {
 /**
  * Check if a specific dev tool should be hidden
  */
-export function isDevToolHidden(tool: keyof Pick<DevSettings, "hideBugProbe" | "hideHUD" | "hideDebugBanner">): boolean {
+export function isDevToolHidden(tool: keyof Pick<DevSettings, "hideBugProbe" | "hideHUD" | "hideDebugBanner" | "hideElementInspector">): boolean {
   return getDevSettings()[tool];
 }

@@ -97,6 +97,14 @@ export function DevToolsSettings() {
           checked={settings.enableNavDebug}
           onChange={() => handleToggle("enableNavDebug")}
         />
+
+        {/* Element Inspector Toggle */}
+        <ToggleRow
+          label="Element Inspector"
+          description="Click any element to inspect styles and copy info for Claude Code"
+          checked={!settings.hideElementInspector}
+          onChange={() => handleToggle("hideElementInspector")}
+        />
       </div>
 
       <div className="mt-6 pt-4 border-t border-[var(--card-border)]">

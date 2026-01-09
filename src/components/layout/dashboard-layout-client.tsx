@@ -10,6 +10,8 @@ import { useTheme } from "@/components/theme-provider";
 import { enableNavGuard } from "@/lib/utils/nav-guard";
 import { buildDashboardNav } from "@/lib/navigation/dashboard-nav";
 import { updateAppearancePreferences } from "@/lib/actions/appearance";
+import { ElementInspector } from "@/components/dev/element-inspector";
+import { ErrorTracker } from "@/components/dev/error-tracker";
 
 interface AutoThemeConfig {
   enabled: boolean;
@@ -407,6 +409,10 @@ export function DashboardLayoutClient({
           {children}
         </main>
       </div>
+
+      {/* Dev Tools */}
+      <ElementInspector />
+      <ErrorTracker />
     </div>
   );
 }

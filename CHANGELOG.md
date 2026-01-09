@@ -8,6 +8,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Element Inspector Dev Tool** - Visual debugging tool for inspecting and editing element styles
+  - Click any element to inspect its computed CSS styles
+  - Live editing with instant preview - changes apply immediately to the element
+  - Notes field for adding context about what you want to change
+  - Add custom CSS properties not in the default list
+  - Copy button generates Claude-ready markdown with all context:
+    - Page URL and element path
+    - CSS selector and data-element attribute
+    - Likely component name (guessed from class patterns)
+    - Changed styles and current computed styles
+  - Toggle via Settings → Developer → Element Inspector
+  - Highlight on hover shows element name/class
+  - Press Esc to close and revert all changes
+
+- **Error Tracker Dev Tool** - Node.js-style error tracking with file/line locations
+  - Captures JavaScript errors, unhandled promise rejections, and React errors
+  - Parses stack traces to extract file paths and line numbers
+  - Shows user code frames separate from node_modules/internal code
+  - Auto-expands on new errors for immediate visibility
+  - Copy individual errors or all errors for Claude-ready reports
+  - Toggle via Settings → Developer → Debug Banner
+  - Stack frames link to exact code locations (file:line:column)
+
 - **Marketing CMS** - Created a complete content management system for marketing pages at `/super-admin/marketing`
   - New Prisma models: MarketingPage, MarketingNavigation, BlogPost, TeamMember, Testimonial, FAQ
   - Server actions for full CRUD operations on all marketing content
