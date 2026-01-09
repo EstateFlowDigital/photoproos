@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Interactive Sitemap Page** - Created password-protected sitemap at `/app-map` for viewing all 403 pages
+  - Collapsible sections organized by route group (Dashboard, Client Portal, Field App, etc.)
+  - Search and filter functionality (all, implemented, coming soon)
+  - Summary cards showing total, implemented, and stub page counts
+  - Direct links to live pages and file paths
+  - Password: `photopro2024`
+
+### Changed
+- **SITEMAP.md Full Domain URLs** - Updated all live route links to use full `https://app.photoproos.com` domain for direct access
+- **Enhanced Stub Pages with Feature Previews** - Updated all "Coming Soon" placeholder pages across the application with detailed feature previews
+  - Changed heading from "Coming Soon" to "Page Coming Soon" for clarity
+  - Added "Features included:" section with 6 bullet points describing planned functionality
+  - Added navigation buttons linking to related pages for better user flow
+  - Updated pages across Dashboard (timesheets, albums, email-campaigns, workflows, proposals, opportunities, expenses detail pages)
+  - Updated Client Portal pages (proofing, downloads, selects, favorites, schedule, files, payments)
+  - Updated Field App pages (upload, notes)
+  - Reports pages (team, bookings, clients) and integration pages (zapier) also enhanced
+  - Created `STUB_PAGES.md` documentation with links to all 164 stub pages (live routes and file paths)
+
 ### Fixed
 - **Mobile Responsiveness Across Dashboard** - Comprehensive mobile-first fixes across major pages
   - **Invoices Page**: Stack filters vertically on mobile, full-width search, 44px touch targets on selects
@@ -38,7 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Each selected industry gets its own collapsible dropdown section with relevant modules
   - Industry sections are collapsible with click-to-expand/collapse behavior
   - Industry sections auto-expand when containing the currently active page
-  - Industry sections display their icon (Building, Briefcase, Calendar, etc.) with brand color
+  - Industry section icons wrapped in styled badge (matching IconBadge pattern) with brand color background/border
   - Simplified industry labels in navigation: "Real Estate", "Commercial", "Events", "Portraits", "Food", "Product"
   - Added `shortName` field to industry definitions for cleaner navigation display
   - Modules can appear in multiple industry sections where relevant (e.g., Galleries in Real Estate and Events)

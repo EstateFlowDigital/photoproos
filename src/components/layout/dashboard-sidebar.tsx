@@ -261,16 +261,17 @@ export function DashboardSidebar({
                     aria-expanded={isSectionExpanded}
                   >
                     {section.industryIcon ? (
-                      <section.industryIcon
-                        className="h-3.5 w-3.5 shrink-0"
-                        style={{ color: section.industryColor }}
-                      />
-                    ) : section.industryColor ? (
                       <span
-                        className="h-2 w-2 rounded-full shrink-0"
-                        style={{ backgroundColor: section.industryColor }}
+                        className="inline-flex h-6 w-6 items-center justify-center rounded-md border shrink-0"
+                        style={{
+                          backgroundColor: `${section.industryColor}15`,
+                          borderColor: `${section.industryColor}30`,
+                          color: section.industryColor,
+                        }}
                         aria-hidden="true"
-                      />
+                      >
+                        <section.industryIcon className="h-3 w-3" />
+                      </span>
                     ) : null}
                     <span className="text-xs font-semibold uppercase tracking-[0.18em] text-foreground-muted flex-1 text-left">
                       {section.label}
