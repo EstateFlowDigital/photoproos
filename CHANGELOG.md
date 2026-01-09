@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Table Horizontal Scrolling** - All data tables across the application now have proper horizontal scrolling with minimum width constraints to prevent column scrunching on smaller screens. Tables updated include: leaderboard, orders, payments, leads, questionnaires, retainers, estimates, credit notes, tax reports, brokerages, blog list, email logs, and more
+- **Gallery Selection Settings Layout** - Removed excessive left margin from selection limit settings panel
 - **Skills Page Tab Scrolling** - Skill tree tabs now scroll horizontally on smaller screens instead of wrapping text
 - **Conversation Page Buttons** - Info and Add People buttons now work:
   - Info button opens a slide-in panel showing conversation details and participants
