@@ -145,7 +145,7 @@ export function SettingsRow({
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-4 rounded-lg px-4 py-3 transition-colors hover:bg-[var(--ghost-hover)]",
+        "flex items-start justify-between gap-4 flex-wrap gap-4 rounded-lg px-4 py-3 transition-colors hover:bg-[var(--ghost-hover)]",
         className
       )}
     >

@@ -762,7 +762,7 @@ function ItemModal({ item, onSave, onClose, isLoading }: ItemModalProps) {
                 aria-expanded={showIconPicker}
                 aria-haspopup="listbox"
                 aria-labelledby="icon-picker-label"
-                className="w-full flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                className="w-full flex items-start justify-between gap-4 flex-wrap rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] px-4 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
               >
                 <div className="flex items-center gap-2">
                   {ICON_MAP[icon] || <Check className="h-4 w-4" />}

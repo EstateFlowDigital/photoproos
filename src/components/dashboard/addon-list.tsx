@@ -341,14 +341,14 @@ export function AddonList({ initialAddons }: AddonListProps) {
                     </span>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between">
+                  <div className="mt-4 flex items-start justify-between gap-4 flex-wrap">
                     <span className="text-xl font-semibold text-foreground">
                       +{formatCurrency(addon.priceCents)}
                     </span>
                   </div>
 
                   <div className="mt-3 pt-3 border-t border-[var(--card-border)]">
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-start justify-between gap-4 flex-wrap text-sm">
                       <span className="text-foreground-muted">
                         {addon.compatibleServices.length > 0
                           ? `${addon.compatibleServices.length} compatible service${addon.compatibleServices.length !== 1 ? "s" : ""}`

@@ -195,7 +195,7 @@ export function PricingConfig({ config, updateConfig }: PricingConfigProps) {
                   : "border-[var(--card-border)] bg-[var(--card)]"
               }`}
             >
-              <div className="mb-3 flex items-center justify-between">
+              <div className="mb-3 flex items-start justify-between gap-4 flex-wrap">
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -282,7 +282,7 @@ export function PricingConfig({ config, updateConfig }: PricingConfigProps) {
 
                 {/* Features */}
                 <div>
-                  <div className="mb-1 flex items-center justify-between">
+                  <div className="mb-1 flex items-start justify-between gap-4 flex-wrap">
                     <label className="text-xs text-foreground-muted">Features</label>
                     <button
                       type="button"

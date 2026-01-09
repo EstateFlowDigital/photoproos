@@ -485,7 +485,7 @@ export function InvoiceEditor({ invoice, clients, services }: InvoiceEditorProps
       {/* Center Panel - Line Items */}
       <div className="lg:col-span-6">
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--background-secondary)] p-4">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex items-start justify-between gap-4 flex-wrap">
             <h3 className="font-semibold text-foreground">Line Items</h3>
             <span className="text-sm text-foreground-muted">{lineItems.length} items</span>
           </div>

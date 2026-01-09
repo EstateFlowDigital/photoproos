@@ -348,7 +348,7 @@ export function LogsPageClient({
             "p-4 rounded-xl",
             "border border-[var(--border)]",
             "bg-[var(--card)]",
-            "flex items-center justify-between"
+            "flex items-start justify-between gap-4 flex-wrap"
           )}
         >
           <div className="flex items-center gap-4">

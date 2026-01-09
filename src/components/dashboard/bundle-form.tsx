@@ -938,7 +938,7 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
                 })}
 
                 {/* Value Summary */}
-                <div className="flex items-center justify-between pt-3 border-t border-[var(--card-border)]">
+                <div className="flex items-start justify-between gap-4 flex-wrap pt-3 border-t border-[var(--card-border)]">
                   <span className="text-sm text-foreground-muted">
                     Services Value:
                   </span>
@@ -962,7 +962,7 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
                       key={service.id}
                       type="button"
                       onClick={() => handleAddService(service.id)}
-                      className="flex items-center justify-between p-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all text-left"
+                      className="flex items-start justify-between gap-4 flex-wrap p-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all text-left"
                     >
                       <div>
                         <span className="text-sm font-medium text-foreground">

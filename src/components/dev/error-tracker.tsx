@@ -406,7 +406,7 @@ ${error.rawStack}
       {isOpen && (
         <div className="fixed bottom-4 right-4 z-[10001] w-[480px] max-h-[70vh] overflow-hidden bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-2xl flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between p-3 border-b border-[var(--border)] bg-[var(--error)]/10">
+          <div className="flex items-start justify-between gap-4 flex-wrap p-3 border-b border-[var(--border)] bg-[var(--error)]/10">
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-[var(--error)]" />
               <h3 className="font-semibold text-[var(--foreground)] text-sm">

@@ -619,7 +619,7 @@ export function SubscriptionPlansSection({
       {activeTab === "plans" && (
         <div className="space-y-4">
           {/* Seed Default Plans Button */}
-          <div className="flex items-center justify-between p-3 rounded-lg border border-dashed border-[var(--card-border)] bg-[var(--background)]">
+          <div className="flex items-start justify-between gap-4 flex-wrap p-3 rounded-lg border border-dashed border-[var(--card-border)] bg-[var(--background)]">
             <div>
               <p className="text-sm font-medium text-foreground">Quick Start</p>
               <p className="text-xs text-foreground-muted">Seed Pro, Studio, and Enterprise plans with default features</p>
@@ -826,7 +826,7 @@ export function SubscriptionPlansSection({
                     {selectedPlan.features.map((feature) => (
                       <div
                         key={feature.id}
-                        className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2"
+                        className="flex items-start justify-between gap-4 flex-wrap rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2"
                       >
                         <div>
                           <div className="flex items-center gap-2">
@@ -1285,7 +1285,7 @@ export function SubscriptionPlansSection({
                         {experiment.variants.map((variant) => (
                           <div
                             key={variant.id}
-                            className="flex items-center justify-between text-sm bg-[var(--background-tertiary)] rounded-lg px-3 py-2"
+                            className="flex items-start justify-between gap-4 flex-wrap text-sm bg-[var(--background-tertiary)] rounded-lg px-3 py-2"
                           >
                             <div className="flex items-center gap-3">
                               <span className="text-foreground">{variant.name}</span>

@@ -149,7 +149,7 @@ export function StreakFreezeDisplay({
 
       {/* Purchase section */}
       {freezeState.available < freezeState.maxFreezes && (
-        <div className="mt-4 flex items-center justify-between rounded-lg bg-[var(--background-secondary)] p-3">
+        <div className="mt-4 flex items-start justify-between gap-4 flex-wrap rounded-lg bg-[var(--background-secondary)] p-3">
           <div className="flex items-center gap-2">
             <ShieldPlus
               className="h-5 w-5 text-[var(--foreground-muted)]"

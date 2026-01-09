@@ -236,7 +236,7 @@ export function DailyBonusSkeleton({ className }: { className?: string }) {
       </div>
 
       {/* Week Progress */}
-      <div className="flex items-center justify-between gap-1 mb-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap gap-1 mb-4">
         {[0, 1, 2, 3, 4, 5, 6].map((i) => (
           <div key={i} className="flex flex-col items-center gap-1">
             <Skeleton variant="circular" width={36} height={36} delay={i * 30} />

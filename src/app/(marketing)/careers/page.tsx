@@ -152,7 +152,7 @@ export default function CareersPage() {
                 <Link
                   key={job.slug}
                   href={`/careers/${job.slug}`}
-                  className="group flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 transition-all hover:border-[var(--border-hover)]"
+                  className="group flex items-start justify-between gap-4 flex-wrap rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 transition-all hover:border-[var(--border-hover)]"
                   data-element={`careers-position-${job.slug}`}
                 >
                   <div>

@@ -370,7 +370,7 @@ export function ReviewRequestsClient({ initialRequests, stats }: ReviewRequestsC
           />
           <div className="relative w-full max-w-lg rounded-2xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-[var(--card-border)]">
+            <div className="flex items-start justify-between gap-4 flex-wrap p-4 border-b border-[var(--card-border)]">
               <h3 className="font-semibold">Review Request Details</h3>
               <button
                 onClick={() => setSelectedRequest(null)}

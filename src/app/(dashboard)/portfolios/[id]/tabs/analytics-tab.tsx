@@ -138,7 +138,7 @@ export function AnalyticsTab({ website, isPending: parentPending }: AnalyticsTab
 
           {/* Views Chart */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex items-start justify-between gap-4 flex-wrap">
               <h4 className="text-sm font-medium text-foreground">
                 Views Over Time
               </h4>
@@ -224,7 +224,7 @@ export function AnalyticsTab({ website, isPending: parentPending }: AnalyticsTab
             <div className="grid gap-4 sm:grid-cols-3">
               {/* Scroll Depth Distribution */}
               <div className="rounded-lg bg-[var(--background-secondary)] p-4">
-                <div className="mb-3 flex items-center justify-between">
+                <div className="mb-3 flex items-start justify-between gap-4 flex-wrap">
                   <span className="text-xs text-foreground-muted">Scroll Depth</span>
                   <span className="text-sm font-medium text-foreground">{analytics.avgScrollDepth}%</span>
                 </div>
@@ -241,7 +241,7 @@ export function AnalyticsTab({ website, isPending: parentPending }: AnalyticsTab
 
               {/* Average Session Duration */}
               <div className="rounded-lg bg-[var(--background-secondary)] p-4">
-                <div className="mb-3 flex items-center justify-between">
+                <div className="mb-3 flex items-start justify-between gap-4 flex-wrap">
                   <span className="text-xs text-foreground-muted">Avg. Session</span>
                   <span className="text-sm font-medium text-foreground">{formatDuration(analytics.avgDuration)}</span>
                 </div>
@@ -258,7 +258,7 @@ export function AnalyticsTab({ website, isPending: parentPending }: AnalyticsTab
 
               {/* Visitor Ratio */}
               <div className="rounded-lg bg-[var(--background-secondary)] p-4">
-                <div className="mb-3 flex items-center justify-between">
+                <div className="mb-3 flex items-start justify-between gap-4 flex-wrap">
                   <span className="text-xs text-foreground-muted">New Visitors</span>
                   <span className="text-sm font-medium text-foreground">
                     {analytics.totalViews > 0

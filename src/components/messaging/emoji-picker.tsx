@@ -190,7 +190,7 @@ export function EmojiPicker({
       aria-label="Emoji picker"
     >
       {/* Quick Reactions */}
-      <div className="flex items-center justify-between border-b border-[var(--card-border)] p-2">
+      <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] p-2">
         {QUICK_REACTIONS.map((emoji) => (
           <button
             key={emoji}

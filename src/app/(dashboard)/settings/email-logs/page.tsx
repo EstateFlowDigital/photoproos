@@ -437,7 +437,7 @@ export default function EmailLogsPage() {
       )}
 
       {/* Email Logs Table */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
         {loading ? (
           <div className="p-8 text-center text-foreground-muted">
             <LoadingSpinner className="h-6 w-6 mx-auto mb-2" />

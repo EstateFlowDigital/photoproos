@@ -216,7 +216,7 @@ export function ActivityTimeline({
 
       {/* Timeline */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
-        <div className="flex items-center justify-between border-b border-[var(--card-border)] px-6 py-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--background-elevated)]">
               <Clock className="h-4 w-4 text-[var(--foreground-muted)]" />

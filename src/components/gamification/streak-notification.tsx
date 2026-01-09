@@ -304,7 +304,7 @@ export function StreakWarningBanner({
   return (
     <div
       className={cn(
-        "streak-warning-banner flex items-center justify-between gap-4 rounded-xl border border-[var(--warning)]/30 bg-[var(--warning)]/10 px-4 py-3",
+        "streak-warning-banner flex items-start justify-between gap-4 flex-wrap gap-4 rounded-xl border border-[var(--warning)]/30 bg-[var(--warning)]/10 px-4 py-3",
         className
       )}
       role="alert"

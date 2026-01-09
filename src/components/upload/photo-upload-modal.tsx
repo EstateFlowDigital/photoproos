@@ -406,7 +406,7 @@ export function PhotoUploadModal({
       {/* Modal */}
       <div className="relative z-10 w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[var(--card-border)] px-6 py-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-6 py-4">
           <div>
             <h2 id="upload-modal-title" className="text-lg font-semibold text-foreground">
               Upload Photos
@@ -583,7 +583,7 @@ export function PhotoUploadModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-[var(--card-border)] px-6 py-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap border-t border-[var(--card-border)] px-6 py-4">
           <div className="text-sm text-foreground-muted">
             {isUploading ? (
               <span>

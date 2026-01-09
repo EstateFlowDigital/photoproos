@@ -555,7 +555,7 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
           <div className="absolute right-0 top-0 h-full w-full max-w-md bg-[var(--card)] shadow-2xl">
             <div className="flex h-full flex-col">
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-[var(--card-border)] p-6">
+              <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] p-6">
                 <div className="flex items-center gap-3">
                   <CartIcon className="h-6 w-6 text-white" />
                   <div>
@@ -694,7 +694,7 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
               {/* Footer with Total & Checkout */}
               {cartItems.length > 0 && (
                 <div className="border-t border-[var(--card-border)] p-6">
-                  <div className="mb-4 flex items-center justify-between">
+                  <div className="mb-4 flex items-start justify-between gap-4 flex-wrap">
                     <span className="text-[var(--foreground-muted)]">Subtotal</span>
                     <span className="text-xl font-bold text-white">
                       {formatPrice(cartTotals.subtotal)}
@@ -776,7 +776,7 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
                   <p className="text-sm font-medium text-white mb-2">Pricing Tiers</p>
                   <div className="space-y-1.5">
                     {selectedBundle.pricingTiers.map((tier) => (
-                      <div key={tier.id} className="flex items-center justify-between text-sm">
+                      <div key={tier.id} className="flex items-start justify-between gap-4 flex-wrap text-sm">
                         <span className="text-[var(--foreground-secondary)]">
                           {tier.minSqft.toLocaleString()} - {tier.maxSqft ? tier.maxSqft.toLocaleString() : "∞"} sqft
                           {tier.tierName && <span className="text-[var(--foreground-muted)] ml-1">({tier.tierName})</span>}

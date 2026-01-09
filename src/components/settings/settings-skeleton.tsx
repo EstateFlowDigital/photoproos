@@ -119,7 +119,7 @@ export function SettingsRowSkeleton({ className }: SettingsRowSkeletonProps) {
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-4 rounded-lg px-4 py-3",
+        "flex items-start justify-between gap-4 flex-wrap gap-4 rounded-lg px-4 py-3",
         className
       )}
     >

@@ -31,7 +31,7 @@ export default function InvoicesLoading() {
       </div>
 
       {/* Table Skeleton */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
         {/* Table Header */}
         <div className="grid grid-cols-6 gap-4 border-b border-[var(--card-border)] bg-[var(--background)] px-6 py-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (

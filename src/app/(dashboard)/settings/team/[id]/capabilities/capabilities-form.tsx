@@ -161,7 +161,7 @@ export function CapabilitiesForm({
 
       {/* Skills Tab */}
       {activeTab === "skills" && (
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
           <div className="px-6 py-4 border-b border-[var(--card-border)] bg-[var(--background)]">
             <h3 className="font-semibold text-foreground">Service Capabilities</h3>
             <p className="text-sm text-foreground-muted mt-1">
@@ -223,7 +223,7 @@ export function CapabilitiesForm({
 
       {/* Equipment Tab */}
       {activeTab === "equipment" && (
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
           <div className="px-6 py-4 border-b border-[var(--card-border)] bg-[var(--background)]">
             <h3 className="font-semibold text-foreground">Assigned Equipment</h3>
             <p className="text-sm text-foreground-muted mt-1">

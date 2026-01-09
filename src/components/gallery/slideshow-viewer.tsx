@@ -362,7 +362,7 @@ export function SlideshowViewer({
           showControls ? "opacity-100" : "opacity-0"
         )}
       >
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap p-4">
           <div className="flex items-center gap-4">
             <div className="text-white text-sm font-medium">
               {currentIndex + 1} / {photos.length}

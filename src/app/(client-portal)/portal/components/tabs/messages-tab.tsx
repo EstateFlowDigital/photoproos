@@ -357,7 +357,7 @@ function ConversationView({
     .map((p) => p.user?.fullName || "Team Member");
 
   return (
-    <div className="flex flex-col h-[600px] rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+    <div className="flex flex-col h-[600px] rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
       {/* Header */}
       <div className="flex items-center gap-3 border-b border-[var(--card-border)] px-4 py-3">
         <button

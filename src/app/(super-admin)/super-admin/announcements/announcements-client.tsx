@@ -443,7 +443,7 @@ export function AnnouncementsPageClient({
       )}
 
       {/* Announcements List */}
-      <div className="rounded-lg border border-[var(--border)] overflow-hidden">
+      <div className="rounded-lg border border-[var(--border)] overflow-x-auto">
         <div className="bg-[var(--card)] px-4 py-3 border-b border-[var(--border)]">
           <h2 className="font-medium text-[var(--foreground)]">
             All Announcements ({totalAnnouncements})
@@ -558,7 +558,7 @@ export function AnnouncementsPageClient({
       {(isCreateModalOpen || editingAnnouncement) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[var(--card)] rounded-lg shadow-xl border border-[var(--border)]">
-            <div className="sticky top-0 flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--card)]">
+            <div className="sticky top-0 flex items-start justify-between gap-4 flex-wrap p-4 border-b border-[var(--border)] bg-[var(--card)]">
               <h2 className="text-lg font-semibold text-[var(--foreground)]">
                 {editingAnnouncement
                   ? "Edit Announcement"

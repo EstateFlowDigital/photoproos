@@ -123,7 +123,7 @@ export default async function BrokeragesPage({ searchParams }: BrokeragesPagePro
 
       {/* Brokerages List */}
       {filteredBrokerages.length > 0 ? (
-        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
           <table className="w-full">
             <thead className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
               <tr>

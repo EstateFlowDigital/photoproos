@@ -258,8 +258,8 @@ export function AnalyticsViewClient({ analytics }: AnalyticsViewClientProps) {
       )}
 
       {/* Property Performance */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
-        <div className="flex items-center justify-between border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-4">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
+        <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-4">
           <h3 className="text-sm font-semibold text-foreground">Property Performance</h3>
           <div className="flex gap-2">
             <button

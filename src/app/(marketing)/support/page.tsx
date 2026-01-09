@@ -168,7 +168,7 @@ export default function HelpPage() {
                 <li key={article.title}>
                   <Link
                     href={article.href}
-                    className="group flex items-center justify-between py-4 text-foreground hover:text-[var(--primary)]"
+                    className="group flex items-start justify-between gap-4 flex-wrap py-4 text-foreground hover:text-[var(--primary)]"
                     data-element={`support-popular-article-${index}`}
                   >
                     <span>{article.title}</span>

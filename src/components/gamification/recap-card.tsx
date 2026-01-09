@@ -382,7 +382,7 @@ export const RecapWidget = memo(function RecapWidget({
         {hasWeeklyRecap && (
           <button
             onClick={() => onViewRecap("week")}
-            className="flex items-center justify-between w-full rounded-lg bg-[var(--background-secondary)] p-3 hover:bg-[var(--background-hover)] transition-colors text-left"
+            className="flex items-start justify-between gap-4 flex-wrap w-full rounded-lg bg-[var(--background-secondary)] p-3 hover:bg-[var(--background-hover)] transition-colors text-left"
           >
             <div className="flex items-center gap-3">
               <Calendar className="h-4 w-4 text-[var(--foreground-muted)]" aria-hidden="true" />
@@ -396,7 +396,7 @@ export const RecapWidget = memo(function RecapWidget({
         {hasMonthlyRecap && (
           <button
             onClick={() => onViewRecap("month")}
-            className="flex items-center justify-between w-full rounded-lg bg-[var(--background-secondary)] p-3 hover:bg-[var(--background-hover)] transition-colors text-left"
+            className="flex items-start justify-between gap-4 flex-wrap w-full rounded-lg bg-[var(--background-secondary)] p-3 hover:bg-[var(--background-hover)] transition-colors text-left"
           >
             <div className="flex items-center gap-3">
               <Calendar className="h-4 w-4 text-[var(--foreground-muted)]" aria-hidden="true" />

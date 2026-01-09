@@ -40,7 +40,7 @@ function LoadingSkeleton() {
       </div>
 
       {/* Table skeleton */}
-      <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] overflow-hidden">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] overflow-x-auto">
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}

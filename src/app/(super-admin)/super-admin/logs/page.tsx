@@ -58,7 +58,7 @@ function LoadingSkeleton() {
       </div>
 
       {/* Table skeleton */}
-      <div className="rounded-xl bg-[var(--card)] border border-[var(--border)] overflow-hidden">
+      <div className="rounded-xl bg-[var(--card)] border border-[var(--border)] overflow-x-auto">
         <div className="h-12 bg-[var(--background-tertiary)] animate-pulse" />
         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
           <div

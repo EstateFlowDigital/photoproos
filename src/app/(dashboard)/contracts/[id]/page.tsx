@@ -182,7 +182,7 @@ export default async function ContractDetailPage({ params }: ContractDetailPageP
         {/* Left Column - Contract Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Contract Preview */}
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
             <div className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-4">
               <h2 className="font-semibold text-foreground">Contract Content</h2>
             </div>
@@ -195,7 +195,7 @@ export default async function ContractDetailPage({ params }: ContractDetailPageP
           </div>
 
           {/* Activity Log */}
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
             <div className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-4">
               <h2 className="font-semibold text-foreground">Activity Log</h2>
             </div>
@@ -233,7 +233,7 @@ export default async function ContractDetailPage({ params }: ContractDetailPageP
         {/* Right Column - Sidebar */}
         <div className="space-y-6">
           {/* Signers Card */}
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
             <div className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="font-semibold text-foreground">Signers</h2>
               {totalSigners > 0 && (
@@ -316,7 +316,7 @@ export default async function ContractDetailPage({ params }: ContractDetailPageP
           </div>
 
           {/* Details Card */}
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
             <div className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-4">
               <h2 className="font-semibold text-foreground">Details</h2>
             </div>
@@ -399,7 +399,7 @@ export default async function ContractDetailPage({ params }: ContractDetailPageP
           </div>
 
           {/* Download/Export Actions - Available for all contracts */}
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
             <div className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-4">
               <h2 className="font-semibold text-foreground">Export</h2>
             </div>
@@ -410,7 +410,7 @@ export default async function ContractDetailPage({ params }: ContractDetailPageP
 
           {/* Actions Card - Only for draft/cancelled contracts */}
           {(contract.status === "draft" || contract.status === "cancelled") && (
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
               <div className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-4">
                 <h2 className="font-semibold text-foreground">Actions</h2>
               </div>

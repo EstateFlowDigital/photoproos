@@ -55,7 +55,7 @@ export const ChallengeCard = memo(function ChallengeCard({
 
       {/* Progress */}
       <div className="mt-4">
-        <div className="flex items-center justify-between text-sm">
+        <div className="flex items-start justify-between gap-4 flex-wrap text-sm">
           <span className="text-[var(--foreground-muted)]">Progress</span>
           <span className="font-medium text-[var(--foreground)]" aria-hidden="true">
             {currentCount} / {targetCount}
@@ -83,7 +83,7 @@ export const ChallengeCard = memo(function ChallengeCard({
       </div>
 
       {/* Footer */}
-      <div className="mt-3 flex items-center justify-between">
+      <div className="mt-3 flex items-start justify-between gap-4 flex-wrap">
         {completed ? (
           <div
             role="status"

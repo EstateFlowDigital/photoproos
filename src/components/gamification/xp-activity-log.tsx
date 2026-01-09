@@ -128,7 +128,7 @@ export const XpActivityLog = memo(function XpActivityLog({
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--card-border)]">
+      <div className="flex items-start justify-between gap-4 flex-wrap px-5 py-4 border-b border-[var(--card-border)]">
         <div className="flex items-center gap-2">
           <Zap className="h-5 w-5 text-[var(--warning)]" aria-hidden="true" />
           <h3 className="font-semibold text-[var(--foreground)]">XP Activity</h3>

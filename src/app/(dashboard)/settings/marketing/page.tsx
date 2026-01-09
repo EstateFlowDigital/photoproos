@@ -97,7 +97,7 @@ export default async function MarketingSettingsPage() {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 pl-13 sm:pl-0">
+                    <div className="flex items-start justify-between gap-4 flex-wrap sm:justify-end gap-3 sm:gap-4 pl-13 sm:pl-0">
                       <span className="text-sm text-foreground-muted whitespace-nowrap">
                         {kit._count.assets} asset{kit._count.assets !== 1 ? "s" : ""}
                       </span>
@@ -191,7 +191,7 @@ export default async function MarketingSettingsPage() {
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Your Stats</h2>
             <div className="space-y-4">
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-start justify-between gap-4 flex-wrap gap-2">
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
                     <Package className="h-4 w-4 text-foreground-muted" />
@@ -200,7 +200,7 @@ export default async function MarketingSettingsPage() {
                 </div>
                 <span className="text-sm font-medium text-foreground">{marketingKits.length}</span>
               </div>
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-start justify-between gap-4 flex-wrap gap-2">
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
                     <Image className="h-4 w-4 text-foreground-muted" />
@@ -209,7 +209,7 @@ export default async function MarketingSettingsPage() {
                 </div>
                 <span className="text-sm font-medium text-foreground">{assetsCount}</span>
               </div>
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-start justify-between gap-4 flex-wrap gap-2">
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
                     <FileText className="h-4 w-4 text-foreground-muted" />
@@ -218,7 +218,7 @@ export default async function MarketingSettingsPage() {
                 </div>
                 <span className="text-sm font-medium text-foreground">{templatesCount}</span>
               </div>
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-start justify-between gap-4 flex-wrap gap-2">
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
                     <Video className="h-4 w-4 text-foreground-muted" />

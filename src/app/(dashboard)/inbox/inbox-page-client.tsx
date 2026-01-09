@@ -687,7 +687,7 @@ function ConversationView({
   return (
     <>
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[var(--card-border)] p-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] p-4">
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
@@ -780,7 +780,7 @@ function ConversationView({
             rows={3}
             className="w-full resize-none border-0 bg-transparent p-4 text-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-0"
           />
-          <div className="flex items-center justify-between border-t border-[var(--card-border)] px-4 py-2">
+          <div className="flex items-start justify-between gap-4 flex-wrap border-t border-[var(--card-border)] px-4 py-2">
             <div className="flex items-center gap-1">
               <button
                 aria-label="Attach file"
@@ -833,7 +833,7 @@ function MessageBubble({
             : "bg-[var(--background-tertiary)] text-foreground"
         }`}
       >
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap gap-4">
           <span className={`text-sm font-medium ${isOutbound ? "text-white" : "text-foreground"}`}>
             {message.fromName || message.fromEmail}
           </span>
@@ -924,7 +924,7 @@ function ComposeModal({
         className="w-full max-w-2xl rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[var(--card-border)] px-4 py-3">
+        <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-4 py-3">
           <h2 id="compose-modal-title" className="font-medium text-foreground">New Message</h2>
           <button
             onClick={onClose}
@@ -994,7 +994,7 @@ function ComposeModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-[var(--card-border)] px-4 py-3">
+        <div className="flex items-start justify-between gap-4 flex-wrap border-t border-[var(--card-border)] px-4 py-3">
           <div className="flex items-center gap-1">
             <button
               aria-label="Attach file"

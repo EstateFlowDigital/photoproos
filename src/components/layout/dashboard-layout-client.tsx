@@ -345,6 +345,7 @@ export function DashboardLayoutClient({
       ref={shellRef}
       className={`shell-container flex min-h-screen bg-[var(--background)] ${sidebarPosition === "right" ? "flex-row-reverse" : ""}`}
       data-sidebar-compact={isCompact ? "true" : undefined}
+      data-element="dashboard-shell"
     >
       <a
         href="#main"
@@ -353,7 +354,7 @@ export function DashboardLayoutClient({
         Skip to main content
       </a>
       {/* Unified Sidebar */}
-      <div className="shell-sidebar">
+      <div className="shell-sidebar" data-element="dashboard-sidebar-container">
         <DashboardSidebar
           navData={navData}
           isCompact={isCompact}
@@ -383,9 +384,9 @@ export function DashboardLayoutClient({
       ) : null}
 
       {/* Main content area */}
-      <div className="shell-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="shell-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden" data-element="dashboard-main">
         {/* Topbar with mobile menu button */}
-        <header className="sticky top-0 z-40 border-b border-[var(--card-border)] bg-[var(--card)]">
+        <header className="sticky top-0 z-40 border-b border-[var(--card-border)] bg-[var(--card)]" data-element="dashboard-topbar">
           <div className="flex items-center gap-3 px-4 py-3 sm:h-16 lg:px-0 lg:py-0">
             <DashboardMenuButton onClick={handleOpenMenu} />
             <div className="flex-1 min-w-0">
@@ -405,6 +406,7 @@ export function DashboardLayoutClient({
           className={`flex-1 min-h-0 min-w-0 overflow-y-auto bg-[var(--background)] ${
             pathname?.startsWith("/settings") ? "" : "p-4 sm:p-6 lg:p-8"
           }`}
+          data-element="dashboard-content"
         >
           {children}
         </main>

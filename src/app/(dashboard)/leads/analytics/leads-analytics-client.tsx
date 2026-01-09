@@ -133,7 +133,7 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
           <div className="mt-6 space-y-4" role="list" aria-label="Lead conversion stages">
             {/* New */}
             <div className="space-y-1" role="listitem" aria-label={`New leads: ${funnel.new}, 100% of total`}>
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-start justify-between gap-4 flex-wrap text-sm">
                 <span className="text-foreground">New</span>
                 <span className="font-medium text-foreground">{funnel.new}</span>
               </div>
@@ -149,7 +149,7 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
 
             {/* Contacted */}
             <div className="space-y-1" role="listitem" aria-label={`Contacted leads: ${funnel.contacted}, ${funnel.new > 0 ? ((funnel.contacted / funnel.new) * 100).toFixed(0) : 0}% of total`}>
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-start justify-between gap-4 flex-wrap text-sm">
                 <span className="text-foreground">Contacted</span>
                 <span className="font-medium text-foreground">{funnel.contacted}</span>
               </div>
@@ -169,7 +169,7 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
 
             {/* Qualified */}
             <div className="space-y-1" role="listitem" aria-label={`Qualified leads: ${funnel.qualified}, ${funnel.new > 0 ? ((funnel.qualified / funnel.new) * 100).toFixed(0) : 0}% of total`}>
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-start justify-between gap-4 flex-wrap text-sm">
                 <span className="text-foreground">Qualified</span>
                 <span className="font-medium text-foreground">{funnel.qualified}</span>
               </div>
@@ -189,7 +189,7 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
 
             {/* Converted */}
             <div className="space-y-1" role="listitem" aria-label={`Converted leads: ${funnel.converted}, ${funnel.new > 0 ? ((funnel.converted / funnel.new) * 100).toFixed(0) : 0}% of total`}>
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-start justify-between gap-4 flex-wrap text-sm">
                 <span className="text-foreground">Converted</span>
                 <span className="font-medium text-foreground">{funnel.converted}</span>
               </div>
@@ -215,7 +215,7 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
           <div className="mt-6 space-y-3" role="list" aria-label="Lead sources ranked by count">
             {bySource.slice(0, 6).map((source) => (
               <div key={source.source} className="space-y-1" role="listitem" aria-label={`${source.source}: ${source.count} leads, ${formatPercent(source.conversionRate)} conversion rate`}>
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-start justify-between gap-4 flex-wrap text-sm">
                   <div className="flex items-center gap-2">
                     <span
                       className={cn(
@@ -382,7 +382,7 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
                 <div
                   key={conversion.id}
                   role="listitem"
-                  className="flex items-center justify-between rounded-lg bg-[var(--background-secondary)] p-3"
+                  className="flex items-start justify-between gap-4 flex-wrap rounded-lg bg-[var(--background-secondary)] p-3"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-foreground truncate">{conversion.name}</p>

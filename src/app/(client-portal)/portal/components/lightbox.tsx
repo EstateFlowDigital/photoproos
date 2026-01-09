@@ -270,7 +270,7 @@ export function Lightbox({
       onTouchEnd={handleTouchEnd}
     >
       {/* Header */}
-      <div className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent p-4">
+      <div className="absolute left-0 right-0 top-0 z-10 flex items-start justify-between gap-4 flex-wrap bg-gradient-to-b from-black/80 to-transparent p-4">
         <div className="flex items-center gap-4">
           <span className="rounded-full bg-white/10 px-3 py-1 text-sm font-medium text-white backdrop-blur-sm">
             {currentIndex + 1} / {photos.length}

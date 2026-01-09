@@ -281,7 +281,7 @@ export function BundleList({ initialBundles }: BundleListProps) {
                     </span>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between">
+                  <div className="mt-4 flex items-start justify-between gap-4 flex-wrap">
                     <span className="text-xl font-semibold text-foreground">
                       {formatCurrency(bundle.priceCents)}
                     </span>
@@ -293,7 +293,7 @@ export function BundleList({ initialBundles }: BundleListProps) {
                   </div>
 
                   <div className="mt-3 pt-3 border-t border-[var(--card-border)]">
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-start justify-between gap-4 flex-wrap text-sm">
                       <span className="text-foreground-muted">
                         {bundle.services.length} service{bundle.services.length !== 1 ? "s" : ""} included
                       </span>

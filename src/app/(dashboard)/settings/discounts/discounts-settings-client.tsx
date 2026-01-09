@@ -550,7 +550,7 @@ export function DiscountsSettingsClient({
             tabIndex={-1}
             className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-[var(--card)] rounded-lg shadow-xl border border-[var(--border)] focus:outline-none"
           >
-            <div className="sticky top-0 flex items-center justify-between p-4 border-b border-[var(--border)] bg-[var(--card)]">
+            <div className="sticky top-0 flex items-start justify-between gap-4 flex-wrap p-4 border-b border-[var(--border)] bg-[var(--card)]">
               <h2 id="discount-modal-title" className="text-lg font-semibold text-[var(--foreground)]">
                 {editingDiscount ? "Edit Discount" : "Create Discount"}
               </h2>
@@ -848,7 +848,7 @@ export function DiscountsSettingsClient({
             tabIndex={-1}
             className="w-full max-w-md bg-[var(--card)] rounded-lg shadow-xl border border-[var(--border)] focus:outline-none"
           >
-            <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
+            <div className="flex items-start justify-between gap-4 flex-wrap p-4 border-b border-[var(--border)]">
               <h2 id="qr-modal-title" className="text-lg font-semibold text-[var(--foreground)]">Share Discount</h2>
               <button
                 onClick={() => setQrModalDiscount(null)}

@@ -28,7 +28,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const inputId = React.useId();
 
     return (
-      <div className="w-full">
+      <div className="w-full" data-element="input-wrapper">
         {label && (
           <label
             htmlFor={inputId}
@@ -37,11 +37,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               isFocused ? "text-foreground" : "text-foreground-secondary",
               error && "text-[var(--error-text)]"
             )}
+            data-element="input-label"
           >
             {label}
           </label>
         )}
         <div
+          data-element="input-container"
           className={cn(
             "relative flex items-center overflow-hidden",
             "rounded-[var(--input-radius)] border bg-[var(--background-elevated)]",
@@ -67,6 +69,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             type={type}
             id={inputId}
+            data-element="input"
             className={cn(
               "flex-1 bg-transparent px-4 py-3 text-sm text-foreground",
               "placeholder:text-foreground-muted",
@@ -140,7 +143,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     const textareaId = React.useId();
 
     return (
-      <div className="w-full">
+      <div className="w-full" data-element="textarea-wrapper">
         {label && (
           <label
             htmlFor={textareaId}
@@ -149,12 +152,14 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
               isFocused ? "text-foreground" : "text-foreground-secondary",
               error && "text-[var(--error-text)]"
             )}
+            data-element="textarea-label"
           >
             {label}
           </label>
         )}
         <textarea
           id={textareaId}
+          data-element="textarea"
           className={cn(
             "min-h-[120px] w-full resize-none",
             "rounded-[var(--input-radius)] border bg-[var(--background-elevated)]",

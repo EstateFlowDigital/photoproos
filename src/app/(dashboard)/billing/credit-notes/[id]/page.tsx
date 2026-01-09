@@ -193,7 +193,7 @@ export default async function CreditNoteDetailPage({ params }: Props) {
               <h3 className="font-semibold text-foreground mb-4">Related Invoice</h3>
               <Link
                 href={`/invoices/${creditNote.invoice.id}`}
-                className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-4 transition-colors hover:bg-[var(--background-hover)]"
+                className="flex items-start justify-between gap-4 flex-wrap rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-4 transition-colors hover:bg-[var(--background-hover)]"
               >
                 <div>
                   <p className="font-medium text-foreground">{creditNote.invoice.invoiceNumber}</p>
@@ -214,7 +214,7 @@ export default async function CreditNoteDetailPage({ params }: Props) {
               <h3 className="font-semibold text-foreground mb-4">Applied To</h3>
               <Link
                 href={`/invoices/${creditNote.appliedToInvoice.id}`}
-                className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--success)]/10 p-4 transition-colors hover:bg-[var(--success)]/20"
+                className="flex items-start justify-between gap-4 flex-wrap rounded-lg border border-[var(--card-border)] bg-[var(--success)]/10 p-4 transition-colors hover:bg-[var(--success)]/20"
               >
                 <div>
                   <p className="font-medium text-foreground">{creditNote.appliedToInvoice.invoiceNumber}</p>

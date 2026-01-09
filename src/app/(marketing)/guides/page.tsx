@@ -205,7 +205,7 @@ export default function GuidesPage() {
               <Link
                 key={guide.slug}
                 href={`/guides/${guide.slug}`}
-                className="group flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 transition-all hover:border-[var(--border-hover)]"
+                className="group flex items-start justify-between gap-4 flex-wrap rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 transition-all hover:border-[var(--border-hover)]"
               >
                 <div className="flex-1">
                   <div className="mb-2 flex items-center gap-3">

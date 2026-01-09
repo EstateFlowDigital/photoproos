@@ -56,7 +56,7 @@ export function LevelProgress({
       {/* Progress info */}
       <div className="flex-1 min-w-0">
         {showTitle && (
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-start justify-between gap-4 flex-wrap gap-2">
             <span className={cn("font-medium text-[var(--foreground)]", styles.text)}>
               {title}
             </span>

@@ -399,7 +399,7 @@ export function AvailabilityPageClient({
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Calendar */}
-        <div className="lg:col-span-2 bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-hidden">
+        <div className="lg:col-span-2 bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-x-auto">
           {/* Calendar Header */}
           <div className="flex flex-col gap-3 px-6 py-4 border-b border-[var(--card-border)] sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
@@ -495,7 +495,7 @@ export function AvailabilityPageClient({
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Upcoming Blocks */}
-          <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-hidden">
+          <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-x-auto">
             <div className="px-4 py-3 border-b border-[var(--card-border)]">
               <h3 className="text-white font-medium flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
@@ -549,7 +549,7 @@ export function AvailabilityPageClient({
           </div>
 
           {/* Buffer Settings Preview */}
-          <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-hidden">
+          <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-x-auto">
             <div className="px-4 py-3 border-b border-[var(--card-border)]">
               <h3 className="text-white font-medium flex items-center gap-2">
                 <Clock className="w-4 h-4" />
@@ -580,7 +580,7 @@ export function AvailabilityPageClient({
 
           {/* Calendar Integrations */}
           {calendarIntegrations.length > 0 && (
-            <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-hidden">
+            <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-x-auto">
               <div className="px-4 py-3 border-b border-[var(--card-border)]">
                 <h3 className="text-white font-medium flex items-center gap-2">
                   <CalendarDays className="w-4 h-4" />

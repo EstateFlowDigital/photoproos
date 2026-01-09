@@ -1366,7 +1366,7 @@ ${Object.entries(styles)
         >
           {/* Draggable Header */}
           <div
-            className="flex items-center justify-between p-3 bg-[var(--card)] border-b border-[var(--border)] cursor-move select-none"
+            className="flex items-start justify-between gap-4 flex-wrap p-3 bg-[var(--card)] border-b border-[var(--border)] cursor-move select-none"
             onMouseDown={handleDragStart}
           >
             <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -1398,7 +1398,7 @@ ${Object.entries(styles)
           </div>
 
           {/* Parent/Child Navigation */}
-          <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--border)] bg-[var(--background-tertiary)]">
+          <div className="flex items-start justify-between gap-4 flex-wrap px-3 py-2 border-b border-[var(--border)] bg-[var(--background-tertiary)]">
             <button
               onClick={() => {
                 const parent = selected.element.parentElement;
@@ -1529,7 +1529,7 @@ ${Object.entries(styles)
                 <div key={groupKey} className="border-b border-[var(--border)]">
                   <button
                     onClick={() => toggleGroup(groupKey)}
-                    className="w-full flex items-center justify-between px-3 py-2 hover:bg-[var(--background-elevated)] transition-colors"
+                    className="w-full flex items-start justify-between gap-4 flex-wrap px-3 py-2 hover:bg-[var(--background-elevated)] transition-colors"
                   >
                     <span className={`text-xs font-medium ${hasChanges ? "text-[var(--primary)]" : "text-[var(--foreground-muted)]"}`}>
                       {group.label}
@@ -1631,7 +1631,7 @@ ${Object.entries(styles)
                           return next;
                         });
                       }}
-                      className="w-full flex items-center justify-between px-3 py-2 hover:bg-[var(--background-elevated)] transition-colors"
+                      className="w-full flex items-start justify-between gap-4 flex-wrap px-3 py-2 hover:bg-[var(--background-elevated)] transition-colors"
                     >
                       <span className="text-xs font-medium text-[var(--foreground-muted)]">
                         {group.label}

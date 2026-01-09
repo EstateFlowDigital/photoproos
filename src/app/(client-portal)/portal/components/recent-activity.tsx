@@ -113,7 +113,7 @@ export function RecentActivity({
 
   return (
     <div className="mb-6 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 sm:p-6">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-start justify-between gap-4 flex-wrap">
         <h2 className="text-base font-semibold text-[var(--foreground)]">Recent Activity</h2>
         <span className="text-xs text-[var(--foreground-muted)]">
           Last {recentActivities.length} activities

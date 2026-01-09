@@ -129,6 +129,7 @@ export function DashboardSidebar({
       ref={sidebarRef}
       data-variant={variant}
       data-force-expanded={forceExpanded ? "true" : undefined}
+      data-element="dashboard-sidebar"
       className={cn(
         "sidebar-shell relative flex min-h-screen min-h-0 flex-col border-r border-[var(--card-border)] bg-[var(--card)]",
         variant === "inline" ? "sticky top-0 self-start" : "shadow-2xl",

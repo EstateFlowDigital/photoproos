@@ -961,7 +961,7 @@ function FeatureCard({ feature }: { feature: RoadmapFeature }) {
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between">
+      <div className="mt-4 flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           {feature.timeline ? (
             <div

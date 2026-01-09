@@ -394,7 +394,7 @@ export function BrandingStep({
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between pt-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap pt-4">
         <button
           onClick={onBack}
           disabled={isLoading}

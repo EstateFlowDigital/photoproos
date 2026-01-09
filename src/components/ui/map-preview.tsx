@@ -218,7 +218,7 @@ export function MapPreviewCard({
   ...mapProps
 }: MapPreviewCardProps) {
   return (
-    <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+    <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
       <div className="px-4 py-3 border-b border-[var(--card-border)]">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <h3 className="text-sm font-medium text-foreground">{title}</h3>

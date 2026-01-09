@@ -227,7 +227,7 @@ export default function EmailSettingsPage() {
               {connectedAccounts.map((account) => (
                 <div
                   key={account.id}
-                  className="flex items-center justify-between gap-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
+                  className="flex items-start justify-between gap-4 flex-wrap gap-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
                 >
                   <div className="flex items-center gap-3">
                     {account.provider === "GMAIL" ? (

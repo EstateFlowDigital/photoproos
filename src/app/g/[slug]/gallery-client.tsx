@@ -1622,7 +1622,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
           }}
         >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-start justify-between gap-4 flex-wrap gap-4">
               <div className="flex items-center gap-3">
                 <ClockIcon
                   className={cn(

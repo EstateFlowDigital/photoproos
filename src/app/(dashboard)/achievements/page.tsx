@@ -319,7 +319,7 @@ function AchievementCard({
           {/* Progress hint for locked achievements */}
           {showProgressHint && (
             <div className="mt-2">
-              <div className="flex items-center justify-between text-xs mb-1">
+              <div className="flex items-start justify-between gap-4 flex-wrap text-xs mb-1">
                 <span className="text-[var(--foreground-muted)]">Progress</span>
                 <span className="text-[var(--foreground-secondary)]">
                   {achievement.progressHint!.current.toLocaleString()} / {achievement.progressHint!.target.toLocaleString()}

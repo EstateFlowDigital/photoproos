@@ -343,7 +343,7 @@ export default async function BillingOverviewPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Invoices */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
-          <div className="flex items-center justify-between border-b border-[var(--card-border)] px-6 py-4">
+          <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-6 py-4">
             <h3 className="font-semibold text-foreground">Recent Invoices</h3>
             <Link href="/invoices" className="text-sm text-[var(--primary)] hover:underline">
               View all
@@ -359,7 +359,7 @@ export default async function BillingOverviewPage() {
                 <Link
                   key={invoice.id}
                   href={`/invoices/${invoice.id}`}
-                  className="flex items-center justify-between px-6 py-4 transition-colors hover:bg-[var(--background-secondary)]"
+                  className="flex items-start justify-between gap-4 flex-wrap px-6 py-4 transition-colors hover:bg-[var(--background-secondary)]"
                 >
                   <div>
                     <p className="font-medium text-foreground">{invoice.invoiceNumber}</p>
@@ -381,7 +381,7 @@ export default async function BillingOverviewPage() {
 
         {/* Recent Payments */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
-          <div className="flex items-center justify-between border-b border-[var(--card-border)] px-6 py-4">
+          <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-6 py-4">
             <h3 className="font-semibold text-foreground">Recent Payments</h3>
             <Link href="/payments" className="text-sm text-[var(--primary)] hover:underline">
               View all
@@ -397,7 +397,7 @@ export default async function BillingOverviewPage() {
                 <Link
                   key={payment.id}
                   href={`/payments/${payment.id}`}
-                  className="flex items-center justify-between px-6 py-4 transition-colors hover:bg-[var(--background-secondary)]"
+                  className="flex items-start justify-between gap-4 flex-wrap px-6 py-4 transition-colors hover:bg-[var(--background-secondary)]"
                 >
                   <div>
                     <p className="font-medium text-foreground">

@@ -460,7 +460,7 @@ export function InvoiceBuilder({
 
       {/* Line Items List */}
       {lineItems.length > 0 && (
-        <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+        <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
           <div className="px-4 py-3 border-b border-[var(--card-border)] bg-[var(--background)]">
             <h3 className="text-sm font-semibold text-foreground">Invoice Items</h3>
           </div>
@@ -587,7 +587,7 @@ export function InvoiceSummary({ lineItems, className, showEdit, onEdit }: Invoi
 
   return (
     <div className={cn("rounded-lg border border-[var(--card-border)] bg-[var(--background)]", className)}>
-      <div className="px-4 py-3 border-b border-[var(--card-border)] flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-[var(--card-border)] flex items-start justify-between gap-4 flex-wrap">
         <h3 className="text-sm font-semibold text-foreground">Service Summary</h3>
         {showEdit && onEdit && (
           <button
@@ -602,7 +602,7 @@ export function InvoiceSummary({ lineItems, className, showEdit, onEdit }: Invoi
 
       <div className="divide-y divide-[var(--card-border)]">
         {lineItems.map((item) => (
-          <div key={item.id} className="px-4 py-2.5 flex items-center justify-between gap-4">
+          <div key={item.id} className="px-4 py-2.5 flex items-start justify-between gap-4 flex-wrap gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <p className="text-sm text-foreground truncate">{item.name}</p>

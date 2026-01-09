@@ -221,7 +221,7 @@ export const BadgeShowcaseEditor = memo(function BadgeShowcaseEditor({
           >
             <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl flex flex-col max-h-[80vh]">
               {/* Header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--card-border)]">
+              <div className="flex items-start justify-between gap-4 flex-wrap px-5 py-4 border-b border-[var(--card-border)]">
                 <div>
                   <h2 id="showcase-editor-title" className="text-lg font-semibold text-[var(--foreground)]">
                     Edit Showcase

@@ -209,7 +209,7 @@ export function PhotoComparisonModal({
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-black">
       {/* Header */}
-      <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/10">
+      <div className="shrink-0 flex items-start justify-between gap-4 flex-wrap px-4 py-3 border-b border-white/10">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-white">
             Photo Comparison
@@ -395,7 +395,7 @@ export function PhotoComparisonModal({
       {/* Photo Picker (when a slot is active) */}
       {activeSlot !== null && (
         <div className="absolute inset-0 bg-black/80 z-10 flex flex-col">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+          <div className="flex items-start justify-between gap-4 flex-wrap px-4 py-3 border-b border-white/10">
             <span className="text-sm font-medium text-white">
               Select photo for slot {activeSlot + 1}
             </span>

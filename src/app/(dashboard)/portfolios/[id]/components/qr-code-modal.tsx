@@ -80,7 +80,7 @@ export function QRCodeModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="mx-4 w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
           <h3 className="text-lg font-semibold text-foreground">
             Portfolio QR Code
           </h3>

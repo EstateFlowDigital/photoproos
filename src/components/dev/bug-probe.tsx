@@ -572,7 +572,7 @@ export function BugProbe() {
           {/* Header with drag handle and controls */}
           <div
             className={cn(
-              "flex items-center justify-between gap-2 px-2 py-1.5",
+              "flex items-start justify-between gap-4 flex-wrap gap-2 px-2 py-1.5",
               !hudMinimized && "border-b border-[rgba(255,255,255,0.08)]"
             )}
           >
@@ -618,7 +618,7 @@ export function BugProbe() {
       <div className="pointer-events-none fixed bottom-4 right-4 z-[9999] w-full max-w-[360px] text-sm">
         {isOpen ? (
           <div className="pointer-events-auto rounded-xl border border-[rgba(255,255,255,0.12)] bg-[#0f0f10] text-white shadow-2xl">
-          <div className="flex items-center justify-between gap-2 border-b border-[rgba(255,255,255,0.12)] px-3 py-2">
+          <div className="flex items-start justify-between gap-4 flex-wrap gap-2 border-b border-[rgba(255,255,255,0.12)] px-3 py-2">
             <div className="flex items-center gap-2">
               <Bug className="h-4 w-4 text-[var(--primary)]" />
               <div className="leading-tight">

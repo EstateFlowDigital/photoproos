@@ -341,7 +341,7 @@ export function SuperAdminLayoutClient({
           className={cn(
             "sticky top-0 z-[60] px-4 py-2",
             "bg-[var(--warning)] text-black",
-            "flex items-center justify-between"
+            "flex items-start justify-between gap-4 flex-wrap"
           )}
         >
           <div className="flex items-center gap-2">
@@ -387,7 +387,7 @@ export function SuperAdminLayoutClient({
           "bg-[var(--card)]"
         )}
       >
-        <div className="flex items-center justify-between h-full px-6">
+        <div className="flex items-start justify-between gap-4 flex-wrap h-full px-6">
           {/* Left */}
           <div className="flex items-center gap-4">
             <Link

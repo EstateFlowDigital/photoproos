@@ -421,7 +421,7 @@ export function EngagementPageClient({
                       <Link
                         href={`/super-admin/users/${user.id}`}
                         className={cn(
-                          "flex items-center justify-between p-2.5 rounded-lg",
+                          "flex items-start justify-between gap-4 flex-wrap p-2.5 rounded-lg",
                           "bg-[var(--background-tertiary)]",
                           "hover:bg-[var(--background-elevated)]",
                           "transition-colors"
@@ -597,7 +597,7 @@ export function EngagementPageClient({
                   <Link
                     href={`/super-admin/users/${user.id}`}
                     className={cn(
-                      "flex items-center justify-between p-4 rounded-lg",
+                      "flex items-start justify-between gap-4 flex-wrap p-4 rounded-lg",
                       "bg-[var(--card)] border border-[var(--border)]",
                       "hover:bg-[var(--background-tertiary)]",
                       "transition-colors"

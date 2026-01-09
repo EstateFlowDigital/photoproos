@@ -126,7 +126,7 @@ export function MarketingKitModal({
                         className="flex items-center gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)] p-3"
                       >
                         {/* Thumbnail */}
-                        <div className="h-12 w-12 shrink-0 rounded-md bg-[var(--card)] overflow-hidden">
+                        <div className="h-12 w-12 shrink-0 rounded-md bg-[var(--card)] overflow-x-auto">
                           {asset.thumbnailUrl ? (
                             <img
                               src={asset.thumbnailUrl}

@@ -343,7 +343,7 @@ export function InvoiceSplitSection({
             {lineItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between gap-4 rounded-lg bg-[var(--background-secondary)] p-3"
+                className="flex items-start justify-between gap-4 flex-wrap gap-4 rounded-lg bg-[var(--background-secondary)] p-3"
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{item.description}</p>

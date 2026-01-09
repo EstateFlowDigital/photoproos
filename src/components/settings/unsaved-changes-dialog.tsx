@@ -113,7 +113,7 @@ export function UnsavedChangesBanner({
     <div
       className={`sticky bottom-0 left-0 right-0 z-50 border-t border-amber-500/30 bg-amber-500/10 px-4 py-3 backdrop-blur-sm ${className || ""}`}
     >
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap gap-4">
         <div className="flex items-center gap-2">
           <AlertTriangleIcon className="h-4 w-4 text-amber-500" />
           <span className="text-sm font-medium text-foreground">

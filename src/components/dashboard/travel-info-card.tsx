@@ -195,7 +195,7 @@ export function TravelInfoCard({
                 <span className="text-foreground">${(feePerMile / 100).toFixed(2)}/mi</span>
               </div>
               {!isFree && (
-                <div className="flex items-center justify-between pt-2 border-t border-[var(--card-border)]">
+                <div className="flex items-start justify-between gap-4 flex-wrap pt-2 border-t border-[var(--card-border)]">
                   <span className="text-foreground-muted">
                     Billable miles ({distanceMiles.toFixed(1)} - {freeThresholdMiles})
                   </span>

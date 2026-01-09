@@ -625,7 +625,7 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
           )}
 
           {/* Submit button */}
-          <div className="flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+          <div className="flex items-start justify-between gap-4 flex-wrap rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <div>
               {isComplete ? (
                 <p className="text-sm text-[var(--success)]">

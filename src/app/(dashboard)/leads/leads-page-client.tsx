@@ -164,7 +164,7 @@ const LeadRow = memo(function LeadRow({ inquiry, onView, isSelected, onToggleSel
       isSelected && "bg-[var(--primary)]/5"
     )}>
       {/* Mobile: Checkbox + Type in row */}
-      <div className="flex items-center justify-between gap-3 md:contents">
+      <div className="flex items-start justify-between gap-4 flex-wrap gap-3 md:contents">
         <div className="flex items-center gap-3">
           <input
             type="checkbox"
@@ -220,7 +220,7 @@ const LeadRow = memo(function LeadRow({ inquiry, onView, isSelected, onToggleSel
       </div>
 
       {/* Status + Date row on mobile */}
-      <div className="flex items-center justify-between gap-2 md:contents">
+      <div className="flex items-start justify-between gap-4 flex-wrap gap-2 md:contents">
         <span
           className={cn(
             "inline-flex rounded-full px-2 py-0.5 text-xs font-medium",
@@ -789,7 +789,7 @@ export function LeadsPageClient({
                 onDrop={(e) => handleDrop(e, column.id)}
               >
                 {/* Column Header */}
-                <div className="flex items-center justify-between border-b border-[var(--card-border)] px-4 py-3">
+                <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-4 py-3">
                   <div className="flex items-center gap-2">
                     <span className={cn(
                       "h-2 w-2 rounded-full",
@@ -1021,7 +1021,7 @@ function InquiryDetailModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-lg rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[var(--card-border)] px-6 py-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-6 py-4">
           <div className="flex items-center gap-3">
             <span
               className={cn(
@@ -1271,7 +1271,7 @@ function InquiryDetailModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-3 border-t border-[var(--card-border)] px-6 py-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap gap-3 border-t border-[var(--card-border)] px-6 py-4">
           <div>
             {convertedClientId ? (
               <div className="flex items-center gap-2">
@@ -1424,7 +1424,7 @@ function KanbanCard({
         <p className="mt-0.5 text-xs text-foreground-muted">{email}</p>
       </div>
 
-      <div className="mt-2 flex items-center justify-between">
+      <div className="mt-2 flex items-start justify-between gap-4 flex-wrap">
         <span className="text-[10px] text-foreground-muted">
           {new Date(inquiry.createdAt).toLocaleDateString("en-US", {
             month: "short",
@@ -1724,7 +1724,7 @@ function AddLeadModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-lg rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[var(--card-border)] px-6 py-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10">
               <UserPlusIcon className="h-5 w-5 text-[var(--primary)]" />

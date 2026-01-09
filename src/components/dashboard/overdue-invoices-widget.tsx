@@ -52,9 +52,9 @@ export function OverdueInvoicesWidget({ invoices, totalOverdueCents }: OverdueIn
   }
 
   return (
-    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 border-b border-[var(--card-border)] px-4 py-3">
+      <div className="flex items-start justify-between gap-4 flex-wrap gap-4 border-b border-[var(--card-border)] px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-500/10">
             <AlertIcon className="h-4 w-4 text-red-500" />
@@ -76,7 +76,7 @@ export function OverdueInvoicesWidget({ invoices, totalOverdueCents }: OverdueIn
           <Link
             key={invoice.id}
             href={`/invoices/${invoice.id}`}
-            className="flex items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-[var(--background-secondary)]"
+            className="flex items-start justify-between gap-4 flex-wrap gap-4 px-4 py-3 transition-colors hover:bg-[var(--background-secondary)]"
           >
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">

@@ -164,7 +164,7 @@ export function SmartCollectionsPanel({
   return (
     <div className={cn("rounded-xl border border-[var(--card-border)] bg-[var(--card)]", className)}>
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[var(--card-border)] px-6 py-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
             <Wand2 className="h-5 w-5 text-[var(--primary)]" />
@@ -232,7 +232,7 @@ export function SmartCollectionsPanel({
         {suggestions.length > 0 && (
           <>
             {/* Stats Bar */}
-            <div className="mb-4 flex items-center justify-between rounded-lg bg-[var(--background-elevated)] px-4 py-3">
+            <div className="mb-4 flex items-start justify-between gap-4 flex-wrap rounded-lg bg-[var(--background-elevated)] px-4 py-3">
               <div className="text-sm">
                 <span className="font-medium text-[var(--foreground)]">
                   {suggestions.length} groupings found

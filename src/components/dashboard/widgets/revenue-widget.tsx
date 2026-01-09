@@ -100,7 +100,7 @@ export function RevenueWidget({
       {/* Goal Progress */}
       {goalProgress !== null && monthlyGoal && (
         <div>
-          <div className="flex items-center justify-between text-xs">
+          <div className="flex items-start justify-between gap-4 flex-wrap text-xs">
             <span className="text-foreground-muted">Monthly goal</span>
             <span className="font-medium text-foreground">
               {goalProgress}% of {formatCurrencyWhole(monthlyGoal)}

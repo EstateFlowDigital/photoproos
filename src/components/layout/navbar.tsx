@@ -456,7 +456,7 @@ export function Navbar({ className }: NavbarProps) {
                   <Link
                     key={item.href + item.title}
                     href={resolveHref(item.href)}
-                    className="flex items-center justify-between rounded-[var(--button-radius)] p-3 transition-colors duration-[var(--duration-fast)] hover:bg-[var(--background-elevated)]"
+                    className="flex items-start justify-between gap-4 flex-wrap rounded-[var(--button-radius)] p-3 transition-colors duration-[var(--duration-fast)] hover:bg-[var(--background-elevated)]"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <div className="flex items-center gap-3">
@@ -493,7 +493,7 @@ export function Navbar({ className }: NavbarProps) {
                   <Link
                     key={item.href + item.title}
                     href={resolveHref(item.href)}
-                    className="flex items-center justify-between rounded-[var(--button-radius)] p-3 transition-colors duration-[var(--duration-fast)] hover:bg-[var(--background-elevated)]"
+                    className="flex items-start justify-between gap-4 flex-wrap rounded-[var(--button-radius)] p-3 transition-colors duration-[var(--duration-fast)] hover:bg-[var(--background-elevated)]"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <div className="flex items-center gap-3">
@@ -523,7 +523,7 @@ export function Navbar({ className }: NavbarProps) {
                   <Link
                     key={item.href + item.title}
                     href={resolveHref(item.href)}
-                    className="flex items-center justify-between rounded-[var(--button-radius)] p-3 transition-colors duration-[var(--duration-fast)] hover:bg-[var(--background-elevated)]"
+                    className="flex items-start justify-between gap-4 flex-wrap rounded-[var(--button-radius)] p-3 transition-colors duration-[var(--duration-fast)] hover:bg-[var(--background-elevated)]"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <div className="flex items-center gap-3">
@@ -547,7 +547,7 @@ export function Navbar({ className }: NavbarProps) {
             <div className="border-b border-[var(--border)] py-4">
               <Link
                 href={resolveHref("#pricing")}
-                className="flex items-center justify-between rounded-[var(--button-radius)] p-3 transition-colors duration-[var(--duration-fast)] hover:bg-[var(--background-elevated)]"
+                className="flex items-start justify-between gap-4 flex-wrap rounded-[var(--button-radius)] p-3 transition-colors duration-[var(--duration-fast)] hover:bg-[var(--background-elevated)]"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <span className="text-sm font-medium text-foreground">Pricing</span>

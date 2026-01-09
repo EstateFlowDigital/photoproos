@@ -254,7 +254,7 @@ export function WalkthroughSettingsClient({
     <div className="space-y-6">
       {/* Summary Card */}
       <Card>
-        <CardContent className="flex items-center justify-between py-4">
+        <CardContent className="flex items-start justify-between gap-4 flex-wrap py-4">
           <div className="flex items-center gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10">
               <HelpCircle className="h-5 w-5 text-[var(--primary)]" />
@@ -376,7 +376,7 @@ function WalkthroughToggleItem({
   return (
     <div
       className={cn(
-        "flex items-center justify-between rounded-lg px-4 py-3 transition-colors",
+        "flex items-start justify-between gap-4 flex-wrap rounded-lg px-4 py-3 transition-colors",
         isDismissed
           ? "bg-[var(--background-tertiary)]"
           : "hover:bg-[var(--ghost-hover)]"

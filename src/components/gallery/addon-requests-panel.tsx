@@ -482,7 +482,7 @@ export function AddonRequestsPanel({ galleryId, photos = [] }: AddonRequestsPane
           >
             {/* Header */}
             <div
-              className="flex items-center justify-between p-4 cursor-pointer hover:bg-[var(--background-hover)] transition-colors"
+              className="flex items-start justify-between gap-4 flex-wrap p-4 cursor-pointer hover:bg-[var(--background-hover)] transition-colors"
               onClick={() => setExpandedRequest(isExpanded ? null : request.id)}
             >
               <div className="flex items-center gap-4 min-w-0">

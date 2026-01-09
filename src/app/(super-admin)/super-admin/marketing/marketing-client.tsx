@@ -394,7 +394,7 @@ export function MarketingDashboardClient({ pages = [], posts = [], testimonials 
             aria-labelledby="pages-list-heading"
             data-element="marketing-pages-card"
           >
-            <header className="bg-[var(--card)] px-4 py-3 border-b border-[var(--border)] flex items-center justify-between" data-element="marketing-pages-card-header">
+            <header className="bg-[var(--card)] px-4 py-3 border-b border-[var(--border)] flex items-start justify-between gap-4 flex-wrap" data-element="marketing-pages-card-header">
               <h3
                 id="pages-list-heading"
                 className="font-semibold text-[var(--foreground)] text-sm sm:text-base"
@@ -438,7 +438,7 @@ export function MarketingDashboardClient({ pages = [], posts = [], testimonials 
             aria-labelledby="posts-list-heading"
             data-element="marketing-posts-card"
           >
-            <header className="bg-[var(--card)] px-4 py-3 border-b border-[var(--border)] flex items-center justify-between" data-element="marketing-posts-card-header">
+            <header className="bg-[var(--card)] px-4 py-3 border-b border-[var(--border)] flex items-start justify-between gap-4 flex-wrap" data-element="marketing-posts-card-header">
               <h3
                 id="posts-list-heading"
                 className="font-semibold text-[var(--foreground)] text-sm sm:text-base"

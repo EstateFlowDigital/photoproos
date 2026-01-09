@@ -307,7 +307,7 @@ function ExpenseCategoryCard({
   };
 
   return (
-    <div className="flex items-center justify-between py-3 border-b border-[var(--border)] last:border-0">
+    <div className="flex items-start justify-between gap-4 flex-wrap py-3 border-b border-[var(--border)] last:border-0">
       <div className="flex items-center gap-3">
         <span className="text-foreground">{categoryLabels[category]}</span>
         <Badge variant="outline" className="text-xs">
@@ -587,7 +587,7 @@ export function TaxPrepClient({
                     <h4 className="font-medium text-foreground">Uploaded Documents ({documents.length})</h4>
                     <div className="border border-[var(--border)] rounded-lg divide-y divide-[var(--border)]">
                       {documents.map((doc) => (
-                        <div key={doc.id} className="p-4 flex items-center justify-between">
+                        <div key={doc.id} className="p-4 flex items-start justify-between gap-4 flex-wrap">
                           <div className="flex items-center gap-3">
                             <DocumentIcon className="h-5 w-5 text-foreground-muted" />
                             <div>

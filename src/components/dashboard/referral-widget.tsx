@@ -104,7 +104,7 @@ export function ReferralWidget({
   }
 
   return (
-    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
       {/* Header with gradient */}
       <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 px-6 py-4 border-b border-[var(--card-border)]">
         <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -146,7 +146,7 @@ export function ReferralWidget({
         {/* Progress to Next Milestone */}
         {nextMilestone && (
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
+            <div className="flex items-start justify-between gap-4 flex-wrap text-xs">
               <span className="text-foreground-muted">
                 Next: {nextMilestone.icon} {nextMilestone.title}
               </span>

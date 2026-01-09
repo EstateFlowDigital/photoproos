@@ -120,7 +120,7 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
       {/* Modal */}
       <div className="relative w-full max-w-2xl max-h-[80vh] overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl mx-4">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--card-border)]">
+        <div className="flex items-start justify-between gap-4 flex-wrap px-6 py-4 border-b border-[var(--card-border)]">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
               <KeyboardIcon className="h-5 w-5 text-[var(--primary)]" />
@@ -150,7 +150,7 @@ export function KeyboardShortcutsModal({ isOpen, onClose }: KeyboardShortcutsMod
                   {group.shortcuts.map((shortcut, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between rounded-lg bg-[var(--background)] px-3 py-2"
+                      className="flex items-start justify-between gap-4 flex-wrap rounded-lg bg-[var(--background)] px-3 py-2"
                     >
                       <span className="text-sm text-foreground">{shortcut.description}</span>
                       <div className="flex items-center gap-1">

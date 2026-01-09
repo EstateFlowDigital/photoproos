@@ -616,7 +616,7 @@ export function ServiceForm({ initialData, mode }: ServiceFormProps) {
                     .map((tier, index) => (
                       <div
                         key={tier.id || index}
-                        className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-3"
+                        className="flex items-start justify-between gap-4 flex-wrap rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-3"
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
@@ -836,7 +836,7 @@ export function ServiceForm({ initialData, mode }: ServiceFormProps) {
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Status</h2>
 
-          <label className="flex items-center justify-between cursor-pointer">
+          <label className="flex items-start justify-between gap-4 flex-wrap cursor-pointer">
             <div>
               <span className="text-sm font-medium text-foreground">
                 Active

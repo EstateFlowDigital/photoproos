@@ -324,7 +324,7 @@ export function RetainersPageClient({ retainers, filter: _filter }: RetainersPag
         </div>
 
         {/* Results count */}
-        <div className="flex items-center justify-between text-sm text-foreground-muted">
+        <div className="flex items-start justify-between gap-4 flex-wrap text-sm text-foreground-muted">
           <span>
             Showing {paginatedResults.length} of {filteredAndSorted.length} retainers
           </span>
@@ -513,7 +513,7 @@ export function RetainersPageClient({ retainers, filter: _filter }: RetainersPag
                   <p className="mb-2 text-xs font-medium text-foreground-muted">Recent Activity</p>
                   <div className="space-y-1">
                     {retainer.transactions.slice(0, 3).map((tx) => (
-                      <div key={tx.id} className="flex items-center justify-between text-xs">
+                      <div key={tx.id} className="flex items-start justify-between gap-4 flex-wrap text-xs">
                         <div className="flex items-center gap-1.5">
                           {getTransactionIcon(tx.type)}
                           <span className="text-foreground-muted capitalize">

@@ -508,7 +508,7 @@ export function StripeProductsSection({
                 </a>
               </div>
 
-              <div className="rounded-lg border border-[var(--card-border)] overflow-hidden">
+              <div className="rounded-lg border border-[var(--card-border)] overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="bg-[var(--background)]">
                     <tr className="border-b border-[var(--card-border)]">

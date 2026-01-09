@@ -151,7 +151,7 @@ export default async function HelpArticlePage({ params }: ArticlePageProps) {
           </div>
 
           {/* Article Footer */}
-          <div className="mt-8 flex items-center justify-between border-t border-[var(--card-border)] pt-6">
+          <div className="mt-8 flex items-start justify-between gap-4 flex-wrap border-t border-[var(--card-border)] pt-6">
             <Link
               href={`/help/${categorySlug}`}
               className="flex items-center gap-2 text-sm text-foreground-muted transition-colors hover:text-foreground"

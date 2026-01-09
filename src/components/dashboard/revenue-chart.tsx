@@ -76,7 +76,7 @@ export function RevenueChart({ data, className }: RevenueChartProps) {
 
           return (
             <div key={index} className="group">
-              <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-start justify-between gap-4 flex-wrap mb-1.5">
                 <span className="text-xs font-medium text-foreground">{item.label}</span>
                 <span className="text-xs text-foreground-muted">
                   {formatCompactCurrency(item.value)}
@@ -103,7 +103,7 @@ export function RevenueChart({ data, className }: RevenueChartProps) {
 
       {/* Footer */}
       <div className="mt-5 pt-4 border-t border-[var(--card-border)]">
-        <div className="flex items-center justify-between text-xs text-foreground-muted">
+        <div className="flex items-start justify-between gap-4 flex-wrap text-xs text-foreground-muted">
           <span>Last 6 months</span>
           <span>vs previous period</span>
         </div>

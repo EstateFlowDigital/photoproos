@@ -598,7 +598,7 @@ export function AnalyticsDashboard({
                 const percentage = Math.round((count / total) * 100);
                 return (
                   <div key={format} className="space-y-1">
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-start justify-between gap-4 flex-wrap text-sm">
                       <span className="text-foreground capitalize">
                         {format.replace("_", " ")}
                       </span>

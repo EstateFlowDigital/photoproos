@@ -90,6 +90,7 @@ function Badge({
       role={isStatus ? "status" : undefined}
       aria-live={isStatus ? "polite" : undefined}
       aria-label={ariaLabel}
+      data-element={`badge${variant ? `-${variant}` : ""}`}
       {...props}
     >
       {children}

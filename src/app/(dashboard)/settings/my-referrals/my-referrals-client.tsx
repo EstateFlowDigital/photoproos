@@ -550,7 +550,7 @@ export function MyReferralsClient({
       )}
 
       {/* Tabs */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
         <div className="flex gap-0 border-b border-[var(--card-border)] bg-[var(--background)] overflow-x-auto">
           {(["overview", "referrals", "rewards", "leaderboard"] as const).map((tab) => (
             <button

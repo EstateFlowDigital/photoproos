@@ -67,7 +67,7 @@ export function SMSTemplatesClient({ templates }: SMSTemplatesClientProps) {
                 "flex h-full flex-col gap-3 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 shadow-sm"
               )}
             >
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex items-start justify-between gap-4 flex-wrap gap-2">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-foreground-secondary">
                     {template.templateType.replace(/_/g, " ")}
@@ -105,7 +105,7 @@ export function SMSTemplatesClient({ templates }: SMSTemplatesClientProps) {
                 </div>
               )}
 
-              <div className="mt-auto flex items-center justify-between text-sm text-foreground-secondary">
+              <div className="mt-auto flex items-start justify-between gap-4 flex-wrap text-sm text-foreground-secondary">
                 <span>{template._count.smsLogs} messages sent</span>
                 <Link
                   href={`/settings/sms/templates/${template.id}`}

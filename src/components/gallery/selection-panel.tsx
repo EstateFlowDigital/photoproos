@@ -224,7 +224,7 @@ export function SelectionPanel({
             ) : (
               <div className="space-y-4">
                 {/* Summary Bar */}
-                <div className="flex items-center justify-between rounded-lg bg-[var(--background)] p-3">
+                <div className="flex items-start justify-between gap-4 flex-wrap rounded-lg bg-[var(--background)] p-3">
                   <div className="flex items-center gap-4">
                     <div>
                       <p className="text-2xl font-bold text-foreground">{summary?.total}</p>

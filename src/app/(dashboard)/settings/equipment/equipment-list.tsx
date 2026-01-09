@@ -210,7 +210,7 @@ export function EquipmentList({ initialEquipment }: EquipmentListProps) {
             if (items.length === 0) return null;
 
             return (
-              <div key={category} className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+              <div key={category} className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
                 {/* Category Header */}
                 <div className="px-6 py-4 border-b border-[var(--card-border)] bg-[var(--background)]">
                   <div className="flex items-center gap-3">

@@ -176,7 +176,7 @@ export function ReviewStep({
           </div>
           <div className="space-y-2">
             {selectedServices.map((service) => (
-              <div key={service?.id} className="flex items-center justify-between text-sm">
+              <div key={service?.id} className="flex items-start justify-between gap-4 flex-wrap text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-foreground">{service?.name}</span>
                   {service?.isPrimary && (
@@ -193,7 +193,7 @@ export function ReviewStep({
                 </span>
               </div>
             ))}
-            <div className="pt-2 mt-2 border-t border-[var(--border)] flex items-center justify-between">
+            <div className="pt-2 mt-2 border-t border-[var(--border)] flex items-start justify-between gap-4 flex-wrap">
               <span className="font-medium text-foreground">Total</span>
               <span className="text-lg font-bold text-[var(--primary)]">
                 {formatPrice(totalPrice)}
@@ -278,7 +278,7 @@ export function ReviewStep({
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between pt-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap pt-4">
         <button
           onClick={onBack}
           disabled={isLoading}

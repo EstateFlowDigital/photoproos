@@ -188,7 +188,7 @@ export function SqftAnalyticsClient({ analytics, totalOrders }: SqftAnalyticsCli
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Pricing Tier Breakdown */}
         {tiers.length > 0 && (
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
             <div className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-4">
               <h3 className="text-sm font-semibold text-foreground">Revenue by Pricing Tier</h3>
             </div>
@@ -202,7 +202,7 @@ export function SqftAnalyticsClient({ analytics, totalOrders }: SqftAnalyticsCli
                     {index + 1}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-start justify-between gap-4 flex-wrap gap-2">
                       <p className="truncate font-medium text-foreground">{tier.name}</p>
                       <p className="shrink-0 font-semibold text-[var(--success)]">
                         {formatCurrency(tier.revenue)}
@@ -230,7 +230,7 @@ export function SqftAnalyticsClient({ analytics, totalOrders }: SqftAnalyticsCli
 
         {/* Sqft Size Distribution */}
         {distribution.length > 0 && (
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
             <div className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-4">
               <h3 className="text-sm font-semibold text-foreground">Property Size Distribution</h3>
             </div>
@@ -244,7 +244,7 @@ export function SqftAnalyticsClient({ analytics, totalOrders }: SqftAnalyticsCli
                     <SquareIcon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-start justify-between gap-4 flex-wrap gap-2">
                       <p className="font-medium text-foreground">{range.label} sqft</p>
                       <p className="shrink-0 text-sm text-foreground-muted">
                         {range.count} order{range.count !== 1 ? "s" : ""}

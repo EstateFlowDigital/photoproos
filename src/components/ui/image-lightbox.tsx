@@ -297,7 +297,7 @@ export function ImageLightbox({
       />
 
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/60 to-transparent">
+      <div className="absolute top-0 left-0 right-0 z-10 flex items-start justify-between gap-4 flex-wrap px-4 py-3 bg-gradient-to-b from-black/60 to-transparent">
         <div className="flex items-center gap-4">
           <span className="text-sm font-medium text-white/90">
             {currentIndex + 1} / {photos.length}

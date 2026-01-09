@@ -361,7 +361,7 @@ function StreakStatCard({ type, current, longest, icon: Icon }: StreakStatCardPr
         <span className="text-3xl font-bold text-[var(--foreground)]">{current}</span>
         <span className="text-sm text-[var(--foreground-muted)]">days</span>
       </div>
-      <div className="flex items-center justify-between text-xs mb-1">
+      <div className="flex items-start justify-between gap-4 flex-wrap text-xs mb-1">
         <span className="text-[var(--foreground-muted)]">Personal best: {longest}</span>
         <span className="text-[var(--foreground-secondary)]">{percentOfBest}%</span>
       </div>

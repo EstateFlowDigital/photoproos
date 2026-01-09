@@ -382,7 +382,7 @@ export function DeveloperPageClient({
             {auditLogs.slice(0, 5).map((log) => (
               <div
                 key={log.id}
-                className="flex items-center justify-between text-sm p-3 rounded-lg border border-[var(--border)] bg-[var(--background)]"
+                className="flex items-start justify-between gap-4 flex-wrap text-sm p-3 rounded-lg border border-[var(--border)] bg-[var(--background)]"
               >
                 <div>
                   <p className="text-[var(--foreground)]">{log.description}</p>
@@ -525,7 +525,7 @@ export function DeveloperPageClient({
               <div
                 key={env.name}
                 className={cn(
-                  "flex items-center justify-between p-3 rounded-lg",
+                  "flex items-start justify-between gap-4 flex-wrap p-3 rounded-lg",
                   "border border-[var(--border)]",
                   "bg-[var(--background)]"
                 )}
@@ -598,7 +598,7 @@ export function DeveloperPageClient({
                 <div
                   key={experiment.id}
                   className={cn(
-                    "flex items-center justify-between p-3 rounded-lg",
+                    "flex items-start justify-between gap-4 flex-wrap p-3 rounded-lg",
                     "border border-[var(--border)]",
                     "bg-[var(--background)]"
                   )}
@@ -648,7 +648,7 @@ export function DeveloperPageClient({
             href="/settings/developer/api"
             target="_blank"
             className={cn(
-              "flex items-center justify-between p-4 rounded-lg",
+              "flex items-start justify-between gap-4 flex-wrap p-4 rounded-lg",
               "border border-[var(--border)]",
               "bg-[var(--background)]",
               "hover:border-[var(--border-hover)]",
@@ -667,7 +667,7 @@ export function DeveloperPageClient({
             target="_blank"
             rel="noopener noreferrer"
             className={cn(
-              "flex items-center justify-between p-4 rounded-lg",
+              "flex items-start justify-between gap-4 flex-wrap p-4 rounded-lg",
               "border border-[var(--border)]",
               "bg-[var(--background)]",
               "hover:border-[var(--border-hover)]",
@@ -686,7 +686,7 @@ export function DeveloperPageClient({
             target="_blank"
             rel="noopener noreferrer"
             className={cn(
-              "flex items-center justify-between p-4 rounded-lg",
+              "flex items-start justify-between gap-4 flex-wrap p-4 rounded-lg",
               "border border-[var(--border)]",
               "bg-[var(--background)]",
               "hover:border-[var(--border-hover)]",

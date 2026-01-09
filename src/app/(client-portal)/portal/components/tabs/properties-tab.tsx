@@ -64,7 +64,7 @@ export function PropertiesTab({
     <>
       {/* Comparison bar */}
       {selectedForComparison.size > 0 && (
-        <div className="mb-4 flex items-center justify-between rounded-lg bg-[var(--primary)]/10 border border-[var(--primary)]/20 px-4 py-3">
+        <div className="mb-4 flex items-start justify-between gap-4 flex-wrap rounded-lg bg-[var(--primary)]/10 border border-[var(--primary)]/20 px-4 py-3">
           <span className="text-sm font-medium text-[var(--primary)]">
             {selectedForComparison.size} {selectedForComparison.size === 1 ? "property" : "properties"} selected
           </span>
@@ -350,7 +350,7 @@ function PropertyComparisonModal({ properties, onClose }: PropertyComparisonModa
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--overlay)] p-4">
       <div className="relative max-h-[90vh] w-full max-w-5xl overflow-auto rounded-xl bg-[var(--card)] shadow-xl">
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--card-border)] bg-[var(--card)] px-6 py-4">
+        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] bg-[var(--card)] px-6 py-4">
           <h2 className="text-lg font-semibold text-[var(--foreground)]">
             Compare Properties ({properties.length})
           </h2>

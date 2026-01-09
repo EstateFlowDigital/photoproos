@@ -93,7 +93,7 @@ export default function AnalyticsFeaturePage() {
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <div className="mx-auto max-w-4xl">
             <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6" data-element="features-analytics-preview-card">
-              <div className="mb-6 flex items-center justify-between">
+              <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
                 <h3 className="font-semibold text-foreground" data-element="features-analytics-preview-heading">Business Overview</h3>
                 <span className="text-sm text-foreground-secondary">Last 30 days</span>
               </div>
@@ -113,7 +113,7 @@ export default function AnalyticsFeaturePage() {
                 ))}
               </div>
               <div className="mt-6 rounded-lg bg-[var(--background-tertiary)] p-4">
-                <div className="mb-4 flex items-center justify-between">
+                <div className="mb-4 flex items-start justify-between gap-4 flex-wrap">
                   <p className="text-sm font-medium text-foreground">Revenue Trend</p>
                   <div className="flex gap-4">
                     <span className="flex items-center gap-2 text-xs text-foreground-secondary">

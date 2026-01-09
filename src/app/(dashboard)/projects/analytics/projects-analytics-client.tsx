@@ -124,7 +124,7 @@ export function ProjectsAnalyticsClient({ analytics }: ProjectsAnalyticsClientPr
           <div className="mt-4 space-y-3">
             {byColumn.map((column) => (
               <div key={column.columnId} className="space-y-1.5">
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-start justify-between gap-4 flex-wrap text-sm">
                   <div className="flex items-center gap-2">
                     <div
                       className="h-3 w-3 rounded-full"

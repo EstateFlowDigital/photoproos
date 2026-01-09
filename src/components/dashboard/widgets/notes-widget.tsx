@@ -61,7 +61,7 @@ export function NotesWidget({
         className="min-h-[120px] w-full resize-none rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-3 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
         aria-label="Quick notes"
       />
-      <div className="flex items-center justify-between text-xs text-foreground-muted">
+      <div className="flex items-start justify-between gap-4 flex-wrap text-xs text-foreground-muted">
         <span>
           {notes.length} characters
         </span>

@@ -859,7 +859,7 @@ export function BookingFormPublic({ form, organization, clientProfile }: Booking
                               : undefined
                           }
                         >
-                          <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-start justify-between gap-4 flex-wrap gap-4">
                             <div>
                               <p className="text-sm font-semibold text-foreground">
                                 {formService.service.name}
@@ -1955,7 +1955,7 @@ function FileUploadField({
           {uploadedFiles.map((file, index) => (
             <li
               key={file.key}
-              className="flex items-center justify-between p-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)]"
+              className="flex items-start justify-between gap-4 flex-wrap p-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)]"
             >
               <div className="flex items-center gap-3 min-w-0">
                 {getFileIcon(file.type)}

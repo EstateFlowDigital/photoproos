@@ -105,7 +105,7 @@ export const DailyQuestCard = memo(function DailyQuestCard({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-start justify-between gap-4 flex-wrap gap-2">
             <h4 className="font-medium text-[var(--foreground)]">{quest.name}</h4>
             <span className="flex items-center gap-1 text-sm text-[var(--warning)]">
               <Zap className="h-3 w-3" aria-hidden="true" />
@@ -119,7 +119,7 @@ export const DailyQuestCard = memo(function DailyQuestCard({
           {/* Progress */}
           {!quest.isCompleted && (
             <div className="mt-3">
-              <div className="flex items-center justify-between text-xs mb-1">
+              <div className="flex items-start justify-between gap-4 flex-wrap text-xs mb-1">
                 <span className="text-[var(--foreground-muted)]">
                   {quest.currentProgress} / {quest.targetValue}
                 </span>

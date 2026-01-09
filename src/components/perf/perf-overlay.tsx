@@ -69,7 +69,7 @@ export function PerfOverlay() {
 
   return (
     <div className="fixed bottom-4 right-4 z-[9999] w-80 rounded-xl border border-[var(--card-border)] bg-[color-mix(in srgb, var(--card) 85%, transparent)] shadow-2xl backdrop-blur">
-      <div className="flex items-center justify-between border-b border-[var(--card-border)] px-4 py-2">
+      <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-4 py-2">
         <div>
           <p className="text-sm font-semibold text-foreground">Perf overlay</p>
           <p className="text-xs text-foreground-muted">localStorage ppos_perf_logging=true</p>
@@ -95,13 +95,13 @@ export function PerfOverlay() {
                   {new Date(metric.ts).toLocaleTimeString()}
                 </span>
               </div>
-              <div className="mt-1 flex items-center justify-between text-xs">
+              <div className="mt-1 flex items-start justify-between gap-4 flex-wrap text-xs">
                 <span className="text-foreground-muted">Latest</span>
                 <span className={cn("font-semibold", highlightClass(metric.name, metric.latest))}>
                   {formatMetric(metric.name, metric.latest)}
                 </span>
               </div>
-              <div className="mt-1 flex items-center justify-between text-xs text-foreground-muted">
+              <div className="mt-1 flex items-start justify-between gap-4 flex-wrap text-xs text-foreground-muted">
                 <span>Avg ({metric.count})</span>
                 <span className="font-semibold text-foreground">
                   {formatMetric(metric.name, metric.avg)}

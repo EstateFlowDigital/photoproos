@@ -223,7 +223,7 @@ export function BulkUploadModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="w-full max-w-2xl max-h-[90vh] bg-[var(--card)] rounded-xl border border-[var(--card-border)] shadow-2xl flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--card-border)]">
+        <div className="flex items-start justify-between gap-4 flex-wrap px-6 py-4 border-b border-[var(--card-border)]">
           <div className="flex items-center gap-3">
             <Upload className="h-5 w-5 text-[var(--primary)]" />
             <div>
@@ -267,7 +267,7 @@ export function BulkUploadModal({
                 style={{ width: `${overallProgress}%` }}
               />
             </div>
-            <div className="flex items-center justify-between mt-2 text-xs text-foreground-muted">
+            <div className="flex items-start justify-between gap-4 flex-wrap mt-2 text-xs text-foreground-muted">
               <span>{stats.uploading} uploading</span>
               <span>{stats.pending} pending</span>
               <span>{stats.completed} completed</span>
@@ -320,7 +320,7 @@ export function BulkUploadModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-[var(--card-border)] bg-[var(--background)]">
+        <div className="flex items-start justify-between gap-4 flex-wrap px-6 py-4 border-t border-[var(--card-border)] bg-[var(--background)]">
           <div className="flex items-center gap-2">
             {stats.completed > 0 && (
               <Button

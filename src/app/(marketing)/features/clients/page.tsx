@@ -115,14 +115,14 @@ export default function ClientsFeaturePage() {
                 </div>
               </div>
               <div className="mt-6 space-y-3">
-                <div className="flex items-center justify-between rounded-lg bg-[var(--background-tertiary)] p-3">
+                <div className="flex items-start justify-between gap-4 flex-wrap rounded-lg bg-[var(--background-tertiary)] p-3">
                   <div className="flex items-center gap-3">
                     <div className="h-2 w-2 rounded-full bg-[var(--success)]" />
                     <span className="text-sm text-foreground">Wedding - June 2024</span>
                   </div>
                   <span className="text-sm text-foreground-secondary">Completed</span>
                 </div>
-                <div className="flex items-center justify-between rounded-lg bg-[var(--background-tertiary)] p-3">
+                <div className="flex items-start justify-between gap-4 flex-wrap rounded-lg bg-[var(--background-tertiary)] p-3">
                   <div className="flex items-center gap-3">
                     <div className="h-2 w-2 rounded-full bg-[var(--primary)]" />
                     <span className="text-sm text-foreground">Anniversary - Dec 2024</span>

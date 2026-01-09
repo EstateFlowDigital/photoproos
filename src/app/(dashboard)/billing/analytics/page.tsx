@@ -498,7 +498,7 @@ function AgingBar({
   const percentage = total > 0 ? (amount / total) * 100 : 0;
   return (
     <div>
-      <div className="flex items-center justify-between text-sm">
+      <div className="flex items-start justify-between gap-4 flex-wrap text-sm">
         <span className="text-foreground">{label}</span>
         <span className="font-medium text-foreground">{formatCurrency(amount)}</span>
       </div>

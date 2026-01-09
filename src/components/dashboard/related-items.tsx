@@ -24,7 +24,7 @@ export function RelatedItems({ items, className }: RelatedItemsProps) {
           <Link
             key={item.href}
             href={item.href}
-            className="flex items-center justify-between rounded-lg px-3 py-2.5 transition-colors hover:bg-[var(--background-hover)] group"
+            className="flex items-start justify-between gap-4 flex-wrap rounded-lg px-3 py-2.5 transition-colors hover:bg-[var(--background-hover)] group"
           >
             <div className="flex items-center gap-3">
               <span className="text-foreground-muted group-hover:text-foreground transition-colors">

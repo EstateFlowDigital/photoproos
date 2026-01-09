@@ -149,7 +149,7 @@ export function PercentageCounter({
 
   return (
     <div ref={elementRef} className={cn("space-y-2", className)}>
-      <div className="flex items-center justify-between text-sm">
+      <div className="flex items-start justify-between gap-4 flex-wrap text-sm">
         <span className="text-foreground-secondary">{label}</span>
         <AnimatedCounter
           end={value}

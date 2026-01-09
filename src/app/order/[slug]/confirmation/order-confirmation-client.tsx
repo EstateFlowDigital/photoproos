@@ -174,7 +174,7 @@ export function OrderConfirmationClient({
         {/* Order Details */}
         {orderDetails && (
           <div className="mt-10 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex items-center justify-between border-b border-[var(--card-border)] pb-4">
+            <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] pb-4">
               <h2 className="text-lg font-semibold text-white">Order Details</h2>
               <span className="rounded-full bg-[var(--background-tertiary)] px-3 py-1 text-sm font-medium text-white">
                 {orderDetails.orderNumber}
@@ -215,7 +215,7 @@ export function OrderConfirmationClient({
             </div>
 
             {/* Total */}
-            <div className="mt-4 flex items-center justify-between border-t border-[var(--card-border)] pt-4">
+            <div className="mt-4 flex items-start justify-between gap-4 flex-wrap border-t border-[var(--card-border)] pt-4">
               <span className="font-medium text-white">Total</span>
               <span className="text-xl font-bold text-white">
                 {formatPrice(orderDetails.totalCents)}

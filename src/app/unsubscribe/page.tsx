@@ -261,7 +261,7 @@ function PreferenceToggle({
   return (
     <div
       className={cn(
-        "flex items-center justify-between py-2",
+        "flex items-start justify-between gap-4 flex-wrap py-2",
         disabled && "opacity-50 pointer-events-none"
       )}
     >

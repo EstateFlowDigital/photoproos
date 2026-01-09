@@ -536,7 +536,7 @@ export function MailchimpSettingsClient({ initialConfig }: MailchimpSettingsClie
               {syncHistory.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between rounded-lg bg-[var(--background)] p-4"
+                  className="flex items-start justify-between gap-4 flex-wrap rounded-lg bg-[var(--background)] p-4"
                 >
                   <div className="flex items-center gap-3">
                     <CheckIcon

@@ -110,7 +110,7 @@ export function QRCodeModal({ url, title, isOpen, onClose }: QRCodeModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-sm bg-[var(--card)] rounded-xl border border-[var(--card-border)] shadow-2xl m-4 overflow-hidden">
-        <div className="flex items-center justify-between p-5 border-b border-[var(--card-border)]">
+        <div className="flex items-start justify-between gap-4 flex-wrap p-5 border-b border-[var(--card-border)]">
           <h2 className="text-lg font-semibold text-foreground">Gallery QR Code</h2>
           <button
             onClick={onClose}

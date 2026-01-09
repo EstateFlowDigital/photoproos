@@ -46,7 +46,7 @@ export default async function LeaderboardPage() {
       {/* My Stats Card */}
       {myState && myRank && (
         <div className="rounded-xl border border-[var(--card-border)] bg-gradient-to-r from-[var(--primary)]/10 to-[var(--ai)]/10 p-5">
-          <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-start justify-between gap-4 flex-wrap flex-wrap gap-4">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--ai)] text-xl font-bold text-white">
                 #{myRank.rank}

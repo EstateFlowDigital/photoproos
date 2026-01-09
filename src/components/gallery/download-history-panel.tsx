@@ -104,7 +104,7 @@ export function DownloadHistoryPanel({
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap border-b border-white/10 px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5">
               <Download className="h-5 w-5 text-white/60" />

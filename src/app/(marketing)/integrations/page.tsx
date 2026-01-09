@@ -89,7 +89,7 @@ export default function IntegrationsPage() {
                   {group.items.map((item) => (
                     <div
                       key={item.name}
-                      className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-4 py-3"
+                      className="flex items-start justify-between gap-4 flex-wrap rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-4 py-3"
                       data-element={`integrations-item-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
                     >
                       <span className="text-sm font-medium text-foreground">{item.name}</span>

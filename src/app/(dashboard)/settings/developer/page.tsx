@@ -301,7 +301,7 @@ function QuickLink({ href, label, count }: { href: string; label: string; count:
   return (
     <Link
       href={href}
-      className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-3 transition-colors hover:border-[var(--border-hover)] hover:bg-[var(--background-hover)]"
+      className="flex items-start justify-between gap-4 flex-wrap rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-3 transition-colors hover:border-[var(--border-hover)] hover:bg-[var(--background-hover)]"
     >
       <span className="font-medium text-foreground">{label}</span>
       <span className="text-xs text-foreground-muted">{count}</span>

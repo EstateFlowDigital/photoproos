@@ -473,7 +473,7 @@ export function OrdersTableClient({
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between lg:justify-start lg:gap-2">
+                    <div className="flex items-start justify-between gap-4 flex-wrap lg:justify-start lg:gap-2">
                       <span
                         className={cn(
                           "inline-flex rounded-full px-2.5 py-1 text-xs font-medium",

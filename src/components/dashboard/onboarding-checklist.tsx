@@ -485,7 +485,7 @@ export function OnboardingChecklist({
         </div>
 
         {/* XP Summary */}
-        <div className="mt-4 flex items-center justify-between rounded-lg bg-[var(--background-secondary)] p-3">
+        <div className="mt-4 flex items-start justify-between gap-4 flex-wrap rounded-lg bg-[var(--background-secondary)] p-3">
           <div className="flex items-center gap-2">
             <Zap className="h-4 w-4 text-[var(--warning)]" />
             <span className="text-sm font-medium">Total XP Earned</span>
@@ -498,7 +498,7 @@ export function OnboardingChecklist({
           <div className="h-full w-full rounded-full bg-[var(--success)]" />
         </div>
 
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-3 flex items-start justify-between gap-4 flex-wrap">
           <span className="text-sm font-medium text-[var(--success)]">
             {totalCount} of {totalCount} completed
           </span>

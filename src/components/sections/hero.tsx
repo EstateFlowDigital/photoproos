@@ -299,7 +299,7 @@ function ClientsDemo() {
         <Button size="sm" variant="default">+ Add Client</Button>
       </div>
 
-      <div className="rounded-lg border border-[var(--card-border)] overflow-hidden">
+      <div className="rounded-lg border border-[var(--card-border)] overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-[var(--background-secondary)]">
             <tr>
@@ -349,7 +349,7 @@ function PaymentsDemo() {
       </div>
 
       {/* Recent transactions */}
-      <div className="rounded-lg border border-[var(--card-border)] overflow-hidden">
+      <div className="rounded-lg border border-[var(--card-border)] overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-[var(--background-secondary)]">
             <tr>
@@ -474,7 +474,7 @@ function InvoicesDemo() {
       </div>
 
       {/* Invoice list */}
-      <div className="rounded-lg border border-[var(--card-border)] overflow-hidden">
+      <div className="rounded-lg border border-[var(--card-border)] overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-[var(--background-secondary)]">
             <tr>
@@ -584,7 +584,7 @@ function GalleryCard({ title, client, photos, status, revenue, image }: { title:
       </div>
       <h4 className="truncate text-sm font-medium text-foreground">{title}</h4>
       <p className="text-xs text-foreground-muted">{client}</p>
-      <div className="mt-2 flex items-center justify-between">
+      <div className="mt-2 flex items-start justify-between gap-4 flex-wrap">
         <span className="text-xs text-foreground-muted">{photos} photos</span>
         <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium uppercase", statusColors[status])}>
           {status}

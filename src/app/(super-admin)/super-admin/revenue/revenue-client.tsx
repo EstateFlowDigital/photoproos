@@ -413,7 +413,7 @@ export function RevenuePageClient({
                 {formatCurrencyDetailed(stats.outstandingAmountCents / 100)}
               </span>
             </div>
-            <div className="flex items-center justify-between mt-2">
+            <div className="flex items-start justify-between gap-4 flex-wrap mt-2">
               <span className="text-sm text-[var(--foreground-muted)]">Average Invoice</span>
               <span className="text-lg font-semibold text-[var(--foreground)]">
                 {formatCurrencyDetailed(stats.averageInvoiceCents / 100)}
@@ -496,7 +496,7 @@ export function RevenuePageClient({
                 <li
                   key={customer.organizationId}
                   className={cn(
-                    "flex items-center justify-between p-2.5 rounded-lg",
+                    "flex items-start justify-between gap-4 flex-wrap p-2.5 rounded-lg",
                     "bg-[var(--background-tertiary)]"
                   )}
                 >
@@ -547,7 +547,7 @@ export function RevenuePageClient({
                 <li
                   key={payment.id}
                   className={cn(
-                    "flex items-center justify-between p-2.5 rounded-lg",
+                    "flex items-start justify-between gap-4 flex-wrap p-2.5 rounded-lg",
                     "bg-[var(--background-tertiary)]"
                   )}
                 >
@@ -598,7 +598,7 @@ export function RevenuePageClient({
               <li
                 key={invoice.id}
                 className={cn(
-                  "flex items-center justify-between p-3 rounded-lg",
+                  "flex items-start justify-between gap-4 flex-wrap p-3 rounded-lg",
                   "bg-[var(--card)] border border-[var(--border)]"
                 )}
               >

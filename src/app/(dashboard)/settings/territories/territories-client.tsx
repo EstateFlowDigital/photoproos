@@ -223,7 +223,7 @@ export function TerritoriesClient({ initialTerritories, services }: TerritoriesC
         <div className="space-y-4">
           {/* Active Territories */}
           {activeTerritories.length > 0 && (
-            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
               <div className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-6 py-3">
                 <h2 className="text-sm font-semibold text-foreground">
                   Active Territories ({activeTerritories.length})

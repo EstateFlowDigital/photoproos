@@ -475,7 +475,7 @@ function CreateRecurringModal({ clients, onClose, onCreate }: CreateRecurringMod
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-2xl rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-xl">
-        <div className="flex items-center justify-between border-b border-[var(--card-border)] p-6">
+        <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] p-6">
           <h2 className="text-lg font-semibold text-foreground">
             Create Recurring Invoice
           </h2>
@@ -640,7 +640,7 @@ function CreateRecurringModal({ clients, onClose, onCreate }: CreateRecurringMod
             </div>
 
             {/* Total */}
-            <div className="mt-4 flex items-center justify-between rounded-lg bg-[var(--background-secondary)] p-4">
+            <div className="mt-4 flex items-start justify-between gap-4 flex-wrap rounded-lg bg-[var(--background-secondary)] p-4">
               <span className="font-medium text-foreground">Total per Invoice</span>
               <span className="text-xl font-semibold text-foreground">
                 {formatCurrency(total)}

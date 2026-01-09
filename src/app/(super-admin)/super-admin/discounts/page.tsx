@@ -29,7 +29,7 @@ function LoadingSkeleton() {
       </div>
 
       {/* Table skeleton */}
-      <div className="rounded-lg border border-[var(--border)] overflow-hidden">
+      <div className="rounded-lg border border-[var(--border)] overflow-x-auto">
         <div className="bg-[var(--card)] p-4 border-b border-[var(--border)]">
           <div className="h-4 w-32 bg-[var(--background-tertiary)] rounded animate-pulse" />
         </div>

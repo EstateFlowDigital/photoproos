@@ -111,7 +111,7 @@ export function MobileNav({
     >
       {/* Attention banner for pending items */}
       {totalBadges > 0 && activeTab === "properties" && (
-        <div className="flex items-center justify-between bg-[var(--warning)]/10 px-4 py-2 text-xs">
+        <div className="flex items-start justify-between gap-4 flex-wrap bg-[var(--warning)]/10 px-4 py-2 text-xs">
           <span className="text-[var(--warning)]">
             You have {totalBadges} item{totalBadges !== 1 ? "s" : ""} needing attention
           </span>

@@ -337,7 +337,7 @@ export function ConfigPageClient({
               <div
                 key={setting.id}
                 className={cn(
-                  "flex items-center justify-between p-4 rounded-lg",
+                  "flex items-start justify-between gap-4 flex-wrap p-4 rounded-lg",
                   "border border-[var(--border)]",
                   "bg-[var(--background)]",
                   isPending && "opacity-50"
@@ -384,7 +384,7 @@ export function ConfigPageClient({
                 <div
                   key={flag.id}
                   className={cn(
-                    "flex items-center justify-between p-4 rounded-lg",
+                    "flex items-start justify-between gap-4 flex-wrap p-4 rounded-lg",
                     "border border-[var(--border)]",
                     "bg-[var(--background)]",
                     isPending && "opacity-50"
@@ -466,7 +466,7 @@ export function ConfigPageClient({
             {auditLogs.slice(0, 5).map((log) => (
               <div
                 key={log.id}
-                className="flex items-center justify-between text-sm"
+                className="flex items-start justify-between gap-4 flex-wrap text-sm"
               >
                 <div>
                   <p className="text-[var(--foreground)]">{log.description}</p>

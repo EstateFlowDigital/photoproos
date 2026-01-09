@@ -217,7 +217,7 @@ function RequestCard({
   };
 
   return (
-    <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+    <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
       {/* Header */}
       <div
         className="flex items-start gap-4 p-4 cursor-pointer"

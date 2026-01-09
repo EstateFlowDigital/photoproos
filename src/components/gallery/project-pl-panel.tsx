@@ -2270,7 +2270,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
       {/* Error */}
       {error && (
         <div
-          className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center justify-between"
+          className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start justify-between gap-4 flex-wrap"
           role="alert"
         >
           <span>{error}</span>
@@ -2502,7 +2502,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
       )}
 
       {/* Advanced Features Toolbar */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+      <div className="flex items-start justify-between gap-4 flex-wrap gap-4 flex-wrap">
         <div className="flex items-center gap-2">
           <Button
             variant={activeAdvancedTab === "expenses" ? "secondary" : "ghost"}
@@ -2598,7 +2598,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
               {plSummary.expenses.byCategory.map((cat, i) => (
                 <div
                   key={cat.category}
-                  className="flex items-center justify-between p-2 rounded-lg hover:bg-[var(--background-hover)] transition-colors"
+                  className="flex items-start justify-between gap-4 flex-wrap p-2 rounded-lg hover:bg-[var(--background-hover)] transition-colors"
                   role="listitem"
                 >
                   <div className="flex items-center gap-2">
@@ -2627,7 +2627,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
       {/* Templates Tab Content */}
       {activeAdvancedTab === "templates" && (
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
-          <div className="p-4 border-b border-[var(--card-border)] flex items-center justify-between">
+          <div className="p-4 border-b border-[var(--card-border)] flex items-start justify-between gap-4 flex-wrap">
             <h3 className="font-semibold text-foreground">Recurring Expense Templates</h3>
             <Button size="sm" onClick={openAddTemplateModal}>
               <PlusIcon className="h-4 w-4 mr-1" />
@@ -2647,7 +2647,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
               {recurringTemplates.map((template) => (
                 <div
                   key={template.id}
-                  className="p-4 flex items-center justify-between gap-4 hover:bg-[var(--background-hover)] transition-colors"
+                  className="p-4 flex items-start justify-between gap-4 flex-wrap gap-4 hover:bg-[var(--background-hover)] transition-colors"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -2704,7 +2704,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
       {/* Budget Tab Content */}
       {activeAdvancedTab === "budget" && (
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
-          <div className="p-4 border-b border-[var(--card-border)] flex items-center justify-between">
+          <div className="p-4 border-b border-[var(--card-border)] flex items-start justify-between gap-4 flex-wrap">
             <h3 className="font-semibold text-foreground">Budget Tracking</h3>
             <Button size="sm" onClick={() => setShowBudgetModal(true)}>
               <SettingsIcon className="h-4 w-4 mr-1" />
@@ -2729,7 +2729,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                   style={{ width: `${Math.min(100, budgetStatus?.percentUsed || 0)}%` }}
                 />
               </div>
-              <div className="flex items-center justify-between mt-1 text-xs text-foreground-muted">
+              <div className="flex items-start justify-between gap-4 flex-wrap mt-1 text-xs text-foreground-muted">
                 <span>Spent: {formatCurrency(budgetStatus?.totalSpent || 0)}</span>
                 <span>
                   {budgetStatus?.budget.totalBudgetCents
@@ -2996,7 +2996,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
               </div>
 
               {/* Category Details Table */}
-              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+              <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
                 <div className="p-4 border-b border-[var(--card-border)]">
                   <h4 className="font-semibold text-foreground">Category Details</h4>
                 </div>
@@ -3085,7 +3085,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                         <p className="text-white text-sm font-medium truncate">
                           {expense.description}
                         </p>
-                        <div className="flex items-center justify-between mt-1">
+                        <div className="flex items-start justify-between gap-4 flex-wrap mt-1">
                           <span className="text-white/80 text-xs">
                             {formatCurrency(expense.amountCents)}
                           </span>
@@ -3116,7 +3116,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
         {/* Header with Search, Filters, and Actions */}
         <div className="p-4 border-b border-[var(--card-border)] space-y-4">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-start justify-between gap-4 flex-wrap gap-4 flex-wrap">
             <h3 className="font-semibold text-foreground">Expenses</h3>
             <div className="flex items-center gap-2">
               {recurringTemplates.length > 0 && (
@@ -3420,7 +3420,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
         {/* Bulk Action Bar */}
         {selectedIds.size > 0 && (
           <div
-            className="p-3 bg-[var(--primary)]/10 border-b border-[var(--card-border)] flex items-center justify-between flex-wrap gap-2"
+            className="p-3 bg-[var(--primary)]/10 border-b border-[var(--card-border)] flex items-start justify-between gap-4 flex-wrap flex-wrap gap-2"
             role="toolbar"
             aria-label="Bulk actions"
           >
@@ -3780,7 +3780,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                         <button
                           key={vendor.id}
                           type="button"
-                          className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--background-hover)] flex items-center justify-between"
+                          className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--background-hover)] flex items-start justify-between gap-4 flex-wrap"
                           onClick={() => {
                             setFormData({
                               ...formData,
@@ -4536,7 +4536,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                     <h4 className="text-sm font-medium text-foreground mb-2">By Category</h4>
                     <div className="space-y-1">
                       {forecast.summary.byCategory.map((c) => (
-                        <div key={c.category} className="flex items-center justify-between py-1 px-2 rounded hover:bg-[var(--background-secondary)]">
+                        <div key={c.category} className="flex items-start justify-between gap-4 flex-wrap py-1 px-2 rounded hover:bg-[var(--background-secondary)]">
                           <span className="text-sm text-foreground-muted capitalize">{c.category.replace("_", " ")}</span>
                           <span className="text-sm font-medium text-foreground">{formatCurrency(c.amountCents)}</span>
                         </div>
@@ -4555,7 +4555,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                           <span className="font-medium text-foreground">{f.templateName}</span>
                           <span className="text-sm text-foreground-muted capitalize">{f.frequency}</span>
                         </div>
-                        <div className="flex items-center justify-between mt-1">
+                        <div className="flex items-start justify-between gap-4 flex-wrap mt-1">
                           <span className="text-xs text-foreground-muted capitalize">{f.category}</span>
                           <span className="text-sm font-medium text-[var(--primary)]">
                             {formatCurrency(f.amountCents)}/occurrence
@@ -4680,7 +4680,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
 
                 {/* Remaining Amount */}
                 <div className={cn(
-                  "p-3 rounded-lg border flex items-center justify-between",
+                  "p-3 rounded-lg border flex items-start justify-between gap-4 flex-wrap",
                   splitRemainingAmount === 0
                     ? "bg-[var(--success)]/10 border-[var(--success)]/20"
                     : "bg-[var(--warning)]/10 border-[var(--warning)]/20"

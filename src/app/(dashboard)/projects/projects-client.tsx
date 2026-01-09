@@ -1369,7 +1369,7 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
                           </div>
                         )}
 
-                        <div className="mt-2 flex items-center justify-between">
+                        <div className="mt-2 flex items-start justify-between gap-4 flex-wrap">
                           <button
                             type="button"
                             onClick={() => setShowExpandedCreate(!showExpandedCreate)}
@@ -3259,7 +3259,7 @@ function ColumnSettingsPopover({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex items-start justify-between gap-4 flex-wrap pt-2">
           <button
             onClick={onDelete}
             className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-[var(--error)] hover:bg-[var(--error)]/10"
@@ -3340,7 +3340,7 @@ function TemplateLibraryModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[var(--card-border)] px-6 py-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-6 py-4">
           <div>
             <h2 className="text-lg font-semibold text-foreground">Task Templates</h2>
             <p className="text-sm text-foreground-muted">

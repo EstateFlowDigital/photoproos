@@ -446,7 +446,7 @@ print(data)`;
                       {endpoint.parameters && endpoint.parameters.length > 0 && (
                         <div>
                           <h4 className="text-sm font-medium text-foreground mb-2">Query Parameters</h4>
-                          <div className="rounded-lg border border-[var(--card-border)] overflow-hidden">
+                          <div className="rounded-lg border border-[var(--card-border)] overflow-x-auto">
                             <table className="w-full text-sm">
                               <thead className="bg-[var(--background)]">
                                 <tr>
@@ -481,7 +481,7 @@ print(data)`;
                       {endpoint.bodyParams && endpoint.bodyParams.length > 0 && (
                         <div>
                           <h4 className="text-sm font-medium text-foreground mb-2">Request Body</h4>
-                          <div className="rounded-lg border border-[var(--card-border)] overflow-hidden">
+                          <div className="rounded-lg border border-[var(--card-border)] overflow-x-auto">
                             <table className="w-full text-sm">
                               <thead className="bg-[var(--background)]">
                                 <tr>
@@ -583,7 +583,7 @@ print(data)`;
       {/* Error Codes */}
       <section className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <h2 className="text-lg font-semibold text-foreground mb-4">Error Codes</h2>
-        <div className="rounded-lg border border-[var(--card-border)] overflow-hidden">
+        <div className="rounded-lg border border-[var(--card-border)] overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-[var(--background)]">
               <tr>

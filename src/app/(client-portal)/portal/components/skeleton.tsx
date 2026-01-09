@@ -126,7 +126,7 @@ export function DownloadsTabSkeleton() {
 // Skeleton for invoice cards
 export function InvoiceCardSkeleton() {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+    <div className="flex items-start justify-between gap-4 flex-wrap rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
       <div className="flex items-center gap-4">
         <Skeleton className="h-12 w-12" />
         <div>
@@ -157,7 +157,7 @@ export function InvoicesTabSkeleton() {
 // Skeleton for questionnaire cards
 export function QuestionnaireCardSkeleton() {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+    <div className="flex items-start justify-between gap-4 flex-wrap rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
       <div className="flex items-center gap-4">
         <Skeleton className="h-12 w-12" />
         <div>

@@ -118,7 +118,7 @@ export default function GalleriesFeaturePage() {
                   />
                 ))}
               </div>
-              <div className="mt-6 flex items-center justify-between rounded-lg bg-[var(--background-tertiary)] p-4">
+              <div className="mt-6 flex items-start justify-between gap-4 flex-wrap rounded-lg bg-[var(--background-tertiary)] p-4">
                 <div>
                   <p className="font-medium text-foreground">Full Gallery Access</p>
                   <p className="text-sm text-foreground-secondary">248 high-resolution photos</p>

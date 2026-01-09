@@ -146,7 +146,7 @@ export function SubmissionsPageClient({ bookingForm, submissions }: SubmissionsP
       </div>
 
       {/* Submissions Table */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
         {filteredSubmissions.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px]">

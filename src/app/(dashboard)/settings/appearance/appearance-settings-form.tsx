@@ -462,7 +462,7 @@ export function AppearanceSettingsForm({
     <div className="space-y-8">
       {/* Preview Banner */}
       {hasPreviewChanges && (
-        <div className="sticky top-0 z-50 flex items-center justify-between gap-4 rounded-xl border border-[var(--primary)]/30 bg-[var(--primary)]/10 p-4">
+        <div className="sticky top-0 z-50 flex items-start justify-between gap-4 flex-wrap gap-4 rounded-xl border border-[var(--primary)]/30 bg-[var(--primary)]/10 p-4">
           <div className="flex items-center gap-3">
             <EyeIcon className="h-5 w-5 text-[var(--primary)]" />
             <div>
@@ -884,7 +884,7 @@ export function AppearanceSettingsForm({
 
         <div className="space-y-4">
           {/* High Contrast Toggle */}
-          <div className="flex items-center justify-between p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
+          <div className="flex items-start justify-between gap-4 flex-wrap p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
             <div>
               <h3 className="font-medium text-foreground">High Contrast</h3>
               <p className="text-sm text-foreground-muted">
@@ -899,7 +899,7 @@ export function AppearanceSettingsForm({
           </div>
 
           {/* Compact Sidebar Toggle */}
-          <div className="flex items-center justify-between p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
+          <div className="flex items-start justify-between gap-4 flex-wrap p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
             <div>
               <h3 className="font-medium text-foreground">Compact Sidebar</h3>
               <p className="text-sm text-foreground-muted">
@@ -942,7 +942,7 @@ export function AppearanceSettingsForm({
           </div>
 
           {/* Reduce Motion Toggle */}
-          <div className="flex items-center justify-between p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
+          <div className="flex items-start justify-between gap-4 flex-wrap p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
             <div>
               <h3 className="font-medium text-foreground">Reduce Motion</h3>
               <p className="text-sm text-foreground-muted">
@@ -969,7 +969,7 @@ export function AppearanceSettingsForm({
 
         <div className="space-y-4">
           {/* Auto Theme Toggle */}
-          <div className="flex items-center justify-between p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
+          <div className="flex items-start justify-between gap-4 flex-wrap p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
             <div>
               <h3 className="font-medium text-foreground">Enable Auto Theme</h3>
               <p className="text-sm text-foreground-muted">

@@ -137,7 +137,7 @@ export const GamificationHub = memo(function GamificationHub({
         <div className="px-5 pb-5">
           <Link
             href="/settings/gamification"
-            className="flex items-center justify-between rounded-lg bg-gradient-to-r from-[var(--warning)]/10 to-[var(--warning)]/5 border border-[var(--warning)]/30 px-4 py-3 hover:from-[var(--warning)]/15 hover:to-[var(--warning)]/10 transition-colors"
+            className="flex items-start justify-between gap-4 flex-wrap rounded-lg bg-gradient-to-r from-[var(--warning)]/10 to-[var(--warning)]/5 border border-[var(--warning)]/30 px-4 py-3 hover:from-[var(--warning)]/15 hover:to-[var(--warning)]/10 transition-colors"
           >
             <div className="flex items-center gap-3">
               <Gift className="h-5 w-5 text-[var(--warning)]" aria-hidden="true" />
@@ -218,7 +218,7 @@ export const GamificationHubCompact = memo(function GamificationHubCompact({
         className
       )}
     >
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap gap-4">
         {/* Level & XP */}
         <div className="flex items-center gap-3">
           <LevelBadge level={level} size="md" />

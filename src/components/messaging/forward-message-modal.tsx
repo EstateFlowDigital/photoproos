@@ -100,7 +100,7 @@ export function ForwardMessageModal({
     <div className="forward-modal fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[var(--card-border)] p-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] p-4">
           <div className="flex items-center gap-2">
             <Forward className="h-5 w-5 text-[var(--primary)]" />
             <h2 className="font-semibold text-[var(--foreground)]">Forward Message</h2>

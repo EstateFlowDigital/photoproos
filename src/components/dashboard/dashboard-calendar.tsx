@@ -321,7 +321,7 @@ export function DashboardCalendar({ events }: { events: DashboardCalendarEvent[]
   };
 
   return (
-    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
       <div className="flex flex-col gap-3 border-b border-[var(--card-border)] p-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-wrap items-center gap-3">
           <h3 className="text-lg font-semibold text-foreground">{headerLabel}</h3>

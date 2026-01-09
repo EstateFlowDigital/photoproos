@@ -29,12 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Font size slider with presets
   - Sizing presets (auto, 100%, fit-content, max-content)
 - **Element Inspector Navigation History** - When navigating to parent elements, the previously selected child is remembered so you can navigate back to it with the "Back" button
-- **Data Element Attributes** - Added `data-element` identifiers to all page components across the application for consistent Element Inspector identification:
-  - All dashboard pages (reports, settings, clients, projects, etc.)
-  - All client portal pages (booking, contracts, downloads, favorites, etc.)
-  - All field app pages (checklist, notes, upload, weather)
-  - All marketing pages (roadmap, support, webinars)
-  - All super-admin pages (marketing CMS, blog, FAQs, team, testimonials)
+- **Data Element Attributes** - Added `data-element` identifiers across the entire application for consistent Element Inspector identification:
+  - **Layout Components**: dashboard-shell, dashboard-sidebar, dashboard-sidebar-container, dashboard-main, dashboard-topbar, dashboard-content
+  - **UI Primitives**: card, card-header, card-title, card-description, card-content, card-footer, button (with variant suffix), badge (with variant suffix), input, textarea, input-wrapper, textarea-wrapper
+  - **Page Components**: page-header, page-header-content, page-title, page-subtitle, page-header-actions
+  - **All Pages**: dashboard pages, client portal pages, field app pages, marketing pages, super-admin pages
 
 ### Changed
 - **Support Dialog Styling** - Updated category grid container padding from `mt-4` to `py-4 px-4` for consistent spacing

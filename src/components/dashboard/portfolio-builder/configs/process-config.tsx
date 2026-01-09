@@ -227,7 +227,7 @@ export function ProcessConfig({ config, updateConfig }: ProcessConfigProps) {
               key={step.id}
               className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-3"
             >
-              <div className="mb-2 flex items-center justify-between">
+              <div className="mb-2 flex items-start justify-between gap-4 flex-wrap">
                 <div className="flex items-center gap-2">
                   <button
                     type="button"

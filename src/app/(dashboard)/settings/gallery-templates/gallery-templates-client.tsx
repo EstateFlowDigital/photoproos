@@ -280,7 +280,7 @@ export function GalleryTemplatesClient({ templates: initialTemplates, services }
                 </div>
               </div>
 
-              <div className="mt-3 pt-3 border-t border-[var(--card-border)] flex items-center justify-between text-xs text-foreground-muted">
+              <div className="mt-3 pt-3 border-t border-[var(--card-border)] flex items-start justify-between gap-4 flex-wrap text-xs text-foreground-muted">
                 <span>Used {template.usageCount} time{template.usageCount !== 1 ? "s" : ""}</span>
               </div>
             </div>

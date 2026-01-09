@@ -444,7 +444,7 @@ export function QuickBooksSettingsClient({
             <p className="text-sm font-medium text-foreground mb-3">
               Field Mappings
             </p>
-            <div className="rounded-lg border border-[var(--card-border)] overflow-hidden">
+            <div className="rounded-lg border border-[var(--card-border)] overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-[var(--background)]">
                   <tr>
@@ -503,7 +503,7 @@ export function QuickBooksSettingsClient({
             {syncHistory.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between rounded-lg bg-[var(--background)] p-4"
+                className="flex items-start justify-between gap-4 flex-wrap rounded-lg bg-[var(--background)] p-4"
               >
                 <div className="flex items-center gap-3">
                   <div

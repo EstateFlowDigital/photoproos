@@ -124,7 +124,7 @@ export function ThreadView({
   return (
     <div className="thread-view flex h-full flex-col border-l border-[var(--card-border)] bg-[var(--card)]">
       {/* Thread Header */}
-      <header className="flex items-center justify-between border-b border-[var(--card-border)] px-4 py-3">
+      <header className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-4 py-3">
         <div className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5 text-[var(--primary)]" />
           <div>

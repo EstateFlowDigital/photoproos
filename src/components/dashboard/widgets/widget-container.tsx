@@ -126,7 +126,7 @@ export function WidgetContainer({
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[var(--card-border)] px-4 py-3">
+      <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-4 py-3">
         <div className="flex items-center gap-3 min-w-0">
           {/* Drag Handle */}
           {isDraggable && (
@@ -259,7 +259,7 @@ export function WidgetContainerSkeleton({
       )}
     >
       {/* Header Skeleton */}
-      <div className="flex items-center justify-between border-b border-[var(--card-border)] px-4 py-3">
+      <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-4 py-3">
         <div className="flex items-center gap-3">
           <div className="h-4 w-4 animate-pulse rounded bg-[var(--background-secondary)]" />
           <div className="h-4 w-24 animate-pulse rounded bg-[var(--background-secondary)]" />

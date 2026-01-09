@@ -124,7 +124,7 @@ export function TeamMemberSelector({
         onBlur={() => setIsFocused(false)}
         disabled={disabled || !serviceId}
         className={cn(
-          "w-full flex items-center justify-between gap-3",
+          "w-full flex items-start justify-between gap-4 flex-wrap gap-3",
           "rounded-[var(--input-radius)] border bg-[var(--background-elevated)]",
           "px-3 py-3 text-sm text-left",
           "transition-all duration-[var(--duration-fast)]",

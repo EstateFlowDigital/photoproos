@@ -219,7 +219,7 @@ export function NotificationsPageClient({
       )}
 
       {/* Content */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
         {activeTab === "notifications" ? (
           <NotificationsList
             notifications={filteredNotifications}

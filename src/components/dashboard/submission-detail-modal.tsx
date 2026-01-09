@@ -249,7 +249,7 @@ export function SubmissionDetailModal({
       {/* Modal */}
       <div className="relative w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[var(--card-border)] px-6 py-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-6 py-4">
           <div>
             <h2 className="text-lg font-semibold text-foreground">Submission Details</h2>
             <p className="text-sm text-foreground-muted">

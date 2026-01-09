@@ -82,7 +82,7 @@ export function MessagesLayout({ conversations, children }: MessagesLayoutProps)
         } ${isConversationView ? "hidden md:flex" : "flex"}`}
       >
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between border-b border-[var(--card-border)] p-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] p-4">
           <h1 className="text-xl font-semibold text-[var(--foreground)]">Messages</h1>
           <div className="flex items-center gap-2">
             <Link
@@ -306,7 +306,7 @@ function ConversationItem({
           </div>
         </div>
 
-        <div className="flex items-center justify-between mt-0.5">
+        <div className="flex items-start justify-between gap-4 flex-wrap mt-0.5">
           <p
             className={`text-sm truncate ${
               isActive

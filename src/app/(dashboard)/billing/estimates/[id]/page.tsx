@@ -108,7 +108,7 @@ export default async function EstimateDetailPage({ params }: Props) {
             </div>
             <div className="divide-y divide-[var(--card-border)]">
               {estimate.lineItems.map((item) => (
-                <div key={item.id} className="flex items-center justify-between px-6 py-4">
+                <div key={item.id} className="flex items-start justify-between gap-4 flex-wrap px-6 py-4">
                   <div className="flex-1">
                     <p className="font-medium text-foreground">{item.description}</p>
                     <p className="text-sm text-foreground-muted">

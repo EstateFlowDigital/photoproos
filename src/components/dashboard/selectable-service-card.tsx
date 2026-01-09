@@ -128,7 +128,7 @@ export function SelectableServiceCard({
       )}
 
       {/* Footer */}
-      <div className="mt-4 pt-4 border-t border-[var(--card-border)] flex items-center justify-between text-xs text-foreground-muted">
+      <div className="mt-4 pt-4 border-t border-[var(--card-border)] flex items-start justify-between gap-4 flex-wrap text-xs text-foreground-muted">
         <span>Used in {service.usageCount || 0} galleries</span>
         {!selectionMode && (
           <span className="text-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity">

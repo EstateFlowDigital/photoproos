@@ -366,7 +366,7 @@ export function SMSSettingsClient({ settings, stats, templates, recentLogs }: Pr
       </div>
 
       {/* Recent SMS Logs */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
         <div className="border-b border-[var(--card-border)] px-6 py-4">
           <h2 className="text-lg font-semibold text-foreground">Recent Messages</h2>
         </div>

@@ -257,7 +257,7 @@ export function IntegrationsClient({
       </section>
 
       {/* API Access Section */}
-      <section className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+      <section className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
         <button
           type="button"
           onClick={() => setShowApiSection(!showApiSection)}
@@ -287,7 +287,7 @@ export function IntegrationsClient({
       </section>
 
       {/* Webhooks Section */}
-      <section className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+      <section className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
         <button
           type="button"
           onClick={() => setShowWebhookSection(!showWebhookSection)}

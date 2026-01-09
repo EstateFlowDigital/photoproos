@@ -94,7 +94,7 @@ export function RecordPaymentModal({
 
       {/* Modal */}
       <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
-        <div className="mb-5 flex items-center justify-between">
+        <div className="mb-5 flex items-start justify-between gap-4 flex-wrap">
           <h2 className="text-lg font-semibold text-foreground">
             Record Payment
           </h2>

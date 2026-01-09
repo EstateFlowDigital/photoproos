@@ -114,7 +114,7 @@ export function DebugBanner({ route: routeProp }: DebugBannerProps) {
 
   return (
     <div className="fixed bottom-3 right-3 z-[60] w-[min(420px,calc(100vw-24px))] rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--card-border)]">
+      <div className="flex items-start justify-between gap-4 flex-wrap px-3 py-2 border-b border-[var(--card-border)]">
         <div className="text-xs font-semibold text-foreground">
           Debug · {route} · {errors.length} issue{errors.length === 1 ? "" : "s"}
         </div>

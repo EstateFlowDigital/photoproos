@@ -1038,7 +1038,7 @@ export function SchedulingPageClient({
           )}
 
           {calendarView === "list" && !selectedDate && (
-            <div className="rounded-lg border border-[var(--card-border)] overflow-hidden">
+            <div className="rounded-lg border border-[var(--card-border)] overflow-x-auto">
               {sortedDays.length > 0 ? (
                 sortedDays.map((dayKey) => {
                   const dayBookings = bookingsByDayKey.get(dayKey) ?? [];

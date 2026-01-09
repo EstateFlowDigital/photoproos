@@ -179,7 +179,7 @@ export function BlogListClient({ posts = [] }: Props) {
       </div>
 
       {/* Posts Table */}
-      <div className="rounded-lg border border-[var(--border)] overflow-hidden" data-element="blog-list-table">
+      <div className="rounded-lg border border-[var(--border)] overflow-x-auto" data-element="blog-list-table">
         <table className="w-full">
           <thead className="bg-[var(--card)]">
             <tr>

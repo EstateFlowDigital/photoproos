@@ -339,7 +339,7 @@ export function ReviewsSettingsClient({
 
       {/* Review Platforms */}
       <section className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
-        <div className="flex items-center justify-between border-b border-[var(--card-border)] p-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] p-4">
           <div>
             <h2 className="text-base font-semibold text-foreground">
               Review Platforms

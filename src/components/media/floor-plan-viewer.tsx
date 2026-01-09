@@ -213,7 +213,7 @@ export function FloorPlanViewer({
       )}
     >
       {/* Header with label and type */}
-      <div className="floor-plan-header absolute left-0 right-0 top-0 z-20 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent px-4 py-3">
+      <div className="floor-plan-header absolute left-0 right-0 top-0 z-20 flex items-start justify-between gap-4 flex-wrap bg-gradient-to-b from-black/60 to-transparent px-4 py-3">
         <div className="flex items-center gap-2">
           <Grid3x3 className="h-4 w-4 text-white/80" />
           <span className="text-sm font-medium text-white">
@@ -373,7 +373,7 @@ export function FloorPlanThumbnail({
       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
 
       {/* Label */}
-      <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between p-2">
+      <div className="absolute bottom-0 left-0 right-0 flex items-start justify-between gap-4 flex-wrap p-2">
         <span className="floor-plan-thumbnail-label flex items-center gap-1.5 rounded bg-black/50 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
           <Grid3x3 className="h-3 w-3" />
           {label || "Floor Plan"}

@@ -83,7 +83,7 @@ export function GamificationWidget({
       </div>
 
       {/* Achievement progress */}
-      <div className="mt-4 flex items-center justify-between text-sm">
+      <div className="mt-4 flex items-start justify-between gap-4 flex-wrap text-sm">
         <span className="text-[var(--foreground-muted)]">Achievements</span>
         <span className="font-medium text-[var(--foreground)]">
           {unlockedAchievements} / {totalAchievements}

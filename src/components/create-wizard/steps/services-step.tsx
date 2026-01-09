@@ -273,7 +273,7 @@ export function ServicesStep({
       )}
 
       {/* Navigation */}
-      <div className="flex items-center justify-between pt-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap pt-4">
         <button
           onClick={onBack}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-foreground-secondary hover:text-foreground hover:bg-[var(--background-secondary)] transition-colors"

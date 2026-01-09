@@ -210,7 +210,7 @@ export default function ContractSigningPage() {
     <div data-element="contract-sign-page" className="min-h-screen bg-[var(--background)]">
       {/* Header */}
       <header className="bg-[var(--card)] border-b border-[var(--card-border)] sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 py-4 flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
             {organization?.logoUrl ? (
               <img
@@ -244,8 +244,8 @@ export default function ContractSigningPage() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Contract Content */}
           <div className="lg:col-span-2">
-            <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--card-border)]">
+            <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-x-auto">
+              <div className="flex items-start justify-between gap-4 flex-wrap px-4 py-3 border-b border-[var(--card-border)]">
                 <div className="flex items-center gap-2 text-white">
                   <FileText className="w-4 h-4" />
                   <span className="font-medium">Contract Document</span>
@@ -375,7 +375,7 @@ export default function ContractSigningPage() {
           {/* Sidebar */}
           <div className="lg:col-span-1">
             {/* Signers Status */}
-            <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-hidden">
+            <div className="bg-[var(--card)] rounded-xl border border-[var(--card-border)] overflow-x-auto">
               <div className="px-4 py-3 border-b border-[var(--card-border)]">
                 <h2 className="text-white font-medium">Signers</h2>
               </div>
@@ -383,7 +383,7 @@ export default function ContractSigningPage() {
                 {signers.map((s) => (
                   <div
                     key={s.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-[var(--background-tertiary)]"
+                    className="flex items-start justify-between gap-4 flex-wrap p-3 rounded-lg bg-[var(--background-tertiary)]"
                   >
                     <div>
                       <p className="text-white text-sm font-medium">

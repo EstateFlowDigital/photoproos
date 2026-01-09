@@ -192,7 +192,7 @@ export function GalleryCard({ id, title, client, photos, status, revenue, thumbn
         </p>
 
         {/* Footer */}
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-3 flex items-start justify-between gap-4 flex-wrap">
           <span className="text-xs text-foreground-muted">{photos} photos</span>
           <span className={cn(
             "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase",

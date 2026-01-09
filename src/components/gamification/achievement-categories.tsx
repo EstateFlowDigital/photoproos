@@ -154,7 +154,7 @@ const CategoryCard = memo(function CategoryCard({
 
       {/* Progress */}
       <div className="mb-2">
-        <div className="flex items-center justify-between text-sm mb-1">
+        <div className="flex items-start justify-between gap-4 flex-wrap text-sm mb-1">
           <span className="text-[var(--foreground-muted)]">
             {category.unlockedCount}/{category.totalCount}
           </span>
@@ -169,7 +169,7 @@ const CategoryCard = memo(function CategoryCard({
       </div>
 
       {/* XP */}
-      <div className="flex items-center justify-between text-xs">
+      <div className="flex items-start justify-between gap-4 flex-wrap text-xs">
         <span className="flex items-center gap-1 text-[var(--warning)]">
           <Zap className="h-3 w-3" aria-hidden="true" />
           {category.earnedXp.toLocaleString()} XP

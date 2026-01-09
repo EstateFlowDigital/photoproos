@@ -211,7 +211,7 @@ export function TourSpotlight({
           </div>
 
           {/* Footer */}
-          <div className="mt-5 flex items-center justify-between">
+          <div className="mt-5 flex items-start justify-between gap-4 flex-wrap">
             {/* Progress dots */}
             <div className="flex items-center gap-1">
               {Array.from({ length: totalSteps }).map((_, i) => (

@@ -496,7 +496,7 @@ export function ContractEditClient({
                   <div
                     key={signer.id}
                     className={cn(
-                      "flex items-center justify-between p-4 rounded-lg border",
+                      "flex items-start justify-between gap-4 flex-wrap p-4 rounded-lg border",
                       signer.signedAt
                         ? "border-[var(--success)]/30 bg-[var(--success)]/5"
                         : "border-[var(--card-border)] bg-[var(--background)]"

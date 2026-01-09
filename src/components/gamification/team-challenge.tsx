@@ -158,7 +158,7 @@ export const TeamChallengeCard = memo(function TeamChallengeCard({
       <div className="p-4">
         {/* Progress bar */}
         <div className="mb-3">
-          <div className="flex items-center justify-between text-sm mb-1.5">
+          <div className="flex items-start justify-between gap-4 flex-wrap text-sm mb-1.5">
             <span className="text-[var(--foreground-muted)]">
               {challenge.isTeamGoal ? "Team Progress" : "Leader"}
             </span>
@@ -190,7 +190,7 @@ export const TeamChallengeCard = memo(function TeamChallengeCard({
         )}
 
         {/* Reward */}
-        <div className="flex items-center justify-between rounded-lg bg-[var(--background-secondary)] p-3">
+        <div className="flex items-start justify-between gap-4 flex-wrap rounded-lg bg-[var(--background-secondary)] p-3">
           <div className="flex items-center gap-2">
             <Zap className="h-4 w-4 text-[var(--warning)]" aria-hidden="true" />
             <span className="text-sm font-medium text-[var(--foreground)]">
@@ -204,7 +204,7 @@ export const TeamChallengeCard = memo(function TeamChallengeCard({
 
         {/* My contribution for team challenges */}
         {challenge.isTeamGoal && myParticipation && (
-          <div className="mt-3 flex items-center justify-between text-sm">
+          <div className="mt-3 flex items-start justify-between gap-4 flex-wrap text-sm">
             <span className="text-[var(--foreground-muted)]">Your contribution</span>
             <span className="font-medium text-[var(--primary)]">
               {formatNumber(myParticipation.contribution)}
@@ -430,7 +430,7 @@ export const TeamChallengeWidget = memo(function TeamChallengeWidget({
         />
       </div>
 
-      <div className="flex items-center justify-between mt-2 text-xs">
+      <div className="flex items-start justify-between gap-4 flex-wrap mt-2 text-xs">
         <span className="text-[var(--foreground-muted)]">
           {formatNumber(challenge.currentProgress)} / {formatNumber(challenge.targetValue)}
         </span>

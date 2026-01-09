@@ -609,7 +609,7 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
                   <EyeIcon className="h-4 w-4" />
                   View client portal
                 </Link>
-                <div className="mt-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 flex items-center justify-between">
+                <div className="mt-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 flex items-start justify-between gap-4 flex-wrap">
                   <span className="text-xs font-semibold text-foreground-secondary">Appearance</span>
                   <div className="flex items-center gap-2">
                     <QuickThemeSwitcher />
@@ -641,7 +641,7 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
           {/* Notifications dropdown */}
           {notificationsOpen && (
             <div className="fixed inset-x-3 top-[72px] z-50 max-h-[70vh] overflow-y-auto rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:mt-2 sm:w-[clamp(260px,70vw,440px)]">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--card-border)]">
+              <div className="flex items-start justify-between gap-4 flex-wrap px-4 py-3 border-b border-[var(--card-border)]">
                 <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
                 {unreadCount > 0 && (
                   <button

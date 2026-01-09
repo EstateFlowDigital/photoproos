@@ -253,7 +253,7 @@ export function ChatPanel({ galleryId, className }: ChatPanelProps) {
   return (
     <div className={cn("flex flex-col h-full", className)}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-[var(--card-border)]">
+      <div className="flex items-start justify-between gap-4 flex-wrap p-4 border-b border-[var(--card-border)]">
         <div>
           <h3 className="font-semibold text-foreground">Project Chat</h3>
           <p className="text-sm text-foreground-muted">
@@ -356,7 +356,7 @@ export function ChatPanel({ galleryId, className }: ChatPanelProps) {
             }}
           />
         </div>
-        <div className="flex items-center justify-between mt-3">
+        <div className="flex items-start justify-between gap-4 flex-wrap mt-3">
           <span className="text-xs text-foreground-muted">
             {navigator.platform.includes("Mac") ? "Cmd" : "Ctrl"} + Enter to send
           </span>
@@ -458,7 +458,7 @@ function MessageBubble({
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between gap-2 mb-2">
+        <div className="flex items-start justify-between gap-4 flex-wrap gap-2 mb-2">
           <div className="flex items-center gap-2">
             {/* Avatar */}
             {message.senderAvatar ? (

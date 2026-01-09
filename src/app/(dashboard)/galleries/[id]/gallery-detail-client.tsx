@@ -1640,7 +1640,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                         {!isSelectMode && (
                           <>
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="absolute bottom-0 left-0 right-0 p-3 flex items-center justify-between">
+                              <div className="absolute bottom-0 left-0 right-0 p-3 flex items-start justify-between gap-4 flex-wrap">
                                 <p className="text-sm font-medium text-white truncate flex-1">{photo.filename}</p>
                                 {!favoritePhotos.has(photo.id) && (
                                   <button
@@ -1794,7 +1794,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
               {/* Filtered Photo Grid */}
               <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
-                <div className="mb-4 flex items-center justify-between">
+                <div className="mb-4 flex items-start justify-between gap-4 flex-wrap">
                   <h3 className="text-sm font-semibold text-foreground">
                     {selectedCollectionId === null
                       ? "All Photos"
@@ -2427,7 +2427,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                       <Link
                         key={invoice.id}
                         href={`/invoices/${invoice.id}`}
-                        className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 transition-colors hover:bg-[var(--background-hover)]"
+                        className="flex items-start justify-between gap-4 flex-wrap rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 transition-colors hover:bg-[var(--background-hover)]"
                       >
                         <div className="flex items-center gap-4">
                           <div className={cn(
@@ -2796,7 +2796,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
             <div className="w-screen max-w-md transform transition-transform">
               <div className="flex h-full flex-col overflow-y-scroll bg-[var(--card)] shadow-xl">
                 {/* Header */}
-                <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--card-border)] bg-[var(--card)] px-6 py-4">
+                <div className="sticky top-0 z-10 flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] bg-[var(--card)] px-6 py-4">
                   <div>
                     <h2 className="text-lg font-semibold text-foreground">Comments & Feedback</h2>
                     <p className="text-sm text-foreground-muted">{comments.length} comments on this gallery</p>
@@ -2880,7 +2880,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                         rows={3}
                         className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 transition-all resize-none"
                       />
-                      <div className="mt-2 flex items-center justify-between">
+                      <div className="mt-2 flex items-start justify-between gap-4 flex-wrap">
                         <p className="text-xs text-foreground-muted">
                           Press Enter to submit
                         </p>
@@ -3163,7 +3163,7 @@ interface SettingToggleProps {
 
 function SettingToggle({ label, description, enabled, onToggle, isLoading }: SettingToggleProps) {
   return (
-    <div className="flex items-center justify-between py-2">
+    <div className="flex items-start justify-between gap-4 flex-wrap py-2">
       <div className="flex-1 pr-4">
         <p className="text-sm font-medium text-foreground">{label}</p>
         <p className="text-xs text-foreground-muted">{description}</p>

@@ -67,7 +67,7 @@ export function RevenueChartSkeleton() {
       <div className="space-y-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i}>
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-1.5">
               <Skeleton className="h-3 w-8" />
               <Skeleton className="h-3 w-12" />
             </div>
@@ -85,7 +85,7 @@ export function GalleryCardSkeleton() {
       <Skeleton className="mb-3 aspect-video w-full rounded-lg" />
       <Skeleton className="h-4 w-3/4" />
       <Skeleton className="mt-1.5 h-3 w-1/2" />
-      <div className="mt-3 flex items-center justify-between">
+      <div className="mt-3 flex items-start justify-between gap-4 flex-wrap">
         <Skeleton className="h-3 w-16" />
         <Skeleton className="h-4 w-16 rounded-full" />
       </div>
@@ -184,12 +184,12 @@ export function ClientCardSkeleton() {
 
 export function PropertyCardSkeleton() {
   return (
-    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
       <Skeleton className="aspect-video w-full" />
       <div className="p-4 space-y-3">
         <Skeleton className="h-5 w-3/4" />
         <Skeleton className="h-4 w-1/2" />
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex items-start justify-between gap-4 flex-wrap pt-2">
           <Skeleton className="h-5 w-16 rounded-full" />
           <Skeleton className="h-4 w-12" />
         </div>

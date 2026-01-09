@@ -154,7 +154,7 @@ export function ProfileStep({
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between pt-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap pt-4">
         <button
           onClick={onBack}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-[var(--foreground-secondary)] hover:text-[var(--foreground)] hover:bg-[var(--background-secondary)] transition-colors"

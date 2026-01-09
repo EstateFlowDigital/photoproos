@@ -149,6 +149,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || loading}
         aria-disabled={disabled || loading || undefined}
         aria-busy={loading || undefined}
+        data-element={`button${variant ? `-${variant}` : ""}`}
         {...props}
       >
         {loading ? (

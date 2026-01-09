@@ -165,7 +165,7 @@ export function MultiServiceSelector({
                 <div
                   key={sel.serviceId}
                   className={cn(
-                    "flex items-center justify-between rounded-lg border p-3 transition-all",
+                    "flex items-start justify-between gap-4 flex-wrap rounded-lg border p-3 transition-all",
                     sel.isPrimary
                       ? "border-[var(--primary)] bg-[var(--primary)]/5"
                       : "border-[var(--card-border)] bg-[var(--background)]"
@@ -215,7 +215,7 @@ export function MultiServiceSelector({
       )}
 
       {/* Service Picker */}
-      <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+      <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
         {/* Header */}
         <button
           type="button"

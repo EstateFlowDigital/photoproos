@@ -54,7 +54,7 @@ function PendingQuestionnairesSection({ questionnaires }: { questionnaires: Ques
 
 function PendingQuestionnaireCard({ questionnaire: q }: { questionnaire: QuestionnaireData }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+    <div className="flex items-start justify-between gap-4 flex-wrap rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
       <div className="flex items-center gap-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--warning)]/20">
           <ClipboardIcon className="h-5 w-5 text-[var(--warning)]" />
@@ -102,7 +102,7 @@ function CompletedQuestionnairesSection({ questionnaires }: { questionnaires: Qu
 
 function CompletedQuestionnaireCard({ questionnaire: q }: { questionnaire: QuestionnaireData }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
+    <div className="flex items-start justify-between gap-4 flex-wrap rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
       <div className="flex items-center gap-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--success)]/20">
           <CheckCircleIcon className="h-5 w-5 text-[var(--success)]" />

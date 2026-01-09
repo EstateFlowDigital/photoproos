@@ -209,7 +209,7 @@ export function WeatherForecastCard({
                 </p>
               </div>
             </div>
-            <div className="flex items-center justify-between text-xs text-foreground-muted pt-1">
+            <div className="flex items-start justify-between gap-4 flex-wrap text-xs text-foreground-muted pt-1">
               <span>
                 Sunrise: {formatTime(goldenHour.sunrise)} | Sunset: {formatTime(goldenHour.sunset)}
               </span>

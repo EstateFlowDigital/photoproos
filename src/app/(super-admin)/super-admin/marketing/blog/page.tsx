@@ -12,7 +12,7 @@ function LoadingSkeleton() {
         </div>
         <div className="h-10 w-32 bg-[var(--background-tertiary)] rounded animate-pulse" />
       </div>
-      <div className="rounded-lg border border-[var(--border)] overflow-hidden">
+      <div className="rounded-lg border border-[var(--border)] overflow-x-auto">
         {[...Array(5)].map((_, i) => (
           <div key={i} className="p-4 border-b border-[var(--border)] last:border-b-0">
             <div className="flex items-center gap-4">

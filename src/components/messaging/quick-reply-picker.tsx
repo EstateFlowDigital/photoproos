@@ -239,7 +239,7 @@ export function QuickReplyPicker({
       aria-label="Quick Replies"
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[var(--card-border)] px-4 py-3">
+      <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-4 py-3">
         <div className="flex items-center gap-2">
           <Zap className="h-5 w-5 text-[var(--primary)]" aria-hidden="true" />
           <h3 className="font-semibold text-[var(--foreground)]">Quick Replies</h3>

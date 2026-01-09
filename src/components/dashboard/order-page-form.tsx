@@ -627,7 +627,7 @@ export function OrderPageForm({ initialData, mode }: OrderPageFormProps) {
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-6">Contact Information</h2>
             <div className="space-y-4">
-              <label className="flex items-center justify-between cursor-pointer">
+              <label className="flex items-start justify-between gap-4 flex-wrap cursor-pointer">
                 <div>
                   <span className="text-sm font-medium text-foreground">Show Phone Number</span>
                   <p className="text-xs text-foreground-muted">Display phone on the order page</p>
@@ -654,7 +654,7 @@ export function OrderPageForm({ initialData, mode }: OrderPageFormProps) {
                 </div>
               )}
 
-              <label className="flex items-center justify-between cursor-pointer">
+              <label className="flex items-start justify-between gap-4 flex-wrap cursor-pointer">
                 <div>
                   <span className="text-sm font-medium text-foreground">Show Email</span>
                   <p className="text-xs text-foreground-muted">Display email on the order page</p>
@@ -721,7 +721,7 @@ export function OrderPageForm({ initialData, mode }: OrderPageFormProps) {
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-6">Page Settings</h2>
             <div className="space-y-4">
-              <label className="flex items-center justify-between cursor-pointer">
+              <label className="flex items-start justify-between gap-4 flex-wrap cursor-pointer">
                 <div>
                   <span className="text-sm font-medium text-foreground">Published</span>
                   <p className="text-xs text-foreground-muted">Published pages can receive orders</p>
@@ -732,7 +732,7 @@ export function OrderPageForm({ initialData, mode }: OrderPageFormProps) {
                 />
               </label>
 
-              <label className="flex items-center justify-between cursor-pointer">
+              <label className="flex items-start justify-between gap-4 flex-wrap cursor-pointer">
                 <div>
                   <span className="text-sm font-medium text-foreground">Require Login</span>
                   <p className="text-xs text-foreground-muted">Visitors must sign in to view this page</p>

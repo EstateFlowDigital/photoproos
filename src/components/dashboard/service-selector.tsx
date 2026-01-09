@@ -174,7 +174,7 @@ export function ServiceSelector({
       {isCustom ? (
         /* Custom Service Form - Full Editor */
         <div className="space-y-5 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-5">
-          <div className="flex items-center justify-between pb-3 border-b border-[var(--card-border)]">
+          <div className="flex items-start justify-between gap-4 flex-wrap pb-3 border-b border-[var(--card-border)]">
             <div>
               <h4 className="font-medium text-foreground">Create Custom Service</h4>
               <p className="text-xs text-foreground-muted mt-0.5">Define your own service package with custom pricing</p>
@@ -500,7 +500,7 @@ export function ServiceSelector({
 
               {/* Price Override */}
               <div className="mt-4 pt-4 border-t border-[var(--primary)]/20">
-                <label className="flex items-center justify-between cursor-pointer">
+                <label className="flex items-start justify-between gap-4 flex-wrap cursor-pointer">
                   <span className="text-sm text-foreground">Adjust price for this {mode}</span>
                   <div className="relative w-32">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-muted text-sm">$</span>

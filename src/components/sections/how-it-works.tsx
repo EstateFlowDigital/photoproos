@@ -266,7 +266,7 @@ function UploadDemo() {
 
       {/* Upload Progress */}
       <div className="border-t border-[var(--card-border)] bg-[var(--card)] p-4">
-        <div className="mb-2 flex items-center justify-between text-sm">
+        <div className="mb-2 flex items-start justify-between gap-4 flex-wrap text-sm">
           <span className="text-foreground">Uploading 24 photos...</span>
           <span className="text-[var(--primary)]">67%</span>
         </div>
@@ -290,7 +290,7 @@ function ShareDemo() {
   return (
     <div className="flex h-full flex-col bg-[var(--background)] p-6">
       {/* Gallery Preview */}
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h4 className="text-sm font-medium text-foreground">Smith Wedding Gallery</h4>
           <p className="text-xs text-foreground-muted">248 photos • 2.4 GB</p>

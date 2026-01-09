@@ -43,7 +43,7 @@ export default function ServicesLoading() {
             </div>
 
             {/* Service Footer */}
-            <div className="mt-4 pt-4 border-t border-[var(--card-border)] flex items-center justify-between">
+            <div className="mt-4 pt-4 border-t border-[var(--card-border)] flex items-start justify-between gap-4 flex-wrap">
               <div className="h-6 w-20 rounded bg-[var(--background-secondary)] animate-pulse" />
               <div className="h-4 w-16 rounded bg-[var(--background-secondary)] animate-pulse" />
             </div>

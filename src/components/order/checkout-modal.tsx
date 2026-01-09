@@ -142,7 +142,7 @@ export function CheckoutModal({
       {/* Modal */}
       <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--card-border)] bg-[var(--card)] px-6 py-4">
+        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] bg-[var(--card)] px-6 py-4">
           <h2 className="text-xl font-semibold text-white">Complete Your Order</h2>
           <button
             type="button"
@@ -313,7 +313,7 @@ export function CheckoutModal({
 
           {/* Order Summary */}
           <div className="mt-6 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4">
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-start justify-between gap-4 flex-wrap text-sm">
               <span className="text-[var(--foreground-muted)]">Subtotal</span>
               <span className="font-medium text-white">
                 {formatPrice(subtotalCents)}

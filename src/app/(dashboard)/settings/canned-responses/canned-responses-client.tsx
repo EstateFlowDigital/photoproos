@@ -645,7 +645,7 @@ function ResponseCard({
       </p>
 
       {/* Footer */}
-      <div className="flex items-center justify-between border-t border-[var(--card-border)] pt-3">
+      <div className="flex items-start justify-between gap-4 flex-wrap border-t border-[var(--card-border)] pt-3">
         <div className="text-xs text-[var(--foreground-muted)]">
           Used {response.usageCount} {response.usageCount === 1 ? "time" : "times"}
         </div>

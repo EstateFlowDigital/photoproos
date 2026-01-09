@@ -538,7 +538,7 @@ export function MlsPresetsClient({ presets: initialPresets, providers: initialPr
 
               {/* Options */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between py-2">
+                <div className="flex items-start justify-between gap-4 flex-wrap py-2">
                   <div>
                     <span className="text-sm font-medium text-foreground">Maintain Aspect Ratio</span>
                     <p className="text-xs text-foreground-muted">Keep original proportions when resizing</p>
@@ -562,7 +562,7 @@ export function MlsPresetsClient({ presets: initialPresets, providers: initialPr
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between py-2">
+                <div className="flex items-start justify-between gap-4 flex-wrap py-2">
                   <div>
                     <span className="text-sm font-medium text-foreground">Letterbox</span>
                     <p className="text-xs text-foreground-muted">Add padding to fit exact dimensions</p>

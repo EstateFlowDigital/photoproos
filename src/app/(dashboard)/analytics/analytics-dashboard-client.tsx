@@ -236,7 +236,7 @@ export function AnalyticsDashboardClient({
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h3 className="text-sm font-semibold text-foreground">Pending Invoices</h3>
-            <div className="mt-4 flex items-center justify-between">
+            <div className="mt-4 flex items-start justify-between gap-4 flex-wrap">
               <div>
                 <p className="text-3xl font-bold text-[var(--warning)]">
                   {dashboardData.invoices.pending.count}
@@ -254,7 +254,7 @@ export function AnalyticsDashboardClient({
 
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h3 className="text-sm font-semibold text-foreground">Overdue Invoices</h3>
-            <div className="mt-4 flex items-center justify-between">
+            <div className="mt-4 flex items-start justify-between gap-4 flex-wrap">
               <div>
                 <p className="text-3xl font-bold text-[var(--error)]">
                   {dashboardData.invoices.overdue.count}

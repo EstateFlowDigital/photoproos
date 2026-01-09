@@ -116,7 +116,7 @@ export function CallInterface({ call, currentUserId, onClose }: CallInterfacePro
   return (
     <div className="call-interface fixed inset-0 z-50 flex flex-col bg-[#0a0a0a]">
       {/* Call Header */}
-      <header className="call-header flex items-center justify-between px-6 py-4 bg-gradient-to-b from-black/50 to-transparent">
+      <header className="call-header flex items-start justify-between gap-4 flex-wrap px-6 py-4 bg-gradient-to-b from-black/50 to-transparent">
         <div className="flex items-center gap-4">
           <div>
             <h2 className="text-lg font-semibold text-white">

@@ -277,7 +277,7 @@ export function SettingsTab({ client, onPreferencesChange }: SettingsTabProps) {
       </div>
 
       {/* Essential Notifications */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
         <div className="border-b border-[var(--card-border)] bg-[var(--background-tertiary)] px-6 py-3">
           <h3 className="text-sm font-semibold text-[var(--foreground)]">
             Essential Notifications
@@ -300,7 +300,7 @@ export function SettingsTab({ client, onPreferencesChange }: SettingsTabProps) {
       </div>
 
       {/* Reminder Notifications */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
         <div className="border-b border-[var(--card-border)] bg-[var(--background-tertiary)] px-6 py-3">
           <h3 className="text-sm font-semibold text-[var(--foreground)]">
             Reminders
@@ -323,7 +323,7 @@ export function SettingsTab({ client, onPreferencesChange }: SettingsTabProps) {
       </div>
 
       {/* Marketing Notifications */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
+      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
         <div className="border-b border-[var(--card-border)] bg-[var(--background-tertiary)] px-6 py-3">
           <h3 className="text-sm font-semibold text-[var(--foreground)]">
             Marketing & Updates
@@ -462,7 +462,7 @@ function NotificationToggle({
   onToggle,
 }: NotificationToggleProps) {
   return (
-    <div className="flex items-center justify-between gap-4 px-6 py-4">
+    <div className="flex items-start justify-between gap-4 flex-wrap gap-4 px-6 py-4">
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-[var(--foreground)]">{label}</p>
         <p className="text-xs text-[var(--foreground-muted)]">{description}</p>

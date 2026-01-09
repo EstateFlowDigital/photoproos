@@ -147,7 +147,7 @@ export function CommentsTab({ website, isPending: externalPending }: CommentsTab
 
       {/* Comments Management */}
       <div>
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex items-start justify-between gap-4 flex-wrap">
           <h3 className="text-lg font-semibold text-foreground">
             Comments
             {pendingCount > 0 && (

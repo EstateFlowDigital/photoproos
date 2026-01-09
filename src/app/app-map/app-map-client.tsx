@@ -644,7 +644,7 @@ function SectionComponent({ section }: { section: Section }) {
     <div className="card overflow-hidden">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-background-hover transition-colors"
+        className="w-full px-4 py-3 flex items-start justify-between gap-4 flex-wrap hover:bg-background-hover transition-colors"
       >
         <div className="flex items-center gap-3">
           <span className="text-primary">{section.icon}</span>
@@ -692,7 +692,7 @@ function PageList({ pages }: { pages: PageItem[] }) {
       {pages.map((page, idx) => (
         <div
           key={idx}
-          className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-background-hover transition-colors group"
+          className="flex items-start justify-between gap-4 flex-wrap py-2 px-3 rounded-lg hover:bg-background-hover transition-colors group"
         >
           <div className="flex items-center gap-3 min-w-0 flex-1">
             {page.isStub ? (

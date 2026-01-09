@@ -39,7 +39,7 @@ export function StickyCTA() {
       <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/95 to-transparent backdrop-blur-sm" />
 
       <div className="relative mx-auto max-w-[1512px] px-6 py-4 lg:px-[124px]">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap gap-4">
           {/* Left side - Value prop */}
           <div className="hidden sm:flex items-center gap-6">
             <div className="flex items-center gap-2 text-sm text-foreground-secondary">

@@ -415,7 +415,7 @@ export function PageWalkthrough({
             </div>
 
             {/* Step Navigation */}
-            <div className="flex items-center justify-between pt-2">
+            <div className="flex items-start justify-between gap-4 flex-wrap pt-2">
               <Button
                 variant="ghost"
                 size="sm"
@@ -453,7 +453,7 @@ export function PageWalkthrough({
 
           {/* Interactive Mode Toggle */}
           {hasInteractiveSteps && (
-            <div className="flex items-center justify-between rounded-lg border border-[var(--primary)]/20 bg-[var(--primary)]/5 p-3">
+            <div className="flex items-start justify-between gap-4 flex-wrap rounded-lg border border-[var(--primary)]/20 bg-[var(--primary)]/5 p-3">
               <div className="flex items-center gap-2">
                 <MousePointer2 className="h-4 w-4 text-[var(--primary)]" />
                 <span className="text-sm font-medium text-foreground">
@@ -565,7 +565,7 @@ export function PageWalkthrough({
             <p className="text-sm text-foreground-secondary">
               {currentStepConfig.description}
             </p>
-            <div className="flex items-center justify-between gap-2 pt-1">
+            <div className="flex items-start justify-between gap-4 flex-wrap gap-2 pt-1">
               <span className="text-xs text-foreground-muted">
                 Step {currentStep + 1} of {config.steps.length}
               </span>

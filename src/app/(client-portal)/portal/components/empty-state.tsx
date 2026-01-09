@@ -133,7 +133,7 @@ export function EmptyState({
 
           {/* Progress Bar */}
           <div className="mx-auto mt-6 max-w-xs">
-            <div className="mb-2 flex items-center justify-between text-xs text-[var(--foreground-muted)]">
+            <div className="mb-2 flex items-start justify-between gap-4 flex-wrap text-xs text-[var(--foreground-muted)]">
               <span>{progress.label || "Progress"}</span>
               <span>{progress.current}/{progress.total}</span>
             </div>

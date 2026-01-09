@@ -842,7 +842,7 @@ function ToggleSetting({
   onToggle: () => void;
 }) {
   return (
-    <label className="flex items-center justify-between cursor-pointer">
+    <label className="flex items-start justify-between gap-4 flex-wrap cursor-pointer">
       <div>
         <span className="text-sm font-medium text-foreground">{label}</span>
         <p className="text-xs text-foreground-muted">{description}</p>

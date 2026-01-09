@@ -108,7 +108,7 @@ export function DailyBonusCard({ initialState, onClaim, className }: DailyBonusC
 
       {/* Week Progress - scrollable on mobile */}
       <nav aria-label="Daily bonus week progress" className="mb-4 -mx-1 px-1 overflow-x-auto">
-        <ol className="flex items-center justify-between gap-2 min-w-[320px] sm:min-w-0" role="list">
+        <ol className="flex items-start justify-between gap-4 flex-wrap gap-2 min-w-[320px] sm:min-w-0" role="list">
           {DAILY_BONUS_XP.map((xp, index) => {
             const dayNum = index + 1;
             const isClaimed = state.weekProgress[index];

@@ -200,7 +200,7 @@ function SortableWidget({
       )}
     >
       {/* Widget Header */}
-      <div className="flex items-center justify-between border-b border-[var(--card-border)] px-4 py-2.5">
+      <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-4 py-2.5">
         <div className="flex items-center gap-2 min-w-0">
           {isEditing && (
             <button
@@ -440,7 +440,7 @@ function UpcomingBookingsWidget({
       {displayBookings.map((booking) => (
         <div
           key={booking.id}
-          className="flex items-center justify-between rounded-lg bg-[var(--background)] px-3 py-2"
+          className="flex items-start justify-between gap-4 flex-wrap rounded-lg bg-[var(--background)] px-3 py-2"
         >
           <div className="min-w-0">
             <p className="text-sm font-medium text-foreground truncate">{booking.title}</p>
@@ -550,7 +550,7 @@ function OverdueInvoicesWidget({
       {displayInvoices.map((invoice) => (
         <div
           key={invoice.id}
-          className="flex items-center justify-between rounded-lg bg-[var(--error)]/5 px-3 py-2 border border-[var(--error)]/20"
+          className="flex items-start justify-between gap-4 flex-wrap rounded-lg bg-[var(--error)]/5 px-3 py-2 border border-[var(--error)]/20"
         >
           <div className="min-w-0">
             <p className="text-sm font-medium text-foreground">{invoice.invoiceNumber}</p>
@@ -587,7 +587,7 @@ function ExpiringGalleriesWidgetContent({
       {displayGalleries.map((gallery) => (
         <div
           key={gallery.id}
-          className="flex items-center justify-between rounded-lg bg-[var(--warning)]/5 px-3 py-2 border border-[var(--warning)]/20"
+          className="flex items-start justify-between gap-4 flex-wrap rounded-lg bg-[var(--warning)]/5 px-3 py-2 border border-[var(--warning)]/20"
         >
           <div className="min-w-0">
             <p className="text-sm font-medium text-foreground truncate">{gallery.name}</p>
@@ -651,7 +651,7 @@ function GamificationWidget({
   return (
     <div className="flex flex-col gap-4">
       {/* Level & XP */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <LevelBadge level={data.level} size="md" showTitle />
           <div>

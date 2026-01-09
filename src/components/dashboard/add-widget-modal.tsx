@@ -375,7 +375,7 @@ export function AddWidgetModal({ isOpen, onClose, config }: AddWidgetModalProps)
         {/* Footer with Add Selected button */}
         {selectedWidgets.size > 0 && (
           <DialogFooter className="border-t border-[var(--card-border)] px-6 py-4">
-            <div className="flex items-center justify-between w-full">
+            <div className="flex items-start justify-between gap-4 flex-wrap w-full">
               <button
                 onClick={() => setSelectedWidgets(new Set())}
                 className="text-sm text-foreground-muted hover:text-foreground transition-colors"
