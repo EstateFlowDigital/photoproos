@@ -10,7 +10,7 @@ export default async function MentoringPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="mentoring-page">
       <PageHeader
         title="Mentoring"
         subtitle="Offer mentoring and coaching sessions"

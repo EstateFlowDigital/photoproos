@@ -10,7 +10,7 @@ export default async function PayrollPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="payroll-page">
       <PageHeader
         title="Payroll"
         subtitle="Process contractor and employee payments"

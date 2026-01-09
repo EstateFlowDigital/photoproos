@@ -15,7 +15,7 @@ export default async function MentoringSessionPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="mentoring-session-page">
       <PageHeader
         title="Mentoring Session"
         subtitle={`Session ${id}`}

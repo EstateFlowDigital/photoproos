@@ -10,7 +10,7 @@ export default async function ToursPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="tours-page">
       <PageHeader
         title="Virtual Tours"
         subtitle="Create and manage 3D virtual tours"

@@ -76,7 +76,7 @@ export function SeedDatabaseButton() {
           className={`rounded-lg px-4 py-3 text-sm ${
             result.success
               ? "bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/30"
-              : "bg-[var(--error)]/10 text-[var(--error)] border border-[var(--error)]/30"
+              : "bg-[var(--error)]/10 text-[var(--error)] border border-[var(--error)]"
           }`}
         >
           {result.success ? (
@@ -123,7 +123,7 @@ export function ClearDataButton() {
   if (showConfirm) {
     return (
       <div className="space-y-3">
-        <div className="rounded-lg bg-[var(--error)]/10 border border-[var(--error)]/30 p-4">
+        <div className="rounded-lg bg-[var(--error)]/10 border border-[var(--error)] p-4">
           <p className="text-sm font-medium text-[var(--error)] mb-3">
             Are you sure? This will permanently delete ALL data in your organization.
           </p>
@@ -159,7 +159,7 @@ export function ClearDataButton() {
     <div className="space-y-3">
       <button
         onClick={() => setShowConfirm(true)}
-        className="w-full rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-4 py-2.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20"
+        className="w-full rounded-lg border border-[var(--error)] bg-[var(--error)]/10 px-4 py-2.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20"
       >
         Clear All Data
       </button>
@@ -169,7 +169,7 @@ export function ClearDataButton() {
           className={`rounded-lg px-4 py-3 text-sm ${
             result.success
               ? "bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/30"
-              : "bg-[var(--error)]/10 text-[var(--error)] border border-[var(--error)]/30"
+              : "bg-[var(--error)]/10 text-[var(--error)] border border-[var(--error)]"
           }`}
         >
           <p>{result.message}</p>
@@ -233,7 +233,7 @@ export function LifetimeLicenseButton() {
           className={`rounded-lg px-4 py-3 text-sm ${
             result.success
               ? "bg-[var(--success)]/10 text-[var(--success)] border border-[var(--success)]/30"
-              : "bg-[var(--error)]/10 text-[var(--error)] border border-[var(--error)]/30"
+              : "bg-[var(--error)]/10 text-[var(--error)] border border-[var(--error)]"
           }`}
         >
           {result.success ? (

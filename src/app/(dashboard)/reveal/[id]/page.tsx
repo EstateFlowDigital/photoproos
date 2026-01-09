@@ -15,7 +15,7 @@ export default async function RevealSessionPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="reveal-detail-page">
       <PageHeader
         title="Reveal Session"
         subtitle={`Session ${id}`}

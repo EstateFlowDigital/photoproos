@@ -10,7 +10,7 @@ export default async function ProofingPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="proofing-page">
       <PageHeader
         title="Proofing Sessions"
         subtitle="Client photo selection and proofing"

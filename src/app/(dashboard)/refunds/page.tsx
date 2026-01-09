@@ -10,7 +10,7 @@ export default async function RefundsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="refunds-page">
       <PageHeader
         title="Refunds"
         subtitle="Process and track refunds"

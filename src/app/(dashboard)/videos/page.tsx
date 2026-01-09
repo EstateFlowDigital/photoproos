@@ -10,7 +10,7 @@ export default async function VideosPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="videos-page">
       <PageHeader
         title="Videos"
         subtitle="Host and deliver video content"

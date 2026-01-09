@@ -15,7 +15,7 @@ export default async function ProposalDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="proposals-detail-page">
       <PageHeader
         title="Proposal Details"
         subtitle={`Viewing proposal ${id}`}

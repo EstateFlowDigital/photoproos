@@ -10,7 +10,7 @@ export default async function NewProductPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="products-new-page">
       <PageHeader
         title="New Product"
         subtitle="Create a new service or product"

@@ -15,7 +15,7 @@ export default async function MoodBoardDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="mood-board-detail-page">
       <PageHeader
         title="Mood Board"
         subtitle={`Board ${id}`}

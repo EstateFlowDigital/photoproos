@@ -10,7 +10,7 @@ export default async function MembershipsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="memberships-page">
       <PageHeader
         title="Memberships"
         subtitle="Client membership programs"

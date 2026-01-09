@@ -10,7 +10,7 @@ export default async function ProposalsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="proposals-page">
       <PageHeader
         title="Proposals"
         subtitle="Create and track client proposals"

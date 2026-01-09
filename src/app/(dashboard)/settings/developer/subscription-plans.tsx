@@ -1486,7 +1486,7 @@ export function SubscriptionPlansSection({
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {/* Stripe */}
-              <div className={`rounded-lg border p-4 ${envStatus.stripe.configured ? "border-[var(--success)]/30 bg-[var(--success)]/5" : "border-[var(--error)]/30 bg-[var(--error)]/5"}`}>
+              <div className={`rounded-lg border p-4 ${envStatus.stripe.configured ? "border-[var(--success)] bg-[var(--success)]/5" : "border-[var(--error)] bg-[var(--error)]/5"}`}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-lg bg-[#635bff]/10 flex items-center justify-center">
@@ -1506,7 +1506,7 @@ export function SubscriptionPlansSection({
               </div>
 
               {/* Clerk */}
-              <div className={`rounded-lg border p-4 ${envStatus.clerk.configured ? "border-[var(--success)]/30 bg-[var(--success)]/5" : "border-[var(--error)]/30 bg-[var(--error)]/5"}`}>
+              <div className={`rounded-lg border p-4 ${envStatus.clerk.configured ? "border-[var(--success)] bg-[var(--success)]/5" : "border-[var(--error)] bg-[var(--error)]/5"}`}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-lg bg-[#6c47ff]/10 flex items-center justify-center">
@@ -1526,7 +1526,7 @@ export function SubscriptionPlansSection({
               </div>
 
               {/* Database */}
-              <div className={`rounded-lg border p-4 ${envStatus.database.configured ? "border-[var(--success)]/30 bg-[var(--success)]/5" : "border-[var(--error)]/30 bg-[var(--error)]/5"}`}>
+              <div className={`rounded-lg border p-4 ${envStatus.database.configured ? "border-[var(--success)] bg-[var(--success)]/5" : "border-[var(--error)] bg-[var(--error)]/5"}`}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center">

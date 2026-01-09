@@ -10,7 +10,7 @@ export default async function PipelinePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="pipeline-page">
       <PageHeader
         title="Sales Pipeline"
         subtitle="Visualize and manage your sales funnel"

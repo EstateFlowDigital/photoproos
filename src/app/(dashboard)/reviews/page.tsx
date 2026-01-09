@@ -10,7 +10,7 @@ export default async function ReviewsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="reviews-page">
       <PageHeader
         title="Reviews"
         subtitle="Manage client reviews and testimonials"

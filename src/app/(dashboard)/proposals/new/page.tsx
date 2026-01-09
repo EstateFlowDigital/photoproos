@@ -10,7 +10,7 @@ export default async function NewProposalPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="proposals-new-page">
       <PageHeader
         title="New Proposal"
         subtitle="Create a new client proposal"

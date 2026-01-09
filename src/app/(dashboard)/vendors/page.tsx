@@ -10,7 +10,7 @@ export default async function VendorsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="vendors-page">
       <PageHeader
         title="Vendors"
         subtitle="Manage vendor relationships and referrals"

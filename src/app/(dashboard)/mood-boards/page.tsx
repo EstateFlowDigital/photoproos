@@ -10,7 +10,7 @@ export default async function MoodBoardsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="mood-boards-page">
       <PageHeader
         title="Mood Boards"
         subtitle="Create inspiration boards for clients"

@@ -15,7 +15,7 @@ export default async function PrepGuideDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="prep-guide-detail-page">
       <PageHeader
         title="Prep Guide"
         subtitle={`Guide ${id}`}

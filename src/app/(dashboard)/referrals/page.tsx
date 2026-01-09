@@ -10,7 +10,7 @@ export default async function ReferralsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="referrals-page">
       <PageHeader
         title="Referrals"
         subtitle="Track and reward client referrals"

@@ -10,7 +10,7 @@ export default async function OpportunitiesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="opportunities-page">
       <PageHeader
         title="Opportunities"
         subtitle="Track potential deals and leads"

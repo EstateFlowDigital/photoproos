@@ -10,7 +10,7 @@ export default async function RevealPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="reveal-page">
       <PageHeader
         title="Reveal & IPS"
         subtitle="In-person sales and reveal galleries"

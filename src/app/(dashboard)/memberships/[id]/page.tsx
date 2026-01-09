@@ -15,7 +15,7 @@ export default async function MembershipDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="membership-detail-page">
       <PageHeader
         title="Membership Details"
         subtitle={`Managing membership ${id}`}

@@ -10,7 +10,7 @@ export default async function PrepGuidesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="prep-guides-page">
       <PageHeader
         title="Prep Guides"
         subtitle="What-to-wear and session prep guides"

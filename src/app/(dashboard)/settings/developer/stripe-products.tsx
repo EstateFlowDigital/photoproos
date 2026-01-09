@@ -412,8 +412,8 @@ export function StripeProductsSection({
           <div
             className={`rounded-lg border p-4 ${
               syncOverview.isConfigured
-                ? "border-[var(--success)]/30 bg-[var(--success)]/5"
-                : "border-[var(--error)]/30 bg-[var(--error)]/5"
+                ? "border-[var(--success)] bg-[var(--success)]/5"
+                : "border-[var(--error)] bg-[var(--error)]/5"
             }`}
           >
             <div className="flex items-center gap-2">

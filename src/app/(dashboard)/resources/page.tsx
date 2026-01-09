@@ -10,7 +10,7 @@ export default async function ResourcesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="resources-page">
       <PageHeader
         title="Resources"
         subtitle="Downloadable guides and templates"

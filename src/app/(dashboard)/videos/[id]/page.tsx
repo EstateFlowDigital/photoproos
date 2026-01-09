@@ -15,7 +15,7 @@ export default async function VideoDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="video-detail-page">
       <PageHeader
         title="Video Details"
         subtitle={`Video ${id}`}

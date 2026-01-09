@@ -15,7 +15,7 @@ export default async function ProofingSessionPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="proofing-detail-page">
       <PageHeader
         title="Proofing Session"
         subtitle={`Session ${id}`}

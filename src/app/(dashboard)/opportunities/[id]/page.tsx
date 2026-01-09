@@ -15,7 +15,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="opportunity-detail-page">
       <PageHeader
         title="Opportunity Details"
         subtitle={`Managing opportunity ${id}`}
