@@ -41,9 +41,9 @@ function LoadingSkeleton() {
 
 export default function FeedbackPage() {
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--foreground)]">
+    <div data-element="super-admin-feedback-page">
+      <div className="mb-8" data-element="super-admin-feedback-header">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]" data-element="super-admin-feedback-title">
           Platform Feedback
         </h1>
         <p className="text-[var(--foreground-muted)]">

@@ -73,9 +73,9 @@ const openings = [
 
 export default function CareersPage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="careers-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="careers-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -100,14 +100,15 @@ export default function CareersPage() {
       </section>
 
       {/* Values */}
-      <section className="py-16 lg:py-24">
+      <section className="py-16 lg:py-24" data-element="careers-values-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">Our values</h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="careers-values-heading">Our values</h2>
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4" data-element="careers-values-grid">
             {values.map((value) => (
               <div
                 key={value.title}
                 className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6"
+                data-element={`careers-value-${value.title.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <div className="mb-4 text-3xl">{value.icon}</div>
                 <h3 className="mb-2 font-semibold text-foreground">{value.title}</h3>
@@ -119,11 +120,11 @@ export default function CareersPage() {
       </section>
 
       {/* Benefits */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="careers-benefits-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
+          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16" data-element="careers-benefits-grid">
             <div>
-              <h2 className="mb-4 text-3xl font-bold text-foreground">Benefits & perks</h2>
+              <h2 className="mb-4 text-3xl font-bold text-foreground" data-element="careers-benefits-heading">Benefits & perks</h2>
               <p className="text-foreground-secondary">
                 We take care of our team so they can focus on doing their best work.
               </p>
@@ -141,17 +142,18 @@ export default function CareersPage() {
       </section>
 
       {/* Open Positions */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="careers-positions-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">Open positions</h2>
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="careers-positions-heading">Open positions</h2>
 
           {openings.length > 0 ? (
-            <div className="mx-auto max-w-3xl space-y-4">
+            <div className="mx-auto max-w-3xl space-y-4" data-element="careers-positions-list">
               {openings.map((job) => (
                 <Link
                   key={job.slug}
                   href={`/careers/${job.slug}`}
                   className="group flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 transition-all hover:border-[var(--border-hover)]"
+                  data-element={`careers-position-${job.slug}`}
                 >
                   <div>
                     <h3 className="mb-1 font-semibold text-foreground group-hover:text-[var(--primary)]">
@@ -186,17 +188,18 @@ export default function CareersPage() {
       </section>
 
       {/* Don't See a Fit */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="careers-cta-section">
         <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
-          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="careers-cta-heading">
             Don't see a perfect fit?
           </h2>
-          <p className="mb-8 text-foreground-secondary">
+          <p className="mb-8 text-foreground-secondary" data-element="careers-cta-description">
             We're always interested in hearing from talented people. Send us a note and tell us how you can contribute.
           </p>
           <Link
             href="/contact?subject=general-application"
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            data-element="careers-cta-btn"
           >
             Get in touch
           </Link>

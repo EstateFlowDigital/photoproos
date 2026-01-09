@@ -10,9 +10,9 @@ export default function TermsOfServicePage() {
   const lastUpdated = "January 1, 2025";
 
   return (
-    <main className="relative min-h-screen bg-background">
-      <article className="mx-auto max-w-4xl px-6 py-16 lg:py-24">
-        <header className="mb-12 border-b border-[var(--card-border)] pb-8">
+    <main className="relative min-h-screen bg-background" data-element="legal-terms-page">
+      <article className="mx-auto max-w-4xl px-6 py-16 lg:py-24" data-element="legal-terms-article">
+        <header className="mb-12 border-b border-[var(--card-border)] pb-8" data-element="legal-terms-header">
           <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground">
             Terms of Service
           </h1>
@@ -21,8 +21,8 @@ export default function TermsOfServicePage() {
           </p>
         </header>
 
-        <div className="prose prose-invert max-w-none">
-          <section className="mb-10">
+        <div className="prose prose-invert max-w-none" data-element="legal-terms-content">
+          <section className="mb-10" data-element="legal-terms-acceptance-section">
             <h2 className="mb-4 text-2xl font-bold text-foreground">1. Acceptance of Terms</h2>
             <p className="mb-4 text-foreground-secondary">
               By accessing or using PhotoProOS ("Service"), you agree to be bound by these Terms of Service ("Terms"). If you disagree with any part of these terms, you may not access the Service.
@@ -151,8 +151,8 @@ export default function TermsOfServicePage() {
           </section>
         </div>
 
-        <footer className="mt-12 border-t border-[var(--card-border)] pt-8">
-          <div className="flex flex-wrap gap-4">
+        <footer className="mt-12 border-t border-[var(--card-border)] pt-8" data-element="legal-terms-footer">
+          <div className="flex flex-wrap gap-4" data-element="legal-terms-footer-links">
             <Link href="/legal/privacy" className="text-sm text-[var(--primary)] hover:underline">
               Privacy Policy
             </Link>

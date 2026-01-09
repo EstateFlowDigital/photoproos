@@ -54,9 +54,9 @@ export default async function UsersPage({
   const params = await searchParams;
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--foreground)]">Users</h1>
+    <div data-element="super-admin-users-page">
+      <div className="mb-8" data-element="super-admin-users-header">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]" data-element="super-admin-users-title">Users</h1>
         <p className="text-[var(--foreground-muted)]">
           Manage platform users and organizations
         </p>

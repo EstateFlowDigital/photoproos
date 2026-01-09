@@ -113,9 +113,9 @@ const faqs = [
 
 export default function EmailMarketingFeaturePage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="features-email-marketing-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="features-email-marketing-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -155,9 +155,9 @@ export default function EmailMarketingFeaturePage() {
       </section>
 
       {/* Notion-style Document Content */}
-      <div className="mx-auto max-w-4xl px-6 py-16 lg:px-8">
+      <div className="mx-auto max-w-4xl px-6 py-16 lg:px-8" data-element="features-email-marketing-content">
         {/* Overview */}
-        <section className="mb-16">
+        <section className="mb-16" data-element="features-email-marketing-overview-section">
           <div className="prose prose-invert max-w-none">
             <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-3">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--ai)]/10 text-lg">
@@ -177,14 +177,14 @@ export default function EmailMarketingFeaturePage() {
         </section>
 
         {/* Planned Features */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+        <section className="mb-16" data-element="features-email-marketing-planned-section">
+          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-email-marketing-planned-heading">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--ai)]/10 text-lg">
               ✨
             </span>
             Planned Features
           </h2>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2" data-element="features-email-marketing-planned-grid">
             {plannedFeatures.map((feature) => (
               <div
                 key={feature.title}
@@ -213,17 +213,17 @@ export default function EmailMarketingFeaturePage() {
         </section>
 
         {/* Templates Preview */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+        <section className="mb-16" data-element="features-email-marketing-templates-section">
+          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-email-marketing-templates-heading">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--ai)]/10 text-lg">
               📋
             </span>
             Pre-built Templates
           </h2>
-          <p className="text-foreground-secondary mb-6">
+          <p className="text-foreground-secondary mb-6" data-element="features-email-marketing-templates-description">
             Start with professionally designed templates for every stage of your client journey.
           </p>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2" data-element="features-email-marketing-templates-grid">
             {templatePreviews.map((template) => (
               <div
                 key={template.name}
@@ -242,14 +242,14 @@ export default function EmailMarketingFeaturePage() {
         </section>
 
         {/* Roadmap */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+        <section className="mb-16" data-element="features-email-marketing-roadmap-section">
+          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-email-marketing-roadmap-heading">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--ai)]/10 text-lg">
               🗺️
             </span>
             Development Roadmap
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-4" data-element="features-email-marketing-roadmap-list">
             {roadmapItems.map((phase, index) => (
               <div
                 key={phase.phase}
@@ -284,14 +284,14 @@ export default function EmailMarketingFeaturePage() {
         </section>
 
         {/* FAQ */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+        <section className="mb-16" data-element="features-email-marketing-faq-section">
+          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-email-marketing-faq-heading">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--ai)]/10 text-lg">
               ❓
             </span>
             Frequently Asked Questions
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-4" data-element="features-email-marketing-faq-list">
             {faqs.map((faq) => (
               <div
                 key={faq.question}
@@ -305,7 +305,7 @@ export default function EmailMarketingFeaturePage() {
         </section>
 
         {/* Feedback CTA */}
-        <section className="rounded-xl border border-[var(--ai)]/20 bg-[var(--ai)]/5 p-8 text-center">
+        <section className="rounded-xl border border-[var(--ai)]/20 bg-[var(--ai)]/5 p-8 text-center" data-element="features-email-marketing-feedback-section">
           <h2 className="text-xl font-bold text-foreground mb-2">Help shape this feature</h2>
           <p className="text-foreground-secondary mb-6">
             We're actively gathering feedback from photographers. What would make email marketing perfect for your business?
@@ -328,12 +328,12 @@ export default function EmailMarketingFeaturePage() {
       </div>
 
       {/* Related Features */}
-      <section className="border-t border-[var(--card-border)] py-16">
+      <section className="border-t border-[var(--card-border)] py-16" data-element="features-email-marketing-related-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-8 text-center text-2xl font-bold text-foreground">
+          <h2 className="mb-8 text-center text-2xl font-bold text-foreground" data-element="features-email-marketing-related-heading">
             Available Now
           </h2>
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-3" data-element="features-email-marketing-related-grid">
             {[
               {
                 title: "Automation",

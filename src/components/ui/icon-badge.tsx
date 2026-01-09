@@ -18,10 +18,10 @@ interface IconBadgeProps {
 const toneClasses: Record<Tone, string> = {
   default: "bg-[var(--background-tertiary)] border-[var(--card-border)] text-foreground-muted",
   muted: "bg-[var(--background-secondary)] border-[var(--card-border)] text-foreground-muted",
-  primary: "bg-[var(--primary)]/15 border-[var(--primary)]/30 text-[var(--primary)]",
-  success: "bg-[var(--success)]/15 border-[var(--success)]/30 text-[var(--success)]",
-  danger: "bg-[var(--error)]/15 border-[var(--error)]/30 text-[var(--error)]",
-  warning: "bg-[var(--warning)]/15 border-[var(--warning)]/30 text-[var(--warning)]",
+  primary: "bg-[var(--primary)]/10 border-[var(--card-border)] text-[var(--primary)]",
+  success: "bg-[var(--success)]/10 border-[var(--card-border)] text-[var(--success)]",
+  danger: "bg-[var(--error)]/10 border-[var(--card-border)] text-[var(--error)]",
+  warning: "bg-[var(--warning)]/10 border-[var(--card-border)] text-[var(--warning)]",
 };
 
 const sizeClasses: Record<Size, string> = {

@@ -48,9 +48,9 @@ const testimonial = {
 
 export default function RealEstateIndustryPage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="industries-realestate-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="industries-realestate-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -89,9 +89,9 @@ export default function RealEstateIndustryPage() {
       </section>
 
       {/* Stats */}
-      <section className="py-12">
+      <section className="py-12" data-element="industries-realestate-stats-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4" data-element="industries-realestate-stats-grid">
             {[
               { value: "2,500+", label: "RE photographers" },
               { value: "500K+", label: "Properties delivered" },
@@ -108,12 +108,12 @@ export default function RealEstateIndustryPage() {
       </section>
 
       {/* Features */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="industries-realestate-features-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="industries-realestate-features-heading">
             Built for real estate workflows
           </h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3" data-element="industries-realestate-features-grid">
             {features.map((feature) => (
               <div
                 key={feature.title}
@@ -131,13 +131,13 @@ export default function RealEstateIndustryPage() {
       </section>
 
       {/* Workflow */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="industries-realestate-workflow-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <div className="mx-auto max-w-3xl">
-            <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
+            <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="industries-realestate-workflow-heading">
               Streamlined property delivery
             </h2>
-            <div className="space-y-8">
+            <div className="space-y-8" data-element="industries-realestate-workflow-steps">
               {[
                 { step: "1", title: "Shoot the property", description: "Capture stunning photos and video of the listing." },
                 { step: "2", title: "Upload & organize", description: "Drag and drop your edited photos. We auto-organize by room." },
@@ -160,10 +160,10 @@ export default function RealEstateIndustryPage() {
       </section>
 
       {/* Testimonial */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="industries-realestate-testimonial-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="mx-auto max-w-2xl text-center">
-            <blockquote className="mb-6 text-xl text-foreground">
+          <div className="mx-auto max-w-2xl text-center" data-element="industries-realestate-testimonial-card">
+            <blockquote className="mb-6 text-xl text-foreground" data-element="industries-realestate-testimonial-quote">
               &ldquo;{testimonial.quote}&rdquo;
             </blockquote>
             <div>
@@ -177,9 +177,9 @@ export default function RealEstateIndustryPage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="industries-realestate-cta-section">
         <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
-          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="industries-realestate-cta-heading">
             Ready to streamline your real estate photography business?
           </h2>
           <p className="mb-8 text-foreground-secondary">
@@ -188,6 +188,7 @@ export default function RealEstateIndustryPage() {
           <Link
             href="/sign-up"
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            data-element="industries-realestate-cta-btn"
           >
             Start free trial
           </Link>

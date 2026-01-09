@@ -79,9 +79,9 @@ const categories = [
 
 export default function BlogPage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="blog-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="blog-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -103,9 +103,9 @@ export default function BlogPage() {
       </section>
 
       {/* Categories */}
-      <section className="border-b border-[var(--card-border)] py-6">
+      <section className="border-b border-[var(--card-border)] py-6" data-element="blog-categories-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3" data-element="blog-categories-list">
             {categories.map((category) => (
               <button
                 key={category.name}
@@ -114,6 +114,7 @@ export default function BlogPage() {
                     ? "bg-[var(--primary)] text-white"
                     : "bg-[var(--card)] text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"
                 }`}
+                data-element={`blog-category-${category.name.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 {category.name}
                 <span className="ml-2 opacity-60">({category.count})</span>
@@ -124,11 +125,12 @@ export default function BlogPage() {
       </section>
 
       {/* Featured Post */}
-      <section className="py-12">
+      <section className="py-12" data-element="blog-featured-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <Link
             href={`/blog/${featuredPost.slug}`}
             className="group block overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card)] transition-all hover:border-[var(--border-hover)]"
+            data-element="blog-featured-post"
           >
             <div className="grid gap-6 lg:grid-cols-2">
               <div className="aspect-[16/10] bg-[var(--background-tertiary)] lg:aspect-auto lg:h-full">
@@ -163,15 +165,16 @@ export default function BlogPage() {
       </section>
 
       {/* Posts Grid */}
-      <section className="pb-16 lg:pb-24">
+      <section className="pb-16 lg:pb-24" data-element="blog-posts-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-8 text-xl font-semibold text-foreground">Latest Posts</h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <h2 className="mb-8 text-xl font-semibold text-foreground" data-element="blog-posts-heading">Latest Posts</h2>
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3" data-element="blog-posts-grid">
             {posts.map((post) => (
               <Link
                 key={post.slug}
                 href={`/blog/${post.slug}`}
                 className="group rounded-xl border border-[var(--card-border)] bg-[var(--card)] transition-all hover:border-[var(--border-hover)]"
+                data-element={`blog-post-${post.slug}`}
               >
                 <div className="aspect-[16/10] rounded-t-xl bg-[var(--background-tertiary)]">
                   <div className="flex h-full items-center justify-center text-foreground-muted">
@@ -199,8 +202,8 @@ export default function BlogPage() {
           </div>
 
           {/* Load More */}
-          <div className="mt-12 text-center">
-            <button className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-8 py-3 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]">
+          <div className="mt-12 text-center" data-element="blog-load-more">
+            <button className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-8 py-3 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]" data-element="blog-load-more-btn">
               Load more posts
             </button>
           </div>
@@ -208,12 +211,12 @@ export default function BlogPage() {
       </section>
 
       {/* Newsletter */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="blog-newsletter-section">
         <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
-          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="blog-newsletter-heading">
             Subscribe to our newsletter
           </h2>
-          <p className="mb-8 text-foreground-secondary">
+          <p className="mb-8 text-foreground-secondary" data-element="blog-newsletter-description">
             Get the latest tips and insights delivered to your inbox every week.
           </p>
           <NewsletterForm />

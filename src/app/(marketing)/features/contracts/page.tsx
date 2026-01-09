@@ -50,9 +50,9 @@ const templates = [
 
 export default function ContractsFeaturePage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="features-contracts-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="features-contracts-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -91,12 +91,12 @@ export default function ContractsFeaturePage() {
       </section>
 
       {/* Features */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="features-contracts-features-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="features-contracts-features-heading">
             Everything you need
           </h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3" data-element="features-contracts-features-grid">
             {features.map((feature) => (
               <div
                 key={feature.title}
@@ -114,16 +114,16 @@ export default function ContractsFeaturePage() {
       </section>
 
       {/* Templates */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="features-contracts-templates-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground">
+            <h2 className="mb-4 text-3xl font-bold text-foreground" data-element="features-contracts-templates-heading">
               Pre-built templates
             </h2>
-            <p className="mb-12 text-foreground-secondary">
+            <p className="mb-12 text-foreground-secondary" data-element="features-contracts-templates-description">
               Professional contract templates designed for photographers
             </p>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2" data-element="features-contracts-templates-grid">
               {templates.map((template) => (
                 <div
                   key={template}
@@ -139,13 +139,13 @@ export default function ContractsFeaturePage() {
       </section>
 
       {/* How it works */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="features-contracts-howitworks-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <div className="mx-auto max-w-xl text-center">
-            <h2 className="mb-8 text-3xl font-bold text-foreground">
+            <h2 className="mb-8 text-3xl font-bold text-foreground" data-element="features-contracts-howitworks-heading">
               How it works
             </h2>
-            <div className="space-y-6">
+            <div className="space-y-6" data-element="features-contracts-howitworks-list">
               {[
                 { step: "1", title: "Choose a template", description: "Start with a professional template or create your own from scratch" },
                 { step: "2", title: "Customize & send", description: "Add your terms, client details, and send via email for signature" },
@@ -170,17 +170,18 @@ export default function ContractsFeaturePage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="features-contracts-cta-section">
         <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
-          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="features-contracts-cta-heading">
             Ready to streamline your contracts?
           </h2>
-          <p className="mb-8 text-foreground-secondary">
+          <p className="mb-8 text-foreground-secondary" data-element="features-contracts-cta-description">
             Start sending professional contracts in minutes. No legal expertise required.
           </p>
           <Link
             href="/sign-up"
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            data-element="features-contracts-cta-btn"
           >
             Start free trial
           </Link>

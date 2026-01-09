@@ -35,6 +35,7 @@ import {
   RocketIcon,
   ClipboardIcon,
   TrophyIcon,
+  VideoIcon,
 } from "@/components/ui/settings-icons";
 import type { SettingsIconName } from "@/lib/constants/settings-navigation";
 
@@ -73,6 +74,7 @@ export const SETTINGS_ICON_MAP: Record<
   rocket: RocketIcon,
   clipboard: ClipboardIcon,
   trophy: TrophyIcon,
+  video: VideoIcon,
 };
 
 /**

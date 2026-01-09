@@ -64,9 +64,9 @@ const features = [
 
 export default function AutomationFeaturePage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="features-automation-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="features-automation-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -105,12 +105,12 @@ export default function AutomationFeaturePage() {
       </section>
 
       {/* Workflow Examples */}
-      <section className="py-16 lg:py-24">
+      <section className="py-16 lg:py-24" data-element="features-automation-workflows-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="features-automation-workflows-heading">
             Automate your entire workflow
           </h2>
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2" data-element="features-automation-workflows-grid">
             {workflows.map((workflow, index) => (
               <div
                 key={index}
@@ -140,12 +140,12 @@ export default function AutomationFeaturePage() {
       </section>
 
       {/* Features Grid */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="features-automation-features-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="features-automation-features-heading">
             Automation features
           </h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3" data-element="features-automation-features-grid">
             {features.map((feature) => (
               <div
                 key={feature.title}
@@ -163,16 +163,16 @@ export default function AutomationFeaturePage() {
       </section>
 
       {/* Time Savings */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="features-automation-timesavings-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground">
+            <h2 className="mb-4 text-3xl font-bold text-foreground" data-element="features-automation-timesavings-heading">
               Time you&apos;ll save every week
             </h2>
-            <p className="mb-12 text-foreground-secondary">
+            <p className="mb-12 text-foreground-secondary" data-element="features-automation-timesavings-description">
               Based on average photographer workflows
             </p>
-            <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-8 md:grid-cols-4" data-element="features-automation-timesavings-grid">
               {[
                 { task: "Sending emails", time: "3 hrs" },
                 { task: "Payment follow-ups", time: "2 hrs" },
@@ -185,7 +185,7 @@ export default function AutomationFeaturePage() {
                 </div>
               ))}
             </div>
-            <div className="mt-12 rounded-xl border border-[var(--success)]/30 bg-[var(--success)]/5 p-6">
+            <div className="mt-12 rounded-xl border border-[var(--success)]/30 bg-[var(--success)]/5 p-6" data-element="features-automation-timesavings-total">
               <p className="text-sm text-foreground-secondary">Total time saved per week</p>
               <p className="text-4xl font-bold text-[var(--success)]">7.5+ hours</p>
             </div>
@@ -194,17 +194,18 @@ export default function AutomationFeaturePage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="features-automation-cta-section">
         <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
-          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="features-automation-cta-heading">
             Ready to automate your workflow?
           </h2>
-          <p className="mb-8 text-foreground-secondary">
+          <p className="mb-8 text-foreground-secondary" data-element="features-automation-cta-description">
             Start saving hours every week with automation.
           </p>
           <Link
             href="/sign-up"
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            data-element="features-automation-cta-btn"
           >
             Start free trial
           </Link>

@@ -138,9 +138,9 @@ const faqs = [
 
 export default function SocialMediaFeaturePage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="features-social-media-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="features-social-media-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -180,9 +180,9 @@ export default function SocialMediaFeaturePage() {
       </section>
 
       {/* Notion-style Document Content */}
-      <div className="mx-auto max-w-4xl px-6 py-16 lg:px-8">
+      <div className="mx-auto max-w-4xl px-6 py-16 lg:px-8" data-element="features-social-media-content">
         {/* Overview */}
-        <section className="mb-16">
+        <section className="mb-16" data-element="features-social-media-overview-section">
           <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-3">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
               📱
@@ -200,14 +200,14 @@ export default function SocialMediaFeaturePage() {
         </section>
 
         {/* Planned Features */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+        <section className="mb-16" data-element="features-social-media-planned-section">
+          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-social-media-planned-heading">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
               ✨
             </span>
             Planned Features
           </h2>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2" data-element="features-social-media-planned-grid">
             {plannedFeatures.map((feature) => (
               <div
                 key={feature.title}
@@ -236,14 +236,14 @@ export default function SocialMediaFeaturePage() {
         </section>
 
         {/* Platform Support */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+        <section className="mb-16" data-element="features-social-media-platforms-section">
+          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-social-media-platforms-heading">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
               🌐
             </span>
             Platform Support
           </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-element="features-social-media-platforms-grid">
             {platformSupport.map((platform) => (
               <div
                 key={platform.name}
@@ -281,14 +281,14 @@ export default function SocialMediaFeaturePage() {
         </section>
 
         {/* Use Cases */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+        <section className="mb-16" data-element="features-social-media-usecases-section">
+          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-social-media-usecases-heading">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
               💡
             </span>
             Perfect For
           </h2>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2" data-element="features-social-media-usecases-grid">
             {useCases.map((useCase) => (
               <div
                 key={useCase.title}
@@ -307,14 +307,14 @@ export default function SocialMediaFeaturePage() {
         </section>
 
         {/* Roadmap */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+        <section className="mb-16" data-element="features-social-media-roadmap-section">
+          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-social-media-roadmap-heading">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
               🗺️
             </span>
             Development Roadmap
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-4" data-element="features-social-media-roadmap-list">
             {roadmapItems.map((phase, index) => (
               <div
                 key={phase.phase}
@@ -349,14 +349,14 @@ export default function SocialMediaFeaturePage() {
         </section>
 
         {/* FAQ */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+        <section className="mb-16" data-element="features-social-media-faq-section">
+          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-social-media-faq-heading">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
               ❓
             </span>
             Frequently Asked Questions
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-4" data-element="features-social-media-faq-list">
             {faqs.map((faq) => (
               <div
                 key={faq.question}
@@ -370,7 +370,7 @@ export default function SocialMediaFeaturePage() {
         </section>
 
         {/* Feedback CTA */}
-        <section className="rounded-xl border border-pink-500/20 bg-pink-500/5 p-8 text-center">
+        <section className="rounded-xl border border-pink-500/20 bg-pink-500/5 p-8 text-center" data-element="features-social-media-feedback-section">
           <h2 className="text-xl font-bold text-foreground mb-2">Help shape this feature</h2>
           <p className="text-foreground-secondary mb-6">
             Which platforms matter most to you? What would make social media management perfect for your photography business?
@@ -393,12 +393,12 @@ export default function SocialMediaFeaturePage() {
       </div>
 
       {/* Related Features */}
-      <section className="border-t border-[var(--card-border)] py-16">
+      <section className="border-t border-[var(--card-border)] py-16" data-element="features-social-media-related-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-8 text-center text-2xl font-bold text-foreground">
+          <h2 className="mb-8 text-center text-2xl font-bold text-foreground" data-element="features-social-media-related-heading">
             Available Now
           </h2>
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-3" data-element="features-social-media-related-grid">
             {[
               {
                 title: "Photo Galleries",

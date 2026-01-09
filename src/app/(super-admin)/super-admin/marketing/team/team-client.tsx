@@ -133,9 +133,9 @@ export function TeamClient({ members: initialMembers = [] }: Props) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="team-page">
       {/* Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" data-element="team-header">
         <div className="flex items-center gap-3 sm:gap-4">
           <Link
             href="/super-admin/marketing"
@@ -145,6 +145,7 @@ export function TeamClient({ members: initialMembers = [] }: Props) {
               "min-w-[44px] min-h-[44px] flex items-center justify-center"
             )}
             aria-label="Back to Marketing CMS"
+            data-element="team-back-btn"
           >
             <ArrowLeft className="w-5 h-5 text-[var(--foreground-muted)]" />
           </Link>
@@ -165,6 +166,7 @@ export function TeamClient({ members: initialMembers = [] }: Props) {
           )}
           aria-expanded={showAddForm}
           aria-controls={`${formId}-form`}
+          data-element="team-add-btn"
         >
           {showAddForm ? (
             <>
@@ -186,6 +188,7 @@ export function TeamClient({ members: initialMembers = [] }: Props) {
           id={`${formId}-form`}
           className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 sm:p-6"
           aria-labelledby={`${formId}-title`}
+          data-element="team-form"
         >
           <h2
             id={`${formId}-title`}
@@ -390,8 +393,8 @@ export function TeamClient({ members: initialMembers = [] }: Props) {
       )}
 
       {/* Team Grid */}
-      <section aria-label="Team members list">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <section aria-label="Team members list" data-element="team-grid-section">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-element="team-grid">
           {members.length === 0 ? (
             <div className="col-span-full p-8 sm:p-12 text-center text-[var(--foreground-muted)] rounded-lg border border-[var(--border)]">
               <p>No team members yet. Add your first one above.</p>
@@ -407,6 +410,7 @@ export function TeamClient({ members: initialMembers = [] }: Props) {
                     : "bg-[var(--background-tertiary)] border-[var(--border)] opacity-60"
                 )}
                 aria-label={`${member.name}, ${member.role}`}
+                data-element={`team-card-${member.id}`}
               >
                 {/* Header with actions */}
                 <div className="flex items-start justify-between mb-4">
@@ -435,7 +439,7 @@ export function TeamClient({ members: initialMembers = [] }: Props) {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                  <div className="flex items-center gap-1 flex-shrink-0 ml-2" data-element={`team-card-actions-${member.id}`}>
                     <button
                       onClick={() => handleToggleVisibility(member)}
                       disabled={isPending}
@@ -445,6 +449,7 @@ export function TeamClient({ members: initialMembers = [] }: Props) {
                         "min-w-[36px] min-h-[36px] flex items-center justify-center"
                       )}
                       aria-label={member.isVisible ? `Hide ${member.name}` : `Show ${member.name}`}
+                      data-element={`team-visibility-btn-${member.id}`}
                     >
                       {member.isVisible ? (
                         <Eye className="w-4 h-4 text-[var(--foreground-muted)]" />
@@ -460,6 +465,7 @@ export function TeamClient({ members: initialMembers = [] }: Props) {
                         "min-w-[36px] min-h-[36px] flex items-center justify-center"
                       )}
                       aria-label={`Edit ${member.name}`}
+                      data-element={`team-edit-btn-${member.id}`}
                     >
                       <Pencil className="w-4 h-4 text-[var(--foreground-muted)]" />
                     </button>
@@ -472,6 +478,7 @@ export function TeamClient({ members: initialMembers = [] }: Props) {
                         "min-w-[36px] min-h-[36px] flex items-center justify-center"
                       )}
                       aria-label={`Remove ${member.name}`}
+                      data-element={`team-delete-btn-${member.id}`}
                     >
                       <Trash2 className="w-4 h-4 text-red-500" />
                     </button>

@@ -116,13 +116,14 @@ export function BlogListClient({ posts = [] }: Props) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="blog-list-page">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between" data-element="blog-list-header">
         <div className="flex items-center gap-4">
           <Link
             href="/super-admin/marketing"
             className="p-2 rounded-lg hover:bg-[var(--background-elevated)] transition-colors"
+            data-element="blog-list-back-btn"
           >
             <ArrowLeftIcon className="w-5 h-5 text-[var(--foreground-muted)]" />
           </Link>
@@ -137,6 +138,7 @@ export function BlogListClient({ posts = [] }: Props) {
           onClick={handleCreateNew}
           disabled={isPending}
           className="btn btn-primary flex items-center gap-2"
+          data-element="blog-list-new-btn"
         >
           <PlusIcon className="w-4 h-4" />
           New Post
@@ -144,13 +146,14 @@ export function BlogListClient({ posts = [] }: Props) {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4" data-element="blog-list-filters">
         <div className="flex items-center gap-2">
           <span className="text-sm text-[var(--foreground-muted)]">Category:</span>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as BlogCategory | "all")}
             className="px-3 py-1.5 rounded-lg bg-[var(--background-elevated)] border border-[var(--border)] text-[var(--foreground)] text-sm"
+            data-element="blog-list-category-filter"
           >
             <option value="all">All Categories</option>
             {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
@@ -166,6 +169,7 @@ export function BlogListClient({ posts = [] }: Props) {
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as "all" | "published" | "draft")}
             className="px-3 py-1.5 rounded-lg bg-[var(--background-elevated)] border border-[var(--border)] text-[var(--foreground)] text-sm"
+            data-element="blog-list-status-filter"
           >
             <option value="all">All</option>
             <option value="published">Published</option>
@@ -175,7 +179,7 @@ export function BlogListClient({ posts = [] }: Props) {
       </div>
 
       {/* Posts Table */}
-      <div className="rounded-lg border border-[var(--border)] overflow-hidden">
+      <div className="rounded-lg border border-[var(--border)] overflow-hidden" data-element="blog-list-table">
         <table className="w-full">
           <thead className="bg-[var(--card)]">
             <tr>
@@ -208,12 +212,13 @@ export function BlogListClient({ posts = [] }: Props) {
               </tr>
             ) : (
               filteredPosts.map((post) => (
-                <tr key={post.id} className="hover:bg-[var(--background-elevated)]">
+                <tr key={post.id} className="hover:bg-[var(--background-elevated)]" data-element={`blog-list-row-${post.id}`}>
                   <td className="px-4 py-3">
                     <div>
                       <Link
                         href={`/super-admin/marketing/blog/${post.id}`}
                         className="font-medium text-[var(--foreground)] hover:text-[var(--primary)]"
+                        data-element={`blog-list-title-${post.id}`}
                       >
                         {post.title}
                       </Link>

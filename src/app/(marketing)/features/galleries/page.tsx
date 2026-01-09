@@ -51,9 +51,9 @@ const features = [
 
 export default function GalleriesFeaturePage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="features-galleries-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="features-galleries-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -92,9 +92,9 @@ export default function GalleriesFeaturePage() {
       </section>
 
       {/* Gallery Preview */}
-      <section className="py-16 lg:py-24">
+      <section className="py-16 lg:py-24" data-element="features-galleries-preview-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="relative mx-auto max-w-4xl overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card)]">
+          <div className="relative mx-auto max-w-4xl overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card)]" data-element="features-galleries-preview-card">
             <div className="flex items-center gap-2 border-b border-[var(--card-border)] px-4 py-3">
               <div className="flex gap-1.5">
                 <div className="h-3 w-3 rounded-full bg-[var(--error)]" />
@@ -133,12 +133,12 @@ export default function GalleriesFeaturePage() {
       </section>
 
       {/* Features Grid */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="features-galleries-features-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="features-galleries-features-heading">
             Everything you need for stunning galleries
           </h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4" data-element="features-galleries-features-grid">
             {features.map((feature) => (
               <div
                 key={feature.title}
@@ -156,13 +156,13 @@ export default function GalleriesFeaturePage() {
       </section>
 
       {/* How It Works */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="features-galleries-howitworks-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="features-galleries-howitworks-heading">
             How it works
           </h2>
           <div className="mx-auto max-w-4xl">
-            <div className="space-y-8">
+            <div className="space-y-8" data-element="features-galleries-howitworks-list">
               {[
                 {
                   step: "01",
@@ -201,17 +201,18 @@ export default function GalleriesFeaturePage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="features-galleries-cta-section">
         <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
-          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="features-galleries-cta-heading">
             Ready to create stunning galleries?
           </h2>
-          <p className="mb-8 text-foreground-secondary">
+          <p className="mb-8 text-foreground-secondary" data-element="features-galleries-cta-description">
             Start free with 5 galleries. Upgrade anytime.
           </p>
           <Link
             href="/sign-up"
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            data-element="features-galleries-cta-btn"
           >
             Start free trial
           </Link>

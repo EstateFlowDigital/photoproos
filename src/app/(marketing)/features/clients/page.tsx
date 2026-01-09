@@ -41,9 +41,9 @@ const features = [
 
 export default function ClientsFeaturePage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="features-clients-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="features-clients-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -82,10 +82,10 @@ export default function ClientsFeaturePage() {
       </section>
 
       {/* Client Card Preview */}
-      <section className="py-16 lg:py-24">
+      <section className="py-16 lg:py-24" data-element="features-clients-preview-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <div className="mx-auto max-w-2xl">
-            <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+            <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6" data-element="features-clients-preview-card">
               <div className="mb-6 flex items-start justify-between">
                 <div className="flex items-center gap-4">
                   <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--primary)]/10 text-xl font-bold text-[var(--primary)]">
@@ -136,12 +136,12 @@ export default function ClientsFeaturePage() {
       </section>
 
       {/* Features Grid */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="features-clients-features-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="features-clients-features-heading">
             Everything you need for client management
           </h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3" data-element="features-clients-features-grid">
             {features.map((feature) => (
               <div
                 key={feature.title}
@@ -159,13 +159,13 @@ export default function ClientsFeaturePage() {
       </section>
 
       {/* Benefits */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="features-clients-benefits-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <div className="mx-auto max-w-3xl">
-            <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
+            <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="features-clients-benefits-heading">
               Why photographers love our CRM
             </h2>
-            <div className="space-y-8">
+            <div className="space-y-8" data-element="features-clients-benefits-list">
               {[
                 {
                   title: "Never lose a lead",
@@ -196,17 +196,18 @@ export default function ClientsFeaturePage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="features-clients-cta-section">
         <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
-          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="features-clients-cta-heading">
             Ready to organize your clients?
           </h2>
-          <p className="mb-8 text-foreground-secondary">
+          <p className="mb-8 text-foreground-secondary" data-element="features-clients-cta-description">
             Start free and import your existing contacts.
           </p>
           <Link
             href="/sign-up"
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            data-element="features-clients-cta-btn"
           >
             Start free trial
           </Link>

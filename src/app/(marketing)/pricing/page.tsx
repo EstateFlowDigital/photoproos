@@ -133,9 +133,9 @@ const faqs = [
 
 export default function PricingPage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="pricing-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="pricing-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -160,7 +160,7 @@ export default function PricingPage() {
       </section>
 
       {/* Billing Toggle Note */}
-      <section className="py-8">
+      <section className="py-8" data-element="pricing-trial-note">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <p className="text-center text-sm text-foreground-secondary">
             All paid plans include a <strong className="text-foreground">14-day free trial</strong>. No credit card required to start.
@@ -169,9 +169,9 @@ export default function PricingPage() {
       </section>
 
       {/* Pricing Cards */}
-      <section className="pb-16 lg:pb-24">
+      <section className="pb-16 lg:pb-24" data-element="pricing-plans-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4" data-element="pricing-plans-grid">
             {plans.map((plan) => (
               <div
                 key={plan.name}
@@ -180,6 +180,7 @@ export default function PricingPage() {
                     ? "border-[var(--primary)] bg-gradient-to-b from-[var(--primary)]/5 to-transparent"
                     : "border-[var(--card-border)] bg-[var(--card)]"
                 }`}
+                data-element={`pricing-plan-${plan.name.toLowerCase()}`}
               >
                 {plan.badge && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[var(--primary)] px-4 py-1 text-xs font-medium text-white">
@@ -223,13 +224,13 @@ export default function PricingPage() {
       </section>
 
       {/* Feature Comparison */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="pricing-comparison-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="pricing-comparison-heading">
             Compare all features
           </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[800px]">
+          <div className="overflow-x-auto" data-element="pricing-comparison-wrapper">
+            <table className="w-full min-w-[800px]" data-element="pricing-comparison-table">
               <thead>
                 <tr className="border-b border-[var(--card-border)]">
                   <th className="pb-4 text-left font-medium text-foreground">Feature</th>
@@ -264,14 +265,14 @@ export default function PricingPage() {
       </section>
 
       {/* FAQ */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="pricing-faq-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="pricing-faq-heading">
             Frequently Asked Questions
           </h2>
-          <div className="mx-auto max-w-3xl space-y-6">
-            {faqs.map((faq) => (
-              <div key={faq.question} className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+          <div className="mx-auto max-w-3xl space-y-6" data-element="pricing-faq-list">
+            {faqs.map((faq, index) => (
+              <div key={faq.question} className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6" data-element={`pricing-faq-item-${index}`}>
                 <h3 className="mb-2 font-semibold text-foreground">{faq.question}</h3>
                 <p className="text-sm text-foreground-secondary">{faq.answer}</p>
               </div>
@@ -281,24 +282,26 @@ export default function PricingPage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="pricing-cta-section">
         <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
-          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="pricing-cta-heading">
             Ready to streamline your photography business?
           </h2>
-          <p className="mb-8 text-foreground-secondary">
+          <p className="mb-8 text-foreground-secondary" data-element="pricing-cta-description">
             Start free today. No credit card required.
           </p>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row" data-element="pricing-cta-buttons">
             <Link
               href="/sign-up"
               className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+              data-element="pricing-cta-trial-btn"
             >
               Start free trial
             </Link>
             <Link
               href="/contact?subject=sales"
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-8 py-3 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              data-element="pricing-cta-sales-btn"
             >
               Contact sales
             </Link>

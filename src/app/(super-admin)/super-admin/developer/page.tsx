@@ -50,9 +50,9 @@ function LoadingSkeleton() {
 
 export default function DeveloperPage() {
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--foreground)]">
+    <div data-element="super-admin-developer-page">
+      <div className="mb-8" data-element="super-admin-developer-header">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]" data-element="super-admin-developer-title">
           Developer Tools
         </h1>
         <p className="text-[var(--foreground-muted)]">

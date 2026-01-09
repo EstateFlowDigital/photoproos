@@ -150,9 +150,9 @@ export function TestimonialsClient({ testimonials: initialTestimonials = [] }: P
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="testimonials-page">
       {/* Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" data-element="testimonials-header">
         <div className="flex items-center gap-3 sm:gap-4">
           <Link
             href="/super-admin/marketing"
@@ -162,6 +162,7 @@ export function TestimonialsClient({ testimonials: initialTestimonials = [] }: P
               "min-w-[44px] min-h-[44px] flex items-center justify-center"
             )}
             aria-label="Back to Marketing CMS"
+            data-element="testimonials-back-btn"
           >
             <ArrowLeft className="w-5 h-5 text-[var(--foreground-muted)]" />
           </Link>
@@ -182,6 +183,7 @@ export function TestimonialsClient({ testimonials: initialTestimonials = [] }: P
           )}
           aria-expanded={showAddForm}
           aria-controls={`${formId}-form`}
+          data-element="testimonials-add-btn"
         >
           {showAddForm ? (
             <>
@@ -203,6 +205,7 @@ export function TestimonialsClient({ testimonials: initialTestimonials = [] }: P
           id={`${formId}-form`}
           className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 sm:p-6"
           aria-labelledby={`${formId}-title`}
+          data-element="testimonials-form"
         >
           <h2
             id={`${formId}-title`}
@@ -387,10 +390,10 @@ export function TestimonialsClient({ testimonials: initialTestimonials = [] }: P
       )}
 
       {/* Testimonials Grid */}
-      <section aria-label="Testimonials list">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <section aria-label="Testimonials list" data-element="testimonials-grid-section">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-element="testimonials-grid">
           {testimonials.length === 0 ? (
-            <div className="col-span-full p-8 sm:p-12 text-center text-[var(--foreground-muted)] rounded-lg border border-[var(--border)]">
+            <div className="col-span-full p-8 sm:p-12 text-center text-[var(--foreground-muted)] rounded-lg border border-[var(--border)]" data-element="testimonials-empty">
               <p>No testimonials yet. Add your first one above.</p>
             </div>
           ) : (
@@ -404,6 +407,7 @@ export function TestimonialsClient({ testimonials: initialTestimonials = [] }: P
                     : "bg-[var(--background-tertiary)] border-[var(--border)] opacity-60"
                 )}
                 aria-label={`Testimonial from ${testimonial.authorName}`}
+                data-element={`testimonial-card-${testimonial.id}`}
               >
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4 gap-2">

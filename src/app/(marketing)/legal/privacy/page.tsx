@@ -10,9 +10,9 @@ export default function PrivacyPolicyPage() {
   const lastUpdated = "January 1, 2025";
 
   return (
-    <main className="relative min-h-screen bg-background">
-      <article className="mx-auto max-w-4xl px-6 py-16 lg:py-24">
-        <header className="mb-12 border-b border-[var(--card-border)] pb-8">
+    <main className="relative min-h-screen bg-background" data-element="legal-privacy-page">
+      <article className="mx-auto max-w-4xl px-6 py-16 lg:py-24" data-element="legal-privacy-article">
+        <header className="mb-12 border-b border-[var(--card-border)] pb-8" data-element="legal-privacy-header">
           <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground">
             Privacy Policy
           </h1>
@@ -21,8 +21,8 @@ export default function PrivacyPolicyPage() {
           </p>
         </header>
 
-        <div className="prose prose-invert max-w-none">
-          <section className="mb-10">
+        <div className="prose prose-invert max-w-none" data-element="legal-privacy-content">
+          <section className="mb-10" data-element="legal-privacy-intro-section">
             <h2 className="mb-4 text-2xl font-bold text-foreground">Introduction</h2>
             <p className="mb-4 text-foreground-secondary">
               PhotoProOS ("we," "our," or "us") respects your privacy and is committed to protecting your personal data. This privacy policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
@@ -151,8 +151,8 @@ export default function PrivacyPolicyPage() {
           </section>
         </div>
 
-        <footer className="mt-12 border-t border-[var(--card-border)] pt-8">
-          <div className="flex flex-wrap gap-4">
+        <footer className="mt-12 border-t border-[var(--card-border)] pt-8" data-element="legal-privacy-footer">
+          <div className="flex flex-wrap gap-4" data-element="legal-privacy-footer-links">
             <Link href="/legal/terms" className="text-sm text-[var(--primary)] hover:underline">
               Terms of Service
             </Link>

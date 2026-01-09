@@ -10,9 +10,9 @@ export default function CookiePolicyPage() {
   const lastUpdated = "January 1, 2025";
 
   return (
-    <main className="relative min-h-screen bg-background">
-      <article className="mx-auto max-w-4xl px-6 py-16 lg:py-24">
-        <header className="mb-12 border-b border-[var(--card-border)] pb-8">
+    <main className="relative min-h-screen bg-background" data-element="legal-cookies-page">
+      <article className="mx-auto max-w-4xl px-6 py-16 lg:py-24" data-element="legal-cookies-article">
+        <header className="mb-12 border-b border-[var(--card-border)] pb-8" data-element="legal-cookies-header">
           <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground">
             Cookie Policy
           </h1>
@@ -21,8 +21,8 @@ export default function CookiePolicyPage() {
           </p>
         </header>
 
-        <div className="prose prose-invert max-w-none">
-          <section className="mb-10">
+        <div className="prose prose-invert max-w-none" data-element="legal-cookies-content">
+          <section className="mb-10" data-element="legal-cookies-what-section">
             <h2 className="mb-4 text-2xl font-bold text-foreground">What Are Cookies?</h2>
             <p className="mb-4 text-foreground-secondary">
               Cookies are small text files that are stored on your device when you visit a website. They help websites remember your preferences, understand how you use the site, and improve your experience.
@@ -194,8 +194,8 @@ export default function CookiePolicyPage() {
           </section>
         </div>
 
-        <footer className="mt-12 border-t border-[var(--card-border)] pt-8">
-          <div className="flex flex-wrap gap-4">
+        <footer className="mt-12 border-t border-[var(--card-border)] pt-8" data-element="legal-cookies-footer">
+          <div className="flex flex-wrap gap-4" data-element="legal-cookies-footer-links">
             <Link href="/legal/privacy" className="text-sm text-[var(--primary)] hover:underline">
               Privacy Policy
             </Link>

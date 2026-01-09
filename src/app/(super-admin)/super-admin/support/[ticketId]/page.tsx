@@ -42,8 +42,10 @@ export default async function TicketDetailPage({ params }: PageProps) {
   const { ticketId } = await params;
 
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
-      <TicketLoader ticketId={ticketId} />
-    </Suspense>
+    <div data-element="super-admin-ticket-detail-page">
+      <Suspense fallback={<LoadingSkeleton />}>
+        <TicketLoader ticketId={ticketId} />
+      </Suspense>
+    </div>
   );
 }

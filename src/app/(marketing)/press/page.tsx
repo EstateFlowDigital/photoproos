@@ -34,9 +34,9 @@ const mediaContacts = [
 
 export default function PressPage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="press-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="press-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -58,10 +58,10 @@ export default function PressPage() {
       </section>
 
       {/* Brand Assets */}
-      <section className="py-16 lg:py-24">
+      <section className="py-16 lg:py-24" data-element="press-assets-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-8 text-2xl font-bold text-foreground">Brand Assets</h2>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <h2 className="mb-8 text-2xl font-bold text-foreground" data-element="press-assets-heading">Brand Assets</h2>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" data-element="press-assets-grid">
             {/* Logo Light */}
             <div className="rounded-xl border border-[var(--card-border)] bg-white p-8">
               <div className="mb-6 flex h-20 items-center justify-center">
@@ -113,10 +113,10 @@ export default function PressPage() {
       </section>
 
       {/* Company Facts */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="press-facts-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-8 text-2xl font-bold text-foreground">Company Facts</h2>
-          <div className="grid gap-6 md:grid-cols-2">
+          <h2 className="mb-8 text-2xl font-bold text-foreground" data-element="press-facts-heading">Company Facts</h2>
+          <div className="grid gap-6 md:grid-cols-2" data-element="press-facts-grid">
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
               <h3 className="mb-4 font-semibold text-foreground">About PhotoProOS</h3>
               <p className="text-foreground-secondary">
@@ -149,14 +149,15 @@ export default function PressPage() {
       </section>
 
       {/* Press Releases */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="press-releases-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-8 text-2xl font-bold text-foreground">Press Releases</h2>
-          <div className="space-y-6">
-            {pressReleases.map((release) => (
+          <h2 className="mb-8 text-2xl font-bold text-foreground" data-element="press-releases-heading">Press Releases</h2>
+          <div className="space-y-6" data-element="press-releases-list">
+            {pressReleases.map((release, index) => (
               <div
                 key={release.title}
                 className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6"
+                data-element={`press-release-${index}`}
               >
                 <div className="mb-2 text-sm text-foreground-muted">{release.date}</div>
                 <h3 className="mb-2 text-lg font-semibold text-foreground">{release.title}</h3>
@@ -168,14 +169,15 @@ export default function PressPage() {
       </section>
 
       {/* Media Contact */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="press-contact-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-8 text-2xl font-bold text-foreground">Media Contact</h2>
-          <div className="grid gap-6 md:grid-cols-2">
+          <h2 className="mb-8 text-2xl font-bold text-foreground" data-element="press-contact-heading">Media Contact</h2>
+          <div className="grid gap-6 md:grid-cols-2" data-element="press-contact-grid">
             {mediaContacts.map((contact) => (
               <div
                 key={contact.name}
                 className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6"
+                data-element={`press-contact-${contact.name.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <h3 className="mb-2 font-semibold text-foreground">{contact.name}</h3>
                 <p className="mb-4 text-sm text-foreground-secondary">{contact.description}</p>

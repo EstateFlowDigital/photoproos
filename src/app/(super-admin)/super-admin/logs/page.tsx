@@ -79,9 +79,9 @@ export default async function LogsPage({
   const params = await searchParams;
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--foreground)]">
+    <div data-element="super-admin-logs-page">
+      <div className="mb-8" data-element="super-admin-logs-header">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]" data-element="super-admin-logs-title">
           System Logs & Monitoring
         </h1>
         <p className="text-[var(--foreground-muted)]">

@@ -86,9 +86,9 @@ const popularArticles = [
 
 export default function HelpPage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="support-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="support-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -105,12 +105,13 @@ export default function HelpPage() {
             <p className="mb-8 text-lg text-foreground-secondary">
               Search our knowledge base or browse categories below
             </p>
-            <div className="relative mx-auto max-w-xl">
+            <div className="relative mx-auto max-w-xl" data-element="support-search">
               <SearchIcon className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-foreground-secondary" />
               <input
                 type="text"
                 placeholder="Search for articles, guides, and tutorials..."
                 className="w-full rounded-xl border border-[var(--card-border)] bg-[var(--card)] py-4 pl-12 pr-4 text-foreground placeholder:text-foreground-secondary focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                data-element="support-search-input"
               />
             </div>
           </div>
@@ -118,13 +119,14 @@ export default function HelpPage() {
       </section>
 
       {/* Categories */}
-      <section className="py-16 lg:py-24">
+      <section className="py-16 lg:py-24" data-element="support-categories-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" data-element="support-categories-grid">
             {categories.map((category) => (
               <div
                 key={category.title}
                 className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6 transition-colors hover:border-[var(--border-hover)]"
+                data-element={`support-category-${category.title.toLowerCase().replace(/\s+/g, '-').replace(/&/g, 'and')}`}
               >
                 <div className="mb-4 flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10">
@@ -155,18 +157,19 @@ export default function HelpPage() {
       </section>
 
       {/* Popular Articles */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="support-popular-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-8 text-center text-2xl font-bold text-foreground">
+          <h2 className="mb-8 text-center text-2xl font-bold text-foreground" data-element="support-popular-heading">
             Popular Articles
           </h2>
           <div className="mx-auto max-w-2xl">
-            <ul className="divide-y divide-[var(--card-border)]">
-              {popularArticles.map((article) => (
+            <ul className="divide-y divide-[var(--card-border)]" data-element="support-popular-list">
+              {popularArticles.map((article, index) => (
                 <li key={article.title}>
                   <Link
                     href={article.href}
                     className="group flex items-center justify-between py-4 text-foreground hover:text-[var(--primary)]"
+                    data-element={`support-popular-article-${index}`}
                   >
                     <span>{article.title}</span>
                     <span className="rounded-full bg-[var(--background-tertiary)] px-3 py-1 text-xs text-foreground-secondary">
@@ -181,26 +184,27 @@ export default function HelpPage() {
       </section>
 
       {/* Video Tutorials */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="support-videos-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-2xl font-bold text-foreground">
+          <div className="mb-12 text-center" data-element="support-videos-header">
+            <h2 className="mb-4 text-2xl font-bold text-foreground" data-element="support-videos-heading">
               Video Tutorials
             </h2>
-            <p className="text-foreground-secondary">
+            <p className="text-foreground-secondary" data-element="support-videos-description">
               Learn visually with our step-by-step video guides
             </p>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" data-element="support-videos-grid">
             {[
-              { title: "Getting Started with PhotoProOS", duration: "5:32", href: "/webinars" },
-              { title: "Creating Your First Gallery", duration: "8:15", href: "/webinars" },
-              { title: "Setting Up Payments", duration: "6:47", href: "/webinars" },
+              { title: "Getting Started with PhotoProOS", duration: "5:32", href: "/webinars", id: "getting-started" },
+              { title: "Creating Your First Gallery", duration: "8:15", href: "/webinars", id: "first-gallery" },
+              { title: "Setting Up Payments", duration: "6:47", href: "/webinars", id: "payments" },
             ].map((video) => (
               <Link
                 key={video.title}
                 href={video.href}
                 className="group overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] transition-colors hover:border-[var(--border-hover)]"
+                data-element={`support-video-${video.id}`}
               >
                 <div className="relative aspect-video bg-[var(--background-tertiary)]">
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -224,19 +228,20 @@ export default function HelpPage() {
       </section>
 
       {/* Contact Support */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="support-contact-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="rounded-2xl border border-[var(--card-border)] bg-gradient-to-b from-[var(--primary)]/5 to-transparent p-8 text-center md:p-12">
-            <h2 className="mb-4 text-2xl font-bold text-foreground">
+          <div className="rounded-2xl border border-[var(--card-border)] bg-gradient-to-b from-[var(--primary)]/5 to-transparent p-8 text-center md:p-12" data-element="support-contact-card">
+            <h2 className="mb-4 text-2xl font-bold text-foreground" data-element="support-contact-heading">
               Still need help?
             </h2>
-            <p className="mb-8 text-foreground-secondary">
+            <p className="mb-8 text-foreground-secondary" data-element="support-contact-description">
               Our support team is here to help you succeed.
             </p>
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row" data-element="support-contact-buttons">
               <Link
                 href="/contact"
                 className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+                data-element="support-contact-email-btn"
               >
                 <MailIcon className="h-4 w-4" />
                 Contact Support
@@ -244,6 +249,7 @@ export default function HelpPage() {
               <Link
                 href="/contact?subject=live-chat"
                 className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                data-element="support-contact-chat-btn"
               >
                 <MessageIcon className="h-4 w-4" />
                 Live Chat

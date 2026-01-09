@@ -76,8 +76,10 @@ async function AnnouncementsLoader() {
 
 export default function AnnouncementsPage() {
   return (
-    <Suspense fallback={<LoadingSkeleton />}>
-      <AnnouncementsLoader />
-    </Suspense>
+    <div data-element="super-admin-announcements-page">
+      <Suspense fallback={<LoadingSkeleton />}>
+        <AnnouncementsLoader />
+      </Suspense>
+    </div>
   );
 }

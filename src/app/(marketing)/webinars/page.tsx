@@ -66,9 +66,9 @@ const pastWebinars = [
 
 export default function WebinarsPage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="webinars-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="webinars-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -90,21 +90,22 @@ export default function WebinarsPage() {
       </section>
 
       {/* Upcoming Webinars */}
-      <section className="py-12 lg:py-16">
+      <section className="py-12 lg:py-16" data-element="webinars-upcoming-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="mb-8 flex items-center gap-3">
+          <div className="mb-8 flex items-center gap-3" data-element="webinars-upcoming-header">
             <span className="flex h-3 w-3 items-center justify-center">
               <span className="absolute h-3 w-3 animate-ping rounded-full bg-red-400 opacity-75"></span>
               <span className="relative h-2 w-2 rounded-full bg-red-500"></span>
             </span>
-            <h2 className="text-xl font-semibold text-foreground">Upcoming Webinars</h2>
+            <h2 className="text-xl font-semibold text-foreground" data-element="webinars-upcoming-heading">Upcoming Webinars</h2>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2" data-element="webinars-upcoming-grid">
             {upcomingWebinars.map((webinar) => (
               <div
                 key={webinar.slug}
                 className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6"
+                data-element={`webinars-upcoming-${webinar.slug}`}
               >
                 <div className="mb-4 flex items-center gap-3">
                   <span className="rounded-full bg-pink-500/10 px-3 py-1 text-xs font-medium text-pink-400">
@@ -149,16 +150,17 @@ export default function WebinarsPage() {
       </section>
 
       {/* Past Webinars */}
-      <section className="border-t border-[var(--card-border)] py-12 lg:py-16">
+      <section className="border-t border-[var(--card-border)] py-12 lg:py-16" data-element="webinars-past-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-8 text-xl font-semibold text-foreground">On-Demand Library</h2>
+          <h2 className="mb-8 text-xl font-semibold text-foreground" data-element="webinars-past-heading">On-Demand Library</h2>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2" data-element="webinars-past-grid">
             {pastWebinars.map((webinar) => (
               <Link
                 key={webinar.slug}
                 href={`/webinars/${webinar.slug}`}
                 className="group rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden transition-all hover:border-[var(--border-hover)]"
+                data-element={`webinars-past-${webinar.slug}`}
               >
                 <div className="aspect-video bg-[var(--background-tertiary)] relative">
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -190,17 +192,18 @@ export default function WebinarsPage() {
       </section>
 
       {/* Request a Topic */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="webinars-cta-section">
         <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
-          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="webinars-cta-heading">
             Want to see a specific topic?
           </h2>
-          <p className="mb-8 text-foreground-secondary">
+          <p className="mb-8 text-foreground-secondary" data-element="webinars-cta-description">
             Let us know what webinars would help your photography business.
           </p>
           <Link
             href="/contact?subject=webinar-request"
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            data-element="webinars-cta-btn"
           >
             Request a Topic
           </Link>

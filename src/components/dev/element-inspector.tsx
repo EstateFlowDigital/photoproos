@@ -1,7 +1,18 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { X, Copy, Check, MousePointer2, Plus, Trash2 } from "lucide-react";
+import {
+  X,
+  Copy,
+  Check,
+  MousePointer2,
+  Plus,
+  Trash2,
+  ChevronUp,
+  ChevronDown,
+  GripHorizontal,
+  Keyboard,
+} from "lucide-react";
 import { getDevSettings } from "@/lib/utils/dev-settings";
 
 interface ElementInfo {
@@ -11,42 +22,46 @@ interface ElementInfo {
   classes: string[];
   dataElement: string | null;
   suggestedComponent: string | null;
-  screenshot: string | null;
 }
 
-// Key CSS properties for editing
-const EDITABLE_STYLES = [
-  "padding",
-  "margin",
-  "width",
-  "height",
-  "min-width",
-  "max-width",
-  "min-height",
-  "max-height",
-  "gap",
-  "font-size",
-  "font-weight",
-  "line-height",
-  "letter-spacing",
-  "color",
-  "background",
-  "background-color",
-  "border",
-  "border-radius",
-  "box-shadow",
-  "opacity",
-  "display",
-  "flex-direction",
-  "justify-content",
-  "align-items",
-  "position",
-  "top",
-  "right",
-  "bottom",
-  "left",
-  "z-index",
-];
+// Style categories for grouping
+const STYLE_GROUPS = {
+  layout: {
+    label: "Layout",
+    props: ["display", "position", "top", "right", "bottom", "left", "z-index"],
+  },
+  sizing: {
+    label: "Sizing",
+    props: ["width", "height", "min-width", "max-width", "min-height", "max-height"],
+  },
+  spacing: {
+    label: "Spacing",
+    props: ["padding", "margin", "gap"],
+  },
+  flexbox: {
+    label: "Flexbox",
+    props: ["flex-direction", "justify-content", "align-items", "flex-wrap", "flex"],
+  },
+  typography: {
+    label: "Typography",
+    props: ["font-size", "font-weight", "line-height", "letter-spacing", "text-align"],
+  },
+  colors: {
+    label: "Colors",
+    props: ["color", "background", "background-color"],
+  },
+  borders: {
+    label: "Borders",
+    props: ["border", "border-radius", "border-color", "border-width"],
+  },
+  effects: {
+    label: "Effects",
+    props: ["opacity", "box-shadow", "transform", "transition"],
+  },
+};
+
+// All editable props (flattened)
+const ALL_STYLE_PROPS = Object.values(STYLE_GROUPS).flatMap((g) => g.props);
 
 function generateSelector(el: HTMLElement): string {
   const dataElement = el.getAttribute("data-element");
@@ -86,11 +101,10 @@ function getParentPath(el: HTMLElement): string {
   return parts.join(" > ");
 }
 
-// Try to guess component name from class names (common patterns)
 function guessComponentName(classes: string[]): string | null {
   const patterns = [
-    /^([A-Z][a-zA-Z]+)(?:_|-)/, // PascalCase prefix
-    /^(?:component|ui|layout)-([a-zA-Z-]+)/, // component-* patterns
+    /^([A-Z][a-zA-Z]+)(?:_|-)/,
+    /^(?:component|ui|layout)-([a-zA-Z-]+)/,
     /([a-zA-Z]+)-(?:card|button|input|section|header|footer|container|wrapper|list|item)/i,
   ];
 
@@ -106,7 +120,6 @@ function guessComponentName(classes: string[]): string | null {
     }
   }
 
-  // Look for semantic class names
   const semantic = classes.find(
     (c) =>
       c.includes("card") ||
@@ -126,44 +139,6 @@ function guessComponentName(classes: string[]): string | null {
   return null;
 }
 
-// Capture element as image
-async function captureElementScreenshot(el: HTMLElement): Promise<string | null> {
-  try {
-    // Use html2canvas if available, otherwise create a simple representation
-    const rect = el.getBoundingClientRect();
-    const canvas = document.createElement("canvas");
-    const scale = 2; // Higher quality
-    canvas.width = Math.min(rect.width * scale, 800);
-    canvas.height = Math.min(rect.height * scale, 600);
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return null;
-
-    // Simple colored rectangle representation with element info
-    ctx.fillStyle = "#1a1a1a";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.strokeStyle = "#3b82f6";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "14px system-ui";
-    ctx.fillText(`${Math.round(rect.width)} × ${Math.round(rect.height)}px`, 10, 24);
-
-    const tag = el.tagName.toLowerCase();
-    const id = el.id ? `#${el.id}` : "";
-    const cls = el.className && typeof el.className === "string" ? `.${el.className.split(" ")[0]}` : "";
-    ctx.fillStyle = "#9ca3af";
-    ctx.font = "12px monospace";
-    ctx.fillText(`<${tag}${id}${cls}>`, 10, 44);
-
-    return canvas.toDataURL("image/png");
-  } catch {
-    return null;
-  }
-}
-
 export function ElementInspector() {
   const [isActive, setIsActive] = useState(false);
   const [selected, setSelected] = useState<ElementInfo | null>(null);
@@ -173,6 +148,11 @@ export function ElementInspector() {
   const [copied, setCopied] = useState(false);
   const [hidden, setHidden] = useState(true);
   const [customProps, setCustomProps] = useState<Array<{ prop: string; value: string }>>([]);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(["spacing", "colors"]));
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [panelPosition, setPanelPosition] = useState({ x: 16, y: 16 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
   const originalStylesRef = useRef<Map<string, string>>(new Map());
 
   // Load visibility setting
@@ -192,13 +172,38 @@ export function ElementInspector() {
     };
   }, []);
 
+  // Global keyboard shortcut: Ctrl+Shift+I to toggle
+  useEffect(() => {
+    if (hidden) return;
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+Shift+I or Cmd+Shift+I to toggle inspector
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "I") {
+        e.preventDefault();
+        if (isActive) {
+          closePanel();
+        } else {
+          setIsActive(true);
+        }
+      }
+      // Ctrl+Shift+? to show shortcuts
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "?") {
+        e.preventDefault();
+        setShowShortcuts((p) => !p);
+      }
+    };
+
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [hidden, isActive]);
+
   // Capture element styles
   const captureStyles = useCallback((el: HTMLElement) => {
     const computed = window.getComputedStyle(el);
     const captured: Record<string, string> = {};
     originalStylesRef.current.clear();
 
-    for (const prop of EDITABLE_STYLES) {
+    for (const prop of ALL_STYLE_PROPS) {
       const value = computed.getPropertyValue(prop);
       if (value) {
         captured[prop] = value;
@@ -210,7 +215,7 @@ export function ElementInspector() {
 
   // Handle element click
   const handleClick = useCallback(
-    async (e: MouseEvent) => {
+    (e: MouseEvent) => {
       if (!isActive) return;
 
       const target = e.target as HTMLElement;
@@ -220,7 +225,6 @@ export function ElementInspector() {
       e.stopPropagation();
 
       const classes = Array.from(target.classList);
-      const screenshot = await captureElementScreenshot(target);
 
       const info: ElementInfo = {
         element: target,
@@ -229,7 +233,6 @@ export function ElementInspector() {
         classes,
         dataElement: target.getAttribute("data-element"),
         suggestedComponent: guessComponentName(classes),
-        screenshot,
       };
 
       setSelected(info);
@@ -255,7 +258,7 @@ export function ElementInspector() {
     [isActive, selected]
   );
 
-  // Handle escape
+  // Handle escape and other shortcuts
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -275,8 +278,41 @@ export function ElementInspector() {
           setHovered(null);
         }
       }
+      // Arrow up/down to navigate parent/child when selected
+      if (selected && e.key === "ArrowUp" && e.altKey) {
+        e.preventDefault();
+        const parent = selected.element.parentElement;
+        if (parent && parent !== document.body) {
+          const classes = Array.from(parent.classList);
+          setSelected({
+            element: parent,
+            selector: generateSelector(parent),
+            path: getParentPath(parent),
+            classes,
+            dataElement: parent.getAttribute("data-element"),
+            suggestedComponent: guessComponentName(classes),
+          });
+          setStyles(captureStyles(parent));
+        }
+      }
+      if (selected && e.key === "ArrowDown" && e.altKey) {
+        e.preventDefault();
+        const firstChild = selected.element.firstElementChild as HTMLElement | null;
+        if (firstChild) {
+          const classes = Array.from(firstChild.classList);
+          setSelected({
+            element: firstChild,
+            selector: generateSelector(firstChild),
+            path: getParentPath(firstChild),
+            classes,
+            dataElement: firstChild.getAttribute("data-element"),
+            suggestedComponent: guessComponentName(classes),
+          });
+          setStyles(captureStyles(firstChild));
+        }
+      }
     },
-    [isActive, selected, customProps]
+    [isActive, selected, customProps, captureStyles]
   );
 
   // Event listeners
@@ -295,11 +331,57 @@ export function ElementInspector() {
     };
   }, [isActive, handleClick, handleMouseMove, handleKeyDown]);
 
+  // Dragging logic
+  const handleDragStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      posX: panelPosition.x,
+      posY: panelPosition.y,
+    };
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - dragStartRef.current.x;
+      const deltaY = e.clientY - dragStartRef.current.y;
+      const newX = Math.max(0, Math.min(window.innerWidth - 400, dragStartRef.current.posX + deltaX));
+      const newY = Math.max(0, Math.min(window.innerHeight - 200, dragStartRef.current.posY + deltaY));
+      setPanelPosition({ x: newX, y: newY });
+    };
+
+    const handleMouseUp = () => setIsDragging(false);
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging]);
+
   // Update style live
   const updateStyle = (prop: string, value: string) => {
     if (!selected) return;
     setStyles((prev) => ({ ...prev, [prop]: value }));
     selected.element.style.setProperty(prop, value);
+  };
+
+  // Toggle group expansion
+  const toggleGroup = (group: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(group)) {
+        next.delete(group);
+      } else {
+        next.add(group);
+      }
+      return next;
+    });
   };
 
   // Update custom property
@@ -319,12 +401,10 @@ export function ElementInspector() {
     });
   };
 
-  // Add custom property
   const addCustomProp = () => {
     setCustomProps((prev) => [...prev, { prop: "", value: "" }]);
   };
 
-  // Remove custom property
   const removeCustomProp = (index: number) => {
     if (!selected) return;
     const prop = customProps[index].prop;
@@ -424,11 +504,54 @@ ${Object.entries(styles)
             ? "bg-[var(--primary)] text-white"
             : "bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] hover:bg-[var(--background-elevated)]"
         }`}
-        title={isActive ? "Exit Inspector (Esc)" : "Element Inspector"}
+        title="Element Inspector (Ctrl+Shift+I)"
       >
         <MousePointer2 className="w-4 h-4" />
         <span className="hidden sm:inline">{isActive ? "Inspecting..." : "Inspect"}</span>
       </button>
+
+      {/* Keyboard Shortcuts Modal */}
+      {showShortcuts && (
+        <div
+          data-inspector="shortcuts"
+          className="fixed inset-0 z-[10002] flex items-center justify-center bg-black/50"
+          onClick={() => setShowShortcuts(false)}
+        >
+          <div
+            className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 w-80 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-[var(--foreground)]">Keyboard Shortcuts</h3>
+              <button onClick={() => setShowShortcuts(false)} className="text-[var(--foreground-muted)]">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-[var(--foreground-muted)]">Toggle Inspector</span>
+                <kbd className="px-1.5 py-0.5 bg-[var(--background-tertiary)] rounded text-xs">Ctrl+Shift+I</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--foreground-muted)]">Close/Cancel</span>
+                <kbd className="px-1.5 py-0.5 bg-[var(--background-tertiary)] rounded text-xs">Esc</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--foreground-muted)]">Select Parent</span>
+                <kbd className="px-1.5 py-0.5 bg-[var(--background-tertiary)] rounded text-xs">Alt+↑</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--foreground-muted)]">Select Child</span>
+                <kbd className="px-1.5 py-0.5 bg-[var(--background-tertiary)] rounded text-xs">Alt+↓</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--foreground-muted)]">Show Shortcuts</span>
+                <kbd className="px-1.5 py-0.5 bg-[var(--background-tertiary)] rounded text-xs">Ctrl+Shift+?</kbd>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hover Highlight */}
       {isActive && hovered && hoverRect && !selected && (
@@ -455,30 +578,48 @@ ${Object.entries(styles)
       {isActive && !selected && (
         <div
           data-inspector="hint"
-          className="fixed top-4 left-1/2 -translate-x-1/2 z-[10000] bg-[var(--primary)] text-white px-4 py-2 rounded-lg shadow-lg text-sm"
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-[10000] bg-[var(--primary)] text-white px-4 py-2 rounded-lg shadow-lg text-sm flex items-center gap-3"
         >
-          Click an element to inspect • <kbd className="px-1.5 py-0.5 bg-white/20 rounded">Esc</kbd> to exit
+          <span>Click element to inspect</span>
+          <span className="opacity-60">|</span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1 py-0.5 bg-white/20 rounded text-xs">Esc</kbd> exit
+          </span>
+          <button
+            onClick={() => setShowShortcuts(true)}
+            className="ml-2 opacity-60 hover:opacity-100"
+            title="Show shortcuts"
+          >
+            <Keyboard className="w-4 h-4" />
+          </button>
         </div>
       )}
 
-      {/* Style Editor Panel */}
+      {/* Style Editor Panel - Draggable */}
       {selected && (
         <div
           data-inspector="panel"
-          className="fixed top-4 right-4 z-[10001] w-96 max-h-[90vh] overflow-auto bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-2xl"
+          className="fixed z-[10001] w-96 max-h-[85vh] overflow-hidden bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-2xl flex flex-col"
+          style={{ top: panelPosition.y, right: panelPosition.x }}
         >
-          {/* Header */}
-          <div className="sticky top-0 flex items-center justify-between p-3 bg-[var(--card)] border-b border-[var(--border)] z-10">
-            <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-[var(--foreground)] truncate text-sm">
-                {selected.dataElement || selected.suggestedComponent || selected.selector}
-              </h3>
-              <p className="text-xs text-[var(--foreground-muted)] truncate">{selected.path}</p>
+          {/* Draggable Header */}
+          <div
+            className="flex items-center justify-between p-3 bg-[var(--card)] border-b border-[var(--border)] cursor-move select-none"
+            onMouseDown={handleDragStart}
+          >
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <GripHorizontal className="w-4 h-4 text-[var(--foreground-muted)] flex-shrink-0" />
+              <div className="min-w-0">
+                <h3 className="font-semibold text-[var(--foreground)] truncate text-sm">
+                  {selected.dataElement || selected.suggestedComponent || selected.selector}
+                </h3>
+                <p className="text-xs text-[var(--foreground-muted)] truncate">{selected.path}</p>
+              </div>
             </div>
             <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
               {changedCount > 0 && (
                 <span className="text-xs bg-[var(--primary)]/20 text-[var(--primary)] px-1.5 py-0.5 rounded">
-                  {changedCount} change{changedCount !== 1 ? "s" : ""}
+                  {changedCount}
                 </span>
               )}
               <button
@@ -494,6 +635,55 @@ ${Object.entries(styles)
             </div>
           </div>
 
+          {/* Parent/Child Navigation */}
+          <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--border)] bg-[var(--background-tertiary)]">
+            <button
+              onClick={() => {
+                const parent = selected.element.parentElement;
+                if (parent && parent !== document.body) {
+                  const classes = Array.from(parent.classList);
+                  setSelected({
+                    element: parent,
+                    selector: generateSelector(parent),
+                    path: getParentPath(parent),
+                    classes,
+                    dataElement: parent.getAttribute("data-element"),
+                    suggestedComponent: guessComponentName(classes),
+                  });
+                  setStyles(captureStyles(parent));
+                }
+              }}
+              disabled={!selected.element.parentElement || selected.element.parentElement === document.body}
+              className="flex items-center gap-1 text-xs text-[var(--foreground-muted)] hover:text-[var(--foreground)] disabled:opacity-30"
+            >
+              <ChevronUp className="w-3 h-3" /> Parent
+            </button>
+            <span className="text-xs text-[var(--foreground-muted)]">
+              {selected.element.tagName.toLowerCase()}
+            </span>
+            <button
+              onClick={() => {
+                const firstChild = selected.element.firstElementChild as HTMLElement | null;
+                if (firstChild) {
+                  const classes = Array.from(firstChild.classList);
+                  setSelected({
+                    element: firstChild,
+                    selector: generateSelector(firstChild),
+                    path: getParentPath(firstChild),
+                    classes,
+                    dataElement: firstChild.getAttribute("data-element"),
+                    suggestedComponent: guessComponentName(classes),
+                  });
+                  setStyles(captureStyles(firstChild));
+                }
+              }}
+              disabled={!selected.element.firstElementChild}
+              className="flex items-center gap-1 text-xs text-[var(--foreground-muted)] hover:text-[var(--foreground)] disabled:opacity-30"
+            >
+              Child <ChevronDown className="w-3 h-3" />
+            </button>
+          </div>
+
           {/* Notes Section */}
           <div className="p-3 border-b border-[var(--border)]">
             <label className="text-xs font-medium text-[var(--foreground-muted)] block mb-1.5">
@@ -502,83 +692,109 @@ ${Object.entries(styles)
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g., Make this card taller, change background to blue, increase padding..."
-              className="w-full h-20 text-sm px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] resize-none"
+              placeholder="e.g., Make padding larger, change to blue..."
+              className="w-full h-16 text-sm px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--foreground-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] resize-none"
             />
           </div>
 
-          {/* Style Editor */}
-          <div className="p-3 space-y-2 max-h-64 overflow-y-auto">
-            <p className="text-xs text-[var(--foreground-muted)] mb-2">
-              Edit styles live. Changed values highlighted.
-            </p>
-            {Object.entries(styles).map(([prop, value]) => {
-              const isChanged = originalStylesRef.current.get(prop) !== value;
+          {/* Grouped Style Editor */}
+          <div className="flex-1 overflow-y-auto">
+            {Object.entries(STYLE_GROUPS).map(([groupKey, group]) => {
+              const groupStyles = group.props.filter((p) => styles[p] !== undefined);
+              if (groupStyles.length === 0) return null;
+
+              const isExpanded = expandedGroups.has(groupKey);
+              const hasChanges = groupStyles.some(
+                (p) => originalStylesRef.current.get(p) !== styles[p]
+              );
+
               return (
-                <div key={prop} className="flex items-center gap-2">
-                  <label
-                    className={`text-xs w-28 truncate flex-shrink-0 ${isChanged ? "text-[var(--primary)] font-medium" : "text-[var(--foreground-muted)]"}`}
-                    title={prop}
+                <div key={groupKey} className="border-b border-[var(--border)]">
+                  <button
+                    onClick={() => toggleGroup(groupKey)}
+                    className="w-full flex items-center justify-between px-3 py-2 hover:bg-[var(--background-elevated)] transition-colors"
                   >
-                    {prop}
-                  </label>
-                  <input
-                    type="text"
-                    value={value}
-                    onChange={(e) => updateStyle(prop, e.target.value)}
-                    className={`flex-1 text-xs px-2 py-1.5 rounded border bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] ${
-                      isChanged ? "border-[var(--primary)] bg-[var(--primary)]/5" : "border-[var(--border)]"
-                    }`}
-                  />
+                    <span className={`text-xs font-medium ${hasChanges ? "text-[var(--primary)]" : "text-[var(--foreground-muted)]"}`}>
+                      {group.label}
+                      {hasChanges && " •"}
+                    </span>
+                    {isExpanded ? (
+                      <ChevronUp className="w-3 h-3 text-[var(--foreground-muted)]" />
+                    ) : (
+                      <ChevronDown className="w-3 h-3 text-[var(--foreground-muted)]" />
+                    )}
+                  </button>
+                  {isExpanded && (
+                    <div className="px-3 pb-2 space-y-1.5">
+                      {groupStyles.map((prop) => {
+                        const value = styles[prop];
+                        const isChanged = originalStylesRef.current.get(prop) !== value;
+                        return (
+                          <div key={prop} className="flex items-center gap-2">
+                            <label
+                              className={`text-xs w-24 truncate flex-shrink-0 ${isChanged ? "text-[var(--primary)] font-medium" : "text-[var(--foreground-muted)]"}`}
+                              title={prop}
+                            >
+                              {prop}
+                            </label>
+                            <input
+                              type="text"
+                              value={value}
+                              onChange={(e) => updateStyle(prop, e.target.value)}
+                              className={`flex-1 text-xs px-2 py-1 rounded border bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] ${
+                                isChanged ? "border-[var(--primary)] bg-[var(--primary)]/5" : "border-[var(--border)]"
+                              }`}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               );
             })}
 
             {/* Custom Properties */}
-            {customProps.map((cp, i) => (
-              <div key={`custom-${i}`} className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={cp.prop}
-                  onChange={(e) => updateCustomProp(i, "prop", e.target.value)}
-                  placeholder="property"
-                  className="w-28 text-xs px-2 py-1.5 rounded border border-[var(--primary)] bg-[var(--primary)]/5 text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                />
-                <input
-                  type="text"
-                  value={cp.value}
-                  onChange={(e) => updateCustomProp(i, "value", e.target.value)}
-                  placeholder="value"
-                  className="flex-1 text-xs px-2 py-1.5 rounded border border-[var(--primary)] bg-[var(--primary)]/5 text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                />
-                <button
-                  onClick={() => removeCustomProp(i)}
-                  className="p-1 rounded hover:bg-[var(--background-elevated)] text-[var(--foreground-muted)]"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
-            ))}
-
-            <button
-              onClick={addCustomProp}
-              className="flex items-center gap-1 text-xs text-[var(--primary)] hover:underline mt-2"
-            >
-              <Plus className="w-3 h-3" /> Add custom property
-            </button>
+            <div className="p-3">
+              <p className="text-xs font-medium text-[var(--foreground-muted)] mb-2">Custom Properties</p>
+              {customProps.map((cp, i) => (
+                <div key={`custom-${i}`} className="flex items-center gap-2 mb-1.5">
+                  <input
+                    type="text"
+                    value={cp.prop}
+                    onChange={(e) => updateCustomProp(i, "prop", e.target.value)}
+                    placeholder="property"
+                    className="w-24 text-xs px-2 py-1 rounded border border-[var(--primary)] bg-[var(--primary)]/5 text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  />
+                  <input
+                    type="text"
+                    value={cp.value}
+                    onChange={(e) => updateCustomProp(i, "value", e.target.value)}
+                    placeholder="value"
+                    className="flex-1 text-xs px-2 py-1 rounded border border-[var(--primary)] bg-[var(--primary)]/5 text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  />
+                  <button
+                    onClick={() => removeCustomProp(i)}
+                    className="p-1 rounded hover:bg-[var(--background-elevated)] text-[var(--foreground-muted)]"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+              <button
+                onClick={addCustomProp}
+                className="flex items-center gap-1 text-xs text-[var(--primary)] hover:underline"
+              >
+                <Plus className="w-3 h-3" /> Add property
+              </button>
+            </div>
           </div>
 
-          {/* Element Info */}
-          <div className="p-3 border-t border-[var(--border)] bg-[var(--background-tertiary)] space-y-2">
-            {selected.suggestedComponent && (
-              <p className="text-xs">
-                <span className="text-[var(--foreground-muted)]">Component: </span>
-                <code className="text-[var(--primary)]">{selected.suggestedComponent}</code>
-              </p>
-            )}
+          {/* Footer */}
+          <div className="p-2 border-t border-[var(--border)] bg-[var(--background-tertiary)] text-center">
             <p className="text-xs text-[var(--foreground-muted)]">
-              <kbd className="px-1 py-0.5 bg-[var(--background)] rounded text-[10px]">Esc</kbd> to close and revert •{" "}
-              <kbd className="px-1 py-0.5 bg-[var(--background)] rounded text-[10px]">Copy</kbd> to get Claude-ready output
+              <kbd className="px-1 py-0.5 bg-[var(--background)] rounded text-[10px]">Esc</kbd> close •{" "}
+              <kbd className="px-1 py-0.5 bg-[var(--background)] rounded text-[10px]">Alt+↑↓</kbd> navigate
             </p>
           </div>
         </div>

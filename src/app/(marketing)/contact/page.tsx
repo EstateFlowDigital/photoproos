@@ -3,9 +3,9 @@ import { ContactForm } from "./contact-form";
 
 export default function ContactPage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="contact-page">
       {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="contact-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[400px] w-full max-w-[1512px] -translate-x-1/2"
@@ -30,27 +30,30 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Section */}
-      <section className="py-16 lg:py-24">
+      <section className="py-16 lg:py-24" data-element="contact-main-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="grid gap-12 lg:grid-cols-3 lg:gap-16">
+          <div className="grid gap-12 lg:grid-cols-3 lg:gap-16" data-element="contact-grid">
             {/* Contact Info */}
-            <div className="lg:col-span-1">
-              <h2 className="mb-6 text-2xl font-bold text-foreground">
+            <div className="lg:col-span-1" data-element="contact-info-column">
+              <h2 className="mb-6 text-2xl font-bold text-foreground" data-element="contact-info-heading">
                 Contact Information
               </h2>
-              <div className="space-y-6">
+              <div className="space-y-6" data-element="contact-info-list">
                 <ContactInfoItem
+                  elementId="contact-info-email"
                   icon={<MailIcon className="h-5 w-5" />}
                   title="Email"
                   content="hello@photoproos.com"
                   href="mailto:hello@photoproos.com"
                 />
                 <ContactInfoItem
+                  elementId="contact-info-chat"
                   icon={<ChatIcon className="h-5 w-5" />}
                   title="Live Chat"
                   content="Available Mon-Fri, 9am-6pm EST"
                 />
                 <ContactInfoItem
+                  elementId="contact-info-demo"
                   icon={<CalendarIcon className="h-5 w-5" />}
                   title="Book a Demo"
                   content="Schedule a personalized walkthrough"
@@ -58,11 +61,11 @@ export default function ContactPage() {
                 />
               </div>
 
-              <div className="mt-10">
-                <h3 className="mb-4 text-lg font-semibold text-foreground">
+              <div className="mt-10" data-element="contact-quick-links">
+                <h3 className="mb-4 text-lg font-semibold text-foreground" data-element="contact-quick-links-heading">
                   Quick Links
                 </h3>
-                <ul className="space-y-3">
+                <ul className="space-y-3" data-element="contact-quick-links-list">
                   <li>
                     <Link
                       href="/help"
@@ -90,18 +93,18 @@ export default function ContactPage() {
                 </ul>
               </div>
 
-              <div className="mt-10">
-                <h3 className="mb-4 text-lg font-semibold text-foreground">
+              <div className="mt-10" data-element="contact-social">
+                <h3 className="mb-4 text-lg font-semibold text-foreground" data-element="contact-social-heading">
                   Follow Us
                 </h3>
-                <div className="flex items-center gap-4">
-                  <SocialLink href="https://twitter.com/photoproos" label="Twitter">
+                <div className="flex items-center gap-4" data-element="contact-social-links">
+                  <SocialLink href="https://twitter.com/photoproos" label="Twitter" elementId="contact-social-twitter">
                     <TwitterIcon className="h-5 w-5" />
                   </SocialLink>
-                  <SocialLink href="https://instagram.com/photoproos" label="Instagram">
+                  <SocialLink href="https://instagram.com/photoproos" label="Instagram" elementId="contact-social-instagram">
                     <InstagramIcon className="h-5 w-5" />
                   </SocialLink>
-                  <SocialLink href="https://linkedin.com/company/photoproos" label="LinkedIn">
+                  <SocialLink href="https://linkedin.com/company/photoproos" label="LinkedIn" elementId="contact-social-linkedin">
                     <LinkedInIcon className="h-5 w-5" />
                   </SocialLink>
                 </div>
@@ -109,8 +112,8 @@ export default function ContactPage() {
             </div>
 
             {/* Contact Form */}
-            <div className="lg:col-span-2">
-              <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-8 lg:p-10">
+            <div className="lg:col-span-2" data-element="contact-form-column">
+              <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-8 lg:p-10" data-element="contact-form-card">
                 <ContactForm />
               </div>
             </div>
@@ -119,18 +122,19 @@ export default function ContactPage() {
       </section>
 
       {/* FAQ Preview */}
-      <section className="border-t border-[var(--card-border)] bg-[var(--background-secondary)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] bg-[var(--background-secondary)] py-16 lg:py-24" data-element="contact-faq-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="text-center">
-            <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+          <div className="text-center" data-element="contact-faq-content">
+            <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="contact-faq-heading">
               Frequently Asked Questions
             </h2>
-            <p className="mb-8 text-foreground-secondary">
+            <p className="mb-8 text-foreground-secondary" data-element="contact-faq-description">
               Find quick answers to common questions in our Help Center.
             </p>
             <Link
               href="/help"
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+              data-element="contact-faq-btn"
             >
               Visit Help Center
               <ArrowRightIcon className="h-4 w-4" />
@@ -148,11 +152,13 @@ function ContactInfoItem({
   title,
   content,
   href,
+  elementId,
 }: {
   icon: React.ReactNode;
   title: string;
   content: string;
   href?: string;
+  elementId?: string;
 }) {
   const baseClassName = "flex items-start gap-4";
   const innerContent = (
@@ -171,23 +177,25 @@ function ContactInfoItem({
 
   if (href) {
     return (
-      <Link href={href} className={`${baseClassName} group cursor-pointer`}>
+      <Link href={href} className={`${baseClassName} group cursor-pointer`} data-element={elementId}>
         {innerContent}
       </Link>
     );
   }
 
-  return <div className={baseClassName}>{innerContent}</div>;
+  return <div className={baseClassName} data-element={elementId}>{innerContent}</div>;
 }
 
 function SocialLink({
   href,
   label,
   children,
+  elementId,
 }: {
   href: string;
   label: string;
   children: React.ReactNode;
+  elementId?: string;
 }) {
   return (
     <a
@@ -196,6 +204,7 @@ function SocialLink({
       rel="noreferrer"
       aria-label={label}
       className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--card)] text-foreground-secondary transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
+      data-element={elementId}
     >
       {children}
     </a>

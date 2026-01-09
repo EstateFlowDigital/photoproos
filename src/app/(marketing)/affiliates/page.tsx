@@ -83,9 +83,9 @@ const faqs = [
 
 export default function AffiliatesPage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="affiliates-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="affiliates-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -124,14 +124,15 @@ export default function AffiliatesPage() {
       </section>
 
       {/* Benefits */}
-      <section className="py-16 lg:py-24">
+      <section className="py-16 lg:py-24" data-element="affiliates-benefits-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">Why become an affiliate?</h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="affiliates-benefits-heading">Why become an affiliate?</h2>
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3" data-element="affiliates-benefits-grid">
             {benefits.map((benefit) => (
               <div
                 key={benefit.title}
                 className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6"
+                data-element={`affiliates-benefit-${benefit.title.toLowerCase().replace(/\s+/g, '-').replace(/%/g, '')}`}
               >
                 <div className="mb-4 text-3xl">{benefit.icon}</div>
                 <h3 className="mb-2 font-semibold text-foreground">{benefit.title}</h3>
@@ -143,13 +144,13 @@ export default function AffiliatesPage() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section id="how-it-works" className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="affiliates-how-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">How it works</h2>
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="affiliates-how-heading">How it works</h2>
           <div className="mx-auto max-w-3xl">
-            <div className="space-y-8">
+            <div className="space-y-8" data-element="affiliates-how-steps">
               {howItWorks.map((item, index) => (
-                <div key={item.step} className="flex gap-6">
+                <div key={item.step} className="flex gap-6" data-element={`affiliates-step-${item.step}`}>
                   <div className="flex flex-col items-center">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)] text-lg font-bold text-white">
                       {item.step}
@@ -170,10 +171,10 @@ export default function AffiliatesPage() {
       </section>
 
       {/* Calculator */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="affiliates-calculator-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+            <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="affiliates-calculator-heading">
               Calculate your earnings
             </h2>
             <p className="mb-8 text-foreground-secondary">
@@ -205,14 +206,15 @@ export default function AffiliatesPage() {
       </section>
 
       {/* FAQ */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="affiliates-faq-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">Frequently asked questions</h2>
-          <div className="mx-auto max-w-3xl space-y-6">
-            {faqs.map((faq) => (
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="affiliates-faq-heading">Frequently asked questions</h2>
+          <div className="mx-auto max-w-3xl space-y-6" data-element="affiliates-faq-list">
+            {faqs.map((faq, index) => (
               <div
                 key={faq.question}
                 className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6"
+                data-element={`affiliates-faq-item-${index}`}
               >
                 <h3 className="mb-2 font-semibold text-foreground">{faq.question}</h3>
                 <p className="text-foreground-secondary">{faq.answer}</p>
@@ -223,17 +225,18 @@ export default function AffiliatesPage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="affiliates-cta-section">
         <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
-          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="affiliates-cta-heading">
             Ready to start earning?
           </h2>
-          <p className="mb-8 text-foreground-secondary">
+          <p className="mb-8 text-foreground-secondary" data-element="affiliates-cta-description">
             Join our affiliate program today and start earning recurring commissions.
           </p>
           <Link
             href="/contact?subject=affiliate-application"
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            data-element="affiliates-cta-btn"
           >
             Apply for Affiliate Program
           </Link>

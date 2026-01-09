@@ -54,9 +54,9 @@ const existingPartners = [
 
 export default function PartnersPage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="partners-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="partners-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -81,14 +81,15 @@ export default function PartnersPage() {
       </section>
 
       {/* Partner Types */}
-      <section className="py-16 lg:py-24">
+      <section className="py-16 lg:py-24" data-element="partners-types-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">Partnership Opportunities</h2>
-          <div className="grid gap-8 lg:grid-cols-3">
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="partners-types-heading">Partnership Opportunities</h2>
+          <div className="grid gap-8 lg:grid-cols-3" data-element="partners-types-grid">
             {partnerTypes.map((type) => (
               <div
                 key={type.title}
                 className="flex flex-col rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-8"
+                data-element={`partners-type-${type.title.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <div className="mb-4 text-4xl">{type.icon}</div>
                 <h3 className="mb-3 text-xl font-semibold text-foreground">{type.title}</h3>
@@ -114,14 +115,15 @@ export default function PartnersPage() {
       </section>
 
       {/* Current Partners */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="partners-current-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-8 text-center text-2xl font-bold text-foreground">Our Technology Partners</h2>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <h2 className="mb-8 text-center text-2xl font-bold text-foreground" data-element="partners-current-heading">Our Technology Partners</h2>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4" data-element="partners-current-grid">
             {existingPartners.map((partner) => (
               <div
                 key={partner.name}
                 className="flex flex-col items-center rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 text-center"
+                data-element={`partners-current-${partner.name.toLowerCase()}`}
               >
                 <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--background-tertiary)] text-lg font-bold text-foreground">
                   {partner.name[0]}
@@ -135,17 +137,17 @@ export default function PartnersPage() {
       </section>
 
       {/* Why Partner */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="partners-why-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+          <div className="mx-auto max-w-3xl text-center" data-element="partners-why-header">
+            <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="partners-why-heading">
               Why partner with PhotoProOS?
             </h2>
-            <p className="mb-12 text-foreground-secondary">
+            <p className="mb-12 text-foreground-secondary" data-element="partners-why-description">
               We're building the future of photography business management. Partner with us to reach a growing community of professional photographers.
             </p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-3" data-element="partners-why-stats">
             <div className="text-center">
               <div className="mb-4 text-4xl font-bold text-[var(--primary)]">Growing</div>
               <p className="text-foreground-secondary">Active photographer community using our platform</p>
@@ -163,17 +165,18 @@ export default function PartnersPage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="partners-cta-section">
         <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
-          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="partners-cta-heading">
             Ready to partner?
           </h2>
-          <p className="mb-8 text-foreground-secondary">
+          <p className="mb-8 text-foreground-secondary" data-element="partners-cta-description">
             Let's discuss how we can work together to help photographers succeed.
           </p>
           <Link
             href="/contact?subject=partnership"
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            data-element="partners-cta-btn"
           >
             Contact Partnership Team
           </Link>

@@ -17,8 +17,8 @@ const features = [
 
 export default function FoodIndustryPage() {
   return (
-    <main className="relative min-h-screen bg-background">
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+    <main className="relative min-h-screen bg-background" data-element="industries-food-page">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="industries-food-hero">
         <div className="absolute inset-0 z-0">
           <div className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2" style={{ background: `radial-gradient(ellipse 80% 50% at 50% -20%, rgba(251, 146, 60, 0.12) 0%, transparent 50%)` }} />
         </div>
@@ -35,10 +35,10 @@ export default function FoodIndustryPage() {
         </div>
       </section>
 
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="industries-food-features-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">Built for food & hospitality</h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="industries-food-features-heading">Built for food & hospitality</h2>
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3" data-element="industries-food-features-grid">
             {features.map((feature) => (
               <div key={feature.title} className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
                 <h3 className="mb-2 font-semibold text-foreground">{feature.title}</h3>
@@ -49,11 +49,11 @@ export default function FoodIndustryPage() {
         </div>
       </section>
 
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="industries-food-cta-section">
         <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
-          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">Ready to elevate your food photography?</h2>
+          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="industries-food-cta-heading">Ready to elevate your food photography?</h2>
           <p className="mb-8 text-foreground-secondary">Join professional food photographers using PhotoProOS.</p>
-          <Link href="/sign-up" className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90">Start free trial</Link>
+          <Link href="/sign-up" className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90" data-element="industries-food-cta-btn">Start free trial</Link>
         </div>
       </section>
     </main>

@@ -52,7 +52,7 @@ export default async function UserDetailPage({ params }: PageProps) {
   const { userId } = await params;
 
   return (
-    <div>
+    <div data-element="super-admin-user-detail-page">
       <Suspense fallback={<LoadingSkeleton />}>
         <UserDetailLoader userId={userId} />
       </Suspense>

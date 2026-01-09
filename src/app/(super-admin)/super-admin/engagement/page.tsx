@@ -62,9 +62,9 @@ function LoadingSkeleton() {
 
 export default function EngagementPage() {
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--foreground)]">
+    <div data-element="super-admin-engagement-page">
+      <div className="mb-8" data-element="super-admin-engagement-header">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]" data-element="super-admin-engagement-title">
           User Engagement & Churn
         </h1>
         <p className="text-[var(--foreground-muted)]">

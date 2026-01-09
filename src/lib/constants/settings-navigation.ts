@@ -61,7 +61,8 @@ export type SettingsIconName =
   | "star"
   | "rocket"
   | "clipboard"
-  | "trophy";
+  | "trophy"
+  | "video";
 
 export interface SettingsNavItemWithIconName {
   id: string;
@@ -278,6 +279,13 @@ export const SETTINGS_NAVIGATION: SettingsNavCategoryWithIconNames[] = [
         href: "/settings/dropbox",
         iconName: "dropbox",
         description: "Photo storage sync",
+      },
+      {
+        id: "media",
+        label: "Media Settings",
+        href: "/settings/media",
+        iconName: "video",
+        description: "Video and 3D tour providers",
       },
     ],
   },
@@ -606,6 +614,13 @@ export const SETTINGS_PAGE_CATEGORIES: SettingsPageCategory[] = [
         description: "Backup photos and sync deliverables",
         href: "/settings/dropbox",
         iconName: "dropbox",
+      },
+      {
+        id: "media",
+        label: "Media Settings",
+        description: "Configure video hosting and 3D tour providers",
+        href: "/settings/media",
+        iconName: "video",
       },
     ],
   },

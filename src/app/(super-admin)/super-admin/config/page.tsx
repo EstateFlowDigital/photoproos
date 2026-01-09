@@ -44,9 +44,9 @@ function LoadingSkeleton() {
 
 export default function ConfigPage() {
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--foreground)]">
+    <div data-element="super-admin-config-page">
+      <div className="mb-8" data-element="super-admin-config-header">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]" data-element="super-admin-config-title">
           Platform Configuration
         </h1>
         <p className="text-[var(--foreground-muted)]">

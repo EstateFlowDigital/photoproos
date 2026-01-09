@@ -719,6 +719,51 @@ enum GalleryAddonRequestStatus {
   cancelled // Cancelled
 }
 
+// ============================================================================
+// MULTI-MEDIA ASSET ENUMS
+// ============================================================================
+
+// Asset media type for galleries supporting photos, videos, 3D tours, floor plans
+enum AssetMediaType {
+  photo // Standard photo
+  video // Uploaded or embedded video
+  video_tour // Video walkthrough/tour
+  floor_plan // 2D/3D floor plan
+  aerial // Drone/aerial footage
+  virtual_tour // Interactive 3D tour (Matterport, iGuide, etc.)
+  other // Other media types
+}
+
+// Video hosting provider for external video embeds
+enum VideoProvider {
+  vimeo // Vimeo Pro (recommended for clean embeds)
+  youtube // YouTube (budget option)
+  bunny // Bunny Stream
+  mux // Mux Video
+  cloudflare // Cloudflare Stream
+  wistia // Wistia
+  sprout // Sprout Video
+  direct // Direct MP4/video file URL
+}
+
+// 3D Tour provider for virtual tour embeds
+enum TourProvider {
+  matterport // Matterport 3D tours
+  iguide // iGuide tours
+  cupix // Cupix tours
+  zillow_3d // Zillow 3D Home
+  ricoh // Ricoh Tours
+  kuula // Kuula 360 tours
+  other // Other tour providers
+}
+
+// Floor plan type
+enum FloorPlanType {
+  two_d // 2D floor plan image
+  three_d // 3D rendered floor plan
+  interactive // Interactive/clickable floor plan
+}
+
 enum MessageVisibility {
   internal // Only visible to team members
   client // Visible to client and team
@@ -1182,6 +1227,10 @@ model Organization {
   mailchimpIntegration  MailchimpIntegration?
   calendlyIntegration   CalendlyIntegration?
   bookingSlots          BookingSlot[]
+
+  // Multi-Media Settings (Video & 3D Tour integrations)
+  videoSettings OrganizationVideoSettings?
+  tourSettings  OrganizationTourSettings?
 
   // Public booking forms
   bookingForms    BookingForm[]
@@ -1950,7 +1999,14 @@ model Asset {
   projectId    String
   collectionId String? // Optional collection assignment
 
-  // File info
+  // ============================================================================
+  // MEDIA TYPE
+  // ============================================================================
+  mediaType AssetMediaType @default(photo)
+
+  // ============================================================================
+  // FILE INFO (for photos and direct uploads)
+  // ============================================================================
   filename       String
   originalUrl    String
   thumbnailUrl   String?
@@ -1967,11 +2023,43 @@ model Asset {
   // EXIF data
   exifData Json?
 
+  // ============================================================================
+  // VIDEO FIELDS (for video and video_tour types)
+  // ============================================================================
+  videoProvider   VideoProvider? // Which platform hosts the video
+  videoExternalId String? // Video ID on the external platform (e.g., Vimeo ID)
+  videoEmbedUrl   String? // Clean embed URL (no branding, no recommendations)
+  videoDuration   Int? // Duration in seconds
+  videoAutoplay   Boolean        @default(false) // Auto-play on gallery load
+  videoMuted      Boolean        @default(true) // Start muted (recommended for autoplay)
+
+  // ============================================================================
+  // 3D TOUR FIELDS (for virtual_tour type)
+  // ============================================================================
+  tourProvider   TourProvider? // Which platform hosts the tour
+  tourExternalId String? // Tour ID on the external platform
+  tourEmbedUrl   String? // Embed URL for the 3D tour
+
+  // ============================================================================
+  // FLOOR PLAN FIELDS (for floor_plan type)
+  // ============================================================================
+  floorPlanType  FloorPlanType? // 2D, 3D, or interactive
+  floorPlanLabel String? // Optional label (e.g., "Main Floor", "Upper Level")
+
+  // ============================================================================
+  // DISPLAY SETTINGS
+  // ============================================================================
   // Ordering
   sortOrder Int @default(0)
 
-  // Per-photo watermark control
+  // Per-photo watermark control (only applies to photos)
   excludeFromWatermark Boolean @default(false)
+
+  // Featured asset (shown first/prominently in galleries)
+  isFeatured Boolean @default(false)
+
+  // Caption/description for the asset
+  caption String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1987,6 +2075,7 @@ model Asset {
   @@index([projectId])
   @@index([collectionId])
   @@index([sortOrder])
+  @@index([mediaType])
 }
 
 model DeliveryLink {
@@ -6961,6 +7050,151 @@ model CalendlyIntegration {
 
   // Settings
   isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+}
+
+// ============================================================================
+// VIDEO PROVIDER SETTINGS (External video hosting integrations)
+// ============================================================================
+
+model OrganizationVideoSettings {
+  id             String @id @default(cuid())
+  organizationId String @unique
+
+  // ============================================================================
+  // DEFAULT PROVIDER
+  // ============================================================================
+  defaultProvider VideoProvider @default(vimeo) // Preferred video platform
+
+  // ============================================================================
+  // VIMEO INTEGRATION (Recommended for clean, brandless embeds)
+  // ============================================================================
+  vimeoEnabled     Boolean @default(false)
+  vimeoAccessToken String? @db.Text // OAuth access token
+  vimeoUserId      String? // Vimeo user ID
+  vimeoFolderId    String? // Default folder for uploads
+  vimeoPrivacy     String? @default("disable") // Video privacy: anybody, disable, nobody, password, users
+
+  // ============================================================================
+  // YOUTUBE INTEGRATION (Budget option)
+  // ============================================================================
+  youtubeEnabled      Boolean @default(false)
+  youtubeRefreshToken String? @db.Text // OAuth refresh token
+  youtubeChannelId    String? // YouTube channel ID
+  youtubePlaylistId   String? // Default playlist for uploads
+  youtubePrivacy      String? @default("unlisted") // public, unlisted, private
+
+  // ============================================================================
+  // BUNNY STREAM INTEGRATION
+  // ============================================================================
+  bunnyEnabled   Boolean @default(false)
+  bunnyApiKey    String? @db.Text
+  bunnyLibraryId String?
+  bunnyCdnUrl    String? // CDN hostname for embedding
+
+  // ============================================================================
+  // MUX VIDEO INTEGRATION
+  // ============================================================================
+  muxEnabled        Boolean @default(false)
+  muxAccessTokenId  String?
+  muxSecretKey      String? @db.Text
+  muxEnvironmentId  String? // Production or development
+
+  // ============================================================================
+  // CLOUDFLARE STREAM INTEGRATION
+  // ============================================================================
+  cloudflareEnabled   Boolean @default(false)
+  cloudflareAccountId String?
+  cloudflareApiToken  String? @db.Text
+
+  // ============================================================================
+  // WISTIA INTEGRATION
+  // ============================================================================
+  wistiaEnabled    Boolean @default(false)
+  wistiaApiToken   String? @db.Text
+  wistiaProjectId  String? // Default project for uploads
+
+  // ============================================================================
+  // EMBED SETTINGS (Applied to all video embeds)
+  // ============================================================================
+  hideControls          Boolean @default(false) // Hide player controls
+  hideTitle             Boolean @default(true) // Hide video title
+  hideBranding          Boolean @default(true) // Hide provider branding (requires paid plans)
+  hideRelatedVideos     Boolean @default(true) // Hide recommended/related videos
+  enableAutoplay        Boolean @default(false) // Auto-play videos
+  enableLoop            Boolean @default(false) // Loop videos
+  startMuted            Boolean @default(true) // Start videos muted
+  enableResponsiveEmbed Boolean @default(true) // Use responsive aspect ratio
+
+  // ============================================================================
+  // AUTO-UPLOAD SETTINGS
+  // ============================================================================
+  autoUploadEnabled Boolean @default(false) // Automatically upload videos to provider
+  autoUploadQuality String? @default("1080p") // Default upload quality
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+}
+
+// ============================================================================
+// TOUR PROVIDER SETTINGS (3D Tour integrations)
+// ============================================================================
+
+model OrganizationTourSettings {
+  id             String @id @default(cuid())
+  organizationId String @unique
+
+  // ============================================================================
+  // DEFAULT PROVIDER
+  // ============================================================================
+  defaultProvider TourProvider @default(matterport)
+
+  // ============================================================================
+  // MATTERPORT INTEGRATION
+  // ============================================================================
+  matterportEnabled Boolean @default(false)
+  matterportSdkKey  String? // Matterport SDK key for embeds
+  matterportApiKey  String? @db.Text // API key for fetching tour data
+
+  // ============================================================================
+  // IGUIDE INTEGRATION
+  // ============================================================================
+  iguideEnabled Boolean @default(false)
+  iguideApiKey  String? @db.Text
+
+  // ============================================================================
+  // CUPIX INTEGRATION
+  // ============================================================================
+  cupixEnabled Boolean @default(false)
+  cupixApiKey  String? @db.Text
+
+  // ============================================================================
+  // ZILLOW 3D HOME INTEGRATION
+  // ============================================================================
+  zillow3dEnabled Boolean @default(false)
+  // Zillow tours are typically embedded via URL only
+
+  // ============================================================================
+  // EMBED SETTINGS
+  // ============================================================================
+  showMinimap     Boolean @default(true) // Show minimap navigation
+  showFloorPlan   Boolean @default(true) // Show floor plan view toggle
+  showMeasurement Boolean @default(false) // Enable measurement tools
+  autoRotate      Boolean @default(false) // Auto-rotate tour view
+  hideNavigation  Boolean @default(false) // Hide navigation controls
+  startInDollhouse Boolean @default(false) // Start in dollhouse view (Matterport)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

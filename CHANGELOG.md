@@ -8,6 +8,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Element Inspector data-element Attributes** - Added `data-element` attributes across marketing site and Super Admin pages for Element Inspector tool
+  - All 6 industries pages: architecture, commercial, events, food, portraits, real-estate
+  - All 5 legal pages: cookies, dpa, privacy, security, terms
+  - All 14 Super Admin pages: dashboard, users, user detail, support, ticket detail, feedback, config, developer, logs, discounts, revenue, engagement, roadmap, announcements
+  - Each page includes page wrapper, headers, and section elements
+  - Real estate page includes additional stats, workflow, and testimonial sections
+  - Security page includes certifications, stats, features, and data ownership sections
+
+- **Multi-Media Gallery Support** - Comprehensive support for videos, 3D tours, and floor plans in galleries
+  - New Prisma enums: `AssetMediaType`, `VideoProvider`, `TourProvider`, `FloorPlanType`
+  - Updated `Asset` model with media type fields:
+    - `mediaType` - photo, video, video_tour, floor_plan, aerial, virtual_tour, other
+    - Video fields: `videoProvider`, `videoExternalId`, `videoEmbedUrl`, `videoDuration`, `videoAutoplay`, `videoMuted`
+    - Tour fields: `tourProvider`, `tourExternalId`, `tourEmbedUrl`
+    - Floor plan fields: `floorPlanType`, `floorPlanLabel`
+    - Display fields: `isFeatured`, `caption`
+  - New `OrganizationVideoSettings` model for video platform credentials
+    - Vimeo Pro integration (recommended for brandless embeds)
+    - YouTube integration (budget option)
+    - Bunny Stream, Mux, Cloudflare Stream, Wistia support
+    - Global embed settings: hide branding, hide controls, autoplay, loop, responsive sizing
+  - New `OrganizationTourSettings` model for 3D tour platform credentials
+    - Matterport integration
+    - iGuide integration
+    - Cupix, Zillow 3D Home, Ricoh, Kuula support
+    - Embed settings: minimap, floor plan view, measurement tools, auto-rotate
+  - New media components in `src/components/media/`:
+    - `VideoEmbed` - Clean video player with platform-specific parameters for brandless embeds
+    - `VideoThumbnail` - Compact video preview for grid displays
+    - `TourEmbed` - 3D tour embed with thumbnail preview
+    - `TourThumbnail` - Compact tour preview with provider badge
+    - `FloorPlanViewer` - Interactive viewer with zoom/pan controls
+    - `FloorPlanThumbnail` - Compact floor plan preview
+    - `FloorSelector` - Multi-floor navigation for properties
+    - `AssetRenderer` - Polymorphic component that renders appropriate media based on type
+    - `MediaTypeFilter` - Filter pills for gallery filtering by media type
+    - `getAssetIcon`, `getAssetTypeLabel` - Utility functions for media type display
+  - New Media Settings page at `/settings/media` for configuring video and tour providers
+    - Server actions for fetching and updating video/tour settings
+    - Tabbed interface for Video Providers vs 3D Tour Providers
+    - Provider configuration with expandable panels and API key management
+    - Playback defaults: hide branding, hide controls, autoplay, loop, muted, responsive
+    - Tour display defaults: minimap, floor plan, measurement tools, auto-rotate
+  - WCAG accessibility improvements for all media components
+    - 44px minimum touch targets for iOS/WCAG compliance
+    - Focus-visible states for keyboard navigation
+    - Keyboard controls for floor plan zoom (+/-/0 keys)
+    - Proper ARIA labels and roles
+    - Loading state announcements with aria-live
+
 - **Element Inspector Dev Tool** - Visual debugging tool for inspecting and editing element styles
   - Click any element to inspect its computed CSS styles
   - Live editing with instant preview - changes apply immediately to the element
@@ -20,7 +70,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Changed styles and current computed styles
   - Toggle via Settings → Developer → Element Inspector
   - Highlight on hover shows element name/class
-  - Press Esc to close and revert all changes
+  - Keyboard shortcuts: `Ctrl+Shift+I` toggle, `Alt+↑↓` navigate parents/children, `Esc` close, `Ctrl+Shift+?` help
+  - Draggable panel - click and drag the header to reposition
+  - Style grouping by category (Layout, Sizing, Spacing, Flexbox, Typography, Colors, Borders, Effects)
+  - Parent/child element navigation with arrow keys
 
 - **Error Tracker Dev Tool** - Node.js-style error tracking with file/line locations
   - Captures JavaScript errors, unhandled promise rejections, and React errors
@@ -30,6 +83,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Copy individual errors or all errors for Claude-ready reports
   - Toggle via Settings → Developer → Debug Banner
   - Stack frames link to exact code locations (file:line:column)
+  - Error deduplication - identical errors are grouped with occurrence count
+  - localStorage persistence - errors survive page refreshes (up to 100 errors)
+  - Shows first/last occurrence times and total count for repeated errors
 
 - **Marketing CMS** - Created a complete content management system for marketing pages at `/super-admin/marketing`
   - New Prisma models: MarketingPage, MarketingNavigation, BlogPost, TeamMember, Testimonial, FAQ
@@ -73,6 +129,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Created `STUB_PAGES.md` documentation with links to all 164 stub pages (live routes and file paths)
 
 ### Fixed
+- **IconBadge Border Consistency** - Fixed alignment shift when IconBadge changes between default and active states
+  - Added base `border` class to ensure borders are always rendered
+  - All tones now use consistent `border-[var(--card-border)]` instead of tone-specific colors
+  - Prevents nav button misalignment when switching between default/active states
+- **Dashboard Topbar Search Button** - Removed double-border on search button by replacing border styling with hover background color
 - **Dynamic Route Conflict in Blog** - Removed conflicting `/blog/[id]` dashboard stub that prevented deployment due to Next.js dynamic route naming conflict with marketing `/blog/[slug]`
 - **Dynamic Route Conflict in Products** - Removed conflicting `/products/[id]` stub that prevented deployment due to Next.js dynamic route naming conflict with `/products/[catalogId]`
 - **Mobile Responsiveness Across Dashboard** - Comprehensive mobile-first fixes across major pages

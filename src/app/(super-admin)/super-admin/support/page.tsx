@@ -60,9 +60,9 @@ export default async function SupportPage({
   const params = await searchParams;
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--foreground)]">
+    <div data-element="super-admin-support-page">
+      <div className="mb-8" data-element="super-admin-support-header">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]" data-element="super-admin-support-title">
           Support Tickets
         </h1>
         <p className="text-[var(--foreground-muted)]">

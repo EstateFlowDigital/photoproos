@@ -148,9 +148,9 @@ export function FAQsClient({ faqs: initialFaqs = [] }: Props) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-element="faqs-page">
       {/* Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" data-element="faqs-header">
         <div className="flex items-center gap-3 sm:gap-4">
           <Link
             href="/super-admin/marketing"
@@ -160,6 +160,7 @@ export function FAQsClient({ faqs: initialFaqs = [] }: Props) {
               "min-w-[44px] min-h-[44px] flex items-center justify-center"
             )}
             aria-label="Back to Marketing CMS"
+            data-element="faqs-back-btn"
           >
             <ArrowLeft className="w-5 h-5 text-[var(--foreground-muted)]" />
           </Link>
@@ -180,6 +181,7 @@ export function FAQsClient({ faqs: initialFaqs = [] }: Props) {
           )}
           aria-expanded={showAddForm}
           aria-controls={`${formId}-form`}
+          data-element="faqs-add-btn"
         >
           {showAddForm ? (
             <>
@@ -201,6 +203,7 @@ export function FAQsClient({ faqs: initialFaqs = [] }: Props) {
           id={`${formId}-form`}
           className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 sm:p-6"
           aria-labelledby={`${formId}-title`}
+          data-element="faqs-form"
         >
           <h2
             id={`${formId}-title`}
@@ -318,7 +321,7 @@ export function FAQsClient({ faqs: initialFaqs = [] }: Props) {
       )}
 
       {/* Filter */}
-      <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex items-center gap-3 flex-wrap" data-element="faqs-filters">
         <label htmlFor={filterId} className="flex items-center gap-2 text-sm text-[var(--foreground-muted)]">
           <Filter className="w-4 h-4" aria-hidden="true" />
           <span>Category:</span>
@@ -333,6 +336,7 @@ export function FAQsClient({ faqs: initialFaqs = [] }: Props) {
             "text-[var(--foreground)] text-sm",
             "focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
           )}
+          data-element="faqs-category-filter"
         >
           <option value="all">All Categories ({faqs.length})</option>
           {Object.entries(CATEGORY_LABELS).map(([value, label]) => {
@@ -359,9 +363,9 @@ export function FAQsClient({ faqs: initialFaqs = [] }: Props) {
       </div>
 
       {/* FAQs List */}
-      <section aria-label="FAQs list">
+      <section aria-label="FAQs list" data-element="faqs-list-section">
         {filteredFaqs.length === 0 ? (
-          <div className="p-8 sm:p-12 text-center text-[var(--foreground-muted)] rounded-lg border border-[var(--border)]">
+          <div className="p-8 sm:p-12 text-center text-[var(--foreground-muted)] rounded-lg border border-[var(--border)]" data-element="faqs-empty">
             <p>
               {categoryFilter === "all"
                 ? "No FAQs yet. Add your first one above."
@@ -369,9 +373,9 @@ export function FAQsClient({ faqs: initialFaqs = [] }: Props) {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4" data-element="faqs-list">
             {Object.entries(groupedFaqs).map(([category, categoryFaqs]) => (
-              <div key={category}>
+              <div key={category} data-element={`faqs-category-${category}`}>
                 {categoryFilter === "all" && (
                   <h2 className="text-sm font-medium text-[var(--foreground-muted)] mb-2 px-1">
                     {CATEGORY_LABELS[category as FAQCategory]} ({categoryFaqs.length})
@@ -387,6 +391,7 @@ export function FAQsClient({ faqs: initialFaqs = [] }: Props) {
                           ? "bg-[var(--card)] border-[var(--border)]"
                           : "bg-[var(--background-tertiary)] border-[var(--border)] opacity-60"
                       )}
+                      data-element={`faq-card-${faq.id}`}
                     >
                       <div className="flex items-start justify-between gap-3 sm:gap-4">
                         <div className="flex-1 min-w-0">

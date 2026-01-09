@@ -4,6 +4,9 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { X, Copy, Check, AlertTriangle, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import { getDevSettings } from "@/lib/utils/dev-settings";
 
+const STORAGE_KEY = "ppos_error_tracker";
+const MAX_STORED_ERRORS = 100;
+
 interface StackFrame {
   fileName: string;
   lineNumber: number | null;
@@ -22,6 +25,9 @@ interface TrackedError {
   url: string;
   componentStack?: string;
   type: "error" | "unhandledrejection" | "react";
+  count: number; // Number of times this error occurred
+  lastOccurrence: number; // Timestamp of most recent occurrence
+  fingerprint: string; // Unique identifier for deduplication
 }
 
 // Parse a stack trace string into structured frames
@@ -88,6 +94,58 @@ function isUserCode(frame: StackFrame): boolean {
   );
 }
 
+// Generate a fingerprint for error deduplication
+function generateFingerprint(
+  name: string,
+  message: string,
+  stack: StackFrame[]
+): string {
+  const userFrames = stack.filter(isUserCode);
+  const firstFrame = userFrames[0];
+  const locationKey = firstFrame
+    ? `${firstFrame.fileName}:${firstFrame.lineNumber}`
+    : "unknown";
+  return `${name}:${message}:${locationKey}`;
+}
+
+// Load errors from localStorage
+function loadStoredErrors(): TrackedError[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return [];
+    const parsed = JSON.parse(stored);
+    // Validate and migrate old format if needed
+    return Array.isArray(parsed)
+      ? parsed.map((e: TrackedError) => ({
+          ...e,
+          count: e.count || 1,
+          lastOccurrence: e.lastOccurrence || e.timestamp,
+          fingerprint: e.fingerprint || generateFingerprint(e.name, e.message, e.stack),
+        }))
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+// Save errors to localStorage
+function saveStoredErrors(errors: TrackedError[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    // Only store essential data, limit to MAX_STORED_ERRORS
+    const toStore = errors.slice(0, MAX_STORED_ERRORS);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
+  } catch {
+    // Storage might be full, try to clear old errors
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore
+    }
+  }
+}
+
 export function ErrorTracker() {
   const [errors, setErrors] = useState<TrackedError[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -95,6 +153,24 @@ export function ErrorTracker() {
   const [expandedErrors, setExpandedErrors] = useState<Set<string>>(new Set());
   const [hidden, setHidden] = useState(true);
   const errorCountRef = useRef(0);
+  const initialLoadDone = useRef(false);
+
+  // Load errors from localStorage on mount
+  useEffect(() => {
+    if (initialLoadDone.current) return;
+    initialLoadDone.current = true;
+    const stored = loadStoredErrors();
+    if (stored.length > 0) {
+      setErrors(stored);
+    }
+  }, []);
+
+  // Save errors to localStorage whenever they change
+  useEffect(() => {
+    if (initialLoadDone.current && errors.length > 0) {
+      saveStoredErrors(errors);
+    }
+  }, [errors]);
 
   // Load visibility setting
   useEffect(() => {
@@ -113,29 +189,59 @@ export function ErrorTracker() {
     };
   }, []);
 
-  // Capture errors
+  // Capture errors with deduplication
   const captureError = useCallback(
     (
       error: Error,
       type: "error" | "unhandledrejection" | "react",
       componentStack?: string
     ) => {
-      const id = `${Date.now()}-${++errorCountRef.current}`;
-      const tracked: TrackedError = {
-        id,
-        message: error.message || String(error),
-        name: error.name || "Error",
-        stack: parseStackTrace(error.stack || ""),
-        rawStack: error.stack || "",
-        timestamp: Date.now(),
-        url: window.location.pathname,
-        componentStack,
-        type,
-      };
+      const name = error.name || "Error";
+      const message = error.message || String(error);
+      const stack = parseStackTrace(error.stack || "");
+      const fingerprint = generateFingerprint(name, message, stack);
+      const now = Date.now();
 
-      setErrors((prev) => [tracked, ...prev].slice(0, 50));
+      setErrors((prev) => {
+        // Check if this error already exists (deduplication)
+        const existingIndex = prev.findIndex((e) => e.fingerprint === fingerprint);
+
+        if (existingIndex !== -1) {
+          // Update existing error with new count and timestamp
+          const updated = [...prev];
+          const existing = updated[existingIndex];
+          updated[existingIndex] = {
+            ...existing,
+            count: existing.count + 1,
+            lastOccurrence: now,
+          };
+          // Move to top of list
+          const [item] = updated.splice(existingIndex, 1);
+          return [item, ...updated].slice(0, MAX_STORED_ERRORS);
+        }
+
+        // Create new tracked error
+        const id = `${now}-${++errorCountRef.current}`;
+        const tracked: TrackedError = {
+          id,
+          message,
+          name,
+          stack,
+          rawStack: error.stack || "",
+          timestamp: now,
+          url: window.location.pathname,
+          componentStack,
+          type,
+          count: 1,
+          lastOccurrence: now,
+          fingerprint,
+        };
+
+        setExpandedErrors((prevExpanded) => new Set(prevExpanded).add(id));
+        return [tracked, ...prev].slice(0, MAX_STORED_ERRORS);
+      });
+
       setIsOpen(true); // Auto-open on error
-      setExpandedErrors((prev) => new Set(prev).add(id));
     },
     []
   );
@@ -205,7 +311,16 @@ export function ErrorTracker() {
   const clearErrors = () => {
     setErrors([]);
     setExpandedErrors(new Set());
+    // Also clear from localStorage
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore
+    }
   };
+
+  // Calculate total error occurrences (including duplicates)
+  const totalOccurrences = errors.reduce((sum, e) => sum + e.count, 0);
 
   const copyError = async (error: TrackedError) => {
     const userFrames = error.stack.filter(isUserCode);
@@ -215,7 +330,9 @@ export function ErrorTracker() {
 
 **Error:** ${error.name}: ${error.message}
 **Page:** ${error.url}
-**Time:** ${new Date(error.timestamp).toLocaleString()}
+**First Occurred:** ${new Date(error.timestamp).toLocaleString()}
+**Last Occurred:** ${new Date(error.lastOccurrence).toLocaleString()}
+**Occurrences:** ${error.count}
 **Type:** ${error.type}
 
 ### Location
@@ -251,7 +368,9 @@ ${error.componentStack ? `\n### React Component Stack\n\`\`\`\n${error.component
         return `## ${error.name}: ${error.message}
 Location: ${firstUserFrame ? `${firstUserFrame.fileName}:${firstUserFrame.lineNumber}` : "unknown"}
 Page: ${error.url}
-Time: ${new Date(error.timestamp).toLocaleString()}
+First: ${new Date(error.timestamp).toLocaleString()}
+Last: ${new Date(error.lastOccurrence).toLocaleString()}
+Occurrences: ${error.count}
 Stack:
 ${error.rawStack}
 ---`;
@@ -275,6 +394,11 @@ ${error.rawStack}
         >
           <AlertTriangle className="w-4 h-4" />
           {errors.length} Error{errors.length !== 1 ? "s" : ""}
+          {totalOccurrences > errors.length && (
+            <span className="text-xs opacity-80">
+              ({totalOccurrences} total)
+            </span>
+          )}
         </button>
       )}
 
@@ -289,9 +413,16 @@ ${error.rawStack}
                 Error Tracker
               </h3>
               {errors.length > 0 && (
-                <span className="text-xs bg-[var(--error)] text-white px-1.5 py-0.5 rounded-full">
-                  {errors.length}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs bg-[var(--error)] text-white px-1.5 py-0.5 rounded-full">
+                    {errors.length} unique
+                  </span>
+                  {totalOccurrences > errors.length && (
+                    <span className="text-xs text-[var(--foreground-muted)]">
+                      ({totalOccurrences} total)
+                    </span>
+                  )}
+                </div>
               )}
             </div>
             <div className="flex items-center gap-1">
@@ -352,8 +483,15 @@ ${error.rawStack}
                             <span className="text-xs font-medium text-[var(--error)]">
                               {error.name}
                             </span>
+                            {error.count > 1 && (
+                              <span className="text-xs bg-[var(--warning)] text-white px-1.5 py-0.5 rounded-full font-medium">
+                                x{error.count}
+                              </span>
+                            )}
                             <span className="text-xs text-[var(--foreground-muted)]">
-                              {new Date(error.timestamp).toLocaleTimeString()}
+                              {error.count > 1
+                                ? `Last: ${new Date(error.lastOccurrence).toLocaleTimeString()}`
+                                : new Date(error.timestamp).toLocaleTimeString()}
                             </span>
                           </div>
                           <p className="text-sm text-[var(--foreground)] mt-0.5 break-words">
@@ -423,6 +561,21 @@ ${error.rawStack}
                             </div>
                           )}
 
+                          {/* Occurrence Info */}
+                          {error.count > 1 && (
+                            <div className="bg-[var(--warning)]/10 border border-[var(--warning)]/30 rounded-lg p-2">
+                              <p className="text-xs text-[var(--warning)]">
+                                This error has occurred {error.count} times
+                              </p>
+                              <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                                First: {new Date(error.timestamp).toLocaleString()}
+                              </p>
+                              <p className="text-xs text-[var(--foreground-muted)]">
+                                Last: {new Date(error.lastOccurrence).toLocaleString()}
+                              </p>
+                            </div>
+                          )}
+
                           {/* Page URL */}
                           <p className="text-xs text-[var(--foreground-muted)]">
                             Page: {error.url}
@@ -439,7 +592,7 @@ ${error.rawStack}
           {/* Footer */}
           <div className="p-2 border-t border-[var(--border)] bg-[var(--background-tertiary)]">
             <p className="text-xs text-[var(--foreground-muted)] text-center">
-              Click Copy to get Claude-ready error report
+              Click Copy to get Claude-ready error report. Errors persist across refreshes.
             </p>
           </div>
         </div>

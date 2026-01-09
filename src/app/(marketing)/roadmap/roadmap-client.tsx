@@ -297,9 +297,9 @@ export function RoadmapPageClient({
   );
 
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="roadmap-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="roadmap-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -321,7 +321,7 @@ export function RoadmapPageClient({
             </p>
 
             {/* Tabs */}
-            <div className="inline-flex rounded-lg border border-[var(--border)] bg-[var(--card)] p-1">
+            <div className="inline-flex rounded-lg border border-[var(--border)] bg-[var(--card)] p-1" data-element="roadmap-tabs">
               <button
                 onClick={() => setActiveTab("roadmap")}
                 className={cn(
@@ -330,6 +330,7 @@ export function RoadmapPageClient({
                     ? "bg-[var(--primary)] text-white"
                     : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
                 )}
+                data-element="roadmap-tab-roadmap"
               >
                 Roadmap
               </button>
@@ -341,6 +342,7 @@ export function RoadmapPageClient({
                     ? "bg-[var(--primary)] text-white"
                     : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
                 )}
+                data-element="roadmap-tab-features"
               >
                 Feature Voting
               </button>
@@ -350,7 +352,7 @@ export function RoadmapPageClient({
       </section>
 
       {/* Content */}
-      <section className="py-16 lg:py-24">
+      <section className="py-16 lg:py-24" data-element="roadmap-content-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <AnimatePresence mode="wait">
             {activeTab === "roadmap" ? (

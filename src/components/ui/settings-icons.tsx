@@ -61,6 +61,7 @@ export {
   RocketIcon,
   ClipboardIcon,
   TrophyIcon,
+  VideoIcon,
   // UI Icons
   EyeIcon,
   EyeOffIcon,

@@ -55,9 +55,9 @@ const stats = [
 
 export default function SecurityPage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="legal-security-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="legal-security-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -82,9 +82,9 @@ export default function SecurityPage() {
       </section>
 
       {/* Certifications */}
-      <section className="py-12">
+      <section className="py-12" data-element="legal-security-certifications-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4" data-element="legal-security-certifications-grid">
             {certifications.map((cert) => (
               <div
                 key={cert.name}
@@ -99,9 +99,9 @@ export default function SecurityPage() {
       </section>
 
       {/* Stats */}
-      <section className="py-12">
+      <section className="py-12" data-element="legal-security-stats-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4" data-element="legal-security-stats-grid">
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">
                 <p className="text-3xl font-bold text-[var(--success)]">{stat.value}</p>
@@ -113,12 +113,12 @@ export default function SecurityPage() {
       </section>
 
       {/* Features */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="legal-security-features-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
+          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="legal-security-features-heading">
             Enterprise-grade security features
           </h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3" data-element="legal-security-features-grid">
             {features.map((feature) => (
               <div
                 key={feature.title}
@@ -136,13 +136,13 @@ export default function SecurityPage() {
       </section>
 
       {/* Data Ownership */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="legal-security-ownership-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground">
+            <h2 className="mb-4 text-3xl font-bold text-foreground" data-element="legal-security-ownership-heading">
               Your photos, your data
             </h2>
-            <div className="space-y-4 text-left">
+            <div className="space-y-4 text-left" data-element="legal-security-ownership-list">
               {[
                 "Your photos are never sold or shared",
                 "You retain 100% ownership of your content",
@@ -161,9 +161,9 @@ export default function SecurityPage() {
       </section>
 
       {/* Contact */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="legal-security-cta-section">
         <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
-          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="legal-security-cta-heading">
             Security questions?
           </h2>
           <p className="mb-8 text-foreground-secondary">
@@ -172,6 +172,7 @@ export default function SecurityPage() {
           <Link
             href="/contact?subject=security"
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            data-element="legal-security-cta-btn"
           >
             Contact security team
           </Link>

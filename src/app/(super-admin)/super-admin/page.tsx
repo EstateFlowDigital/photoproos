@@ -51,9 +51,9 @@ function LoadingSkeleton() {
 
 export default function SuperAdminDashboard() {
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--foreground)]">
+    <div data-element="super-admin-dashboard-page">
+      <div className="mb-8" data-element="super-admin-dashboard-header">
+        <h1 className="text-2xl font-bold text-[var(--foreground)]" data-element="super-admin-dashboard-title">
           Dashboard
         </h1>
         <p className="text-[var(--foreground-muted)]">

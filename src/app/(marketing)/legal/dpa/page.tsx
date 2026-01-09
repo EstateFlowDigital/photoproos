@@ -10,9 +10,9 @@ export default function DPAPage() {
   const lastUpdated = "January 1, 2025";
 
   return (
-    <main className="relative min-h-screen bg-background">
-      <article className="mx-auto max-w-4xl px-6 py-16 lg:py-24">
-        <header className="mb-12 border-b border-[var(--card-border)] pb-8">
+    <main className="relative min-h-screen bg-background" data-element="legal-dpa-page">
+      <article className="mx-auto max-w-4xl px-6 py-16 lg:py-24" data-element="legal-dpa-article">
+        <header className="mb-12 border-b border-[var(--card-border)] pb-8" data-element="legal-dpa-header">
           <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground">
             Data Processing Agreement
           </h1>
@@ -21,8 +21,8 @@ export default function DPAPage() {
           </p>
         </header>
 
-        <div className="prose prose-invert max-w-none">
-          <section className="mb-10">
+        <div className="prose prose-invert max-w-none" data-element="legal-dpa-content">
+          <section className="mb-10" data-element="legal-dpa-intro-section">
             <p className="mb-4 text-foreground-secondary">
               This Data Processing Agreement ("DPA") forms part of the Terms of Service between PhotoProOS, Inc. ("Processor", "we", "us") and the customer agreeing to these terms ("Controller", "you"). This DPA applies to the processing of personal data by PhotoProOS on behalf of the Controller.
             </p>
@@ -203,8 +203,8 @@ export default function DPAPage() {
           </section>
         </div>
 
-        <footer className="mt-12 border-t border-[var(--card-border)] pt-8">
-          <div className="flex flex-wrap gap-4">
+        <footer className="mt-12 border-t border-[var(--card-border)] pt-8" data-element="legal-dpa-footer">
+          <div className="flex flex-wrap gap-4" data-element="legal-dpa-footer-links">
             <Link href="/legal/privacy" className="text-sm text-[var(--primary)] hover:underline">
               Privacy Policy
             </Link>

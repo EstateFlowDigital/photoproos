@@ -51,9 +51,9 @@ const integrationGroups = [
 
 export default function IntegrationsPage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="integrations-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="integrations-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[420px] w-full max-w-[1512px] -translate-x-1/2"
@@ -78,11 +78,11 @@ export default function IntegrationsPage() {
       </section>
 
       {/* Integrations Grid */}
-      <section className="py-16 lg:py-24">
+      <section className="py-16 lg:py-24" data-element="integrations-grid-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6 lg:grid-cols-2" data-element="integrations-grid">
             {integrationGroups.map((group) => (
-              <div key={group.title} className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6 lg:p-8">
+              <div key={group.title} className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6 lg:p-8" data-element={`integrations-group-${group.title.toLowerCase()}`}>
                 <h2 className="text-xl font-semibold text-foreground">{group.title}</h2>
                 <p className="mt-2 text-sm text-foreground-secondary">{group.description}</p>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -90,6 +90,7 @@ export default function IntegrationsPage() {
                     <div
                       key={item.name}
                       className="flex items-center justify-between rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-4 py-3"
+                      data-element={`integrations-item-${item.name.toLowerCase().replace(/\s+/g, '-')}`}
                     >
                       <span className="text-sm font-medium text-foreground">{item.name}</span>
                       <span
@@ -111,25 +112,27 @@ export default function IntegrationsPage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="integrations-cta-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="grid gap-6 rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-            <div>
-              <h2 className="text-2xl font-bold text-foreground">Need another integration?</h2>
-              <p className="mt-2 text-foreground-secondary">
+          <div className="grid gap-6 rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center" data-element="integrations-cta-card">
+            <div data-element="integrations-cta-content">
+              <h2 className="text-2xl font-bold text-foreground" data-element="integrations-cta-heading">Need another integration?</h2>
+              <p className="mt-2 text-foreground-secondary" data-element="integrations-cta-description">
                 Tell us what you use and we will prioritize it on the roadmap.
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-3 lg:justify-end">
+            <div className="flex flex-wrap items-center gap-3 lg:justify-end" data-element="integrations-cta-buttons">
               <Link
                 href="/contact?subject=integrations"
                 className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+                data-element="integrations-cta-request-btn"
               >
                 Request integration
               </Link>
               <Link
                 href="/partners"
                 className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
+                data-element="integrations-cta-partner-btn"
               >
                 Partner with us
               </Link>

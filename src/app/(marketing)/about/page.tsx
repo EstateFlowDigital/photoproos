@@ -8,9 +8,9 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="about-page">
       {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="about-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[600px] w-full max-w-[1512px] -translate-x-1/2"
@@ -43,11 +43,11 @@ export default function AboutPage() {
       </section>
 
       {/* Mission Section */}
-      <section className="border-b border-[var(--card-border)] py-20 lg:py-28">
+      <section className="border-b border-[var(--card-border)] py-20 lg:py-28" data-element="about-mission-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
-            <div>
-              <h2 className="mb-6 text-3xl font-bold text-foreground md:text-4xl">
+          <div className="grid gap-12 lg:grid-cols-2 lg:gap-20" data-element="about-mission-grid">
+            <div data-element="about-mission-content">
+              <h2 className="mb-6 text-3xl font-bold text-foreground md:text-4xl" data-element="about-mission-heading">
                 Our Mission
               </h2>
               <p className="mb-6 text-lg text-foreground-secondary">
@@ -59,21 +59,21 @@ export default function AboutPage() {
                 advantage that large studios have, in a single platform that's actually enjoyable to use.
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-6">
-              <StatCard number="10k+" label="Photographers" />
-              <StatCard number="2M+" label="Photos Delivered" />
-              <StatCard number="$50M+" label="Payments Processed" />
-              <StatCard number="99.9%" label="Uptime" />
+            <div className="grid grid-cols-2 gap-6" data-element="about-stats-grid">
+              <StatCard number="10k+" label="Photographers" elementId="about-stat-photographers" />
+              <StatCard number="2M+" label="Photos Delivered" elementId="about-stat-photos" />
+              <StatCard number="$50M+" label="Payments Processed" elementId="about-stat-payments" />
+              <StatCard number="99.9%" label="Uptime" elementId="about-stat-uptime" />
             </div>
           </div>
         </div>
       </section>
 
       {/* Story Section */}
-      <section className="border-b border-[var(--card-border)] py-20 lg:py-28">
+      <section className="border-b border-[var(--card-border)] py-20 lg:py-28" data-element="about-story-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="mx-auto max-w-3xl">
-            <h2 className="mb-8 text-3xl font-bold text-foreground md:text-4xl">
+          <div className="mx-auto max-w-3xl" data-element="about-story-content">
+            <h2 className="mb-8 text-3xl font-bold text-foreground md:text-4xl" data-element="about-story-heading">
               How It Started
             </h2>
             <div className="space-y-6 text-lg text-foreground-secondary">
@@ -101,107 +101,118 @@ export default function AboutPage() {
       </section>
 
       {/* Values Section */}
-      <section className="border-b border-[var(--card-border)] py-20 lg:py-28">
+      <section className="border-b border-[var(--card-border)] py-20 lg:py-28" data-element="about-values-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+          <div className="mb-12 text-center" data-element="about-values-header">
+            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl" data-element="about-values-heading">
               What We Believe
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-foreground-secondary">
               These principles guide every decision we make, from product features to customer support.
             </p>
           </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3" data-element="about-values-grid">
             <ValueCard
               icon={<CameraIcon className="h-6 w-6" />}
               title="Photographers First"
               description="Every feature exists because a photographer needed it. We build tools that solve real problems, not theoretical ones."
+              elementId="about-value-photographers-first"
             />
             <ValueCard
               icon={<SparklesIcon className="h-6 w-6" />}
               title="Simplicity Over Complexity"
               description="Powerful doesn't have to mean complicated. We obsess over making complex workflows feel effortless."
+              elementId="about-value-simplicity"
             />
             <ValueCard
               icon={<ShieldIcon className="h-6 w-6" />}
               title="Your Data, Your Business"
               description="We never sell your data. We never train AI on your photos. Your business information stays yours."
+              elementId="about-value-data-privacy"
             />
             <ValueCard
               icon={<RocketIcon className="h-6 w-6" />}
               title="Speed Matters"
               description="Slow software is broken software. We invest heavily in performance because your time is valuable."
+              elementId="about-value-speed"
             />
             <ValueCard
               icon={<HeartIcon className="h-6 w-6" />}
               title="Support That Cares"
               description="Real humans who understand photography answer your questions. Usually within hours, not days."
+              elementId="about-value-support"
             />
             <ValueCard
               icon={<TrendingUpIcon className="h-6 w-6" />}
               title="Always Improving"
               description="We ship updates weekly. Your feedback shapes our roadmap. We're building this together."
+              elementId="about-value-improving"
             />
           </div>
         </div>
       </section>
 
       {/* Team Section */}
-      <section className="border-b border-[var(--card-border)] py-20 lg:py-28">
+      <section className="border-b border-[var(--card-border)] py-20 lg:py-28" data-element="about-team-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+          <div className="mb-12 text-center" data-element="about-team-header">
+            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl" data-element="about-team-heading">
               Meet the Team
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-foreground-secondary">
               A small, dedicated team of photographers, designers, and engineers building the future of photography business software.
             </p>
           </div>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4" data-element="about-team-grid">
             <TeamMember
               name="Alex Chen"
               role="Founder & CEO"
               image="AC"
               description="Former wedding photographer turned software founder. Still shoots occasionally."
+              elementId="about-team-alex"
             />
             <TeamMember
               name="Sarah Williams"
               role="Head of Product"
               image="SW"
               description="10+ years in real estate photography. Knows every pain point firsthand."
+              elementId="about-team-sarah"
             />
             <TeamMember
               name="Marcus Johnson"
               role="Lead Engineer"
               image="MJ"
               description="Built systems at scale. Obsessed with fast, reliable software."
+              elementId="about-team-marcus"
             />
             <TeamMember
               name="Emily Rodriguez"
               role="Head of Customer Success"
               image="ER"
               description="Former studio manager. Helps photographers get the most from PhotoProOS."
+              elementId="about-team-emily"
             />
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 lg:py-28">
+      <section className="py-20 lg:py-28" data-element="about-cta-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--ai)] p-12 text-center lg:p-20">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--ai)] p-12 text-center lg:p-20" data-element="about-cta-card">
             <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10" />
             <div className="relative z-10">
-              <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl">
+              <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl" data-element="about-cta-heading">
                 Join thousands of photographers
               </h2>
-              <p className="mx-auto mb-8 max-w-xl text-lg text-white/80">
+              <p className="mx-auto mb-8 max-w-xl text-lg text-white/80" data-element="about-cta-description">
                 See why photographers are switching to PhotoProOS. Start your free trial today.
               </p>
-              <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <div className="flex flex-col items-center justify-center gap-4 sm:flex-row" data-element="about-cta-buttons">
                 <Link
                   href="/sign-up"
                   className="inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-medium text-[#0A0A0A] transition-colors hover:bg-white/90"
+                  data-element="about-cta-trial-btn"
                 >
                   Start free trial
                   <ArrowRightIcon className="h-4 w-4" />
@@ -209,6 +220,7 @@ export default function AboutPage() {
                 <Link
                   href="/contact"
                   className="inline-flex items-center gap-2 rounded-lg border border-white/30 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-white/10"
+                  data-element="about-cta-contact-btn"
                 >
                   Contact sales
                 </Link>
@@ -222,9 +234,9 @@ export default function AboutPage() {
 }
 
 // Components
-function StatCard({ number, label }: { number: string; label: string }) {
+function StatCard({ number, label, elementId }: { number: string; label: string; elementId?: string }) {
   return (
-    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 text-center">
+    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 text-center" data-element={elementId}>
       <p className="mb-1 text-3xl font-bold text-foreground">{number}</p>
       <p className="text-sm text-foreground-secondary">{label}</p>
     </div>
@@ -235,13 +247,15 @@ function ValueCard({
   icon,
   title,
   description,
+  elementId,
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
+  elementId?: string;
 }) {
   return (
-    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
+    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6" data-element={elementId}>
       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
         {icon}
       </div>
@@ -256,14 +270,16 @@ function TeamMember({
   role,
   image,
   description,
+  elementId,
 }: {
   name: string;
   role: string;
   image: string;
   description: string;
+  elementId?: string;
 }) {
   return (
-    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 text-center">
+    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 text-center" data-element={elementId}>
       <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--ai)] text-2xl font-bold text-white">
         {image}
       </div>

@@ -54,9 +54,9 @@ const releases = [
 
 export default function ChangelogPage() {
   return (
-    <main className="relative min-h-screen bg-background">
+    <main className="relative min-h-screen bg-background" data-element="changelog-page">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-[var(--card-border)]">
+      <section className="relative overflow-hidden border-b border-[var(--card-border)]" data-element="changelog-hero">
         <div className="absolute inset-0 z-0">
           <div
             className="absolute left-1/2 top-0 h-[500px] w-full max-w-[1512px] -translate-x-1/2"
@@ -78,14 +78,15 @@ export default function ChangelogPage() {
       </section>
 
       {/* Releases */}
-      <section className="py-16 lg:py-24">
+      <section className="py-16 lg:py-24" data-element="changelog-releases-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <div className="mx-auto max-w-3xl">
-            <div className="space-y-12">
+            <div className="space-y-12" data-element="changelog-releases-list">
               {releases.map((release) => (
                 <article
                   key={release.version}
                   className="relative border-l-2 border-[var(--card-border)] pl-8"
+                  data-element={`changelog-release-${release.version.replace(/\./g, '-')}`}
                 >
                   <div className="absolute -left-2 top-0 h-4 w-4 rounded-full border-2 border-[var(--primary)] bg-background" />
                   <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -119,17 +120,18 @@ export default function ChangelogPage() {
       </section>
 
       {/* Subscribe */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24">
+      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="changelog-subscribe-section">
         <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
-          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl">
+          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="changelog-subscribe-heading">
             Stay updated
           </h2>
-          <p className="mb-8 text-foreground-secondary">
+          <p className="mb-8 text-foreground-secondary" data-element="changelog-subscribe-description">
             Subscribe to our newsletter to get notified about new features.
           </p>
           <Link
             href="/sign-up"
             className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+            data-element="changelog-subscribe-btn"
           >
             Get started free
           </Link>
