@@ -129,7 +129,7 @@ export function RecentActivityWidget({
   if (displayActivities.length === 0) {
     return (
       <div className={cn("flex flex-col items-center justify-center py-8", className)}>
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--background-secondary)]">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--foreground-muted)]/15">
           <svg
             className="h-5 w-5 text-foreground-muted"
             xmlns="http://www.w3.org/2000/svg"

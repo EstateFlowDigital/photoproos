@@ -1350,13 +1350,18 @@ export function ElementInspector() {
     };
   }, [isActive, blockInteraction, handleClick, handleMouseMove, handleKeyDown]);
 
-  // Dragging logic
-  const handleDragStart = (e: React.MouseEvent) => {
+  // Dragging logic - supports both mouse and touch
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     setIsDragging(true);
+
+    // Get coordinates from mouse or touch event
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+
     dragStartRef.current = {
-      x: e.clientX,
-      y: e.clientY,
+      x: clientX,
+      y: clientY,
       posX: panelPosition.x,
       posY: panelPosition.y,
     };
@@ -1365,21 +1370,34 @@ export function ElementInspector() {
   useEffect(() => {
     if (!isDragging) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const deltaX = e.clientX - dragStartRef.current.x;
-      const deltaY = e.clientY - dragStartRef.current.y;
+    const handleMove = (e: MouseEvent | TouchEvent) => {
+      // Get coordinates from mouse or touch event
+      const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+      const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+
+      const deltaX = clientX - dragStartRef.current.x;
+      const deltaY = clientY - dragStartRef.current.y;
       const newX = Math.max(0, Math.min(window.innerWidth - 400, dragStartRef.current.posX + deltaX));
       const newY = Math.max(0, Math.min(window.innerHeight - 200, dragStartRef.current.posY + deltaY));
       setPanelPosition({ x: newX, y: newY });
     };
 
-    const handleMouseUp = () => setIsDragging(false);
+    const handleEnd = () => setIsDragging(false);
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    // Mouse events
+    document.addEventListener("mousemove", handleMove);
+    document.addEventListener("mouseup", handleEnd);
+    // Touch events
+    document.addEventListener("touchmove", handleMove, { passive: false });
+    document.addEventListener("touchend", handleEnd);
+    document.addEventListener("touchcancel", handleEnd);
+
     return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("mousemove", handleMove);
+      document.removeEventListener("mouseup", handleEnd);
+      document.removeEventListener("touchmove", handleMove);
+      document.removeEventListener("touchend", handleEnd);
+      document.removeEventListener("touchcancel", handleEnd);
     };
   }, [isDragging]);
 
@@ -1815,8 +1833,9 @@ ${Object.entries(styles)
         >
           {/* Draggable Header */}
           <div
-            className="flex items-start justify-between gap-4 flex-wrap p-3 bg-[var(--card)] border-b border-[var(--border)] cursor-move select-none"
+            className="flex items-start justify-between gap-4 flex-wrap p-3 bg-[var(--card)] border-b border-[var(--border)] cursor-move select-none touch-none"
             onMouseDown={handleDragStart}
+            onTouchStart={handleDragStart}
           >
             <div className="flex items-center gap-2 min-w-0 flex-1">
               <GripHorizontal className="w-4 h-4 text-[var(--foreground-muted)] flex-shrink-0" />

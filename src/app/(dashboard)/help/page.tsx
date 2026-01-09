@@ -187,7 +187,7 @@ export default function HelpPage() {
       {/* Contact Support CTA */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-[var(--card-border)] bg-[var(--background-secondary)] text-foreground-muted">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-[var(--card-border)] bg-[var(--foreground-muted)]/15 text-foreground-muted">
             <svg
               className="h-6 w-6"
               xmlns="http://www.w3.org/2000/svg"

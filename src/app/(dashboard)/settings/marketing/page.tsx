@@ -110,7 +110,7 @@ export default async function MarketingSettingsPage() {
               </div>
             ) : (
               <div className="text-center py-8 sm:py-12">
-                <div className="flex h-14 w-14 sm:h-16 sm:w-16 mx-auto items-center justify-center rounded-full bg-[var(--background-secondary)]">
+                <div className="flex h-14 w-14 sm:h-16 sm:w-16 mx-auto items-center justify-center rounded-full bg-[var(--foreground-muted)]/15">
                   <Megaphone className="h-7 w-7 sm:h-8 sm:w-8 text-foreground-muted" />
                 </div>
                 <h3 className="mt-4 text-base sm:text-lg font-medium text-foreground">No marketing kits yet</h3>
@@ -193,7 +193,7 @@ export default async function MarketingSettingsPage() {
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-4 flex-wrap gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--foreground-muted)]/15">
                     <Package className="h-4 w-4 text-foreground-muted" />
                   </div>
                   <span className="text-sm text-foreground-muted">Marketing Kits</span>
@@ -202,7 +202,7 @@ export default async function MarketingSettingsPage() {
               </div>
               <div className="flex items-start justify-between gap-4 flex-wrap gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--foreground-muted)]/15">
                     <Image className="h-4 w-4 text-foreground-muted" />
                   </div>
                   <span className="text-sm text-foreground-muted">Total Assets</span>
@@ -211,7 +211,7 @@ export default async function MarketingSettingsPage() {
               </div>
               <div className="flex items-start justify-between gap-4 flex-wrap gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--foreground-muted)]/15">
                     <FileText className="h-4 w-4 text-foreground-muted" />
                   </div>
                   <span className="text-sm text-foreground-muted">Templates</span>
@@ -220,7 +220,7 @@ export default async function MarketingSettingsPage() {
               </div>
               <div className="flex items-start justify-between gap-4 flex-wrap gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--foreground-muted)]/15">
                     <Video className="h-4 w-4 text-foreground-muted" />
                   </div>
                   <span className="text-sm text-foreground-muted">Videos</span>

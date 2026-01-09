@@ -162,7 +162,7 @@ const PreferenceToggle = memo(function PreferenceToggle({
   return (
     <div className="flex items-start justify-between gap-4 flex-wrap gap-4 px-5 py-4">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)] text-[var(--foreground-muted)]">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--foreground-muted)]/15 text-[var(--foreground-muted)]">
           <Icon className="h-4 w-4" aria-hidden="true" />
         </div>
         <div>

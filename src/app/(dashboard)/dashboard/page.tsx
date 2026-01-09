@@ -380,24 +380,24 @@ export default async function DashboardPage() {
     gamification: gamificationState ? {
       level: gamificationState.level,
       xp: gamificationState.totalXp,
-      xpToNextLevel: gamificationState.xpToNextLevel || 1000,
-      xpProgress: gamificationState.xpProgress || 0,
+      xpToNextLevel: gamificationState.xpProgress?.required || 1000,
+      xpProgress: gamificationState.xpProgress?.percent || 0,
       streak: gamificationState.currentLoginStreak,
       deliveryStreak: gamificationState.currentDeliveryStreak || 0,
-      recentAchievementsCount: gamificationState.recentAchievements?.filter((a) => a.unlocked).length || 0,
+      recentAchievementsCount: gamificationState.recentAchievements?.filter((a) => a.unlockedAt).length || 0,
       activeChallengesCount: 0, // Will be populated when team challenges are active
     } : undefined,
     dailyBonus: dailyBonusState ? {
       canClaim: dailyBonusState.canClaim,
-      streak: dailyBonusState.currentStreak,
+      streak: dailyBonusState.streakDays || 0,
     } : undefined,
     onboarding: onboardingProgress ? {
-      completed: onboardingProgress.completedItems,
-      total: onboardingProgress.totalItems,
+      completed: onboardingProgress.completedCount,
+      total: onboardingProgress.totalCount,
       items: checklistItems.map((item) => ({
         id: item.id,
-        label: item.title,
-        completed: item.completed,
+        label: item.label,
+        completed: item.isCompleted,
       })),
     } : undefined,
     messages: recentMessages,

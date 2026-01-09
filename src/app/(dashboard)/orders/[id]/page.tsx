@@ -314,7 +314,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
                 </Link>
               ) : (
                 <div className="flex items-center gap-3 p-3 -mx-3 text-foreground-muted">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--foreground-muted)]/15">
                     <DocumentIcon className="h-4 w-4" />
                   </div>
                   <div className="flex-1">
@@ -346,7 +346,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
                 </Link>
               ) : (
                 <div className="flex items-center gap-3 p-3 -mx-3 text-foreground-muted">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--foreground-muted)]/15">
                     <CalendarIcon className="h-4 w-4" />
                   </div>
                   <div className="flex-1">
@@ -373,7 +373,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
                 </Link>
               ) : (
                 <div className="flex items-center gap-3 p-3 -mx-3 text-foreground-muted">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--foreground-muted)]/15">
                     <UserIcon className="h-4 w-4" />
                   </div>
                   <div className="flex-1">
@@ -393,7 +393,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
                 href={`/order-pages/${order.orderPage.id}`}
                 className="flex items-center gap-3 p-3 -m-3 rounded-lg hover:bg-[var(--background-hover)] transition-colors"
               >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--foreground-muted)]/15">
                   <GlobeIcon className="h-4 w-4 text-foreground-muted" />
                 </div>
                 <div className="flex-1 min-w-0">

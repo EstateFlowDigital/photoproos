@@ -58,7 +58,7 @@ export function IndustrySelector({
               "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
               value === null
                 ? "bg-[var(--primary)] text-white"
-                : "bg-[var(--background-secondary)] text-foreground-muted"
+                : "bg-[var(--foreground-muted)]/15 text-foreground-muted"
             )}
           >
             <AllIndustriesIcon className="h-5 w-5" />
@@ -85,10 +85,10 @@ export function IndustrySelector({
           >
             <div
               className={cn(
-                "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg shrink-0",
+                "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
                 value === industry
                   ? "bg-[var(--primary)] text-white"
-                  : "bg-[var(--background-secondary)] text-foreground-muted"
+                  : "bg-[var(--foreground-muted)]/15 text-foreground-muted"
               )}
             >
               <IndustryIcon industry={industry} />

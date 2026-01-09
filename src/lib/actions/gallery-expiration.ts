@@ -16,7 +16,7 @@ interface ExpiringGallery {
   clientEmail: string;
   clientName: string;
   expiresAt: Date;
-  daysUntilExpiry: number;
+  daysUntilExpiration: number;
   deliverySlug: string;
 }
 
@@ -81,7 +81,7 @@ export async function getExpiringSoonGalleries(daysAhead: number = 7) {
       clientEmail: g.client?.email || "",
       clientName: g.client?.fullName || "Unknown",
       expiresAt: g.expiresAt!,
-      daysUntilExpiry: differenceInDays(g.expiresAt!, now),
+      daysUntilExpiration: differenceInDays(g.expiresAt!, now),
       deliverySlug: g.deliveryLinks[0]?.slug || g.id,
     }));
 

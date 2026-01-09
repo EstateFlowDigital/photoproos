@@ -75,7 +75,7 @@ export default async function HelpCategoryPage({ params }: CategoryPageProps) {
         </div>
       ) : (
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-8 text-center">
-          <div className="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background-secondary)] text-foreground-muted">
+          <div className="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--foreground-muted)]/15 text-foreground-muted">
             <svg
               className="h-6 w-6"
               xmlns="http://www.w3.org/2000/svg"

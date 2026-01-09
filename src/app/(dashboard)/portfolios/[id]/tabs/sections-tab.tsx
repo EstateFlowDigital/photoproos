@@ -437,7 +437,7 @@ export function SectionsTab({ website, isPending: parentPending, availableProjec
                     disabled={loading}
                     className="flex items-start gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 text-left transition-colors hover:border-[var(--border-hover)] hover:bg-[var(--background-hover)] disabled:opacity-50"
                   >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)] text-foreground-muted">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--foreground-muted)]/15 text-foreground-muted">
                       <SectionIcon type={section.type} className="h-4 w-4" />
                     </div>
                     <div className="flex-1">

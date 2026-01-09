@@ -13,7 +13,7 @@ interface ExpiringGallery {
   clientEmail: string;
   clientName: string;
   expiresAt: Date | string;
-  daysUntilExpiry: number;
+  daysUntilExpiration: number;
   deliverySlug: string;
 }
 
@@ -80,18 +80,18 @@ export function ExpiringGalleriesWidget({ galleries }: ExpiringGalleriesWidgetPr
                 <div
                   className={cn(
                     "shrink-0 rounded-full px-2.5 py-1 text-xs font-medium",
-                    gallery.daysUntilExpiry <= 1
+                    gallery.daysUntilExpiration <= 1
                       ? "bg-[var(--error)]/10 text-[var(--error)]"
-                      : gallery.daysUntilExpiry <= 3
+                      : gallery.daysUntilExpiration <= 3
                       ? "bg-[var(--warning)]/10 text-[var(--warning)]"
                       : "bg-[var(--primary)]/10 text-[var(--primary)]"
                   )}
                 >
-                  {gallery.daysUntilExpiry === 0
+                  {gallery.daysUntilExpiration === 0
                     ? "Expires today"
-                    : gallery.daysUntilExpiry === 1
+                    : gallery.daysUntilExpiration === 1
                     ? "1 day"
-                    : `${gallery.daysUntilExpiry} days`}
+                    : `${gallery.daysUntilExpiration} days`}
                 </div>
               </div>
 

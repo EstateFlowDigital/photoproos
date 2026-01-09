@@ -306,7 +306,7 @@ function StatCard({ icon: Icon, iconColor, label, value, subtitle }: StatCardPro
   return (
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--foreground-muted)]/15">
           <Icon className={cn("h-5 w-5", iconColor)} />
         </div>
         <div>

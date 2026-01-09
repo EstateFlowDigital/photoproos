@@ -249,7 +249,7 @@ export function ApiKeyManager({ apiKeys, onRefresh, className }: ApiKeyManagerPr
                 !key.isActive && "opacity-60"
               )}
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--foreground-muted)]/15">
                 <KeyIcon className="h-5 w-5 text-foreground-muted" />
               </div>
 

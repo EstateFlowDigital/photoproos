@@ -356,7 +356,7 @@ export function ReviewsSettingsClient({
 
         {platforms.length === 0 ? (
           <div className="p-8 text-center">
-            <div className="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background-secondary)]">
+            <div className="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--foreground-muted)]/15">
               <Star className="h-6 w-6 text-foreground-muted" />
             </div>
             <h3 className="mt-4 text-sm font-medium text-foreground">
@@ -469,7 +469,7 @@ export function ReviewsSettingsClient({
           <div className="p-4">
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)] text-foreground-muted">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--foreground-muted)]/15 text-foreground-muted">
                   <Clock className="h-5 w-5" />
                 </div>
                 <div>
@@ -730,7 +730,7 @@ function TouchpointSetting({
   return (
     <div className="flex items-start justify-between gap-4 flex-wrap p-4">
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)] text-foreground-muted">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--foreground-muted)]/15 text-foreground-muted">
           {icon}
         </div>
         <div>

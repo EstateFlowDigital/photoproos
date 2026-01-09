@@ -203,7 +203,7 @@ export default async function ContractDetailPage({ params }: ContractDetailPageP
               {contract.auditLogs.length > 0 ? (
                 contract.auditLogs.map((log) => (
                   <div key={log.id} className="flex items-start gap-4 px-6 py-4">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--background-secondary)]">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--foreground-muted)]/15">
                       <ActivityIcon action={log.action} />
                     </div>
                     <div className="flex-1 min-w-0">
