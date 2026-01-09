@@ -7,9 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Element Inspector Smart Inputs** - Webflow-style intuitive controls for CSS properties:
+  - Color picker with swatch preview for color properties
+  - Slider + presets for spacing (padding, margin, gap) with unit selector
+  - Visual toggle buttons for flex-direction, justify-content, align-items, text-align
+  - Dropdown selects for display, position, font-weight
+  - Opacity slider (0-100%)
+  - Border radius presets with visual shape indicators
+  - Z-index presets with common values
+  - Font size slider with presets
+  - Sizing presets (auto, 100%, fit-content, max-content)
+- **Element Inspector Navigation History** - When navigating to parent elements, the previously selected child is remembered so you can navigate back to it with the "Back" button
+
 ### Fixed
+- **Element Inspector link/button blocking** - When inspector is active, clicking links and buttons no longer navigates away from the page. Added mousedown, pointerdown, and auxclick event blockers in capture phase to prevent all default interactions while inspecting elements
 - **Element Inspector z-index** - Increased z-index values from 9998-10002 to 99997-100001 so the inspector stays above modals and doesn't accidentally close them when clicked
 - **Element Inspector selected highlight** - Added persistent green highlight for selected elements that stays visible while navigating parent/child and updates on scroll/resize
+- **Messages layout improvements** - Fixed flex layout for proper height filling in messages views
+  - Added `min-h-0` to main content area to allow flex children to shrink properly
+  - Conversation page wrapper now has `flex-1 flex flex-col min-h-0` to fill container
+  - Padding (24px) only applied to non-conversation views (requests page) to preserve chat full-height layout
 
 ### Changed
 - **Danger Zone Styling** - Updated all danger zone card borders from 20-30% opacity to solid error color for better visibility and consistency

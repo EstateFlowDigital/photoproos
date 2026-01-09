@@ -12,8 +12,521 @@ import {
   ChevronDown,
   GripHorizontal,
   Keyboard,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  ArrowRight,
+  ArrowDown,
+  Columns,
+  Rows,
 } from "lucide-react";
 import { getDevSettings } from "@/lib/utils/dev-settings";
+
+// ============================================
+// SMART INPUT COMPONENTS
+// ============================================
+
+// Spacing presets (in pixels)
+const SPACING_PRESETS = [0, 4, 8, 12, 16, 24, 32, 48, 64];
+const SIZING_PRESETS = ["auto", "100%", "fit-content", "max-content"];
+const BORDER_RADIUS_PRESETS = [0, 4, 8, 12, 16, 24, 9999];
+const FONT_SIZE_PRESETS = [12, 14, 16, 18, 20, 24, 32, 48];
+const FONT_WEIGHT_OPTIONS = [
+  { value: "100", label: "Thin" },
+  { value: "200", label: "Extra Light" },
+  { value: "300", label: "Light" },
+  { value: "400", label: "Normal" },
+  { value: "500", label: "Medium" },
+  { value: "600", label: "Semi Bold" },
+  { value: "700", label: "Bold" },
+  { value: "800", label: "Extra Bold" },
+  { value: "900", label: "Black" },
+];
+const DISPLAY_OPTIONS = ["block", "flex", "grid", "inline", "inline-block", "inline-flex", "none"];
+const POSITION_OPTIONS = ["static", "relative", "absolute", "fixed", "sticky"];
+const FLEX_DIRECTION_OPTIONS = [
+  { value: "row", icon: ArrowRight, label: "Row" },
+  { value: "row-reverse", icon: ArrowRight, label: "Row Rev", flip: true },
+  { value: "column", icon: ArrowDown, label: "Column" },
+  { value: "column-reverse", icon: ArrowDown, label: "Col Rev", flip: true },
+];
+const JUSTIFY_OPTIONS = [
+  { value: "flex-start", label: "Start" },
+  { value: "center", label: "Center" },
+  { value: "flex-end", label: "End" },
+  { value: "space-between", label: "Between" },
+  { value: "space-around", label: "Around" },
+  { value: "space-evenly", label: "Evenly" },
+];
+const ALIGN_OPTIONS = [
+  { value: "flex-start", label: "Start" },
+  { value: "center", label: "Center" },
+  { value: "flex-end", label: "End" },
+  { value: "stretch", label: "Stretch" },
+  { value: "baseline", label: "Baseline" },
+];
+const TEXT_ALIGN_OPTIONS = [
+  { value: "left", icon: AlignLeft },
+  { value: "center", icon: AlignCenter },
+  { value: "right", icon: AlignRight },
+  { value: "justify", icon: AlignJustify },
+];
+
+// Parse numeric value and unit from CSS value
+function parseValueUnit(value: string): { num: number; unit: string } {
+  const match = value.match(/^(-?[\d.]+)(px|rem|em|%|vh|vw)?$/);
+  if (match) {
+    return { num: parseFloat(match[1]), unit: match[2] || "px" };
+  }
+  return { num: 0, unit: "px" };
+}
+
+// Color input with picker
+function ColorInput({
+  value,
+  onChange,
+  label
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  label: string;
+}) {
+  const [showPicker, setShowPicker] = useState(false);
+  const isTransparent = value === "transparent" || value === "rgba(0, 0, 0, 0)";
+
+  // Convert rgb/rgba to hex for the color picker
+  const getHexColor = (color: string): string => {
+    if (color.startsWith("#")) return color;
+    if (color.startsWith("rgb")) {
+      const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+      if (match) {
+        const r = parseInt(match[1]).toString(16).padStart(2, "0");
+        const g = parseInt(match[2]).toString(16).padStart(2, "0");
+        const b = parseInt(match[3]).toString(16).padStart(2, "0");
+        return `#${r}${g}${b}`;
+      }
+    }
+    return "#000000";
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        onClick={() => setShowPicker(!showPicker)}
+        className="w-6 h-6 rounded border border-[var(--border)] flex-shrink-0 relative overflow-hidden"
+        style={{ backgroundColor: isTransparent ? "transparent" : value }}
+        title={value}
+      >
+        {isTransparent && (
+          <div className="absolute inset-0 bg-[repeating-conic-gradient(#ccc_0_25%,#fff_0_50%)] bg-[length:8px_8px]" />
+        )}
+      </button>
+      <input
+        type="color"
+        value={getHexColor(value)}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-0 h-0 opacity-0 absolute"
+        id={`color-${label}`}
+      />
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="flex-1 text-xs px-2 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+      />
+      <label
+        htmlFor={`color-${label}`}
+        className="text-[10px] text-[var(--primary)] cursor-pointer hover:underline"
+      >
+        Pick
+      </label>
+    </div>
+  );
+}
+
+// Spacing/sizing input with presets and unit selector
+function SpacingInput({
+  value,
+  onChange,
+  presets = SPACING_PRESETS,
+  showUnit = true
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  presets?: (number | string)[];
+  showUnit?: boolean;
+}) {
+  const { num, unit } = parseValueUnit(value);
+  const isKeyword = typeof value === "string" && !value.match(/^-?[\d.]/);
+
+  const handleNumChange = (newNum: number) => {
+    onChange(`${newNum}${unit}`);
+  };
+
+  const handleUnitChange = (newUnit: string) => {
+    onChange(`${num}${newUnit}`);
+  };
+
+  if (isKeyword && SIZING_PRESETS.includes(value)) {
+    return (
+      <div className="space-y-1.5">
+        <div className="flex gap-1 flex-wrap">
+          {SIZING_PRESETS.map((preset) => (
+            <button
+              key={preset}
+              onClick={() => onChange(preset)}
+              className={`px-1.5 py-0.5 text-[10px] rounded ${
+                value === preset
+                  ? "bg-[var(--primary)] text-white"
+                  : "bg-[var(--background-elevated)] text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              {preset}
+            </button>
+          ))}
+        </div>
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full text-xs px-2 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex gap-1 flex-wrap">
+        {presets.slice(0, 6).map((preset) => (
+          <button
+            key={preset}
+            onClick={() => onChange(typeof preset === "number" ? `${preset}px` : preset)}
+            className={`px-1.5 py-0.5 text-[10px] rounded ${
+              num === preset || value === preset
+                ? "bg-[var(--primary)] text-white"
+                : "bg-[var(--background-elevated)] text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+            }`}
+          >
+            {preset}
+          </button>
+        ))}
+      </div>
+      <div className="flex items-center gap-1">
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={Math.min(num, 100)}
+          onChange={(e) => handleNumChange(parseInt(e.target.value))}
+          className="flex-1 h-1 accent-[var(--primary)]"
+        />
+        <input
+          type="number"
+          value={num}
+          onChange={(e) => handleNumChange(parseFloat(e.target.value) || 0)}
+          className="w-14 text-xs px-1.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+        />
+        {showUnit && (
+          <select
+            value={unit}
+            onChange={(e) => handleUnitChange(e.target.value)}
+            className="text-xs px-1 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none"
+          >
+            <option value="px">px</option>
+            <option value="rem">rem</option>
+            <option value="em">em</option>
+            <option value="%">%</option>
+            <option value="vh">vh</option>
+            <option value="vw">vw</option>
+          </select>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Select dropdown
+function SelectInput({
+  value,
+  onChange,
+  options
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: string[] | { value: string; label: string }[];
+}) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full text-xs px-2 py-1.5 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+    >
+      {options.map((opt) => {
+        const val = typeof opt === "string" ? opt : opt.value;
+        const label = typeof opt === "string" ? opt : opt.label;
+        return (
+          <option key={val} value={val}>{label}</option>
+        );
+      })}
+    </select>
+  );
+}
+
+// Visual toggle buttons (for flex-direction, text-align, etc.)
+function ToggleButtons({
+  value,
+  onChange,
+  options
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label?: string; icon?: React.ElementType; flip?: boolean }[];
+}) {
+  return (
+    <div className="flex gap-1">
+      {options.map((opt) => {
+        const Icon = opt.icon;
+        const isActive = value === opt.value;
+        return (
+          <button
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
+            className={`flex-1 px-2 py-1.5 text-[10px] rounded flex items-center justify-center gap-1 ${
+              isActive
+                ? "bg-[var(--primary)] text-white"
+                : "bg-[var(--background-elevated)] text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+            }`}
+            title={opt.label || opt.value}
+          >
+            {Icon && <Icon className={`w-3 h-3 ${opt.flip ? "rotate-180" : ""}`} />}
+            {!Icon && (opt.label || opt.value)}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// Opacity slider (0-1)
+function OpacityInput({
+  value,
+  onChange
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const numValue = parseFloat(value) || 1;
+  const percentage = Math.round(numValue * 100);
+
+  return (
+    <div className="flex items-center gap-2">
+      <input
+        type="range"
+        min="0"
+        max="100"
+        value={percentage}
+        onChange={(e) => onChange((parseInt(e.target.value) / 100).toString())}
+        className="flex-1 h-1 accent-[var(--primary)]"
+      />
+      <span className="text-xs text-[var(--foreground-muted)] w-10 text-right">{percentage}%</span>
+    </div>
+  );
+}
+
+// Border radius input with visual presets
+function BorderRadiusInput({
+  value,
+  onChange
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const { num } = parseValueUnit(value);
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex gap-1">
+        {BORDER_RADIUS_PRESETS.map((preset) => (
+          <button
+            key={preset}
+            onClick={() => onChange(`${preset}px`)}
+            className={`w-7 h-7 rounded flex items-center justify-center ${
+              num === preset
+                ? "bg-[var(--primary)]"
+                : "bg-[var(--background-elevated)]"
+            }`}
+            title={`${preset}px`}
+          >
+            <div
+              className={`w-4 h-4 border-2 ${num === preset ? "border-white" : "border-[var(--foreground-muted)]"}`}
+              style={{ borderRadius: preset === 9999 ? "50%" : `${Math.min(preset, 8)}px` }}
+            />
+          </button>
+        ))}
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          type="range"
+          min="0"
+          max="50"
+          value={Math.min(num, 50)}
+          onChange={(e) => onChange(`${e.target.value}px`)}
+          className="flex-1 h-1 accent-[var(--primary)]"
+        />
+        <input
+          type="number"
+          value={num}
+          onChange={(e) => onChange(`${e.target.value}px`)}
+          className="w-14 text-xs px-1.5 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+        />
+      </div>
+    </div>
+  );
+}
+
+// Z-index input
+function ZIndexInput({
+  value,
+  onChange
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const presets = [-1, 0, 1, 10, 50, 100, 999, 9999];
+  const numValue = parseInt(value) || 0;
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex gap-1 flex-wrap">
+        {presets.map((preset) => (
+          <button
+            key={preset}
+            onClick={() => onChange(preset.toString())}
+            className={`px-1.5 py-0.5 text-[10px] rounded ${
+              numValue === preset
+                ? "bg-[var(--primary)] text-white"
+                : "bg-[var(--background-elevated)] text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+            }`}
+          >
+            {preset}
+          </button>
+        ))}
+      </div>
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full text-xs px-2 py-1 rounded border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+      />
+    </div>
+  );
+}
+
+// Get the appropriate input component for a CSS property
+function getSmartInput(
+  prop: string,
+  value: string,
+  onChange: (v: string) => void,
+  isChanged: boolean
+) {
+  // Colors
+  if (prop === "color" || prop === "background-color" || prop === "background" || prop === "border-color") {
+    return <ColorInput value={value} onChange={onChange} label={prop} />;
+  }
+
+  // Display
+  if (prop === "display") {
+    return <SelectInput value={value} onChange={onChange} options={DISPLAY_OPTIONS} />;
+  }
+
+  // Position
+  if (prop === "position") {
+    return <SelectInput value={value} onChange={onChange} options={POSITION_OPTIONS} />;
+  }
+
+  // Flex direction
+  if (prop === "flex-direction") {
+    return <ToggleButtons value={value} onChange={onChange} options={FLEX_DIRECTION_OPTIONS} />;
+  }
+
+  // Justify content
+  if (prop === "justify-content") {
+    return <ToggleButtons value={value} onChange={onChange} options={JUSTIFY_OPTIONS} />;
+  }
+
+  // Align items
+  if (prop === "align-items") {
+    return <ToggleButtons value={value} onChange={onChange} options={ALIGN_OPTIONS} />;
+  }
+
+  // Text align
+  if (prop === "text-align") {
+    return <ToggleButtons value={value} onChange={onChange} options={TEXT_ALIGN_OPTIONS} />;
+  }
+
+  // Font weight
+  if (prop === "font-weight") {
+    return <SelectInput value={value} onChange={onChange} options={FONT_WEIGHT_OPTIONS} />;
+  }
+
+  // Opacity
+  if (prop === "opacity") {
+    return <OpacityInput value={value} onChange={onChange} />;
+  }
+
+  // Border radius
+  if (prop === "border-radius") {
+    return <BorderRadiusInput value={value} onChange={onChange} />;
+  }
+
+  // Z-index
+  if (prop === "z-index") {
+    return <ZIndexInput value={value} onChange={onChange} />;
+  }
+
+  // Spacing (padding, margin, gap)
+  if (prop === "padding" || prop === "margin" || prop === "gap") {
+    return <SpacingInput value={value} onChange={onChange} presets={SPACING_PRESETS} />;
+  }
+
+  // Font size
+  if (prop === "font-size") {
+    return <SpacingInput value={value} onChange={onChange} presets={FONT_SIZE_PRESETS} />;
+  }
+
+  // Sizing (width, height, etc.)
+  if (prop.includes("width") || prop.includes("height")) {
+    return <SpacingInput value={value} onChange={onChange} presets={SIZING_PRESETS} />;
+  }
+
+  // Position values (top, right, bottom, left)
+  if (prop === "top" || prop === "right" || prop === "bottom" || prop === "left") {
+    return <SpacingInput value={value} onChange={onChange} presets={[0, 4, 8, 16, "auto"]} />;
+  }
+
+  // Line height
+  if (prop === "line-height") {
+    return <SpacingInput value={value} onChange={onChange} presets={[1, 1.25, 1.5, 1.75, 2]} showUnit={false} />;
+  }
+
+  // Default text input
+  return (
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={`w-full text-xs px-2 py-1 rounded border bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] ${
+        isChanged ? "border-[var(--primary)] bg-[var(--primary)]/5" : "border-[var(--border)]"
+      }`}
+    />
+  );
+}
+
+// ============================================
+// END SMART INPUT COMPONENTS
+// ============================================
 
 interface ElementInfo {
   element: HTMLElement;
@@ -153,6 +666,7 @@ export function ElementInspector() {
   const [panelPosition, setPanelPosition] = useState({ x: 16, y: 16 });
   const [isDragging, setIsDragging] = useState(false);
   const [selectedRect, setSelectedRect] = useState<DOMRect | null>(null);
+  const [navigationHistory, setNavigationHistory] = useState<HTMLElement[]>([]);
   const dragStartRef = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
   const originalStylesRef = useRef<Map<string, string>>(new Map());
 
@@ -236,6 +750,22 @@ export function ElementInspector() {
     return captured;
   }, []);
 
+  // Block all interactions when inspector is active (prevents link navigation)
+  const blockInteraction = useCallback(
+    (e: Event) => {
+      if (!isActive) return;
+      const target = e.target as HTMLElement;
+      if (target.closest("[data-inspector]")) return;
+
+      // Block all default behaviors (link navigation, form submission, etc.)
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      return false;
+    },
+    [isActive]
+  );
+
   // Handle element click
   const handleClick = useCallback(
     (e: MouseEvent) => {
@@ -246,6 +776,7 @@ export function ElementInspector() {
 
       e.preventDefault();
       e.stopPropagation();
+      e.stopImmediatePropagation();
 
       const classes = Array.from(target.classList);
 
@@ -263,6 +794,7 @@ export function ElementInspector() {
       setHovered(null);
       setNotes("");
       setCustomProps([]);
+      setNavigationHistory([]); // Clear history when selecting a new element
     },
     [isActive, captureStyles]
   );
@@ -341,18 +873,25 @@ export function ElementInspector() {
   // Event listeners
   useEffect(() => {
     if (isActive) {
+      // Block mousedown and pointerdown to prevent link navigation before click fires
+      document.addEventListener("mousedown", blockInteraction, true);
+      document.addEventListener("pointerdown", blockInteraction, true);
+      document.addEventListener("auxclick", blockInteraction, true); // Middle-click
       document.addEventListener("click", handleClick, true);
       document.addEventListener("mousemove", handleMouseMove, true);
       document.addEventListener("keydown", handleKeyDown);
       document.body.style.cursor = "crosshair";
     }
     return () => {
+      document.removeEventListener("mousedown", blockInteraction, true);
+      document.removeEventListener("pointerdown", blockInteraction, true);
+      document.removeEventListener("auxclick", blockInteraction, true);
       document.removeEventListener("click", handleClick, true);
       document.removeEventListener("mousemove", handleMouseMove, true);
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.cursor = "";
     };
-  }, [isActive, handleClick, handleMouseMove, handleKeyDown]);
+  }, [isActive, blockInteraction, handleClick, handleMouseMove, handleKeyDown]);
 
   // Dragging logic
   const handleDragStart = (e: React.MouseEvent) => {
@@ -501,6 +1040,7 @@ ${Object.entries(styles)
     setHovered(null);
     setNotes("");
     setCustomProps([]);
+    setNavigationHistory([]);
   };
 
   if (hidden) return null;
@@ -682,6 +1222,8 @@ ${Object.entries(styles)
               onClick={() => {
                 const parent = selected.element.parentElement;
                 if (parent && parent !== document.body) {
+                  // Push current element to history before navigating up
+                  setNavigationHistory(prev => [...prev, selected.element]);
                   const classes = Array.from(parent.classList);
                   setSelected({
                     element: parent,
@@ -701,27 +1243,51 @@ ${Object.entries(styles)
             </button>
             <span className="text-xs text-[var(--foreground-muted)]">
               {selected.element.tagName.toLowerCase()}
+              {navigationHistory.length > 0 && (
+                <span className="ml-1 text-[var(--primary)]">({navigationHistory.length})</span>
+              )}
             </span>
             <button
               onClick={() => {
-                const firstChild = selected.element.firstElementChild as HTMLElement | null;
-                if (firstChild) {
-                  const classes = Array.from(firstChild.classList);
+                // First check if we have history to go back to
+                if (navigationHistory.length > 0) {
+                  const previousChild = navigationHistory[navigationHistory.length - 1];
+                  setNavigationHistory(prev => prev.slice(0, -1));
+                  const classes = Array.from(previousChild.classList);
                   setSelected({
-                    element: firstChild,
-                    selector: generateSelector(firstChild),
-                    path: getParentPath(firstChild),
+                    element: previousChild,
+                    selector: generateSelector(previousChild),
+                    path: getParentPath(previousChild),
                     classes,
-                    dataElement: firstChild.getAttribute("data-element"),
+                    dataElement: previousChild.getAttribute("data-element"),
                     suggestedComponent: guessComponentName(classes),
                   });
-                  setStyles(captureStyles(firstChild));
+                  setStyles(captureStyles(previousChild));
+                } else {
+                  // Otherwise go to first child
+                  const firstChild = selected.element.firstElementChild as HTMLElement | null;
+                  if (firstChild) {
+                    const classes = Array.from(firstChild.classList);
+                    setSelected({
+                      element: firstChild,
+                      selector: generateSelector(firstChild),
+                      path: getParentPath(firstChild),
+                      classes,
+                      dataElement: firstChild.getAttribute("data-element"),
+                      suggestedComponent: guessComponentName(classes),
+                    });
+                    setStyles(captureStyles(firstChild));
+                  }
                 }
               }}
-              disabled={!selected.element.firstElementChild}
-              className="flex items-center gap-1 text-xs text-[var(--foreground-muted)] hover:text-[var(--foreground)] disabled:opacity-30"
+              disabled={!selected.element.firstElementChild && navigationHistory.length === 0}
+              className={`flex items-center gap-1 text-xs hover:text-[var(--foreground)] disabled:opacity-30 ${
+                navigationHistory.length > 0
+                  ? "text-[var(--primary)] font-medium"
+                  : "text-[var(--foreground-muted)]"
+              }`}
             >
-              Child <ChevronDown className="w-3 h-3" />
+              {navigationHistory.length > 0 ? "Back" : "Child"} <ChevronDown className="w-3 h-3" />
             </button>
           </div>
 
@@ -766,26 +1332,22 @@ ${Object.entries(styles)
                     )}
                   </button>
                   {isExpanded && (
-                    <div className="px-3 pb-2 space-y-1.5">
+                    <div className="px-3 pb-3 space-y-3">
                       {groupStyles.map((prop) => {
                         const value = styles[prop];
                         const isChanged = originalStylesRef.current.get(prop) !== value;
                         return (
-                          <div key={prop} className="flex items-center gap-2">
+                          <div key={prop} className="space-y-1">
                             <label
-                              className={`text-xs w-24 truncate flex-shrink-0 ${isChanged ? "text-[var(--primary)] font-medium" : "text-[var(--foreground-muted)]"}`}
+                              className={`text-xs block ${isChanged ? "text-[var(--primary)] font-medium" : "text-[var(--foreground-muted)]"}`}
                               title={prop}
                             >
                               {prop}
+                              {isChanged && <span className="ml-1 text-[10px]">(modified)</span>}
                             </label>
-                            <input
-                              type="text"
-                              value={value}
-                              onChange={(e) => updateStyle(prop, e.target.value)}
-                              className={`flex-1 text-xs px-2 py-1 rounded border bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] ${
-                                isChanged ? "border-[var(--primary)] bg-[var(--primary)]/5" : "border-[var(--border)]"
-                              }`}
-                            />
+                            <div className="pl-0">
+                              {getSmartInput(prop, value, (v) => updateStyle(prop, v), isChanged)}
+                            </div>
                           </div>
                         );
                       })}

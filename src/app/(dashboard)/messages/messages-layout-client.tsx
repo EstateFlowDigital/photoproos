@@ -175,8 +175,8 @@ export function MessagesLayout({ conversations, children }: MessagesLayoutProps)
       </aside>
 
       {/* Main Content Area */}
-      <main className={`messages-content flex-1 flex flex-col bg-[var(--card)] ${
-        !isConversationView ? "hidden md:flex" : "flex"
+      <main className={`messages-content flex-1 flex flex-col min-h-0 bg-[var(--card)] ${
+        !isConversationView ? "hidden md:flex p-6" : "flex"
       }`}>
         {/* Back button on mobile */}
         {isConversationView && (

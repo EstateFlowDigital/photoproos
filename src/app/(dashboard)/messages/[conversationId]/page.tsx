@@ -33,7 +33,7 @@ export default async function ConversationPage({ params }: PageProps) {
   const messages = messagesResult.success ? messagesResult.data.messages : [];
 
   return (
-    <div data-element="messages-conversation-page">
+    <div data-element="messages-conversation-page" className="flex-1 flex flex-col min-h-0">
       <ConversationPageClient
         conversation={conversationResult.data}
         initialMessages={messages}
