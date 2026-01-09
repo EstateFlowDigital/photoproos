@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Dev Tools Flash on Mobile** - Fixed issue where BugProbe, HUD, and DebugBanner would briefly appear on mobile before settings could load and hide them
+  - Components now start hidden by default and only show once settings confirm visibility
+  - Added custom event dispatch for immediate same-tab settings updates
 - **ESLint Unused Variable Warnings** - Prefixed unused variables with underscore to satisfy ESLint rules
   - `leads-page-client.tsx`: `err` → `_err` in catch block
   - `leads/page.tsx`: `organizationId` → `_organizationId`
