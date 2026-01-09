@@ -1,10 +1,20 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useId } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import {
+  ArrowLeft,
+  Plus,
+  Eye,
+  EyeOff,
+  Pencil,
+  Trash2,
+  X,
+  Filter,
+} from "lucide-react";
 import { createFAQ, updateFAQ, deleteFAQ } from "@/lib/actions/marketing-cms";
 import type { FAQ, FAQCategory } from "@prisma/client";
 
@@ -17,14 +27,25 @@ const CATEGORY_LABELS: Record<FAQCategory, string> = {
   technical: "Technical",
 };
 
+const CATEGORY_COLORS: Record<FAQCategory, string> = {
+  general: "bg-gray-500/10 text-gray-600 dark:text-gray-400",
+  pricing: "bg-green-500/10 text-green-600 dark:text-green-400",
+  features: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  billing: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+  getting_started: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+  technical: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
+};
+
 interface Props {
   faqs: FAQ[];
 }
 
 export function FAQsClient({ faqs: initialFaqs }: Props) {
   const router = useRouter();
+  const formId = useId();
+  const filterId = useId();
   const [isPending, startTransition] = useTransition();
-  const [faqs, setFaqs] = useState(initialFaqs);
+  const [faqs] = useState(initialFaqs);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<FAQCategory | "all">("all");
@@ -41,6 +62,15 @@ export function FAQsClient({ faqs: initialFaqs }: Props) {
     if (categoryFilter !== "all" && faq.category !== categoryFilter) return false;
     return true;
   });
+
+  // Group FAQs by category for better organization
+  const groupedFaqs = filteredFaqs.reduce((acc, faq) => {
+    if (!acc[faq.category]) {
+      acc[faq.category] = [];
+    }
+    acc[faq.category].push(faq);
+    return acc;
+  }, {} as Record<FAQCategory, FAQ[]>);
 
   const resetForm = () => {
     setFormData({
@@ -119,76 +149,132 @@ export function FAQsClient({ faqs: initialFaqs }: Props) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <Link
             href="/super-admin/marketing"
-            className="p-2 rounded-lg hover:bg-[var(--background-elevated)] transition-colors"
+            className={cn(
+              "p-2 rounded-lg hover:bg-[var(--background-elevated)] transition-colors",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
+              "min-w-[44px] min-h-[44px] flex items-center justify-center"
+            )}
+            aria-label="Back to Marketing CMS"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-[var(--foreground-muted)]">
-              <path d="m12 19-7-7 7-7" />
-              <path d="M19 12H5" />
-            </svg>
+            <ArrowLeft className="w-5 h-5 text-[var(--foreground-muted)]" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-[var(--foreground)]">FAQs</h1>
-            <p className="text-[var(--foreground-muted)]">{faqs.length} questions</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-[var(--foreground)]">
+              FAQs
+            </h1>
+            <p className="text-sm text-[var(--foreground-muted)]">
+              {faqs.length} question{faqs.length !== 1 ? "s" : ""}
+            </p>
           </div>
         </div>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="btn btn-primary flex items-center gap-2"
+          className={cn(
+            "btn btn-primary inline-flex items-center justify-center gap-2",
+            "min-h-[44px] px-4 self-start sm:self-auto"
+          )}
+          aria-expanded={showAddForm}
+          aria-controls={`${formId}-form`}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-            <path d="M5 12h14" />
-            <path d="M12 5v14" />
-          </svg>
-          Add FAQ
+          {showAddForm ? (
+            <>
+              <X className="w-4 h-4" aria-hidden="true" />
+              <span>Cancel</span>
+            </>
+          ) : (
+            <>
+              <Plus className="w-4 h-4" aria-hidden="true" />
+              <span>Add FAQ</span>
+            </>
+          )}
         </button>
-      </div>
+      </header>
 
       {/* Add/Edit Form */}
       {showAddForm && (
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-6">
-          <h3 className="text-lg font-semibold text-[var(--foreground)] mb-4">
+        <section
+          id={`${formId}-form`}
+          className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 sm:p-6"
+          aria-labelledby={`${formId}-title`}
+        >
+          <h2
+            id={`${formId}-title`}
+            className="text-lg font-semibold text-[var(--foreground)] mb-4"
+          >
             {editingId ? "Edit FAQ" : "New FAQ"}
-          </h3>
+          </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[var(--foreground-muted)] mb-1">
-                Question *
+              <label
+                htmlFor={`${formId}-question`}
+                className="block text-sm font-medium text-[var(--foreground-muted)] mb-1.5"
+              >
+                Question <span className="text-red-500" aria-hidden="true">*</span>
+                <span className="sr-only">(required)</span>
               </label>
               <input
+                id={`${formId}-question`}
                 type="text"
                 value={formData.question}
                 onChange={(e) => setFormData({ ...formData, question: e.target.value })}
                 required
-                className="w-full px-3 py-2 rounded-lg bg-[var(--background-elevated)] border border-[var(--border)] text-[var(--foreground)]"
+                className={cn(
+                  "w-full px-3 py-2.5 rounded-lg min-h-[44px]",
+                  "bg-[var(--background-elevated)] border border-[var(--border)]",
+                  "text-[var(--foreground)] placeholder:text-[var(--foreground-muted)]",
+                  "focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
+                )}
                 placeholder="What is the question?"
               />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-[var(--foreground-muted)] mb-1">
-                Answer *
+              <label
+                htmlFor={`${formId}-answer`}
+                className="block text-sm font-medium text-[var(--foreground-muted)] mb-1.5"
+              >
+                Answer <span className="text-red-500" aria-hidden="true">*</span>
+                <span className="sr-only">(required)</span>
               </label>
               <textarea
+                id={`${formId}-answer`}
                 value={formData.answer}
                 onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
                 required
                 rows={4}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--background-elevated)] border border-[var(--border)] text-[var(--foreground)]"
+                className={cn(
+                  "w-full px-3 py-2.5 rounded-lg",
+                  "bg-[var(--background-elevated)] border border-[var(--border)]",
+                  "text-[var(--foreground)] placeholder:text-[var(--foreground-muted)]",
+                  "focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent",
+                  "min-h-[120px] resize-y"
+                )}
                 placeholder="The answer to the question..."
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-[var(--foreground-muted)] mb-1">
+                <label
+                  htmlFor={`${formId}-category`}
+                  className="block text-sm font-medium text-[var(--foreground-muted)] mb-1.5"
+                >
                   Category
                 </label>
                 <select
+                  id={`${formId}-category`}
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value as FAQCategory })}
-                  className="w-full px-3 py-2 rounded-lg bg-[var(--background-elevated)] border border-[var(--border)] text-[var(--foreground)]"
+                  className={cn(
+                    "w-full px-3 py-2.5 rounded-lg min-h-[44px]",
+                    "bg-[var(--background-elevated)] border border-[var(--border)]",
+                    "text-[var(--foreground)]",
+                    "focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
+                  )}
                 >
                   {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
                     <option key={value} value={value}>
@@ -198,112 +284,178 @@ export function FAQsClient({ faqs: initialFaqs }: Props) {
                 </select>
               </div>
               <div className="flex items-end">
-                <label className="flex items-center gap-2">
+                <label className="flex items-center gap-2 cursor-pointer min-h-[44px]">
                   <input
                     type="checkbox"
                     checked={formData.isVisible}
                     onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
-                    className="rounded"
+                    className="w-4 h-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]"
                   />
-                  <span className="text-sm text-[var(--foreground)]">Visible</span>
+                  <span className="text-sm text-[var(--foreground)]">Visible on website</span>
                 </label>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <button type="submit" disabled={isPending} className="btn btn-primary">
-                {editingId ? "Save Changes" : "Add FAQ"}
-              </button>
-              <button type="button" onClick={resetForm} className="btn btn-secondary">
+
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={resetForm}
+                className="btn btn-secondary min-h-[44px] px-4"
+              >
                 Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isPending}
+                className="btn btn-primary min-h-[44px] px-4"
+              >
+                {isPending ? "Saving..." : editingId ? "Save Changes" : "Add FAQ"}
               </button>
             </div>
           </form>
-        </div>
+        </section>
       )}
 
       {/* Filter */}
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-[var(--foreground-muted)]">Category:</span>
+      <div className="flex items-center gap-3 flex-wrap">
+        <label htmlFor={filterId} className="flex items-center gap-2 text-sm text-[var(--foreground-muted)]">
+          <Filter className="w-4 h-4" aria-hidden="true" />
+          <span>Category:</span>
+        </label>
         <select
+          id={filterId}
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value as FAQCategory | "all")}
-          className="px-3 py-1.5 rounded-lg bg-[var(--background-elevated)] border border-[var(--border)] text-[var(--foreground)] text-sm"
+          className={cn(
+            "px-3 py-2 rounded-lg min-h-[44px]",
+            "bg-[var(--background-elevated)] border border-[var(--border)]",
+            "text-[var(--foreground)] text-sm",
+            "focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
+          )}
         >
-          <option value="all">All Categories</option>
-          {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
+          <option value="all">All Categories ({faqs.length})</option>
+          {Object.entries(CATEGORY_LABELS).map(([value, label]) => {
+            const count = faqs.filter((f) => f.category === value).length;
+            return (
+              <option key={value} value={value}>
+                {label} ({count})
+              </option>
+            );
+          })}
         </select>
+        {categoryFilter !== "all" && (
+          <button
+            onClick={() => setCategoryFilter("all")}
+            className={cn(
+              "text-sm text-[var(--primary)] hover:underline",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] rounded px-1",
+              "min-h-[44px] inline-flex items-center"
+            )}
+          >
+            Clear filter
+          </button>
+        )}
       </div>
 
       {/* FAQs List */}
-      <div className="space-y-3">
+      <section aria-label="FAQs list">
         {filteredFaqs.length === 0 ? (
-          <div className="p-12 text-center text-[var(--foreground-muted)] rounded-lg border border-[var(--border)]">
-            No FAQs found. Add your first one above.
+          <div className="p-8 sm:p-12 text-center text-[var(--foreground-muted)] rounded-lg border border-[var(--border)]">
+            <p>
+              {categoryFilter === "all"
+                ? "No FAQs yet. Add your first one above."
+                : `No FAQs in the "${CATEGORY_LABELS[categoryFilter]}" category.`}
+            </p>
           </div>
         ) : (
-          filteredFaqs.map((faq) => (
-            <div
-              key={faq.id}
-              className={cn(
-                "p-4 rounded-lg border transition-all",
-                faq.isVisible
-                  ? "bg-[var(--card)] border-[var(--border)]"
-                  : "bg-[var(--background-tertiary)] border-[var(--border)] opacity-60"
-              )}
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--background-tertiary)] text-[var(--foreground-muted)]">
-                      {CATEGORY_LABELS[faq.category]}
-                    </span>
-                  </div>
-                  <h4 className="font-medium text-[var(--foreground)] mb-2">{faq.question}</h4>
-                  <p className="text-sm text-[var(--foreground-muted)] line-clamp-2">{faq.answer}</p>
-                </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <button
-                    onClick={() => handleToggleVisibility(faq)}
-                    disabled={isPending}
-                    className="p-1.5 rounded hover:bg-[var(--background-elevated)] transition-colors"
-                    title={faq.isVisible ? "Hide" : "Show"}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cn("w-4 h-4", faq.isVisible ? "text-[var(--foreground-muted)]" : "text-[var(--foreground-muted)] opacity-50")}>
-                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleEdit(faq)}
-                    className="p-1.5 rounded hover:bg-[var(--background-elevated)] transition-colors"
-                    title="Edit"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-[var(--foreground-muted)]">
-                      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleDelete(faq.id)}
-                    disabled={isPending}
-                    className="p-1.5 rounded hover:bg-red-500/10 transition-colors"
-                    title="Delete"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-red-500">
-                      <path d="M3 6h18" />
-                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                    </svg>
-                  </button>
+          <div className="space-y-4">
+            {Object.entries(groupedFaqs).map(([category, categoryFaqs]) => (
+              <div key={category}>
+                {categoryFilter === "all" && (
+                  <h2 className="text-sm font-medium text-[var(--foreground-muted)] mb-2 px-1">
+                    {CATEGORY_LABELS[category as FAQCategory]} ({categoryFaqs.length})
+                  </h2>
+                )}
+                <div className="space-y-3">
+                  {categoryFaqs.map((faq) => (
+                    <article
+                      key={faq.id}
+                      className={cn(
+                        "p-4 rounded-lg border transition-all",
+                        faq.isVisible
+                          ? "bg-[var(--card)] border-[var(--border)]"
+                          : "bg-[var(--background-tertiary)] border-[var(--border)] opacity-60"
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3 sm:gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-2">
+                            <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", CATEGORY_COLORS[faq.category])}>
+                              {CATEGORY_LABELS[faq.category]}
+                            </span>
+                            {!faq.isVisible && (
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-gray-500/10 text-gray-500">
+                                Hidden
+                              </span>
+                            )}
+                          </div>
+                          <h3 className="font-medium text-[var(--foreground)] mb-2 text-sm sm:text-base">
+                            {faq.question}
+                          </h3>
+                          <p className="text-sm text-[var(--foreground-muted)] line-clamp-2">
+                            {faq.answer}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <button
+                            onClick={() => handleToggleVisibility(faq)}
+                            disabled={isPending}
+                            className={cn(
+                              "p-2 rounded-lg hover:bg-[var(--background-elevated)] transition-colors",
+                              "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
+                              "min-w-[36px] min-h-[36px] flex items-center justify-center"
+                            )}
+                            aria-label={faq.isVisible ? "Hide FAQ" : "Show FAQ"}
+                          >
+                            {faq.isVisible ? (
+                              <Eye className="w-4 h-4 text-[var(--foreground-muted)]" />
+                            ) : (
+                              <EyeOff className="w-4 h-4 text-[var(--foreground-muted)]" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => handleEdit(faq)}
+                            className={cn(
+                              "p-2 rounded-lg hover:bg-[var(--background-elevated)] transition-colors",
+                              "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
+                              "min-w-[36px] min-h-[36px] flex items-center justify-center"
+                            )}
+                            aria-label="Edit FAQ"
+                          >
+                            <Pencil className="w-4 h-4 text-[var(--foreground-muted)]" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(faq.id)}
+                            disabled={isPending}
+                            className={cn(
+                              "p-2 rounded-lg hover:bg-red-500/10 transition-colors",
+                              "focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500",
+                              "min-w-[36px] min-h-[36px] flex items-center justify-center"
+                            )}
+                            aria-label="Delete FAQ"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
                 </div>
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

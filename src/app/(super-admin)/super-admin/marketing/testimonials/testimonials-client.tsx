@@ -1,15 +1,24 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useId } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
+  ArrowLeft,
+  Plus,
+  Eye,
+  EyeOff,
+  Pencil,
+  Trash2,
+  Star,
+  X,
+} from "lucide-react";
+import {
   createTestimonial,
   updateTestimonial,
   deleteTestimonial,
-  reorderTestimonials,
 } from "@/lib/actions/marketing-cms";
 import type { Testimonial, TestimonialIndustry } from "@prisma/client";
 
@@ -29,8 +38,9 @@ interface Props {
 
 export function TestimonialsClient({ testimonials: initialTestimonials }: Props) {
   const router = useRouter();
+  const formId = useId();
   const [isPending, startTransition] = useTransition();
-  const [testimonials, setTestimonials] = useState(initialTestimonials);
+  const [testimonials] = useState(initialTestimonials);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
@@ -141,102 +151,176 @@ export function TestimonialsClient({ testimonials: initialTestimonials }: Props)
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <Link
             href="/super-admin/marketing"
-            className="p-2 rounded-lg hover:bg-[var(--background-elevated)] transition-colors"
+            className={cn(
+              "p-2 rounded-lg hover:bg-[var(--background-elevated)] transition-colors",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
+              "min-w-[44px] min-h-[44px] flex items-center justify-center"
+            )}
+            aria-label="Back to Marketing CMS"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-[var(--foreground-muted)]">
-              <path d="m12 19-7-7 7-7" />
-              <path d="M19 12H5" />
-            </svg>
+            <ArrowLeft className="w-5 h-5 text-[var(--foreground-muted)]" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-[var(--foreground)]">Testimonials</h1>
-            <p className="text-[var(--foreground-muted)]">{testimonials.length} testimonials</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-[var(--foreground)]">
+              Testimonials
+            </h1>
+            <p className="text-sm text-[var(--foreground-muted)]">
+              {testimonials.length} testimonial{testimonials.length !== 1 ? "s" : ""}
+            </p>
           </div>
         </div>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="btn btn-primary flex items-center gap-2"
+          className={cn(
+            "btn btn-primary inline-flex items-center justify-center gap-2",
+            "min-h-[44px] px-4 self-start sm:self-auto"
+          )}
+          aria-expanded={showAddForm}
+          aria-controls={`${formId}-form`}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-            <path d="M5 12h14" />
-            <path d="M12 5v14" />
-          </svg>
-          Add Testimonial
+          {showAddForm ? (
+            <>
+              <X className="w-4 h-4" aria-hidden="true" />
+              <span>Cancel</span>
+            </>
+          ) : (
+            <>
+              <Plus className="w-4 h-4" aria-hidden="true" />
+              <span>Add Testimonial</span>
+            </>
+          )}
         </button>
-      </div>
+      </header>
 
       {/* Add/Edit Form */}
       {showAddForm && (
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-6">
-          <h3 className="text-lg font-semibold text-[var(--foreground)] mb-4">
+        <section
+          id={`${formId}-form`}
+          className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 sm:p-6"
+          aria-labelledby={`${formId}-title`}
+        >
+          <h2
+            id={`${formId}-title`}
+            className="text-lg font-semibold text-[var(--foreground)] mb-4"
+          >
             {editingId ? "Edit Testimonial" : "New Testimonial"}
-          </h3>
+          </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[var(--foreground-muted)] mb-1">
-                Quote *
+              <label
+                htmlFor={`${formId}-quote`}
+                className="block text-sm font-medium text-[var(--foreground-muted)] mb-1.5"
+              >
+                Quote <span className="text-red-500" aria-hidden="true">*</span>
+                <span className="sr-only">(required)</span>
               </label>
               <textarea
+                id={`${formId}-quote`}
                 value={formData.quote}
                 onChange={(e) => setFormData({ ...formData, quote: e.target.value })}
                 required
                 rows={3}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--background-elevated)] border border-[var(--border)] text-[var(--foreground)]"
+                className={cn(
+                  "w-full px-3 py-2.5 rounded-lg",
+                  "bg-[var(--background-elevated)] border border-[var(--border)]",
+                  "text-[var(--foreground)] placeholder:text-[var(--foreground-muted)]",
+                  "focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent",
+                  "min-h-[100px] resize-y"
+                )}
                 placeholder="What the customer said..."
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-[var(--foreground-muted)] mb-1">
-                  Author Name *
+                <label
+                  htmlFor={`${formId}-author`}
+                  className="block text-sm font-medium text-[var(--foreground-muted)] mb-1.5"
+                >
+                  Author Name <span className="text-red-500" aria-hidden="true">*</span>
+                  <span className="sr-only">(required)</span>
                 </label>
                 <input
+                  id={`${formId}-author`}
                   type="text"
                   value={formData.authorName}
                   onChange={(e) => setFormData({ ...formData, authorName: e.target.value })}
                   required
-                  className="w-full px-3 py-2 rounded-lg bg-[var(--background-elevated)] border border-[var(--border)] text-[var(--foreground)]"
+                  className={cn(
+                    "w-full px-3 py-2.5 rounded-lg min-h-[44px]",
+                    "bg-[var(--background-elevated)] border border-[var(--border)]",
+                    "text-[var(--foreground)] placeholder:text-[var(--foreground-muted)]",
+                    "focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
+                  )}
                   placeholder="John Smith"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--foreground-muted)] mb-1">
+                <label
+                  htmlFor={`${formId}-role`}
+                  className="block text-sm font-medium text-[var(--foreground-muted)] mb-1.5"
+                >
                   Role
                 </label>
                 <input
+                  id={`${formId}-role`}
                   type="text"
                   value={formData.authorRole}
                   onChange={(e) => setFormData({ ...formData, authorRole: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg bg-[var(--background-elevated)] border border-[var(--border)] text-[var(--foreground)]"
+                  className={cn(
+                    "w-full px-3 py-2.5 rounded-lg min-h-[44px]",
+                    "bg-[var(--background-elevated)] border border-[var(--border)]",
+                    "text-[var(--foreground)] placeholder:text-[var(--foreground-muted)]",
+                    "focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
+                  )}
                   placeholder="CEO"
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-[var(--foreground-muted)] mb-1">
+                <label
+                  htmlFor={`${formId}-company`}
+                  className="block text-sm font-medium text-[var(--foreground-muted)] mb-1.5"
+                >
                   Company
                 </label>
                 <input
+                  id={`${formId}-company`}
                   type="text"
                   value={formData.companyName}
                   onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg bg-[var(--background-elevated)] border border-[var(--border)] text-[var(--foreground)]"
+                  className={cn(
+                    "w-full px-3 py-2.5 rounded-lg min-h-[44px]",
+                    "bg-[var(--background-elevated)] border border-[var(--border)]",
+                    "text-[var(--foreground)] placeholder:text-[var(--foreground-muted)]",
+                    "focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
+                  )}
                   placeholder="Acme Inc."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--foreground-muted)] mb-1">
+                <label
+                  htmlFor={`${formId}-industry`}
+                  className="block text-sm font-medium text-[var(--foreground-muted)] mb-1.5"
+                >
                   Industry
                 </label>
                 <select
+                  id={`${formId}-industry`}
                   value={formData.targetIndustry}
                   onChange={(e) => setFormData({ ...formData, targetIndustry: e.target.value as TestimonialIndustry })}
-                  className="w-full px-3 py-2 rounded-lg bg-[var(--background-elevated)] border border-[var(--border)] text-[var(--foreground)]"
+                  className={cn(
+                    "w-full px-3 py-2.5 rounded-lg min-h-[44px]",
+                    "bg-[var(--background-elevated)] border border-[var(--border)]",
+                    "text-[var(--foreground)]",
+                    "focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
+                  )}
                 >
                   {Object.entries(INDUSTRY_LABELS).map(([value, label]) => (
                     <option key={value} value={value}>
@@ -246,132 +330,167 @@ export function TestimonialsClient({ testimonials: initialTestimonials }: Props)
                 </select>
               </div>
             </div>
-            <div className="flex items-center gap-6">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={formData.showOnAllPages}
-                  onChange={(e) => setFormData({ ...formData, showOnAllPages: e.target.checked })}
-                  className="rounded"
-                />
-                <span className="text-sm text-[var(--foreground)]">Show on all pages</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={formData.isFeatured}
-                  onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
-                  className="rounded"
-                />
-                <span className="text-sm text-[var(--foreground)]">Featured</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={formData.isVisible}
-                  onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
-                  className="rounded"
-                />
-                <span className="text-sm text-[var(--foreground)]">Visible</span>
-              </label>
-            </div>
-            <div className="flex items-center gap-3">
-              <button type="submit" disabled={isPending} className="btn btn-primary">
-                {editingId ? "Save Changes" : "Add Testimonial"}
-              </button>
-              <button type="button" onClick={resetForm} className="btn btn-secondary">
+
+            {/* Checkbox options */}
+            <fieldset className="space-y-3">
+              <legend className="sr-only">Display options</legend>
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+                <label className="flex items-center gap-2 cursor-pointer min-h-[44px]">
+                  <input
+                    type="checkbox"
+                    checked={formData.showOnAllPages}
+                    onChange={(e) => setFormData({ ...formData, showOnAllPages: e.target.checked })}
+                    className="w-4 h-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                  />
+                  <span className="text-sm text-[var(--foreground)]">Show on all pages</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer min-h-[44px]">
+                  <input
+                    type="checkbox"
+                    checked={formData.isFeatured}
+                    onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
+                    className="w-4 h-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                  />
+                  <span className="text-sm text-[var(--foreground)]">Featured</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer min-h-[44px]">
+                  <input
+                    type="checkbox"
+                    checked={formData.isVisible}
+                    onChange={(e) => setFormData({ ...formData, isVisible: e.target.checked })}
+                    className="w-4 h-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]"
+                  />
+                  <span className="text-sm text-[var(--foreground)]">Visible</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={resetForm}
+                className="btn btn-secondary min-h-[44px] px-4"
+              >
                 Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isPending}
+                className="btn btn-primary min-h-[44px] px-4"
+              >
+                {isPending ? "Saving..." : editingId ? "Save Changes" : "Add Testimonial"}
               </button>
             </div>
           </form>
-        </div>
+        </section>
       )}
 
       {/* Testimonials Grid */}
-      <div className="grid grid-cols-2 gap-4">
-        {testimonials.length === 0 ? (
-          <div className="col-span-2 p-12 text-center text-[var(--foreground-muted)] rounded-lg border border-[var(--border)]">
-            No testimonials yet. Add your first one above.
-          </div>
-        ) : (
-          testimonials.map((testimonial) => (
-            <div
-              key={testimonial.id}
-              className={cn(
-                "p-6 rounded-lg border transition-all",
-                testimonial.isVisible
-                  ? "bg-[var(--card)] border-[var(--border)]"
-                  : "bg-[var(--background-tertiary)] border-[var(--border)] opacity-60"
-              )}
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  {testimonial.isFeatured && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500">
-                      Featured
-                    </span>
-                  )}
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--background-tertiary)] text-[var(--foreground-muted)]">
-                    {INDUSTRY_LABELS[testimonial.targetIndustry]}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => handleToggleVisibility(testimonial)}
-                    disabled={isPending}
-                    className="p-1.5 rounded hover:bg-[var(--background-elevated)] transition-colors"
-                    title={testimonial.isVisible ? "Hide" : "Show"}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cn("w-4 h-4", testimonial.isVisible ? "text-[var(--foreground-muted)]" : "text-[var(--foreground-muted)] opacity-50")}>
-                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleEdit(testimonial)}
-                    className="p-1.5 rounded hover:bg-[var(--background-elevated)] transition-colors"
-                    title="Edit"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-[var(--foreground-muted)]">
-                      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleDelete(testimonial.id)}
-                    disabled={isPending}
-                    className="p-1.5 rounded hover:bg-red-500/10 transition-colors"
-                    title="Delete"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-red-500">
-                      <path d="M3 6h18" />
-                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              <blockquote className="text-[var(--foreground)] mb-4 italic">
-                "{testimonial.quote}"
-              </blockquote>
-              <div className="flex items-center gap-3">
-                {testimonial.authorImage && (
-                  <img
-                    src={testimonial.authorImage}
-                    alt={testimonial.authorName}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                )}
-                <div>
-                  <p className="font-medium text-[var(--foreground)]">{testimonial.authorName}</p>
-                  <p className="text-sm text-[var(--foreground-muted)]">
-                    {[testimonial.authorRole, testimonial.companyName].filter(Boolean).join(", ")}
-                  </p>
-                </div>
-              </div>
+      <section aria-label="Testimonials list">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {testimonials.length === 0 ? (
+            <div className="col-span-full p-8 sm:p-12 text-center text-[var(--foreground-muted)] rounded-lg border border-[var(--border)]">
+              <p>No testimonials yet. Add your first one above.</p>
             </div>
-          ))
-        )}
-      </div>
+          ) : (
+            testimonials.map((testimonial) => (
+              <article
+                key={testimonial.id}
+                className={cn(
+                  "p-4 sm:p-6 rounded-lg border transition-all",
+                  testimonial.isVisible
+                    ? "bg-[var(--card)] border-[var(--border)]"
+                    : "bg-[var(--background-tertiary)] border-[var(--border)] opacity-60"
+                )}
+                aria-label={`Testimonial from ${testimonial.authorName}`}
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between mb-4 gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {testimonial.isFeatured && (
+                      <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-600 dark:text-yellow-400">
+                        <Star className="w-3 h-3" aria-hidden="true" />
+                        Featured
+                      </span>
+                    )}
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--background-tertiary)] text-[var(--foreground-muted)]">
+                      {INDUSTRY_LABELS[testimonial.targetIndustry]}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <button
+                      onClick={() => handleToggleVisibility(testimonial)}
+                      disabled={isPending}
+                      className={cn(
+                        "p-2 rounded-lg hover:bg-[var(--background-elevated)] transition-colors",
+                        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
+                        "min-w-[36px] min-h-[36px] flex items-center justify-center"
+                      )}
+                      aria-label={testimonial.isVisible ? "Hide testimonial" : "Show testimonial"}
+                    >
+                      {testimonial.isVisible ? (
+                        <Eye className="w-4 h-4 text-[var(--foreground-muted)]" />
+                      ) : (
+                        <EyeOff className="w-4 h-4 text-[var(--foreground-muted)]" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleEdit(testimonial)}
+                      className={cn(
+                        "p-2 rounded-lg hover:bg-[var(--background-elevated)] transition-colors",
+                        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
+                        "min-w-[36px] min-h-[36px] flex items-center justify-center"
+                      )}
+                      aria-label={`Edit testimonial from ${testimonial.authorName}`}
+                    >
+                      <Pencil className="w-4 h-4 text-[var(--foreground-muted)]" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(testimonial.id)}
+                      disabled={isPending}
+                      className={cn(
+                        "p-2 rounded-lg hover:bg-red-500/10 transition-colors",
+                        "focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500",
+                        "min-w-[36px] min-h-[36px] flex items-center justify-center"
+                      )}
+                      aria-label={`Delete testimonial from ${testimonial.authorName}`}
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Quote */}
+                <blockquote className="text-[var(--foreground)] mb-4 italic text-sm sm:text-base leading-relaxed">
+                  "{testimonial.quote}"
+                </blockquote>
+
+                {/* Author */}
+                <footer className="flex items-center gap-3">
+                  {testimonial.authorImage && (
+                    <img
+                      src={testimonial.authorImage}
+                      alt=""
+                      className="w-10 h-10 rounded-full object-cover"
+                      aria-hidden="true"
+                    />
+                  )}
+                  <div>
+                    <cite className="font-medium text-[var(--foreground)] not-italic text-sm sm:text-base">
+                      {testimonial.authorName}
+                    </cite>
+                    {(testimonial.authorRole || testimonial.companyName) && (
+                      <p className="text-xs sm:text-sm text-[var(--foreground-muted)]">
+                        {[testimonial.authorRole, testimonial.companyName].filter(Boolean).join(", ")}
+                      </p>
+                    )}
+                  </div>
+                </footer>
+              </article>
+            ))
+          )}
+        </div>
+      </section>
     </div>
   );
 }
