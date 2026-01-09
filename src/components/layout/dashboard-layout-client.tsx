@@ -386,7 +386,7 @@ export function DashboardLayoutClient({
       <div className="shell-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         {/* Topbar with mobile menu button */}
         <header className="sticky top-0 z-40 border-b border-[var(--card-border)] bg-[var(--card)]">
-          <div className="flex items-center gap-3 px-4 py-3 sm:h-16 sm:py-0 lg:px-6">
+          <div className="flex items-center gap-3 sm:h-16">
             <DashboardMenuButton onClick={handleOpenMenu} />
             <div className="flex-1 min-w-0">
               <DashboardTopbar
