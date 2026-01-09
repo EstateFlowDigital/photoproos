@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Created `STUB_PAGES.md` documentation with links to all 164 stub pages (live routes and file paths)
 
 ### Fixed
+- **Dynamic Route Conflict in Products** - Removed conflicting `/products/[id]` stub that prevented deployment due to Next.js dynamic route naming conflict with `/products/[catalogId]`
 - **Mobile Responsiveness Across Dashboard** - Comprehensive mobile-first fixes across major pages
   - **Invoices Page**: Stack filters vertically on mobile, full-width search, 44px touch targets on selects
   - **Clients Page**: Responsive filter layout, mobile-friendly bulk action bar with proper margins
