@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { QuickThemeSwitcher } from "@/components/ui/quick-theme-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { KeyboardShortcutsModal } from "@/components/ui/keyboard-shortcuts-modal";
-import { ChevronDown, Bell, HelpCircle, Search, Zap } from "lucide-react";
+import { ChevronDown, Bell, HelpCircle, Search } from "lucide-react";
 import {
   getNotifications,
   markNotificationAsRead,
@@ -512,10 +512,8 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
           onClick={() => setQuickActionsOpen((prev) => !prev)}
           className="flex h-9 items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 text-sm font-medium text-foreground transition-all hover:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
         >
-          <IconBadge size="sm" tone={quickActionsOpen ? "primary" : "ghost"}>
-            <Zap className="h-3.5 w-3.5" />
-          </IconBadge>
-          <span className="hidden lg:inline">Quick Actions</span>
+            <BoltIcon className="h-4 w-4" />
+            <span className="hidden lg:inline">Quick Actions</span>
           <ChevronDown
             className={cn(
               "h-4 w-4 transition-transform",
@@ -1070,6 +1068,14 @@ function UserPlusIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM2.046 15.253c-.058.468.172.92.57 1.175A9.953 9.953 0 0 0 8 18c1.982 0 3.83-.578 5.384-1.573.398-.254.628-.707.57-1.175a6.001 6.001 0 0 0-11.908 0ZM16.75 5.75a.75.75 0 0 0-1.5 0v2h-2a.75.75 0 0 0 0 1.5h2v2a.75.75 0 0 0 1.5 0v-2h2a.75.75 0 0 0 0-1.5h-2v-2Z" />
+    </svg>
+  );
+}
+
+function BoltIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M11.983 1.907a.75.75 0 0 0-1.292-.657l-8.5 9.5A.75.75 0 0 0 2.75 12h6.572l-1.305 6.093a.75.75 0 0 0 1.292.657l8.5-9.5A.75.75 0 0 0 17.25 8h-6.572l1.305-6.093Z" />
     </svg>
   );
 }
