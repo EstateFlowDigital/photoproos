@@ -649,7 +649,7 @@ export function SubscriptionPlansSection({
                   key={plan.id}
                   className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div className="flex items-start gap-3">
                       <div
                         className={`flex h-10 w-10 items-center justify-center rounded-lg ${
@@ -1079,7 +1079,7 @@ export function SubscriptionPlansSection({
                   key={experiment.id}
                   className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
                     <div>
                       <div className="flex items-center gap-2">
                         <h4 className="font-medium text-foreground">
