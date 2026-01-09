@@ -56,7 +56,7 @@ export function BulkActionBar({
       <div className="flex items-center gap-2 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-2 shadow-xl">
         {/* Selection Count */}
         <div className="flex items-center gap-2 px-3 py-1.5 border-r border-[var(--card-border)]">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-medium text-white">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-medium text-white">
             {selectedCount}
           </span>
           <span className="text-sm font-medium text-foreground whitespace-nowrap">
@@ -105,7 +105,7 @@ export function BulkActionBar({
         <button
           type="button"
           onClick={onClear}
-          className="ml-1 flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground transition-colors"
+          className="ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground transition-colors"
           aria-label="Clear selection"
         >
           <XIcon className="h-4 w-4" aria-hidden="true" />

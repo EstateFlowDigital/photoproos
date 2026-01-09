@@ -132,7 +132,7 @@ export function ProductsClient({ catalogs }: ProductsClientProps) {
       <div className="auto-grid grid-min-200 grid-gap-4">
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--primary)]/15 text-[var(--primary)]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/15 text-[var(--primary)]">
               <Package className="h-4 w-4" />
             </div>
             <div>
@@ -143,7 +143,7 @@ export function ProductsClient({ catalogs }: ProductsClientProps) {
         </div>
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--success)]/15 text-[var(--success)]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--success)]/15 text-[var(--success)]">
               <CheckCircle className="h-4 w-4" />
             </div>
             <div>
@@ -154,7 +154,7 @@ export function ProductsClient({ catalogs }: ProductsClientProps) {
         </div>
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--warning)]/15 text-[var(--warning)]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--warning)]/15 text-[var(--warning)]">
               <Clock className="h-4 w-4" />
             </div>
             <div>
@@ -165,7 +165,7 @@ export function ProductsClient({ catalogs }: ProductsClientProps) {
         </div>
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--ai)]/15 text-[var(--ai)]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--ai)]/15 text-[var(--ai)]">
               <Archive className="h-4 w-4" />
             </div>
             <div>

@@ -11,7 +11,7 @@ export default function NotFound() {
               404
             </span>
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--primary)]/10">
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10">
                 <CameraOffIcon className="h-10 w-10 text-[var(--primary)]" />
               </div>
             </div>

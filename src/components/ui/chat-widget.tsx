@@ -79,7 +79,7 @@ export function ChatWidget({ delay = 3000 }: ChatWidgetProps) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-2xl transition-all duration-300",
+          "fixed bottom-6 right-6 z-50 flex h-14 w-14 shrink-0 items-center justify-center rounded-full shadow-2xl transition-all duration-300",
           isOpen
             ? "bg-[var(--background-elevated)] text-foreground"
             : "bg-gradient-to-br from-[var(--primary)] to-[var(--ai)] text-white hover:scale-105"
@@ -110,7 +110,7 @@ export function ChatWidget({ delay = 3000 }: ChatWidgetProps) {
           {/* Header */}
           <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--ai)] p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20">
                 <SupportIcon className="h-5 w-5 text-white" />
               </div>
               <div>
@@ -198,7 +198,7 @@ export function ChatWidget({ delay = 3000 }: ChatWidgetProps) {
             ) : (
               /* Success state */
               <div className="py-4 text-center">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--success)]/10">
+                <div className="mx-auto mb-3 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/10">
                   <CheckIcon className="h-6 w-6 text-[var(--success)]" />
                 </div>
                 <p className="font-medium text-foreground">Message sent!</p>

@@ -416,7 +416,7 @@ export function DeveloperPageClient({
         )}
       >
         <div className="p-6 border-b border-[var(--border)]">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
               <div
                 className={cn(
@@ -449,7 +449,7 @@ export function DeveloperPageClient({
                   "bg-[var(--background)]"
                 )}
               >
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
                   <h3 className="font-medium text-[var(--foreground)]">
                     {plan.name}
                   </h3>

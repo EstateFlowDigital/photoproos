@@ -76,7 +76,7 @@ function ToolsVisualization() {
 
       {/* Arrow */}
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)] text-white">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-white">
           <ArrowRightIcon className="h-5 w-5" />
         </div>
       </div>
@@ -87,7 +87,7 @@ function ToolsVisualization() {
         <div className="relative flex h-[300px] items-center justify-center">
           <div className="animate-pulse-glow-primary rounded-xl border border-[var(--primary)] bg-[var(--card)] p-6 shadow-2xl shadow-[var(--primary)]/20 motion-reduce:animate-none">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--primary)] to-purple-600">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--primary)] to-purple-600">
                 <CameraIcon className="h-5 w-5 text-white" />
               </div>
               <div>
@@ -99,7 +99,7 @@ function ToolsVisualization() {
               {tools.map((tool) => (
                 <div
                   key={tool.name}
-                  className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--background-secondary)] text-sm"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[var(--background-secondary)] text-sm"
                 >
                   {tool.icon}
                 </div>
@@ -154,7 +154,7 @@ function ImprovedToolsVisualization() {
 
       {/* Arrow */}
       <div className="flex justify-center">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)] text-white shadow-lg shadow-[var(--primary)]/30">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-white shadow-lg shadow-[var(--primary)]/30">
           <ArrowDownIcon className="h-5 w-5" />
         </div>
       </div>
@@ -166,7 +166,7 @@ function ImprovedToolsVisualization() {
           <span className="text-xs font-medium uppercase tracking-wider text-foreground-muted">After</span>
         </div>
         <div className="flex items-center gap-4 mb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--primary)] to-purple-600 shadow-lg">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--primary)] to-purple-600 shadow-lg">
             <CameraIcon className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -289,7 +289,7 @@ export function NoiseToKnowledgeSection() {
                       <IconComponent className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-start justify-between gap-4 flex-wrap">
                         <h3 className={cn(
                           "text-base font-medium transition-colors",
                           isExpanded ? "text-foreground" : "text-foreground-muted hover:text-foreground-secondary"

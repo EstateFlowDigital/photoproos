@@ -211,7 +211,7 @@ export function ServicesPageClient({ services }: ServicesPageClientProps) {
           >
             <div
               className={cn(
-                "flex h-5 w-5 items-center justify-center rounded border transition-all",
+                "flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-all",
                 selectedIds.size === filteredServices.length && filteredServices.length > 0
                   ? "bg-[var(--primary)] border-[var(--primary)]"
                   : selectedIds.size > 0

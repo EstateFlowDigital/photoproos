@@ -256,7 +256,7 @@ function ValueCard({
 }) {
   return (
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6" data-element={elementId}>
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+      <div className="mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
         {icon}
       </div>
       <h3 className="mb-2 text-lg font-semibold text-foreground">{title}</h3>
@@ -280,7 +280,7 @@ function TeamMember({
 }) {
   return (
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 text-center" data-element={elementId}>
-      <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--ai)] text-2xl font-bold text-white">
+      <div className="mx-auto mb-4 flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--ai)] text-2xl font-bold text-white">
         {image}
       </div>
       <h3 className="mb-1 text-lg font-semibold text-foreground">{name}</h3>

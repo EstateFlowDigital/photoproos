@@ -58,7 +58,7 @@ export function DownloadsTab({
       <div className="space-y-6">
         <p className="text-[var(--foreground-secondary)]">Download all your photos and marketing materials</p>
         <div className="rounded-xl border border-dashed border-[var(--card-border)] bg-[var(--card)] p-12 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--background-tertiary)]">
+          <div className="mx-auto flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--background-tertiary)]">
             <DownloadIcon className="h-8 w-8 text-[var(--foreground-muted)]" />
           </div>
           <p className="mt-4 text-lg font-medium text-[var(--foreground)]">No downloads available yet</p>
@@ -73,7 +73,7 @@ export function DownloadsTab({
   return (
     <>
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <p className="text-[var(--foreground-secondary)]">Download all your photos and marketing materials</p>
           {clientEmail && downloadableGalleries.length > 0 && (
             <button
@@ -177,7 +177,7 @@ function FavoritesSection({ photos, downloadingGallery: _downloadingGallery, dow
     <div className="rounded-xl border border-[var(--error)]/20 bg-gradient-to-br from-[var(--error)]/5 to-transparent p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--error)]/10">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--error)]/10">
             <HeartIcon className="h-5 w-5 text-[var(--error)]" />
           </div>
           <div>
@@ -393,7 +393,7 @@ function DownloadCard({
                   }`}
                 >
                   <div
-                    className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${
+                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ${
                       selectedPhotos.has(photo.id)
                         ? "border-[var(--primary)] bg-[var(--primary)]"
                         : "border-white bg-transparent"
@@ -467,7 +467,7 @@ function DownloadButton({ label, description, icon, isLoading, onClick, comingSo
       disabled={isLoading || comingSoon}
       className="group relative flex flex-col items-center justify-center gap-2 rounded-xl border border-[var(--card-border)] bg-[var(--background-tertiary)] p-4 text-center transition-all hover:border-[var(--primary)]/50 hover:bg-[var(--primary)]/5 disabled:cursor-not-allowed disabled:opacity-50"
     >
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--card)] text-[var(--foreground-secondary)] transition-colors group-hover:bg-[var(--primary)]/10 group-hover:text-[var(--primary)]">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--card)] text-[var(--foreground-secondary)] transition-colors group-hover:bg-[var(--primary)]/10 group-hover:text-[var(--primary)]">
         {isLoading ? <LoadingSpinner className="h-5 w-5" /> : icon}
       </div>
       <div>

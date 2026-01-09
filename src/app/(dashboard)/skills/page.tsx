@@ -50,7 +50,7 @@ export default async function SkillsPage() {
       {/* Level info */}
       {gamificationState && (
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <h3 className="text-sm font-medium text-[var(--foreground-muted)]">Your Level</h3>
               <div className="mt-2">

@@ -564,9 +564,9 @@ export function SubscriptionPlansSection({
 
   return (
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)] border-2 border-[var(--card-border)]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)] border-2 border-[var(--card-border)]">
             <CreditCardIcon className="h-5 w-5" />
           </div>
           <div>
@@ -652,7 +652,7 @@ export function SubscriptionPlansSection({
                   <div className="flex items-start justify-between gap-3 flex-wrap flex-wrap">
                     <div className="flex items-start gap-3">
                       <div
-                        className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
                           plan.isHighlighted
                             ? "bg-[var(--primary)]/20 text-[var(--primary)]"
                             : "bg-[var(--background-tertiary)] text-foreground-muted"
@@ -955,7 +955,7 @@ export function SubscriptionPlansSection({
       {/* Experiments Tab */}
       {activeTab === "experiments" && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <h4 className="text-sm font-medium text-foreground">
               Pricing Experiments
             </h4>
@@ -1155,7 +1155,7 @@ export function SubscriptionPlansSection({
 
                   {/* Variants */}
                   <div className="mt-4 pt-4 border-t border-[var(--card-border)]">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
                       <p className="text-xs font-medium text-foreground-muted">
                         Variants ({experiment.variants.length})
                       </p>
@@ -1464,7 +1464,7 @@ export function SubscriptionPlansSection({
       {/* Environment Status Tab */}
       {activeTab === "environment" && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <p className="text-sm text-foreground-muted">
               Check which integrations and services are configured.
             </p>
@@ -1487,7 +1487,7 @@ export function SubscriptionPlansSection({
             <div className="grid gap-4 sm:grid-cols-2">
               {/* Stripe */}
               <div className={`rounded-lg border p-4 ${envStatus.stripe.configured ? "border-[var(--success)] bg-[var(--success)]/5" : "border-[var(--error)] bg-[var(--error)]/5"}`}>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
                   <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-lg bg-[#635bff]/10 flex items-center justify-center">
                       <span className="text-[#635bff] font-bold text-sm">S</span>
@@ -1507,7 +1507,7 @@ export function SubscriptionPlansSection({
 
               {/* Clerk */}
               <div className={`rounded-lg border p-4 ${envStatus.clerk.configured ? "border-[var(--success)] bg-[var(--success)]/5" : "border-[var(--error)] bg-[var(--error)]/5"}`}>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
                   <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-lg bg-[#6c47ff]/10 flex items-center justify-center">
                       <span className="text-[#6c47ff] font-bold text-sm">C</span>
@@ -1527,7 +1527,7 @@ export function SubscriptionPlansSection({
 
               {/* Database */}
               <div className={`rounded-lg border p-4 ${envStatus.database.configured ? "border-[var(--success)] bg-[var(--success)]/5" : "border-[var(--error)] bg-[var(--error)]/5"}`}>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
                   <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center">
                       <DatabaseIcon className="h-4 w-4 text-[var(--primary)]" />
@@ -1547,7 +1547,7 @@ export function SubscriptionPlansSection({
 
               {/* Storage */}
               <div className={`rounded-lg border p-4 ${envStatus.storage.configured ? "border-[var(--success)]/30 bg-[var(--success)]/5" : "border-[var(--warning)]/30 bg-[var(--warning)]/5"}`}>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
                   <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-lg bg-[var(--warning)]/10 flex items-center justify-center">
                       <CloudIcon className="h-4 w-4 text-[var(--warning)]" />
@@ -1567,7 +1567,7 @@ export function SubscriptionPlansSection({
 
               {/* Resend (Email) */}
               <div className={`rounded-lg border p-4 ${envStatus.resend.configured ? "border-[var(--success)]/30 bg-[var(--success)]/5" : "border-[var(--warning)]/30 bg-[var(--warning)]/5"}`}>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
                   <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-lg bg-[#00d4ff]/10 flex items-center justify-center">
                       <MailIcon className="h-4 w-4 text-[#00d4ff]" />
@@ -1587,7 +1587,7 @@ export function SubscriptionPlansSection({
 
               {/* Twilio (SMS) */}
               <div className={`rounded-lg border p-4 ${envStatus.twilio.configured ? "border-[var(--success)]/30 bg-[var(--success)]/5" : "border-[var(--warning)]/30 bg-[var(--warning)]/5"}`}>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
                   <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-lg bg-[#f22f46]/10 flex items-center justify-center">
                       <PhoneIcon className="h-4 w-4 text-[#f22f46]" />

@@ -593,7 +593,7 @@ export function ConversationPageClient({
         <div className="flex items-center gap-3">
           {/* Avatar */}
           <div className="relative">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-blue-600 text-white font-medium text-sm">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-blue-600 text-white font-medium text-sm">
               {conversation.avatarUrl ? (
                 <img
                   src={conversation.avatarUrl}
@@ -623,7 +623,7 @@ export function ConversationPageClient({
           {/* Search Button */}
           <button
             onClick={() => setShowSearch(!showSearch)}
-            className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
               showSearch ? "bg-[var(--primary)]/10 text-[var(--primary)]" : "text-[var(--foreground-muted)] hover:bg-[var(--background-hover)]"
             }`}
             aria-label="Search messages"
@@ -635,7 +635,7 @@ export function ConversationPageClient({
           {/* Notifications Button */}
           <button
             onClick={requestNotificationPermission}
-            className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
               notificationsEnabled ? "text-[var(--primary)]" : "text-[var(--foreground-muted)] hover:bg-[var(--background-hover)]"
             }`}
             aria-label={notificationsEnabled ? "Notifications enabled" : "Enable notifications"}
@@ -647,7 +647,7 @@ export function ConversationPageClient({
           {/* Voice Call - Coming Soon */}
           <button
             disabled
-            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--foreground-muted)] opacity-50 cursor-not-allowed"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--foreground-muted)] opacity-50 cursor-not-allowed"
             aria-label="Voice call - Coming soon"
             title="Coming soon"
           >
@@ -656,14 +656,14 @@ export function ConversationPageClient({
           {/* Video Call - Coming Soon */}
           <button
             disabled
-            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--foreground-muted)] opacity-50 cursor-not-allowed"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--foreground-muted)] opacity-50 cursor-not-allowed"
             aria-label="Video call - Coming soon"
             title="Coming soon"
           >
             <Video className="h-5 w-5" aria-hidden="true" />
           </button>
           <button
-            className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
             aria-label="View conversation info"
           >
             <Info className="h-5 w-5" aria-hidden="true" />
@@ -672,7 +672,7 @@ export function ConversationPageClient({
           <div className="relative ml-2">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
               aria-label="More options"
               aria-haspopup="menu"
               aria-expanded={showMenu}
@@ -791,7 +791,7 @@ export function ConversationPageClient({
         {messages.length === 0 ? (
           <div className="flex h-full items-center justify-center">
             <div className="text-center max-w-sm">
-              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-blue-600">
+              <div className="mx-auto flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-blue-600">
                 <MessageSquare className="h-10 w-10 text-white" />
               </div>
               <h3 className="mt-6 text-lg font-semibold text-[var(--foreground)]">
@@ -880,7 +880,7 @@ export function ConversationPageClient({
         <div className="border-t border-[var(--card-border)] bg-[var(--card)] p-3" role="status" aria-label="Uploading attachments">
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-start justify-between gap-4 flex-wrap mb-1">
                 <span className="text-sm text-[var(--foreground)]">Uploading attachments...</span>
                 <span className="text-sm text-[var(--foreground-muted)]">{uploadProgress}%</span>
               </div>
@@ -917,7 +917,7 @@ export function ConversationPageClient({
                 )}
                 <button
                   onClick={() => removeAttachment(index)}
-                  className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--error)] text-white"
+                  className="absolute -right-1 -top-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--error)] text-white"
                   aria-label={`Remove attachment ${file.name}`}
                 >
                   <X className="h-3 w-3" aria-hidden="true" />
@@ -999,7 +999,7 @@ export function ConversationPageClient({
             />
             <button
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className={`absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+              className={`absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${
                 showEmojiPicker
                   ? "bg-[var(--primary)]/10 text-[var(--primary)]"
                   : "text-[var(--foreground-muted)] hover:bg-[var(--background-hover)]"
@@ -1226,7 +1226,7 @@ function MessageBubble({
       {!isOwn && (
         <div className="w-8 flex-shrink-0">
           {showAvatar && (
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-gray-400 to-gray-500 text-white text-xs font-medium">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gray-400 to-gray-500 text-white text-xs font-medium">
               {senderInitials}
             </div>
           )}
@@ -1328,7 +1328,7 @@ function MessageBubble({
                   {allowReactions && (
                     <button
                       onClick={() => setShowReactionPicker(!showReactionPicker)}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--background-hover)] transition-colors"
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--background-hover)] transition-colors"
                       aria-label="Add reaction"
                       aria-haspopup="true"
                       aria-expanded={showReactionPicker}
@@ -1341,7 +1341,7 @@ function MessageBubble({
                   {allowThreads && (
                     <button
                       onClick={onOpenThread}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--background-hover)] transition-colors"
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--background-hover)] transition-colors"
                       aria-label="Reply in thread"
                     >
                       <Reply className="h-4 w-4 text-[var(--foreground-muted)]" aria-hidden="true" />
@@ -1351,7 +1351,7 @@ function MessageBubble({
                   {/* Copy button */}
                   <button
                     onClick={onCopy}
-                    className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--background-hover)] transition-colors"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--background-hover)] transition-colors"
                     aria-label="Copy message"
                   >
                     <Copy className="h-4 w-4 text-[var(--foreground-muted)]" aria-hidden="true" />
@@ -1360,7 +1360,7 @@ function MessageBubble({
                   {/* Star button */}
                   <button
                     onClick={onStar}
-                    className={`flex h-7 w-7 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--background-hover)] transition-colors ${
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--background-hover)] transition-colors ${
                       isStarred ? "text-yellow-500" : ""
                     }`}
                     aria-label={isStarred ? "Unstar message" : "Star message"}
@@ -1372,7 +1372,7 @@ function MessageBubble({
                   {/* Forward button */}
                   <button
                     onClick={onForward}
-                    className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--background-hover)] transition-colors"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--background-hover)] transition-colors"
                     aria-label="Forward message"
                   >
                     <Forward className="h-4 w-4 text-[var(--foreground-muted)]" aria-hidden="true" />
@@ -1382,7 +1382,7 @@ function MessageBubble({
                   {isOwn && (
                     <button
                       onClick={onStartEdit}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--background-hover)] transition-colors"
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--background-hover)] transition-colors"
                       aria-label="Edit message"
                     >
                       <Edit3 className="h-4 w-4 text-[var(--foreground-muted)]" aria-hidden="true" />
@@ -1393,7 +1393,7 @@ function MessageBubble({
                   {isOwn && (
                     <button
                       onClick={onDelete}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--error)]/10 transition-colors"
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--error)]/10 transition-colors"
                       aria-label="Delete message"
                     >
                       <Trash2 className="h-4 w-4 text-[var(--error)]" aria-hidden="true" />
@@ -1416,7 +1416,7 @@ function MessageBubble({
                             onReaction(emoji);
                             setShowReactionPicker(false);
                           }}
-                          className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[var(--background-hover)] transition-colors text-lg"
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full hover:bg-[var(--background-hover)] transition-colors text-lg"
                           role="menuitem"
                           aria-label={`React with ${emoji}`}
                         >

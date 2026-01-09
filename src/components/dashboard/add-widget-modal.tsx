@@ -281,7 +281,7 @@ export function AddWidgetModal({ isOpen, onClose, config }: AddWidgetModalProps)
                       onClick={() => toggleWidgetSelection(widgetDef.type)}
                       disabled={isLoading}
                       className={cn(
-                        "absolute -top-2 -left-2 flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all",
+                        "absolute -top-2 -left-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all",
                         isSelected
                           ? "border-[var(--primary)] bg-[var(--primary)] text-white"
                           : "border-[var(--card-border)] bg-[var(--card)] text-foreground-muted hover:border-[var(--primary)]/50"
@@ -325,7 +325,7 @@ export function AddWidgetModal({ isOpen, onClose, config }: AddWidgetModalProps)
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-start justify-between gap-4 flex-wrap">
                         <h4 className="text-sm font-semibold text-foreground">
                           {widgetDef.label}
                         </h4>
@@ -359,7 +359,7 @@ export function AddWidgetModal({ isOpen, onClose, config }: AddWidgetModalProps)
           {/* Empty State */}
           {availableWidgets.length === 0 && (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--background)]">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background)]">
                 <CheckCircle className="h-6 w-6 text-green-500" />
               </div>
               <p className="mt-3 text-sm font-medium text-foreground">

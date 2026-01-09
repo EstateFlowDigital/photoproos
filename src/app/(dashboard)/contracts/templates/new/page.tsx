@@ -55,15 +55,15 @@ export default async function NewContractTemplatePage() {
             <h2 className="text-lg font-semibold text-foreground mb-4">Tips</h2>
             <div className="space-y-4 text-sm text-foreground-secondary">
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">1</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">1</div>
                 <p>Give your template a clear, descriptive name for easy identification.</p>
               </div>
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">2</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">2</div>
                 <p>Use variables like {"{{client_name}}"} that auto-populate when creating contracts.</p>
               </div>
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">3</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">3</div>
                 <p>Include all standard terms and conditions to save time on future contracts.</p>
               </div>
             </div>
@@ -87,15 +87,15 @@ export default async function NewContractTemplatePage() {
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Your Stats</h2>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Total Templates</span>
                 <span className="text-sm font-medium text-foreground">{stats.totalTemplates}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Total Contracts</span>
                 <span className="text-sm font-medium text-foreground">{stats.totalContracts}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Signed Contracts</span>
                 <span className="text-sm font-medium text-foreground">{stats.signedContracts}</span>
               </div>

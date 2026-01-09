@@ -151,7 +151,7 @@ export function OrderConfirmationClient({
         {/* Success Icon */}
         <div className="text-center">
           <div
-            className="mx-auto flex h-20 w-20 items-center justify-center rounded-full"
+            className="mx-auto flex h-20 w-20 shrink-0 items-center justify-center rounded-full"
             style={{ backgroundColor: `${primaryColor}20` }}
           >
             <CheckCircleOutlineIcon

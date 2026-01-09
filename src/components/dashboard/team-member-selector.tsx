@@ -142,7 +142,7 @@ export function TeamMemberSelector({
           <span className="text-foreground-muted">Select a service first</span>
         ) : selectedMember ? (
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-semibold">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-semibold">
               {(selectedMember.fullName || selectedMember.email).charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
@@ -208,7 +208,7 @@ export function TeamMemberSelector({
                 !member.hasRequiredEquipment && "opacity-75"
               )}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-semibold shrink-0">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-semibold shrink-0">
                 {(member.fullName || member.email).charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">

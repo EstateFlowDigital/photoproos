@@ -82,7 +82,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--card)] text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--card)] text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
         title="Toggle theme"
       >
         {resolvedTheme === "dark" ? (

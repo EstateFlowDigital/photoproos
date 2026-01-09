@@ -237,7 +237,7 @@ function SortableWidget({
             {/* Remove button */}
             <button
               onClick={onRemove}
-              className="flex h-6 w-6 items-center justify-center rounded text-foreground-muted hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-foreground-muted hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
               aria-label={`Remove ${widgetDef?.label || 'widget'}`}
             >
               <X className="h-4 w-4" />
@@ -630,7 +630,7 @@ function GamificationWidget({
   if (isCompact) {
     return (
       <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <LevelBadge level={data.level} size="sm" />
           <StreakBadge count={data.streak} type="login" size="sm" />
         </div>
@@ -713,7 +713,7 @@ function DailyBonusWidget({ data }: { data: DashboardData["dailyBonus"] }) {
     <div className="flex flex-col items-center justify-center gap-3">
       <div
         className={cn(
-          "flex h-12 w-12 items-center justify-center rounded-xl",
+          "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl",
           data.canClaim
             ? "bg-[var(--warning)]/15 animate-pulse"
             : "bg-[var(--background-secondary)]"
@@ -758,7 +758,7 @@ function OnboardingWidget({ data }: { data: DashboardData["onboarding"] }) {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <span className="text-sm font-medium text-foreground">Getting Started</span>
         <span className="text-xs text-foreground-muted">
           {data.completed}/{data.total}

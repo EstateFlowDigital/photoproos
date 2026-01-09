@@ -102,7 +102,7 @@ export function SocialProofToast({
         {/* Close button */}
         <button
           onClick={handleDismiss}
-          className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--background-elevated)] text-foreground-muted shadow-md transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+          className="absolute -right-2 -top-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--background-elevated)] text-foreground-muted shadow-md transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
           aria-label="Dismiss notifications"
         >
           <CloseIcon className="h-3 w-3" />

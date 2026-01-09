@@ -49,7 +49,7 @@ export function DismissWarningModal({
       <AlertDialogContent>
         <AlertDialogHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--warning)]/10">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--warning)]/10">
               <AlertTriangle className="h-5 w-5 text-[var(--warning)]" />
             </div>
             <AlertDialogTitle>Dismiss Tutorial?</AlertDialogTitle>

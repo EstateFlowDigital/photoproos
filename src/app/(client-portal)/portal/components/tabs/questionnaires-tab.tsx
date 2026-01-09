@@ -56,7 +56,7 @@ function PendingQuestionnaireCard({ questionnaire: q }: { questionnaire: Questio
   return (
     <div className="flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
       <div className="flex items-center gap-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--warning)]/20">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--warning)]/20">
           <ClipboardIcon className="h-5 w-5 text-[var(--warning)]" />
         </div>
         <div>
@@ -104,7 +104,7 @@ function CompletedQuestionnaireCard({ questionnaire: q }: { questionnaire: Quest
   return (
     <div className="flex items-center justify-between rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
       <div className="flex items-center gap-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--success)]/20">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--success)]/20">
           <CheckCircleIcon className="h-5 w-5 text-[var(--success)]" />
         </div>
         <div>

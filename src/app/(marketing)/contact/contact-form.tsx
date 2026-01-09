@@ -34,7 +34,7 @@ export function ContactForm() {
   if (isSubmitted) {
     return (
       <div className="py-12 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--success)]/10">
+        <div className="mx-auto mb-4 flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/10">
           <CheckIcon className="h-8 w-8 text-[var(--success)]" />
         </div>
         <h2 className="mb-2 text-2xl font-bold text-foreground">

@@ -64,9 +64,9 @@ export function PortalStats({ stats, galleries = [], invoices = [], questionnair
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {/* Galleries Summary */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
                 <GalleryIcon className="h-5 w-5 text-[var(--primary)]" />
               </div>
               <div>
@@ -93,9 +93,9 @@ export function PortalStats({ stats, galleries = [], invoices = [], questionnair
 
         {/* Questionnaire Progress */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
                 stats.pendingQuestionnaires > 0 ? "bg-[var(--warning)]/10" : "bg-[var(--success)]/10"
               }`}>
                 <ClipboardIcon className={`h-5 w-5 ${
@@ -127,9 +127,9 @@ export function PortalStats({ stats, galleries = [], invoices = [], questionnair
             ? "border-[var(--warning)]/30 bg-[var(--warning)]/5"
             : "border-[var(--card-border)] bg-[var(--card)]"
         }`}>
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
                 needsAttention ? "bg-[var(--warning)]/10" : "bg-[var(--success)]/10"
               }`}>
                 {needsAttention ? (
@@ -194,7 +194,7 @@ function StatCard({ icon, label, value, format = "default", iconColor, iconBg, b
   return (
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
       <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${iconBg}`}>
+        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${iconBg}`}>
           <span className={iconColor}>{icon}</span>
         </div>
         {badge && (

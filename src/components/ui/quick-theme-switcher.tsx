@@ -147,7 +147,7 @@ export function QuickThemeSwitcher({ className }: QuickThemeSwitcherProps) {
         }}
         disabled={isPending}
         className={cn(
-          "flex h-9 w-9 items-center justify-center rounded-lg transition-colors",
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors",
           "text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
           isPending && "opacity-50 cursor-not-allowed"

@@ -179,7 +179,7 @@ export function SecuritySection() {
                     transitionDelay: `${300 + index * 80}ms`,
                   }}
                 >
-                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--success)]/10 transition-colors group-hover:bg-[var(--success)]/20">
+                  <div className="mb-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--success)]/10 transition-colors group-hover:bg-[var(--success)]/20">
                     <IconComponent className="h-5 w-5 text-[var(--success)]" />
                   </div>
                   <h3 className="mb-1 text-sm font-semibold text-foreground">{feature.title}</h3>

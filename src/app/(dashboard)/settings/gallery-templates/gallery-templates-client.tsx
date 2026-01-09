@@ -186,7 +186,7 @@ export function GalleryTemplatesClient({ templates: initialTemplates, services }
   return (
     <div className="space-y-6">
       {/* Header with Add Button */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <p className="text-sm text-foreground-muted">
           {templates.length} template{templates.length !== 1 ? "s" : ""}
         </p>
@@ -390,42 +390,42 @@ export function GalleryTemplatesClient({ templates: initialTemplates, services }
 
               {/* Settings Toggles */}
               <div className="space-y-3 pt-2">
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div>
                     <span className="text-sm font-medium text-foreground">Allow Downloads</span>
                     <p className="text-xs text-foreground-muted">Let clients download photos after payment</p>
                   </div>
                   <Switch checked={formData.allowDownloads} onCheckedChange={(v) => setFormData({ ...formData, allowDownloads: v })} />
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div>
                     <span className="text-sm font-medium text-foreground">Allow Favorites</span>
                     <p className="text-xs text-foreground-muted">Let clients mark favorite photos</p>
                   </div>
                   <Switch checked={formData.allowFavorites} onCheckedChange={(v) => setFormData({ ...formData, allowFavorites: v })} />
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div>
                     <span className="text-sm font-medium text-foreground">Show Watermarks</span>
                     <p className="text-xs text-foreground-muted">Display watermarks until purchased</p>
                   </div>
                   <Switch checked={formData.showWatermark} onCheckedChange={(v) => setFormData({ ...formData, showWatermark: v })} />
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div>
                     <span className="text-sm font-medium text-foreground">Email Notifications</span>
                     <p className="text-xs text-foreground-muted">Notify when clients view or purchase</p>
                   </div>
                   <Switch checked={formData.sendNotifications} onCheckedChange={(v) => setFormData({ ...formData, sendNotifications: v })} />
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div>
                     <span className="text-sm font-medium text-foreground">Password Protected</span>
                     <p className="text-xs text-foreground-muted">Require a password to view</p>
                   </div>
                   <Switch checked={formData.isPasswordProtected} onCheckedChange={(v) => setFormData({ ...formData, isPasswordProtected: v })} />
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div>
                     <span className="text-sm font-medium text-foreground">Set as Default</span>
                     <p className="text-xs text-foreground-muted">Pre-select this template for new galleries</p>

@@ -116,7 +116,7 @@ export function DesignTab({ website, isPending: parentPending, onSave }: DesignT
                   <div className="flex items-start gap-3">
                     <div
                       className={cn(
-                        "flex h-10 w-10 items-center justify-center rounded-lg",
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
                         isSelected
                           ? "bg-[var(--primary)] text-white"
                           : "bg-[var(--background-secondary)] text-foreground-muted"

@@ -589,7 +589,7 @@ export function ServiceForm({ initialData, mode }: ServiceFormProps) {
           {/* Tiered Pricing */}
           {formData.pricingMethod === "tiered" && (
             <div className="space-y-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                   <h4 className="text-sm font-medium text-foreground">Pricing Tiers</h4>
                   <p className="text-xs text-foreground-muted">Define price ranges based on property size</p>

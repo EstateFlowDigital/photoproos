@@ -287,12 +287,12 @@ export function SupportPageClient({ tickets, filters }: SupportPageClientProps) 
       {tickets.length > 0 ? (
         <div
           className={cn(
-            "rounded-xl overflow-hidden",
+            "rounded-xl overflow-x-auto",
             "border border-[var(--border)]",
             "bg-[var(--card)]"
           )}
         >
-          <table className="w-full">
+          <table className="w-full min-w-[800px]">
             <thead>
               <tr className="border-b border-[var(--border)] bg-[var(--background-tertiary)]">
                 <th className="text-left p-4 text-sm font-medium text-[var(--foreground-muted)]">

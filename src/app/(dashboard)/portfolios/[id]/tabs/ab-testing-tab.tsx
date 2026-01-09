@@ -185,7 +185,7 @@ export function ABTestingTab({ website, isPending: externalPending }: ABTestingT
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h3 className="text-lg font-semibold text-foreground">A/B Testing</h3>
           <p className="text-sm text-foreground-muted">

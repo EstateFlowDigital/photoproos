@@ -514,7 +514,7 @@ print(data)`;
 
                       {/* Example Request */}
                       <div>
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
                           <h4 className="text-sm font-medium text-foreground">Example Request</h4>
                           <div className="flex items-center gap-1 rounded-lg border border-[var(--card-border)] p-0.5">
                             {(["curl", "javascript", "python"] as const).map((lang) => (

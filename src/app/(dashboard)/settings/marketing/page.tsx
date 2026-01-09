@@ -193,7 +193,7 @@ export default async function MarketingSettingsPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
                     <Package className="h-4 w-4 text-foreground-muted" />
                   </div>
                   <span className="text-sm text-foreground-muted">Marketing Kits</span>
@@ -202,7 +202,7 @@ export default async function MarketingSettingsPage() {
               </div>
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
                     <Image className="h-4 w-4 text-foreground-muted" />
                   </div>
                   <span className="text-sm text-foreground-muted">Total Assets</span>
@@ -211,7 +211,7 @@ export default async function MarketingSettingsPage() {
               </div>
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
                     <FileText className="h-4 w-4 text-foreground-muted" />
                   </div>
                   <span className="text-sm text-foreground-muted">Templates</span>
@@ -220,7 +220,7 @@ export default async function MarketingSettingsPage() {
               </div>
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)]">
                     <Video className="h-4 w-4 text-foreground-muted" />
                   </div>
                   <span className="text-sm text-foreground-muted">Videos</span>

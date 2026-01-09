@@ -345,7 +345,7 @@ function VideoSettingsPanel({
       {/* Default Provider Selection */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
             <Settings2 className="h-5 w-5 text-[var(--primary)]" />
           </div>
           <div>
@@ -377,7 +377,7 @@ function VideoSettingsPanel({
                 )}
               >
                 <div
-                  className="flex h-10 w-10 items-center justify-center rounded-lg text-lg font-bold text-white"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-lg font-bold text-white"
                   style={{ backgroundColor: provider.color }}
                 >
                   {provider.icon}
@@ -387,7 +387,7 @@ function VideoSettingsPanel({
                   <p className="text-xs text-foreground-muted truncate">{provider.description}</p>
                 </div>
                 {isSelected && (
-                  <div className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--primary)]">
+                  <div className="absolute right-3 top-3 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]">
                     <Check className="h-3 w-3 text-white" />
                   </div>
                 )}
@@ -671,7 +671,7 @@ function TourSettingsPanel({
       {/* Default Provider Selection */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
             <Settings2 className="h-5 w-5 text-[var(--primary)]" />
           </div>
           <div>
@@ -706,7 +706,7 @@ function TourSettingsPanel({
                 )}
               >
                 <div
-                  className="flex h-10 w-10 items-center justify-center rounded-lg text-lg font-bold text-white"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-lg font-bold text-white"
                   style={{ backgroundColor: provider.color }}
                 >
                   {provider.icon}
@@ -716,7 +716,7 @@ function TourSettingsPanel({
                   <p className="text-xs text-foreground-muted truncate">{provider.description}</p>
                 </div>
                 {isSelected && (
-                  <div className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--primary)]">
+                  <div className="absolute right-3 top-3 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]">
                     <Check className="h-3 w-3 text-white" />
                   </div>
                 )}

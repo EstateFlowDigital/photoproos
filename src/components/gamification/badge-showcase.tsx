@@ -69,7 +69,7 @@ export const BadgeShowcaseDisplay = memo(function BadgeShowcaseDisplay({
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
         <div className="flex items-center gap-2">
           <Award className="h-5 w-5 text-[var(--primary)]" aria-hidden="true" />
           <h3 className="font-semibold text-[var(--foreground)]">Badge Showcase</h3>
@@ -125,7 +125,7 @@ const BadgeSlot = memo(function BadgeSlot({
 }: BadgeSlotProps) {
   if (isLocked) {
     return (
-      <div className="relative flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] bg-[var(--background-secondary)]">
+      <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] bg-[var(--background-secondary)]">
         <Lock className="h-5 w-5 text-[var(--foreground-muted)]" aria-hidden="true" />
       </div>
     );
@@ -135,7 +135,7 @@ const BadgeSlot = memo(function BadgeSlot({
     return (
       <button
         onClick={onClick}
-        className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] bg-[var(--background-secondary)] hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-colors"
+        className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] bg-[var(--background-secondary)] hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-colors"
         aria-label="Add achievement to showcase"
       >
         <Plus className="h-5 w-5 text-[var(--foreground-muted)]" aria-hidden="true" />
@@ -330,7 +330,7 @@ export const BadgeShowcaseEditor = memo(function BadgeShowcaseEditor({
                           {achievement.name}
                         </span>
                         {isSelected && (
-                          <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--primary)]">
+                          <div className="absolute -top-1 -right-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]">
                             <Check className="h-3 w-3 text-white" />
                           </div>
                         )}

@@ -359,7 +359,7 @@ export function AnalyticsDashboard({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
               <EyeIcon className="h-4 w-4 text-[var(--primary)]" />
             </div>
             <span className="text-xs font-medium text-foreground-muted uppercase tracking-wider">
@@ -373,7 +373,7 @@ export function AnalyticsDashboard({
         </div>
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--success)]/10">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--success)]/10">
               <DownloadIcon className="h-4 w-4 text-[var(--success)]" />
             </div>
             <span className="text-xs font-medium text-foreground-muted uppercase tracking-wider">
@@ -391,7 +391,7 @@ export function AnalyticsDashboard({
         </div>
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--error)]/10">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--error)]/10">
               <HeartIcon className="h-4 w-4 text-[var(--error)]" />
             </div>
             <span className="text-xs font-medium text-foreground-muted uppercase tracking-wider">
@@ -405,7 +405,7 @@ export function AnalyticsDashboard({
         </div>
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--ai)]/10">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--ai)]/10">
               <ChartIcon className="h-4 w-4 text-[var(--ai)]" />
             </div>
             <span className="text-xs font-medium text-foreground-muted uppercase tracking-wider">
@@ -421,7 +421,7 @@ export function AnalyticsDashboard({
 
       {/* Photo Engagement Heat Map */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
           <div>
             <h3 className="text-sm font-semibold text-foreground">Photo Engagement Heat Map</h3>
             <p className="text-xs text-foreground-muted mt-0.5">
@@ -510,7 +510,7 @@ export function AnalyticsDashboard({
                 key={photo.id}
                 className="flex items-center gap-3 p-2 rounded-lg bg-[var(--background)] hover:bg-[var(--background-hover)]"
               >
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--card)] text-xs font-medium text-foreground-muted">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--card)] text-xs font-medium text-foreground-muted">
                   {index + 1}
                 </span>
                 <img
@@ -634,7 +634,7 @@ export function AnalyticsDashboard({
                 key={download.id}
                 className="flex items-center gap-3 p-3 rounded-lg bg-[var(--background)]"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--success)]/10">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--success)]/10">
                   <DownloadIcon className="h-4 w-4 text-[var(--success)]" />
                 </div>
                 <div className="flex-1 min-w-0">

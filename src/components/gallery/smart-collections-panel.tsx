@@ -166,7 +166,7 @@ export function SmartCollectionsPanel({
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[var(--card-border)] px-6 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
             <Wand2 className="h-5 w-5 text-[var(--primary)]" />
           </div>
           <div>
@@ -199,7 +199,7 @@ export function SmartCollectionsPanel({
       <div className="p-6">
         {suggestions.length === 0 && !isAnalyzing && !message && (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--background-elevated)]">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background-elevated)]">
               <Sparkles className="h-6 w-6 text-[var(--foreground-muted)]" />
             </div>
             <h4 className="mt-4 font-medium text-[var(--foreground)]">
@@ -222,7 +222,7 @@ export function SmartCollectionsPanel({
 
         {!isAnalyzing && message && suggestions.length === 0 && (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--background-elevated)]">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background-elevated)]">
               <Check className="h-6 w-6 text-[var(--success)]" />
             </div>
             <p className="mt-4 text-sm text-[var(--foreground-muted)]">{message}</p>
@@ -321,7 +321,7 @@ export function SmartCollectionsPanel({
                         </div>
                       ))}
                       {suggestion.photoCount > 3 && (
-                        <div className="flex h-8 w-8 items-center justify-center rounded-md border-2 border-[var(--card)] bg-[var(--background-elevated)] text-xs font-medium text-[var(--foreground-muted)]">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border-2 border-[var(--card)] bg-[var(--background-elevated)] text-xs font-medium text-[var(--foreground-muted)]">
                           +{suggestion.photoCount - 3}
                         </div>
                       )}

@@ -90,7 +90,7 @@ export const DailyQuestCard = memo(function DailyQuestCard({
         {/* Icon */}
         <div
           className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-lg shrink-0",
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg shrink-0",
             quest.isCompleted
               ? "bg-[var(--success)]/15 text-[var(--success)]"
               : "bg-[var(--primary)]/15 text-[var(--primary)]"
@@ -169,7 +169,7 @@ export const DailyQuestList = memo(function DailyQuestList({
   return (
     <div className={cn("daily-quest-list", className)}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
         <div className="flex items-center gap-2">
           <Scroll className="h-5 w-5 text-[var(--primary)]" aria-hidden="true" />
           <h3 className="font-semibold text-[var(--foreground)]">Daily Quests</h3>
@@ -220,7 +220,7 @@ export const DailyQuestWidget = memo(function DailyQuestWidget({
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
         <div className="flex items-center gap-2">
           <Scroll className="h-5 w-5 text-[var(--primary)]" aria-hidden="true" />
           <h3 className="font-semibold text-[var(--foreground)]">Daily Quests</h3>
@@ -254,7 +254,7 @@ export const DailyQuestWidget = memo(function DailyQuestWidget({
             >
               <div
                 className={cn(
-                  "flex h-6 w-6 items-center justify-center rounded",
+                  "flex h-6 w-6 shrink-0 items-center justify-center rounded",
                   quest.isCompleted
                     ? "bg-[var(--success)]/15 text-[var(--success)]"
                     : "bg-[var(--background-secondary)] text-[var(--foreground-muted)]"

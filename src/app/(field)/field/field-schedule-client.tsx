@@ -204,7 +204,7 @@ export function FieldScheduleClient({
     <div className="flex min-h-screen flex-col">
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-[var(--card-border)] bg-background/95 backdrop-blur px-4 py-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-lg font-semibold text-foreground">Field App</h1>
             <p className="text-sm text-foreground-muted">{today}</p>

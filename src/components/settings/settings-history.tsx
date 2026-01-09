@@ -82,7 +82,7 @@ export function SettingsHistory({ className }: SettingsHistoryProps) {
   if (isLoading) {
     return (
       <div className={cn("rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5", className)}>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
           <h3 className="text-base font-semibold text-foreground">
             Settings History
           </h3>
@@ -104,7 +104,7 @@ export function SettingsHistory({ className }: SettingsHistoryProps) {
 
   return (
     <div className={cn("rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5", className)}>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
         <h3 className="text-base font-semibold text-foreground">
           Settings History
         </h3>

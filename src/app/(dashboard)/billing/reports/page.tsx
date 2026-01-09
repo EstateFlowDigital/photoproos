@@ -377,7 +377,7 @@ export default async function TaxReportsPage() {
                     : "border-[var(--card-border)] bg-[var(--background-secondary)]"
                 }`}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
                   <p className="text-sm font-medium text-foreground-muted">Q{quarter + 1}</p>
                   {isCurrent && (
                     <span className="rounded-full bg-[var(--primary)]/10 px-2 py-0.5 text-xs font-medium text-[var(--primary)]">

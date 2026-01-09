@@ -175,7 +175,7 @@ export function IntegrationsSection() {
                     Popular
                   </span>
                 )}
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--background-secondary)] transition-transform duration-300 group-hover:scale-110">
+                <div className="mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--background-secondary)] transition-transform duration-300 group-hover:scale-110">
                   <IconComponent className="h-6 w-6" />
                 </div>
                 <h3 className="mb-1 text-base font-semibold text-foreground">{integration.name}</h3>

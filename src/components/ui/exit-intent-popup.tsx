@@ -125,7 +125,7 @@ export function ExitIntentPopup({
         {/* Close button */}
         <button
           onClick={() => setIsOpen(false)}
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+          className="absolute right-4 top-4 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
           aria-label="Close popup"
         >
           <CloseIcon className="h-5 w-5" />
@@ -136,7 +136,7 @@ export function ExitIntentPopup({
             {/* Content */}
             <div className="mb-6 text-center">
               {/* Icon */}
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--ai)]">
+              <div className="mx-auto mb-4 flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--ai)]">
                 <GiftIcon className="h-8 w-8 text-white" />
               </div>
 
@@ -199,7 +199,7 @@ export function ExitIntentPopup({
         ) : (
           /* Success state */
           <div className="py-4 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--success)]/10">
+            <div className="mx-auto mb-4 flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/10">
               <CheckCircleIcon className="h-8 w-8 text-[var(--success)]" />
             </div>
             <h2 className="mb-2 text-2xl font-bold text-foreground">You're in!</h2>

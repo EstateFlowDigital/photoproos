@@ -401,7 +401,7 @@ export default async function BillingAnalyticsPage({ searchParams }: PageProps) 
             />
           </div>
           <div className="mt-6 border-t border-[var(--card-border)] pt-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
               <span className="font-medium text-foreground">Total Outstanding</span>
               <span className="text-lg font-semibold text-foreground">
                 {formatCurrency(
@@ -428,7 +428,7 @@ export default async function BillingAnalyticsPage({ searchParams }: PageProps) 
                 const clientInfo = clientMap.get(client.clientId || "");
                 return (
                   <div key={client.clientId} className="flex items-center gap-4">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--background-secondary)] text-sm font-medium text-foreground">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--background-secondary)] text-sm font-medium text-foreground">
                       {index + 1}
                     </span>
                     <div className="flex-1">

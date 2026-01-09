@@ -115,7 +115,7 @@ function AwardCard({
         />
       ) : (
         <div
-          className="flex h-16 w-16 items-center justify-center rounded-full"
+          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full"
           style={{ backgroundColor: `${templateConfig.colors.primary}20` }}
         >
           <TrophyIcon color={templateConfig.colors.primary} />

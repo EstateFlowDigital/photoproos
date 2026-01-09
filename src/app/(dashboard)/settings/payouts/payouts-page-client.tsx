@@ -212,7 +212,7 @@ export function PayoutsPageClient({
                     checked={selectedPhotographers.includes(payout.userId)}
                     onCheckedChange={() => {}}
                   />
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
                     {(payout.userFullName || payout.userEmail || "?").charAt(0).toUpperCase()}
                   </div>
                   <div>

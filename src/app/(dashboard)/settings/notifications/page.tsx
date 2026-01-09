@@ -219,7 +219,7 @@ export default function NotificationsSettingsPage() {
         {/* Email Notifications */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
               <EmailIcon className="h-5 w-5" />
             </div>
             <div>
@@ -244,7 +244,7 @@ export default function NotificationsSettingsPage() {
         {/* Email Digest Configuration */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
               <DigestIcon className="h-5 w-5" />
             </div>
             <div>
@@ -306,7 +306,7 @@ export default function NotificationsSettingsPage() {
         {/* Push Notifications */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
               <BellIcon className="h-5 w-5" />
             </div>
             <div>
@@ -352,7 +352,7 @@ export default function NotificationsSettingsPage() {
         {/* Quiet Hours */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
               <MoonIcon className="h-5 w-5" />
             </div>
             <div>

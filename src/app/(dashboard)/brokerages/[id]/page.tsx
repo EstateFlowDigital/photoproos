@@ -117,7 +117,7 @@ export default async function BrokerageDetailPage({ params }: BrokerageDetailPag
                     className="flex flex-col gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 transition-colors hover:bg-[var(--background-hover)] sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="flex items-center gap-4 min-w-0">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full avatar-gradient text-sm font-medium text-white">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full avatar-gradient text-sm font-medium text-white">
                         {(agent.fullName || agent.email).substring(0, 2).toUpperCase()}
                       </div>
                       <div className="min-w-0">
@@ -173,7 +173,7 @@ export default async function BrokerageDetailPage({ params }: BrokerageDetailPag
                 />
               ) : (
                 <div
-                  className="flex h-16 w-16 items-center justify-center rounded-lg text-2xl font-bold text-white"
+                  className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg text-2xl font-bold text-white"
                   style={{ backgroundColor: brokerage.primaryColor || "#3b82f6" }}
                 >
                   {(brokerage.name || "B").charAt(0).toUpperCase()}

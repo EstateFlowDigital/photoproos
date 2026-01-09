@@ -174,7 +174,7 @@ export function ReferralsClient({
               <button
                 onClick={handleToggleProgram}
                 disabled={isPending}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
                   program?.isActive ? "bg-[var(--primary)]" : "bg-[var(--background-tertiary)]"
                 }`}
               >

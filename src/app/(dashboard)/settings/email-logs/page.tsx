@@ -620,7 +620,7 @@ function StatCard({
   return (
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
       <div className="flex items-center gap-3">
-        <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)]", colorClasses[color])}>
+        <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--card-border)]", colorClasses[color])}>
           {icon}
         </div>
         <div>

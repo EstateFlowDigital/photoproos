@@ -55,7 +55,7 @@ function ClientPortalLoginContent() {
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
         <div className="mb-8 flex items-center justify-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--primary)]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--primary)]">
             <CameraIcon className="h-5 w-5 text-white" />
           </div>
           <span className="text-xl font-semibold text-white">PhotoProOS</span>
@@ -114,7 +114,7 @@ function ClientPortalLoginContent() {
             </>
           ) : (
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--success)]/10">
+              <div className="mx-auto mb-4 flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/10">
                 <MailIcon className="h-8 w-8 text-[var(--success)]" />
               </div>
               <h2 className="text-xl font-bold text-white">Check your email</h2>

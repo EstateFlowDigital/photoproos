@@ -57,7 +57,7 @@ export function SettingsSidebar({ className }: SettingsSidebarProps) {
       <div className="flex h-14 items-center gap-3 border-b border-[var(--card-border)] px-4">
         <Link
           href="/dashboard"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
           title="Back to Dashboard"
         >
           <ArrowLeftIcon className="h-4 w-4" />

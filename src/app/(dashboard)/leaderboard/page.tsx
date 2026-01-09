@@ -48,7 +48,7 @@ export default async function LeaderboardPage() {
         <div className="rounded-xl border border-[var(--card-border)] bg-gradient-to-r from-[var(--primary)]/10 to-[var(--ai)]/10 p-5">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--ai)] text-xl font-bold text-white">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--ai)] text-xl font-bold text-white">
                 #{myRank.rank}
               </div>
               <div>

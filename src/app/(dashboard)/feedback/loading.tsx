@@ -2,7 +2,7 @@ export default function FeedbackLoading() {
   return (
     <div className="space-y-6">
       {/* Header skeleton */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="h-8 w-48 bg-card rounded animate-pulse" />
           <div className="h-4 w-64 bg-card rounded animate-pulse mt-2" />

@@ -67,7 +67,7 @@ export default function PressPage() {
               <div className="mb-6 flex h-20 items-center justify-center">
                 <div className="text-2xl font-bold text-gray-900">PhotoProOS</div>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-gray-600">Logo (Light)</span>
                 <button className="text-sm font-medium text-blue-600 hover:underline">
                   Download
@@ -80,7 +80,7 @@ export default function PressPage() {
               <div className="mb-6 flex h-20 items-center justify-center">
                 <div className="text-2xl font-bold text-white">PhotoProOS</div>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-gray-400">Logo (Dark)</span>
                 <button className="text-sm font-medium text-blue-400 hover:underline">
                   Download
@@ -91,11 +91,11 @@ export default function PressPage() {
             {/* Icon */}
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-8">
               <div className="mb-6 flex h-20 items-center justify-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-[var(--primary)] text-2xl font-bold text-white">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[var(--primary)] text-2xl font-bold text-white">
                   P
                 </div>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-secondary">App Icon</span>
                 <button className="text-sm font-medium text-[var(--primary)] hover:underline">
                   Download

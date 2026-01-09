@@ -307,9 +307,9 @@ export function StripeProductsSection({
 
   return (
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#635bff]/10 text-[#635bff] border-2 border-[var(--card-border)]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#635bff]/10 text-[#635bff] border-2 border-[var(--card-border)]">
             <StripeIcon className="h-5 w-5" />
           </div>
           <div>
@@ -444,7 +444,7 @@ export function StripeProductsSection({
           {/* Overview Cards */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
                 <h3 className="font-medium text-foreground">Services</h3>
                 <span className="text-sm text-foreground-muted">
                   {syncOverview.services.total} total
@@ -467,7 +467,7 @@ export function StripeProductsSection({
             </div>
 
             <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
                 <h3 className="font-medium text-foreground">Bundles</h3>
                 <span className="text-sm text-foreground-muted">
                   {syncOverview.bundles.total} total
@@ -493,7 +493,7 @@ export function StripeProductsSection({
           {/* Product List */}
           {totalProducts > 0 && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <h3 className="text-sm font-medium text-foreground">
                   All Products
                 </h3>
@@ -886,7 +886,7 @@ export function StripeProductsSection({
 
               {syncStats.services && (
                 <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-3">
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
                     <span className="text-sm font-medium text-foreground">
                       Services
                     </span>
@@ -913,7 +913,7 @@ export function StripeProductsSection({
 
               {syncStats.bundles && (
                 <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-3">
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
                     <span className="text-sm font-medium text-foreground">
                       Bundles
                     </span>

@@ -168,7 +168,7 @@ const XpActivityItem = memo(function XpActivityItem({
       className="flex items-center gap-4 px-5 py-3 hover:bg-[var(--background-hover)] transition-colors"
     >
       {/* Icon */}
-      <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg shrink-0", colorClass)}>
+      <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg shrink-0", colorClass)}>
         <Icon className="h-4 w-4" aria-hidden="true" />
       </div>
 
@@ -219,7 +219,7 @@ export const XpActivityWidget = memo(function XpActivityWidget({
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
         <div className="flex items-center gap-2">
           <Zap className="h-5 w-5 text-[var(--warning)]" aria-hidden="true" />
           <h3 className="font-semibold text-[var(--foreground)]">Recent XP</h3>

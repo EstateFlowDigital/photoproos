@@ -201,7 +201,7 @@ export function ProcessConfig({ config, updateConfig }: ProcessConfigProps) {
 
       {/* Steps */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <h4 className="text-sm font-semibold text-foreground">Process Steps</h4>
           <div className="flex gap-2">
             <button

@@ -203,7 +203,7 @@ function SocialLink({
       target="_blank"
       rel="noreferrer"
       aria-label={label}
-      className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--card)] text-foreground-secondary transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--card)] text-foreground-secondary transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
       data-element={elementId}
     >
       {children}

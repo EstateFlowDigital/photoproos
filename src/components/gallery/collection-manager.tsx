@@ -146,14 +146,14 @@ function SortableCollectionItem({
       <div className="flex items-center gap-1 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">
         <button
           onClick={onEdit}
-          className="flex h-8 w-8 items-center justify-center rounded text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
           aria-label="Edit collection"
         >
           <EditIcon className="h-4 w-4" />
         </button>
         <button
           onClick={onDelete}
-          className="flex h-8 w-8 items-center justify-center rounded text-foreground-muted hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded text-foreground-muted hover:bg-[var(--error)]/10 hover:text-[var(--error)]"
           aria-label="Delete collection"
         >
           <TrashIcon className="h-4 w-4" />
@@ -353,7 +353,7 @@ export function CollectionManager({
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <h3 className="text-sm font-semibold text-foreground">Collections</h3>
         <Button
           variant="ghost"

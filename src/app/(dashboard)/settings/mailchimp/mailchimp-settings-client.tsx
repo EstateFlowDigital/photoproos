@@ -278,7 +278,7 @@ export function MailchimpSettingsClient({ initialConfig }: MailchimpSettingsClie
       {/* Connection Status Card */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#FFE01B]/10">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[#FFE01B]/10">
             <MailchimpIcon className="h-8 w-8 text-[#FFE01B]" />
           </div>
           <div className="flex-1">

@@ -175,7 +175,7 @@ export default function GuidesPage() {
                 href={`/guides/${guide.slug}`}
                 className="group relative overflow-hidden rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 transition-all hover:border-[var(--border-hover)]"
               >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-2xl font-bold text-[var(--primary)]">
+                <div className="mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-2xl font-bold text-[var(--primary)]">
                   {index + 1}
                 </div>
                 <h3 className="mb-2 font-semibold text-foreground group-hover:text-[var(--primary)]">

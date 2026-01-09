@@ -265,7 +265,7 @@ export function PortfolioRenderer({ website }: PortfolioRendererProps) {
                 />
               ) : (
                 <div
-                  className="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-semibold text-white"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-sm font-semibold text-white"
                   style={{
                     backgroundColor:
                       website.primaryColor || templateConfig.colors.primary,

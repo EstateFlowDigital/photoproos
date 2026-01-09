@@ -549,7 +549,7 @@ export function MlsPresetsClient({ presets: initialPresets, providers: initialPr
                     aria-checked={formData.maintainAspect}
                     onClick={() => setFormData({ ...formData, maintainAspect: !formData.maintainAspect })}
                     className={cn(
-                      "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                      "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
                       formData.maintainAspect ? "bg-[var(--primary)]" : "bg-[var(--background-secondary)]"
                     )}
                   >
@@ -573,7 +573,7 @@ export function MlsPresetsClient({ presets: initialPresets, providers: initialPr
                     aria-checked={formData.letterbox}
                     onClick={() => setFormData({ ...formData, letterbox: !formData.letterbox })}
                     className={cn(
-                      "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                      "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
                       formData.letterbox ? "bg-[var(--primary)]" : "bg-[var(--background-secondary)]"
                     )}
                   >

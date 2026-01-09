@@ -120,7 +120,7 @@ export function ServicesListClient({ services }: ServicesListClientProps) {
           <button
             onClick={() => setViewMode("grid")}
             className={cn(
-              "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors",
               viewMode === "grid"
                 ? "bg-[var(--primary)] text-white"
                 : "text-foreground-muted hover:text-foreground"
@@ -131,7 +131,7 @@ export function ServicesListClient({ services }: ServicesListClientProps) {
           <button
             onClick={() => setViewMode("list")}
             className={cn(
-              "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors",
               viewMode === "list"
                 ? "bg-[var(--primary)] text-white"
                 : "text-foreground-muted hover:text-foreground"

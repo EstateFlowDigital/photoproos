@@ -368,7 +368,7 @@ export function ReviewClient({
 
           <div className="rounded-2xl border border-gray-800 bg-[#141414] p-6 sm:p-8 text-center">
             {/* Success Icon */}
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
+            <div className="mx-auto flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-green-500/10">
               <Star className="h-8 w-8 fill-amber-400 text-amber-400" />
             </div>
 
@@ -392,7 +392,7 @@ export function ReviewClient({
                     PLATFORM_COLORS[platform.type]
                   )}
                 >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
                     {PLATFORM_ICONS[platform.type]}
                   </span>
                   <span>{platform.name}</span>

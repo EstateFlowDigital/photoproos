@@ -494,7 +494,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
                       >
                         <div
                           className={cn(
-                            "flex h-4 w-4 items-center justify-center rounded border transition-colors",
+                            "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
                             serviceFilter.has(service.id)
                               ? "bg-[var(--primary)] border-[var(--primary)]"
                               : "border-[var(--card-border)]"
@@ -598,7 +598,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
                   <button
                     onClick={(e) => toggleGallerySelection(gallery.id, e)}
                     className={cn(
-                      "absolute top-3 left-3 z-10 flex h-6 w-6 items-center justify-center rounded border transition-colors",
+                      "absolute top-3 left-3 z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded border transition-colors",
                       selectedGalleries.has(gallery.id)
                         ? "bg-[var(--primary)] border-[var(--primary)] text-white"
                         : "bg-[var(--card)] border-[var(--card-border)] hover:border-[var(--primary)]"
@@ -650,7 +650,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
                               : selectAllGalleries
                           }
                           className={cn(
-                            "flex h-5 w-5 items-center justify-center rounded border transition-colors",
+                            "flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors",
                             selectedGalleries.size === displayedGalleries.length
                               ? "bg-[var(--primary)] border-[var(--primary)] text-white"
                               : "border-[var(--card-border)] hover:border-[var(--primary)]"
@@ -726,7 +726,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
                             <button
                               onClick={(e) => toggleGallerySelection(gallery.id, e)}
                               className={cn(
-                                "flex h-5 w-5 items-center justify-center rounded border transition-colors",
+                                "flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors",
                                 selectedGalleries.has(gallery.id)
                                   ? "bg-[var(--primary)] border-[var(--primary)] text-white"
                                   : "border-[var(--card-border)] hover:border-[var(--primary)]"
@@ -831,7 +831,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
                                   e.stopPropagation();
                                   setActionMenuOpen(actionMenuOpen === gallery.id ? null : gallery.id);
                                 }}
-                                className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background)] hover:text-foreground"
+                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background)] hover:text-foreground"
                               >
                                 <MoreIcon className="h-4 w-4" />
                               </button>

@@ -154,7 +154,7 @@ export function BrandingSettingsForm({
               {/* Main Logo (Dark backgrounds) */}
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
                 <div
-                  className="flex h-24 w-32 items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] bg-[#0a0a0a] p-2"
+                  className="flex h-24 w-32 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] bg-[#0a0a0a] p-2"
                   onClick={() => logoInputRef.current?.click()}
                   role="button"
                   tabIndex={0}
@@ -217,7 +217,7 @@ export function BrandingSettingsForm({
               {/* Light Mode Logo */}
               <div className="flex flex-col gap-4 pt-4 border-t border-[var(--card-border)] sm:flex-row sm:items-start sm:gap-6">
                 <div
-                  className="flex h-24 w-32 items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-white p-2"
+                  className="flex h-24 w-32 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-white p-2"
                   onClick={() => logoLightInputRef.current?.click()}
                   role="button"
                   tabIndex={0}
@@ -280,7 +280,7 @@ export function BrandingSettingsForm({
               {/* Favicon */}
               <div className="flex flex-col gap-4 pt-4 border-t border-[var(--card-border)] sm:flex-row sm:items-start sm:gap-6">
                 <div
-                  className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] bg-[var(--background)]"
+                  className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] bg-[var(--background)]"
                   onClick={() => faviconInputRef.current?.click()}
                   role="button"
                   tabIndex={0}
@@ -516,7 +516,7 @@ export function BrandingSettingsForm({
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
               <div
-                className="flex h-20 w-32 items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] bg-white p-2"
+                className="flex h-20 w-32 shrink-0 items-center justify-center rounded-xl border-2 border-dashed border-[var(--card-border)] bg-white p-2"
                 onClick={() => invoiceLogoInputRef.current?.click()}
                 role="button"
                 tabIndex={0}

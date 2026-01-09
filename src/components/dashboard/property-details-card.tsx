@@ -247,7 +247,7 @@ export function PropertyDetailsCard({
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-xs text-foreground-muted">Listing Price</span>
                 <span className="text-lg font-bold text-foreground">
                   {formatCurrency(localProperty.listingPrice!)}
@@ -388,7 +388,7 @@ function PackageSuggestion({ suggestion }: PackageSuggestionProps) {
       </div>
 
       <div className="rounded-lg bg-[var(--primary)]/5 border border-[var(--primary)]/20 p-3 space-y-2">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <span className="font-semibold text-foreground">{suggestion.recommendedPackage}</span>
           <span className="text-xs text-foreground-muted">{suggestion.reason}</span>
         </div>

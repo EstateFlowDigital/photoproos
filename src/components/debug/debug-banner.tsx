@@ -143,7 +143,7 @@ export function DebugBanner({ route: routeProp }: DebugBannerProps) {
         ) : (
           errors.map((err, idx) => (
             <div key={`${err.time}-${idx}`} className="px-3 py-2 space-y-1">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="font-semibold text-foreground">
                   {err.type === "error" ? "Error" : "Promise Rejection"}
                 </span>

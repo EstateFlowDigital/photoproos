@@ -391,7 +391,7 @@ export function OnboardingSettingsClient({
                       >
                         <div
                           className={cn(
-                            "flex h-5 w-5 items-center justify-center rounded-full border-2",
+                            "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2",
                             reached
                               ? "border-[var(--primary)] bg-[var(--primary)] text-white"
                               : "border-[var(--border)] bg-[var(--background-secondary)]"
@@ -542,7 +542,7 @@ export function OnboardingSettingsClient({
             {/* Icon */}
             <div
               className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-lg",
+                "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
                 item.isEnabled
                   ? "bg-[var(--primary)]/10 text-[var(--primary)]"
                   : "bg-[var(--background-tertiary)] text-foreground-muted"
@@ -688,7 +688,7 @@ function ItemModal({ item, onSave, onClose, isLoading }: ItemModalProps) {
       aria-labelledby={modalTitleId}
     >
       <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
           <h2 id={modalTitleId} className="text-lg font-semibold text-foreground">
             {item ? "Edit Checklist Step" : "Add Checklist Step"}
           </h2>

@@ -579,7 +579,7 @@ function BookingTypeForm({ formData, setFormData }: BookingTypeFormProps) {
             setFormData((prev) => ({ ...prev, isActive: !prev.isActive }))
           }
           className={cn(
-            "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+            "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors",
             formData.isActive ? "bg-[var(--primary)]" : "bg-[var(--background-secondary)]"
           )}
         >

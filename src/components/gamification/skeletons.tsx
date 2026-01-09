@@ -18,7 +18,7 @@ export function GamificationWidgetSkeleton({ className }: { className?: string }
       aria-label="Loading gamification data"
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
         <div className="flex items-center gap-3">
           <Skeleton variant="circular" width={40} height={40} />
           <div className="space-y-1">
@@ -195,7 +195,7 @@ export function ChallengeCardSkeleton({ className }: { className?: string }) {
 
       {/* Progress */}
       <div className="mt-4">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
           <Skeleton width={60} height={14} />
           <Skeleton width={40} height={14} />
         </div>
@@ -225,7 +225,7 @@ export function DailyBonusSkeleton({ className }: { className?: string }) {
       aria-label="Loading daily bonus"
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
         <div className="flex items-center gap-2">
           <Skeleton variant="circular" width={32} height={32} />
           <div className="space-y-1">

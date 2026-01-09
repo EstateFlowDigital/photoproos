@@ -426,7 +426,7 @@ export function OnboardingChecklist({
             >
               <div
                 className={cn(
-                  "flex h-6 w-6 items-center justify-center rounded-full border-2",
+                  "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2",
                   parseInt(milestoneCelebration) >= milestone
                     ? "border-[var(--primary)] bg-[var(--primary)] text-white"
                     : "border-[var(--border)]"
@@ -599,7 +599,7 @@ export function OnboardingChecklist({
               >
                 <div
                   className={cn(
-                    "flex h-4 w-4 items-center justify-center rounded-full",
+                    "flex h-4 w-4 shrink-0 items-center justify-center rounded-full",
                     reached
                       ? "bg-[var(--primary)] text-white"
                       : "bg-[var(--background-tertiary)]"

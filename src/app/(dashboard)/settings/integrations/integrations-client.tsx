@@ -133,7 +133,7 @@ export function IntegrationsClient({
 
       {/* Category Filters */}
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
           <h2 className="text-lg font-semibold text-foreground">Available Integrations</h2>
         </div>
         <div className="flex flex-wrap gap-2 mb-4">
@@ -264,7 +264,7 @@ export function IntegrationsClient({
           className="flex w-full items-center justify-between p-6 text-left hover:bg-[var(--background-hover)] transition-colors"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
               <CodeIcon className="h-5 w-5" />
             </div>
             <div>
@@ -294,7 +294,7 @@ export function IntegrationsClient({
           className="flex w-full items-center justify-between p-6 text-left hover:bg-[var(--background-hover)] transition-colors"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
               <PlugIcon className="h-5 w-5" />
             </div>
             <div>

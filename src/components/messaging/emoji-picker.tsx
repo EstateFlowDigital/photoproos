@@ -195,7 +195,7 @@ export function EmojiPicker({
           <button
             key={emoji}
             onClick={() => handleEmojiClick(emoji)}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-xl hover:bg-[var(--background-hover)] transition-colors"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl hover:bg-[var(--background-hover)] transition-colors"
             aria-label={`React with ${emoji}`}
           >
             {emoji}
@@ -258,7 +258,7 @@ export function EmojiPicker({
             <button
               key={`${emoji}-${index}`}
               onClick={() => handleEmojiClick(emoji)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-xl hover:bg-[var(--background-hover)] transition-colors"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xl hover:bg-[var(--background-hover)] transition-colors"
               aria-label={`Select ${emoji}`}
             >
               {emoji}
@@ -321,7 +321,7 @@ export function ReactionPicker({ isOpen, onClose, onSelect }: ReactionPickerProp
           <button
             key={emoji}
             onClick={() => handleSelect(emoji)}
-            className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[var(--background-hover)] transition-colors text-lg"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full hover:bg-[var(--background-hover)] transition-colors text-lg"
             role="menuitem"
             aria-label={`React with ${emoji}`}
           >
@@ -330,7 +330,7 @@ export function ReactionPicker({ isOpen, onClose, onSelect }: ReactionPickerProp
         ))}
         <button
           onClick={() => setShowMore(true)}
-          className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[var(--background-hover)] transition-colors text-sm text-[var(--foreground-muted)]"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full hover:bg-[var(--background-hover)] transition-colors text-sm text-[var(--foreground-muted)]"
           aria-label="More reactions"
         >
           +

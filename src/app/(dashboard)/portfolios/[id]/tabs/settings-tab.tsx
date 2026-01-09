@@ -879,7 +879,7 @@ export function SettingsTab({ website, isPending: parentPending, onSave }: Setti
             <div className="space-y-4">
               {/* Current Domain Display */}
               <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div>
                     <p className="text-sm font-medium text-foreground">
                       {website.customDomain}

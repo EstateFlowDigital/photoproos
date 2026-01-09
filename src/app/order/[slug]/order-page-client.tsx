@@ -332,7 +332,7 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
       {/* Header */}
       <header className="border-b border-[var(--card-border)] bg-[var(--card)]">
         <div className="mx-auto max-w-7xl px-6 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             {orderPage.logoOverrideUrl ? (
               <Image
                 src={orderPage.logoOverrideUrl}
@@ -808,7 +808,7 @@ export function OrderPageClient({ orderPage }: OrderPageClientProps) {
               {/* Calculated Price Preview */}
               {sqftInput && parseInt(sqftInput, 10) > 0 && (
                 <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div>
                       <p className="text-sm text-[var(--foreground-muted)]">Estimated Price</p>
                       <p className="text-2xl font-bold text-white">
@@ -1108,7 +1108,7 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
             className="h-10 w-10 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--background-tertiary)] text-white">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--background-tertiary)] text-white">
             {testimonial.name.charAt(0).toUpperCase()}
           </div>
         )}

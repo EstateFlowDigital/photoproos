@@ -174,7 +174,7 @@ export function ProfileSettingsForm({ user, organization }: ProfileSettingsFormP
               />
             </div>
           ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-2xl font-bold">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-2xl font-bold">
               {(fullName || user.email).charAt(0).toUpperCase()}
             </div>
           )}

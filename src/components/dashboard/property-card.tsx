@@ -99,7 +99,7 @@ export function PropertyCard<T extends PropertyWebsite>({
       >
         <div
           className={cn(
-            "flex h-5 w-5 items-center justify-center rounded border transition-colors",
+            "flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors",
             isSelected
               ? "border-[var(--primary)] bg-[var(--primary)]"
               : "border-white/50 bg-background/80 backdrop-blur-sm group-hover:border-white/80"
@@ -118,7 +118,7 @@ export function PropertyCard<T extends PropertyWebsite>({
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-background/80 text-foreground-muted backdrop-blur-sm transition-all hover:bg-[var(--primary)]/20 hover:text-[var(--primary)]"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background/80 text-foreground-muted backdrop-blur-sm transition-all hover:bg-[var(--primary)]/20 hover:text-[var(--primary)]"
             title="Preview live site"
           >
             <PreviewIcon className="h-4 w-4" />
@@ -131,7 +131,7 @@ export function PropertyCard<T extends PropertyWebsite>({
             e.stopPropagation();
             onDuplicate();
           }}
-          className="flex h-8 w-8 items-center justify-center rounded-lg bg-background/80 text-foreground-muted backdrop-blur-sm transition-all hover:bg-[var(--primary)]/20 hover:text-[var(--primary)]"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background/80 text-foreground-muted backdrop-blur-sm transition-all hover:bg-[var(--primary)]/20 hover:text-[var(--primary)]"
           title="Duplicate property website"
         >
           <DuplicateIcon className="h-4 w-4" />
@@ -143,7 +143,7 @@ export function PropertyCard<T extends PropertyWebsite>({
             e.stopPropagation();
             onDelete(website);
           }}
-          className="flex h-8 w-8 items-center justify-center rounded-lg bg-background/80 text-foreground-muted backdrop-blur-sm transition-all hover:bg-[var(--error)]/20 hover:text-[var(--error)]"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background/80 text-foreground-muted backdrop-blur-sm transition-all hover:bg-[var(--error)]/20 hover:text-[var(--error)]"
           title="Delete property website"
         >
           <TrashIcon className="h-4 w-4" />
@@ -230,7 +230,7 @@ export function PropertyCard<T extends PropertyWebsite>({
           {/* Agent */}
           {website.project.client && (
             <div className="mt-3 flex items-center gap-2 border-t border-[var(--card-border)] pt-3">
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-xs font-medium text-[var(--primary)]">
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-xs font-medium text-[var(--primary)]">
                 {website.project.client.fullName?.charAt(0) || "?"}
               </div>
               <div className="min-w-0 flex-1">

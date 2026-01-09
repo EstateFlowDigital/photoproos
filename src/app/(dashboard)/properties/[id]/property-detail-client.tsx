@@ -578,7 +578,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                         rel="noopener noreferrer"
                         className="flex items-center gap-3 rounded-lg border border-[var(--card-border)] p-4 transition-colors hover:border-[var(--border-hover)]"
                       >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
                           <CubeIcon className="h-5 w-5 text-[var(--primary)]" />
                         </div>
                         <div>
@@ -594,7 +594,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                         rel="noopener noreferrer"
                         className="flex items-center gap-3 rounded-lg border border-[var(--card-border)] p-4 transition-colors hover:border-[var(--border-hover)]"
                       >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--error)]/10">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--error)]/10">
                           <PlayIcon className="h-5 w-5 text-[var(--error)]" />
                         </div>
                         <div>
@@ -681,7 +681,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                 <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
                   <h2 className="mb-4 font-semibold text-foreground">Listing Agent</h2>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-lg font-medium text-[var(--primary)]">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-lg font-medium text-[var(--primary)]">
                       {website.project.client.fullName?.charAt(0) || "?"}
                     </div>
                     <div>
@@ -821,7 +821,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                   >
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div className="flex items-start gap-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-sm font-medium text-[var(--primary)]">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-sm font-medium text-[var(--primary)]">
                           {(lead.name || "?").charAt(0)}
                         </div>
                         <div>
@@ -958,7 +958,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
               {/* Property Flyer */}
               <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--primary)]/10">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--primary)]/10">
                     <DocumentIcon className="h-6 w-6 text-[var(--primary)]" />
                   </div>
                   <div className="flex-1">
@@ -1002,7 +1002,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
               {/* Social Media Graphics */}
               <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--ai)]/10">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--ai)]/10">
                     <ShareIcon className="h-6 w-6 text-[var(--ai)]" />
                   </div>
                   <div className="flex-1">
@@ -1224,7 +1224,7 @@ export function PropertyDetailClient({ website, leads, analytics }: PropertyDeta
                 // Domain is connected and verified
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 rounded-lg bg-[var(--success)]/10 border border-[var(--success)]/20 p-4">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--success)]/20">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/20">
                       <CheckCircleIcon className="h-5 w-5 text-[var(--success)]" />
                     </div>
                     <div>

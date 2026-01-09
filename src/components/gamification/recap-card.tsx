@@ -91,7 +91,7 @@ export const RecapCard = memo(function RecapCard({
           </button>
         )}
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/20">
             <Calendar className="h-5 w-5 text-white" aria-hidden="true" />
           </div>
           <div>
@@ -274,7 +274,7 @@ const StatBlock = memo(function StatBlock({
 }: StatBlockProps) {
   return (
     <div className="flex items-center gap-3 rounded-lg bg-[var(--background-secondary)] p-3">
-      <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--card)]", iconColor)}>
+      <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--card)]", iconColor)}>
         <Icon className="h-4 w-4" aria-hidden="true" />
       </div>
       <div>

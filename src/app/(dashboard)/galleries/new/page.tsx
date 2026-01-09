@@ -111,15 +111,15 @@ export default async function NewGalleryPage() {
             <h2 className="text-lg font-semibold text-foreground mb-4">Tips</h2>
             <div className="space-y-4 text-sm text-foreground-secondary">
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">1</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">1</div>
                 <p>Choose a descriptive name that your client will recognize.</p>
               </div>
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">2</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">2</div>
                 <p>Select a service package or set custom pricing for the gallery.</p>
               </div>
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">3</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">3</div>
                 <p>You can add photos after creating the gallery.</p>
               </div>
             </div>

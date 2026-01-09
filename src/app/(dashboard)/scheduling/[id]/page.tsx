@@ -139,7 +139,7 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
           {/* Status Banner */}
           <div className={cn("rounded-xl border p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between", status.bg, "border-transparent")}>
             <div className="flex items-center gap-3">
-              <div className={cn("flex h-10 w-10 items-center justify-center rounded-full", status.bg)}>
+              <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-full", status.bg)}>
                 {booking.status === "confirmed" && <CheckIcon className={cn("h-5 w-5", status.text)} />}
                 {booking.status === "pending" && <ClockIcon className={cn("h-5 w-5", status.text)} />}
                 {booking.status === "completed" && <CheckCircleIcon className={cn("h-5 w-5", status.text)} />}
@@ -182,7 +182,7 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
             <h2 className="text-lg font-semibold text-foreground mb-4">Schedule</h2>
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
                   <CalendarIcon className="h-5 w-5" />
                 </div>
                 <div>
@@ -191,7 +191,7 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
                   <ClockIcon className="h-5 w-5" />
                 </div>
                 <div>
@@ -209,7 +209,7 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
               <h2 className="text-lg font-semibold text-foreground mb-4">Location</h2>
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
                   <MapPinIcon className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
@@ -254,7 +254,7 @@ export default async function BookingDetailPage({ params }: BookingDetailPagePro
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Client</h2>
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-lg font-bold">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-lg font-bold">
                 {(clientInfo.name || "?").charAt(0)}
               </div>
               <div>

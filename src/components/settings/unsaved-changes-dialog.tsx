@@ -36,7 +36,7 @@ export function UnsavedChangesDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-500/10">
               <AlertTriangleIcon className="h-5 w-5 text-amber-500" />
             </div>
             <AlertDialogTitle>{title}</AlertDialogTitle>

@@ -51,7 +51,7 @@ export function PropertyShareButtons({
           href={shareLinks.facebook}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-secondary transition-colors hover:bg-[#1877F2] hover:border-[#1877F2] hover:text-white"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-secondary transition-colors hover:bg-[#1877F2] hover:border-[#1877F2] hover:text-white"
           title="Share on Facebook"
         >
           <FacebookIcon className="h-5 w-5" />
@@ -60,7 +60,7 @@ export function PropertyShareButtons({
           href={shareLinks.twitter}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-secondary transition-colors hover:bg-[#1DA1F2] hover:border-[#1DA1F2] hover:text-white"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-secondary transition-colors hover:bg-[#1DA1F2] hover:border-[#1DA1F2] hover:text-white"
           title="Share on Twitter"
         >
           <TwitterIcon className="h-5 w-5" />
@@ -69,14 +69,14 @@ export function PropertyShareButtons({
           href={shareLinks.linkedin}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-secondary transition-colors hover:bg-[#0A66C2] hover:border-[#0A66C2] hover:text-white"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-secondary transition-colors hover:bg-[#0A66C2] hover:border-[#0A66C2] hover:text-white"
           title="Share on LinkedIn"
         >
           <LinkedInIcon className="h-5 w-5" />
         </a>
         <button
           onClick={handleCopyLink}
-          className={`flex h-10 w-10 items-center justify-center rounded-lg border transition-colors ${
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border transition-colors ${
             copied
               ? "border-[var(--success)] bg-[var(--success)]/10 text-[var(--success)]"
               : "border-[var(--card-border)] text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground"

@@ -72,7 +72,7 @@ export function GalleryCard({ id, title, client, photos, status, revenue, thumbn
               setMenuOpen(!menuOpen);
             }}
             className={cn(
-              "flex h-8 w-8 items-center justify-center rounded-lg transition-all",
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all",
               menuOpen
                 ? "bg-[var(--background)] text-foreground"
                 : "bg-black/40 text-white opacity-0 group-hover:opacity-100"

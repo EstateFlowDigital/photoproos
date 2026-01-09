@@ -162,7 +162,7 @@ const PreferenceToggle = memo(function PreferenceToggle({
   return (
     <div className="flex items-center justify-between gap-4 px-5 py-4">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--background-secondary)] text-[var(--foreground-muted)]">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)] text-[var(--foreground-muted)]">
           <Icon className="h-4 w-4" aria-hidden="true" />
         </div>
         <div>
@@ -219,7 +219,7 @@ export const NotificationPrefsCompact = memo(function NotificationPrefsCompact({
       )}
     >
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/15 text-[var(--primary)]">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/15 text-[var(--primary)]">
           <Bell className="h-5 w-5" aria-hidden="true" />
         </div>
         <div>

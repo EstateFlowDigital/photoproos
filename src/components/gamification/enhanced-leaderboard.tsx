@@ -381,7 +381,7 @@ const LeaderboardRow = memo(function LeaderboardRow({
       <div className="flex items-center gap-1">
         <span
           className={cn(
-            "inline-flex h-8 w-8 items-center justify-center rounded-full border text-sm font-bold",
+            "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm font-bold",
             getRankStyle(rank)
           )}
         >
@@ -399,7 +399,7 @@ const LeaderboardRow = memo(function LeaderboardRow({
             className="h-8 w-8 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--background-secondary)] text-sm font-medium text-[var(--foreground-muted)]">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--background-secondary)] text-sm font-medium text-[var(--foreground-muted)]">
             {entry.userName?.[0]?.toUpperCase() || "?"}
           </div>
         )}
@@ -467,7 +467,7 @@ export const LeaderboardWidget = memo(function LeaderboardWidget({
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
         <div className="flex items-center gap-2">
           <Trophy className="h-5 w-5 text-[var(--warning)]" aria-hidden="true" />
           <h3 className="font-semibold text-[var(--foreground)]">Leaderboard</h3>
@@ -544,7 +544,7 @@ const LeaderboardWidgetRow = memo(function LeaderboardWidgetRow({
       {entry.userAvatar ? (
         <img src={entry.userAvatar} alt="" className="h-7 w-7 rounded-full object-cover" />
       ) : (
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--background-secondary)] text-xs font-medium text-[var(--foreground-muted)]">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--background-secondary)] text-xs font-medium text-[var(--foreground-muted)]">
           {entry.userName?.[0]?.toUpperCase() || "?"}
         </div>
       )}

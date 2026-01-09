@@ -283,7 +283,7 @@ function StatCard({
 }) {
   return (
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
         <div className="flex items-center gap-2">
           <span className="text-xl">{icon}</span>
           <h3 className="font-semibold text-[var(--foreground)]">{title}</h3>
@@ -310,7 +310,7 @@ function StatCard({
       </div>
       <div className="space-y-3">
         {stats.map((stat, index) => (
-          <div key={index} className="flex items-center justify-between">
+          <div key={index} className="flex items-start justify-between gap-4 flex-wrap">
             <span className="text-sm text-[var(--foreground-muted)]">{stat.label}</span>
             <span
               className={cn(

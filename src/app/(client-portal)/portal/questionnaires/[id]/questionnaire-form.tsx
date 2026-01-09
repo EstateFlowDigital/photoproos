@@ -345,7 +345,7 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-[var(--card-border)] bg-[var(--card)]">
         <div className="mx-auto max-w-4xl px-6 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <Link
                 href="/portal"
@@ -450,14 +450,14 @@ export function QuestionnaireForm({ questionnaire }: QuestionnaireFormProps) {
             return (
               <section key={sectionName} className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
                 <div className="border-b border-[var(--card-border)] px-6 py-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div className="flex items-center gap-3">
                       {isSectionComplete ? (
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--success)]/20">
+                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/20">
                           <CheckSmallIcon className="h-4 w-4 text-[var(--success)]" />
                         </div>
                       ) : (
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/20 text-xs font-medium text-[var(--primary)]">
+                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/20 text-xs font-medium text-[var(--primary)]">
                           {sectionStats.completed}/{sectionStats.total}
                         </div>
                       )}

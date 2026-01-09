@@ -724,7 +724,7 @@ export function SchedulingPageClient({
       <div className="auto-grid grid-min-200 grid-gap-3">
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--primary)]/15 text-[var(--primary)]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/15 text-[var(--primary)]">
               <CalendarIcon className="h-4 w-4" />
             </div>
             <div>
@@ -735,7 +735,7 @@ export function SchedulingPageClient({
         </div>
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--ai)]/15 text-[var(--ai)]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--ai)]/15 text-[var(--ai)]">
               <ClockIcon className="h-4 w-4" />
             </div>
             <div>
@@ -746,7 +746,7 @@ export function SchedulingPageClient({
         </div>
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--warning)]/15 text-[var(--warning)]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--warning)]/15 text-[var(--warning)]">
               <AlertIcon className="h-4 w-4" />
             </div>
             <div>
@@ -757,7 +757,7 @@ export function SchedulingPageClient({
         </div>
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--success)]/15 text-[var(--success)]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--success)]/15 text-[var(--success)]">
               <CheckCircleIcon className="h-4 w-4" />
             </div>
             <div>
@@ -773,7 +773,7 @@ export function SchedulingPageClient({
         <div className="rounded-xl border border-[var(--primary)]/30 bg-[var(--primary)]/5 p-4">
           <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--primary)]/15 text-[var(--primary)]">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/15 text-[var(--primary)]">
                 <TodayIcon className="h-3.5 w-3.5" />
               </div>
               <div>

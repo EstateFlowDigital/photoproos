@@ -2187,7 +2187,7 @@ export function DesignEditor({
                         ))}
                       </div>
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-start justify-between gap-4 flex-wrap">
                       <span className="text-xs font-medium text-foreground group-hover:text-[var(--primary)]">
                         {template.name}
                       </span>

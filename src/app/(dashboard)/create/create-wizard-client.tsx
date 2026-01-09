@@ -256,7 +256,7 @@ export function CreateWizardClient({
       {/* Header */}
       <div className="sticky top-0 z-50 bg-[var(--background)] border-b border-[var(--border)]">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
             <h1 className="text-xl font-semibold text-foreground">New Project</h1>
             <Link
               href="/dashboard"
@@ -267,7 +267,7 @@ export function CreateWizardClient({
           </div>
 
           {/* Progress Indicator */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             {STEPS.map((step, index) => {
               const isCompleted = index < currentStep;
               const isCurrent = index === currentStep;

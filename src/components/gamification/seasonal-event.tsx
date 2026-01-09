@@ -94,9 +94,9 @@ export const SeasonalEventCard = memo(function SeasonalEventCard({
           background: `linear-gradient(135deg, ${event.theme.primaryColor}, ${event.theme.secondaryColor})`,
         }}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/20">
               <Icon className="h-5 w-5 text-white" aria-hidden="true" />
             </div>
             <div>
@@ -141,7 +141,7 @@ export const SeasonalEventCard = memo(function SeasonalEventCard({
                   key={challenge.id}
                   className="rounded-lg bg-[var(--background-secondary)] p-3"
                 >
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
                     <span className="text-sm font-medium text-[var(--foreground)]">
                       {challenge.name}
                     </span>
@@ -221,7 +221,7 @@ export const SeasonalEventBanner = memo(function SeasonalEventBanner({
         background: `linear-gradient(135deg, ${event.theme.primaryColor}, ${event.theme.secondaryColor})`,
       }}
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           <Icon className="h-5 w-5 text-white" aria-hidden="true" />
           <div>
@@ -277,7 +277,7 @@ export const SeasonalEventWidget = memo(function SeasonalEventWidget({
     >
       <div className="flex items-center gap-3">
         <div
-          className="flex h-10 w-10 items-center justify-center rounded-lg"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
           style={{ background: `${event.theme.primaryColor}25` }}
         >
           <Icon className="h-5 w-5" style={{ color: event.theme.primaryColor }} aria-hidden="true" />

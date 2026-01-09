@@ -130,7 +130,7 @@ export function ClientImportClient() {
           <div key={s} className="flex items-center gap-2">
             <div
               className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium",
+                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-medium",
                 step === s || (step === "importing" && s === "preview")
                   ? "bg-[var(--primary)] text-white"
                   : step === "complete" && s !== "complete"
@@ -355,7 +355,7 @@ export function ClientImportClient() {
       {/* Complete Step */}
       {step === "complete" && result && (
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-8 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--success)]/10">
+          <div className="mx-auto flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/10">
             <CheckIcon className="h-8 w-8 text-[var(--success)]" />
           </div>
           <h3 className="mt-4 text-xl font-semibold text-foreground">Import Complete!</h3>

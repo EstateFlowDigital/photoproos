@@ -418,7 +418,7 @@ export function PhotoUploadModal({
           <button
             onClick={handleCancel}
             disabled={isUploading}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground disabled:opacity-50"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground disabled:opacity-50"
             aria-label="Close upload dialog"
           >
             <CloseIcon className="h-5 w-5" />
@@ -464,7 +464,7 @@ export function PhotoUploadModal({
               className="hidden"
             />
             <div className={cn(
-              "flex h-14 w-14 items-center justify-center rounded-xl transition-colors",
+              "flex h-14 w-14 shrink-0 items-center justify-center rounded-xl transition-colors",
               isDragging ? "bg-[var(--primary)]/10" : "bg-[var(--background-hover)]"
             )}>
               <UploadIcon className={cn(
@@ -486,7 +486,7 @@ export function PhotoUploadModal({
           {/* File List */}
           {files.length > 0 && (
             <div className="mt-6 space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <p className="text-sm font-medium text-foreground">
                   {files.length} {files.length === 1 ? "file" : "files"} selected
                 </p>

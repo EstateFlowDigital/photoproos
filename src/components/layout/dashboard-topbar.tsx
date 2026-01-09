@@ -494,7 +494,7 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
             setSearchOpen(true);
             setTimeout(() => searchInputRef.current?.focus(), 0);
           }}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-[var(--background-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 lg:hidden"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-[var(--background-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 lg:hidden"
           aria-label="Search"
         >
           <SearchIcon className="h-4 w-4" />
@@ -625,7 +625,7 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
         <div ref={notificationsRef} className="relative">
           <button
             onClick={() => setNotificationsOpen(!notificationsOpen)}
-            className="relative flex h-9 w-9 items-center justify-center rounded-lg text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
           >
             <IconBadge size="sm" tone={notificationsOpen ? "primary" : unreadCount > 0 ? "danger" : "default"}>
               <Bell className="h-3.5 w-3.5" />
@@ -708,7 +708,7 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
         <div ref={helpRef} className="relative">
           <button
             onClick={() => setHelpOpen(!helpOpen)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
           >
             <IconBadge size="sm" tone={helpOpen ? "primary" : "default"}>
               <HelpCircle className="h-3.5 w-3.5" />
@@ -843,7 +843,7 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
                     onClick={() => handleSearchSelect(result)}
                     className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[var(--background-hover)] transition-colors"
                   >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--background)] text-foreground-muted">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--background)] text-foreground-muted">
                       {getResultIcon(result.type)}
                     </span>
                     <div className="flex-1 min-w-0">
@@ -872,7 +872,7 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
                     onClick={() => handleSearchSelect(result)}
                     className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-[var(--background-hover)] transition-colors"
                   >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--background)] text-foreground-muted">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--background)] text-foreground-muted">
                       {getResultIcon(result.type)}
                     </span>
                     <div className="flex-1 min-w-0">

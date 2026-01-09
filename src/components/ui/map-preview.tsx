@@ -220,7 +220,7 @@ export function MapPreviewCard({
   return (
     <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
       <div className="px-4 py-3 border-b border-[var(--card-border)]">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <h3 className="text-sm font-medium text-foreground">{title}</h3>
           {(distanceMiles !== undefined || travelTimeMinutes !== undefined) && (
             <div className="flex items-center gap-3 text-xs text-foreground-muted">

@@ -253,7 +253,7 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
 
       {/* Monthly Trend */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6" role="figure" aria-labelledby="trend-heading">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <h3 id="trend-heading" className="text-sm font-semibold text-foreground">Leads Over Time</h3>
           <div className="flex items-center gap-4 text-xs" role="list" aria-label="Chart legend">
             <span className="flex items-center gap-1.5" role="listitem">
@@ -367,7 +367,7 @@ export function LeadsAnalyticsClient({ analytics }: LeadsAnalyticsClientProps) {
 
         {/* Recent Conversions */}
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6" role="region" aria-labelledby="conversions-heading">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <h3 id="conversions-heading" className="text-sm font-semibold text-foreground">Recent Conversions</h3>
             <Link
               href="/clients"

@@ -180,7 +180,7 @@ export function ROICalculatorSection() {
               {/* Time saved */}
               <div className="rounded-xl border border-[var(--card-border)] bg-[var(--background-elevated)] p-5">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
                     <ClockIcon className="h-5 w-5 text-[var(--primary)]" />
                   </div>
                   <div>
@@ -196,7 +196,7 @@ export function ROICalculatorSection() {
               {/* Money saved */}
               <div className="rounded-xl border border-[var(--card-border)] bg-[var(--background-elevated)] p-5">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--success)]/10">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--success)]/10">
                     <DollarIcon className="h-5 w-5 text-[var(--success)]" />
                   </div>
                   <div>
@@ -212,7 +212,7 @@ export function ROICalculatorSection() {
               {/* Faster payments */}
               <div className="rounded-xl border border-[var(--card-border)] bg-[var(--background-elevated)] p-5">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--ai)]/10">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--ai)]/10">
                     <ZapIcon className="h-5 w-5 text-[var(--ai)]" />
                   </div>
                   <div>
@@ -270,7 +270,7 @@ function SliderInput({ label, value, min, max, step, unit, prefix = "", onChange
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <label htmlFor={inputId} className="text-sm font-medium text-foreground">{label}</label>
         <span className="rounded-lg bg-[var(--background-elevated)] px-3 py-1 text-sm font-medium text-foreground">
           {prefix}{value} {unit}

@@ -98,7 +98,7 @@ export function ShareButtons({
             onClick={() => handleShare("twitter")}
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-white transition-colors hover:bg-white/10"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black">
               <XIcon className="h-4 w-4 text-white" />
             </div>
             <span className="text-sm font-medium">X (Twitter)</span>
@@ -109,7 +109,7 @@ export function ShareButtons({
             onClick={() => handleShare("facebook")}
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-white transition-colors hover:bg-white/10"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1877F2]">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1877F2]">
               <FacebookIcon className="h-4 w-4 text-white" />
             </div>
             <span className="text-sm font-medium">Facebook</span>
@@ -120,7 +120,7 @@ export function ShareButtons({
             onClick={() => handleShare("linkedin")}
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-white transition-colors hover:bg-white/10"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0A66C2]">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0A66C2]">
               <LinkedInIcon className="h-4 w-4 text-white" />
             </div>
             <span className="text-sm font-medium">LinkedIn</span>
@@ -131,7 +131,7 @@ export function ShareButtons({
             onClick={() => handleShare("pinterest")}
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-white transition-colors hover:bg-white/10"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E60023]">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E60023]">
               <PinterestIcon className="h-4 w-4 text-white" />
             </div>
             <span className="text-sm font-medium">Pinterest</span>
@@ -145,7 +145,7 @@ export function ShareButtons({
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-white transition-colors hover:bg-white/10"
           >
             <div
-              className="flex h-8 w-8 items-center justify-center rounded-full"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
               style={{ backgroundColor: primaryColor }}
             >
               {copied ? (
@@ -171,7 +171,7 @@ export function ShareButtons({
           }
         }}
         className={cn(
-          "flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition-all duration-200 hover:scale-105",
+          "flex h-12 w-12 shrink-0 items-center justify-center rounded-full shadow-lg transition-all duration-200 hover:scale-105",
           isOpen ? "bg-white/20" : "bg-black/80"
         )}
         style={{

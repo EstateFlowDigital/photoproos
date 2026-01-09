@@ -142,14 +142,14 @@ export function NewConversationPageClient({
       <header className="flex items-center gap-4 border-b border-[var(--card-border)] px-6 py-4">
         <button
           onClick={() => router.push("/messages")}
-          className="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
           aria-label="Back to messages"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
 
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)]">
             <Icon className="h-5 w-5" />
           </div>
           <div>
@@ -198,7 +198,7 @@ export function NewConversationPageClient({
                   key={member.id}
                   className="inline-flex items-center gap-2 rounded-full bg-[var(--primary)]/10 pl-1 pr-2 py-1 text-sm"
                 >
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)] text-white text-xs font-medium">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-white text-xs font-medium">
                     {getInitials(member.fullName, member.email)}
                   </div>
                   <span className="text-[var(--foreground)]">
@@ -206,7 +206,7 @@ export function NewConversationPageClient({
                   </span>
                   <button
                     onClick={() => toggleMember(member.id)}
-                    className="flex h-4 w-4 items-center justify-center rounded-full hover:bg-[var(--background-hover)]"
+                    className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full hover:bg-[var(--background-hover)]"
                     aria-label={`Remove ${member.fullName || member.email}`}
                   >
                     <X className="h-3 w-3 text-[var(--foreground-muted)]" />
@@ -269,12 +269,12 @@ export function NewConversationPageClient({
                           className="h-10 w-10 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-gray-400 to-gray-500 text-white text-sm font-medium">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gray-400 to-gray-500 text-white text-sm font-medium">
                           {getInitials(member.fullName, member.email)}
                         </div>
                       )}
                       {isSelected && (
-                        <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--primary)] text-white">
+                        <div className="absolute -bottom-1 -right-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-white">
                           <Check className="h-3 w-3" />
                         </div>
                       )}

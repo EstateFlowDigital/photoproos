@@ -384,7 +384,7 @@ export function EngagementPageClient({
             )}
             aria-labelledby="activity-trend-heading"
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
               <h2 id="activity-trend-heading" className="font-semibold text-[var(--foreground)]">
                 Activity Trend (30 Days)
               </h2>
@@ -681,7 +681,7 @@ export function EngagementPageClient({
 
                   return (
                     <div key={activity.type}>
-                      <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-start justify-between gap-4 flex-wrap mb-1">
                         <span className="text-sm capitalize text-[var(--foreground)]">
                           {activity.type.replace(/_/g, " ")}
                         </span>

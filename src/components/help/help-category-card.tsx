@@ -113,7 +113,7 @@ export function HelpCategoryCard({
         className
       )}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--background-secondary)] text-foreground-muted transition-colors group-hover:bg-[var(--primary)]/10 group-hover:text-[var(--primary)]">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--background-secondary)] text-foreground-muted transition-colors group-hover:bg-[var(--primary)]/10 group-hover:text-[var(--primary)]">
         <CategoryIcon icon={icon} />
       </div>
       <h3 className="mt-4 text-base font-semibold text-foreground">{title}</h3>

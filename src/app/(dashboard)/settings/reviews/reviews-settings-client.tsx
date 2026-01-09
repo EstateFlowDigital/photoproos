@@ -356,7 +356,7 @@ export function ReviewsSettingsClient({
 
         {platforms.length === 0 ? (
           <div className="p-8 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--background-secondary)]">
+            <div className="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background-secondary)]">
               <Star className="h-6 w-6 text-foreground-muted" />
             </div>
             <h3 className="mt-4 text-sm font-medium text-foreground">
@@ -384,7 +384,7 @@ export function ReviewsSettingsClient({
 
                 <div
                   className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-lg border font-bold",
+                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border font-bold",
                     PLATFORM_TYPE_COLORS[platform.type]
                   )}
                 >
@@ -754,7 +754,7 @@ function StepCard({
 }) {
   return (
     <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-4">
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-bold text-white">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-bold text-white">
         {number}
       </div>
       <h3 className="mt-3 font-medium text-foreground">{title}</h3>

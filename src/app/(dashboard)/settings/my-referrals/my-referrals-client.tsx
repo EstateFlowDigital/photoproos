@@ -302,7 +302,7 @@ export function MyReferralsClient({
         <DialogContent size="sm">
           <DialogHeader>
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 border-2 border-[var(--card-border)]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 border-2 border-[var(--card-border)]">
                 <MailIcon className="h-5 w-5 text-[var(--primary)]" />
               </div>
               <div>
@@ -371,7 +371,7 @@ export function MyReferralsClient({
         <DialogContent size="sm">
           <DialogHeader>
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 border-2 border-[var(--card-border)]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 border-2 border-[var(--card-border)]">
                 <QRCodeIcon className="h-5 w-5 text-[var(--primary)]" />
               </div>
               <div>
@@ -441,7 +441,7 @@ export function MyReferralsClient({
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition-all hover:shadow-lg hover:shadow-[var(--primary)]/5 hover:border-[var(--primary)]/20">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--primary)]/20 to-[var(--primary)]/10">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--primary)]/20 to-[var(--primary)]/10">
                 <UsersGlyph className="h-5 w-5 text-[var(--primary)]" />
               </div>
               <div>
@@ -453,7 +453,7 @@ export function MyReferralsClient({
 
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition-all hover:shadow-lg hover:shadow-[var(--success)]/5 hover:border-[var(--success)]/20">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--success)]/20 to-[var(--success)]/10">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--success)]/20 to-[var(--success)]/10">
                 <CheckCircleIcon className="h-5 w-5 text-[var(--success)]" />
               </div>
               <div>
@@ -465,7 +465,7 @@ export function MyReferralsClient({
 
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition-all hover:shadow-lg hover:shadow-[var(--warning)]/5 hover:border-[var(--warning)]/20">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--warning)]/20 to-[var(--warning)]/10">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--warning)]/20 to-[var(--warning)]/10">
                 <CurrencyIcon className="h-5 w-5 text-[var(--warning)]" />
               </div>
               <div>
@@ -479,7 +479,7 @@ export function MyReferralsClient({
 
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5 transition-all hover:shadow-lg hover:shadow-[var(--ai)]/5 hover:border-[var(--ai)]/20">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--ai)]/20 to-[var(--ai)]/10">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--ai)]/20 to-[var(--ai)]/10">
                 <TrendingUpIcon className="h-5 w-5 text-[var(--ai)]" />
               </div>
               <div>
@@ -593,10 +593,10 @@ export function MyReferralsClient({
               {/* How It Works Steps */}
               <div className="grid gap-6 md:grid-cols-3">
                 <div className="relative rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-6 group hover:border-[var(--primary)]/30 transition-all">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] mb-4 group-hover:scale-110 transition-transform border-2 border-[var(--card-border)]">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] mb-4 group-hover:scale-110 transition-transform border-2 border-[var(--card-border)]">
                     <ShareIcon className="h-6 w-6" />
                   </div>
-                  <div className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--background-hover)] text-xs font-bold text-foreground-muted">
+                  <div className="absolute top-4 right-4 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--background-hover)] text-xs font-bold text-foreground-muted">
                     1
                   </div>
                   <h4 className="font-semibold text-foreground mb-2">Share Your Link</h4>
@@ -605,10 +605,10 @@ export function MyReferralsClient({
                   </p>
                 </div>
                 <div className="relative rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-6 group hover:border-[var(--warning)]/30 transition-all">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--warning)]/10 text-[var(--warning)] mb-4 group-hover:scale-110 transition-transform border-2 border-[var(--card-border)]">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--warning)]/10 text-[var(--warning)] mb-4 group-hover:scale-110 transition-transform border-2 border-[var(--card-border)]">
                     <UserPlusIcon className="h-6 w-6" />
                   </div>
-                  <div className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--background-hover)] text-xs font-bold text-foreground-muted">
+                  <div className="absolute top-4 right-4 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--background-hover)] text-xs font-bold text-foreground-muted">
                     2
                   </div>
                   <h4 className="font-semibold text-foreground mb-2">They Sign Up</h4>
@@ -617,10 +617,10 @@ export function MyReferralsClient({
                   </p>
                 </div>
                 <div className="relative rounded-xl border border-[var(--card-border)] bg-[var(--background)] p-6 group hover:border-[var(--success)]/30 transition-all">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--success)]/10 text-[var(--success)] mb-4 group-hover:scale-110 transition-transform border-2 border-[var(--card-border)]">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--success)]/10 text-[var(--success)] mb-4 group-hover:scale-110 transition-transform border-2 border-[var(--card-border)]">
                     <GiftIcon className="h-6 w-6" />
                   </div>
-                  <div className="absolute top-4 right-4 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--background-hover)] text-xs font-bold text-foreground-muted">
+                  <div className="absolute top-4 right-4 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--background-hover)] text-xs font-bold text-foreground-muted">
                     3
                   </div>
                   <h4 className="font-semibold text-foreground mb-2">You Earn $25</h4>
@@ -673,7 +673,7 @@ export function MyReferralsClient({
             <div>
               {referrals.length === 0 ? (
                 <div className="text-center py-16">
-                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-[var(--background)] mb-4">
+                  <div className="inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--background)] mb-4">
                     <UsersGlyph className="h-8 w-8 text-foreground-muted" />
                   </div>
                   <h3 className="font-semibold text-foreground mb-1">No referrals yet</h3>
@@ -702,7 +702,7 @@ export function MyReferralsClient({
                         <tr key={referral.id} className="hover:bg-[var(--background)] transition-colors">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--background-hover)] text-sm font-medium text-foreground">
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--background-hover)] text-sm font-medium text-foreground">
                                 {(referral.referredName || referral.referredEmail)[0].toUpperCase()}
                               </div>
                               <div>
@@ -768,7 +768,7 @@ export function MyReferralsClient({
                               </p>
                               <p className="text-sm text-foreground-muted">Account Credit</p>
                             </div>
-                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--success)]/20 text-lg">
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/20 text-lg">
                               💰
                             </span>
                           </div>
@@ -824,7 +824,7 @@ export function MyReferralsClient({
 
               {pendingRewards.length === 0 && appliedRewards.length === 0 && (
                 <div className="text-center py-16">
-                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-[var(--background)] mb-4">
+                  <div className="inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--background)] mb-4">
                     <GiftIcon className="h-8 w-8 text-foreground-muted" />
                   </div>
                   <h3 className="font-semibold text-foreground mb-1">No rewards yet</h3>
@@ -841,7 +841,7 @@ export function MyReferralsClient({
             <div className="space-y-6">
               {/* Leaderboard Header */}
               <div className="text-center mb-6">
-                <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-yellow-500/20 to-orange-500/20 mb-3">
+                <div className="inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-yellow-500/20 to-orange-500/20 mb-3">
                   <span className="text-3xl">🏆</span>
                 </div>
                 <h3 className="text-lg font-semibold text-foreground">Top Referrers</h3>
@@ -865,7 +865,7 @@ export function MyReferralsClient({
                         } ${isCurrentUser ? "ring-2 ring-[var(--primary)]" : ""}`}
                       >
                         {/* Rank */}
-                        <div className="flex h-10 w-10 items-center justify-center">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center">
                           {rankEmoji ? (
                             <span className="text-2xl">{rankEmoji}</span>
                           ) : (
@@ -899,7 +899,7 @@ export function MyReferralsClient({
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-[var(--background)] mb-4">
+                  <div className="inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--background)] mb-4">
                     <TrophyIcon className="h-8 w-8 text-foreground-muted" />
                   </div>
                   <h3 className="font-semibold text-foreground mb-1">No leaders yet</h3>
@@ -915,7 +915,7 @@ export function MyReferralsClient({
               {/* Your Rank */}
               {leaderboard.length > 0 && stats && stats.subscribedReferrals > 0 && (
                 <div className="rounded-xl border border-[var(--primary)]/30 bg-[var(--primary)]/5 p-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div>
                       <p className="text-sm text-foreground-muted">Your Stats</p>
                       <p className="text-lg font-semibold text-foreground">

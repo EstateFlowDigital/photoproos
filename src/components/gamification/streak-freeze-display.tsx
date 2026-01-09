@@ -76,9 +76,9 @@ export function StreakFreezeDisplay({
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--ai)]/15">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--ai)]/15">
             <Shield className="h-5 w-5 text-[var(--ai)]" aria-hidden="true" />
           </div>
           <div>

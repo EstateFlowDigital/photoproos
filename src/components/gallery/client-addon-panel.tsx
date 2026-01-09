@@ -319,7 +319,7 @@ export function ClientAddonPanel({
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {selectedAddon.requiresSelection && (
                   <>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-start justify-between gap-4 flex-wrap">
                       <label className="text-sm font-medium text-[var(--foreground)]">
                         Select Photos
                         {selectedAddon.maxPhotos && (
@@ -571,7 +571,7 @@ export function ClientAddonPanel({
                         {/* Quote received - show approve/decline */}
                         {request.status === "quoted" && request.quoteCents !== null && (
                           <div className="mt-4 p-3 rounded-lg bg-[var(--background-tertiary)]">
-                            <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
                               <span className="text-sm font-medium text-[var(--foreground)]">
                                 Quote
                               </span>

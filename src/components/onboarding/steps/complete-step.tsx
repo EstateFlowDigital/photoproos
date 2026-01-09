@@ -142,31 +142,31 @@ export function CompleteStep({
           Your setup summary
         </h3>
         <dl className="space-y-3 text-sm">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <dt className="text-[var(--foreground-muted)]">Business</dt>
             <dd className="text-[var(--foreground)] font-medium">
               {formData.publicName || formData.companyName || "Your Business"}
             </dd>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <dt className="text-[var(--foreground-muted)]">Primary focus</dt>
             <dd className="text-[var(--foreground)] font-medium">
               {primaryIndustry?.name || "Photography"}
             </dd>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <dt className="text-[var(--foreground-muted)]">Industries</dt>
             <dd className="text-[var(--foreground)] font-medium">
               {formData.industries.length} selected
             </dd>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <dt className="text-[var(--foreground-muted)]">Features</dt>
             <dd className="text-[var(--foreground)] font-medium">
               {formData.enabledModules.length + 2} enabled
             </dd>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <dt className="text-[var(--foreground-muted)]">Trial</dt>
             <dd className="text-[var(--foreground)] font-medium">
               {formData.skipPayment ? "14 days" : "30 days"} free

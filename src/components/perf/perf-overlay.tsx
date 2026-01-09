@@ -87,7 +87,7 @@ export function PerfOverlay() {
         ) : (
           stats.map((metric) => (
             <div key={metric.name} className="px-4 py-3 text-sm">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="font-medium text-foreground">
                   {METRIC_LABELS[metric.name] || metric.name}
                 </span>

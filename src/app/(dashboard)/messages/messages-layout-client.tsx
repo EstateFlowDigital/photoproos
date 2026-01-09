@@ -268,7 +268,7 @@ function ConversationItem({
 
       {/* Content */}
       <div className="min-w-0 flex-1">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-1.5 min-w-0">
             <span
               className={`font-semibold truncate ${
@@ -391,7 +391,7 @@ function NewConversationModal({ onClose }: { onClose: () => void }) {
               aria-checked={type === option.type}
             >
               <div
-                className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
                   type === option.type
                     ? "bg-[var(--primary)] text-white"
                     : "bg-[var(--background-tertiary)] text-[var(--foreground-muted)]"

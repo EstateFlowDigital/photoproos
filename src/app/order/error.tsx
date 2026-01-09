@@ -16,7 +16,7 @@ export default function OrderError({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--background)] p-6">
       <div className="mx-auto max-w-md text-center">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--error)]/10">
+        <div className="mx-auto mb-6 flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--error)]/10">
           <AlertIcon className="h-8 w-8 text-[var(--error)]" />
         </div>
         <h2 className="mb-2 text-xl font-semibold text-foreground">

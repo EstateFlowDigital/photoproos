@@ -488,7 +488,7 @@ export function ServiceSelector({
           {/* Selected Service Summary */}
           {selectedService && (
             <div className="rounded-lg border border-[var(--primary)]/30 bg-[var(--primary)]/5 p-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                   <p className="text-xs font-medium text-[var(--primary)] uppercase tracking-wide">Selected Service</p>
                   <p className="font-medium text-foreground mt-1">{selectedService.name}</p>

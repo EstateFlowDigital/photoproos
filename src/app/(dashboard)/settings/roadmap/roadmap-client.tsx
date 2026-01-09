@@ -1019,7 +1019,7 @@ function CategorySection({
     <section aria-labelledby={`category-${categoryId}-heading`} className="space-y-4">
       <div className="flex items-center gap-3">
         <div
-          className="flex h-10 w-10 items-center justify-center rounded-lg"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
           style={{ backgroundColor: `${category.color}15` }}
           aria-hidden="true"
         >
@@ -1129,7 +1129,7 @@ function FeatureRequestModal({
 
         {isSubmitted ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--success)]/10 mb-4">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/10 mb-4">
               <CheckIcon className="h-8 w-8 text-[var(--success)]" aria-hidden="true" />
             </div>
             <h3 className="text-lg font-semibold text-foreground mb-2">Thank You!</h3>
@@ -1362,7 +1362,7 @@ export function RoadmapClient() {
         <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex items-center gap-4">
             <div
-              className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--ai)] shadow-lg"
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--ai)] shadow-lg"
               aria-hidden="true"
             >
               <RocketIcon className="h-7 w-7 text-white" />
@@ -1490,7 +1490,7 @@ export function RoadmapClient() {
           aria-live="polite"
         >
           <div
-            className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--background-tertiary)]"
+            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--background-tertiary)]"
             aria-hidden="true"
           >
             <RocketIcon className="h-8 w-8 text-foreground-muted" />

@@ -408,7 +408,7 @@ export function ContractEditClient({
         <div className="space-y-6">
           {/* Add Signer Card */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
               <h2 className="text-lg font-semibold text-foreground">
                 Signers
               </h2>

@@ -2714,7 +2714,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
           <div className="p-4 space-y-4">
             {/* Overall Budget */}
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
                 <span className="text-sm font-medium text-foreground">Total Budget</span>
                 <span className={cn("text-sm font-medium", getBudgetStatusColor(budgetStatus?.status || "ok"))}>
                   {budgetStatus?.percentUsed !== null && budgetStatus?.percentUsed !== undefined ? `${budgetStatus.percentUsed}%` : "Not set"}
@@ -2747,7 +2747,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                   .filter(c => c.budgetCents !== null || c.spentCents > 0)
                   .map((cat) => (
                     <div key={cat.category}>
-                      <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-start justify-between gap-4 flex-wrap mb-1">
                         <span className="text-sm text-foreground-muted">{getCategoryLabel(cat.category)}</span>
                         <span className="text-xs text-foreground-muted">
                           {formatCurrency(cat.spentCents)}
@@ -2920,7 +2920,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                       const percentage = (method.value / (analyticsData.totalSpent / 100)) * 100;
                       return (
                         <div key={method.method}>
-                          <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-start justify-between gap-4 flex-wrap mb-1">
                             <span className="text-sm text-foreground">{method.name}</span>
                             <span className="text-sm text-foreground-muted">
                               {formatCurrency(method.value * 100)} ({percentage.toFixed(0)}%)
@@ -3047,7 +3047,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
       {/* Receipt Gallery */}
       {activeAdvancedTab === "receipts" && (
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
             <h3 className="font-semibold text-foreground">Receipt Gallery</h3>
             <span className="text-sm text-foreground-muted">
               {expenses.filter(e => e.receiptUrl).length} receipt{expenses.filter(e => e.receiptUrl).length !== 1 ? "s" : ""}
@@ -4507,7 +4507,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
               <>
                 {/* Summary */}
                 <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-4">
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
                     <span className="text-sm font-medium text-foreground">
                       {forecast.periodMonths}-Month Forecast
                     </span>
@@ -4551,7 +4551,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                   <div className="space-y-2 max-h-48 overflow-y-auto">
                     {forecast.forecasts.map((f) => (
                       <div key={f.templateId} className="p-3 rounded-lg border border-[var(--card-border)] bg-[var(--card)]">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-start justify-between gap-4 flex-wrap">
                           <span className="font-medium text-foreground">{f.templateName}</span>
                           <span className="text-sm text-foreground-muted capitalize">{f.frequency}</span>
                         </div>
@@ -4605,7 +4605,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
 
                 {/* Split Items */}
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
                     <span className="text-sm font-medium text-foreground">Split Into:</span>
                     <Button variant="ghost" size="sm" onClick={addSplitItem}>
                       <PlusIcon className="h-4 w-4 mr-1" />
@@ -4618,7 +4618,7 @@ export function ProjectPLPanel({ galleryId, className }: ProjectPLPanelProps) {
                       key={index}
                       className="p-3 rounded-lg border border-[var(--card-border)] bg-[var(--card)] space-y-2"
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-start justify-between gap-4 flex-wrap">
                         <span className="text-sm font-medium text-foreground">Part {index + 1}</span>
                         {splitItems.length > 2 && (
                           <button

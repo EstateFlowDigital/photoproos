@@ -144,7 +144,7 @@ export function RecentActivitySkeleton() {
 
 export function PageHeaderSkeleton({ showAction = false }: { showAction?: boolean }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-start justify-between gap-4 flex-wrap">
       <div className="space-y-2">
         <Skeleton className="h-8 w-40" />
         <Skeleton className="h-5 w-64" />
@@ -296,7 +296,7 @@ export function SchedulingPageSkeleton() {
     <div className="space-y-6">
       <PageHeaderSkeleton showAction />
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <Skeleton className="h-6 w-32" />
           <div className="flex items-center gap-2">
             <Skeleton className="h-8 w-8 rounded-lg" />
@@ -672,7 +672,7 @@ export function DashboardSkeleton() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Galleries Skeleton */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <Skeleton className="h-6 w-32" />
             <Skeleton className="h-4 w-16" />
           </div>
@@ -687,7 +687,7 @@ export function DashboardSkeleton() {
         <div className="space-y-6">
           {/* Upcoming Bookings Skeleton */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
               <Skeleton className="h-6 w-36" />
               <Skeleton className="h-4 w-16" />
             </div>

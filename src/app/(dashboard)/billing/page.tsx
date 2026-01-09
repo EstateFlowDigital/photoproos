@@ -271,7 +271,7 @@ export default async function BillingOverviewPage() {
       {/* Key Metrics */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <p className="text-sm font-medium text-foreground-muted">Outstanding</p>
             {overdueInvoices > 0 && (
               <span className="rounded-full bg-[var(--error)]/10 px-2 py-0.5 text-xs font-medium text-[var(--error)]">

@@ -232,7 +232,7 @@ export function QuestCard({
                 >
                   <div
                     className={cn(
-                      "flex h-5 w-5 items-center justify-center rounded-full",
+                      "flex h-5 w-5 shrink-0 items-center justify-center rounded-full",
                       isComplete
                         ? "bg-[var(--success)] text-white"
                         : "border border-[var(--card-border)]"
@@ -348,7 +348,7 @@ export function ActiveQuestWidget({
       className={cn("rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5", className)}
       aria-labelledby="active-quest-title"
     >
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-[var(--primary)]" aria-hidden="true" />
           <h3 id="active-quest-title" className="font-semibold text-[var(--foreground)]">Active Quest</h3>

@@ -2,7 +2,7 @@ export default function ServicesLoading() {
   return (
     <div className="space-y-6">
       {/* Header Skeleton */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="h-8 w-28 rounded-lg bg-[var(--background-secondary)] animate-pulse" />
           <div className="mt-2 h-4 w-64 rounded bg-[var(--background-secondary)] animate-pulse" />

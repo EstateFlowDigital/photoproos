@@ -46,17 +46,17 @@ export default function ApiDocumentationPage() {
             </p>
             <ol className="mt-3 space-y-2 text-sm text-foreground-secondary">
               <li className="flex items-center gap-2">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-medium text-white">1</span>
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-medium text-white">1</span>
                 <Link href="/settings/integrations" className="text-[var(--primary)] hover:underline">
                   Generate an API key
                 </Link>
               </li>
               <li className="flex items-center gap-2">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-medium text-white">2</span>
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-medium text-white">2</span>
                 Add the key to your <code className="rounded bg-[var(--background-secondary)] px-1.5 py-0.5 text-xs">Authorization</code> header
               </li>
               <li className="flex items-center gap-2">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-medium text-white">3</span>
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-medium text-white">3</span>
                 Make requests to <code className="rounded bg-[var(--background-secondary)] px-1.5 py-0.5 text-xs">{baseUrl}/api/v1/</code>
               </li>
             </ol>

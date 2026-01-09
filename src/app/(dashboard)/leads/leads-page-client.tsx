@@ -885,7 +885,7 @@ export function LeadsPageClient({
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4">
           <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 shadow-2xl sm:p-6">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--error)]/10">
+            <div className="mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--error)]/10">
               <TrashIcon className="h-6 w-6 text-[var(--error)]" />
             </div>
             <h3 className="text-lg font-semibold text-foreground">Delete {selectedLeadIds.size} leads?</h3>
@@ -1216,7 +1216,7 @@ function InquiryDetailModal({
           {/* Notes Section (only for portfolio/chat) */}
           {inquiry.type !== "booking" && (
             <div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <label className="text-xs font-medium uppercase text-foreground-muted">
                   Notes
                 </label>
@@ -1726,7 +1726,7 @@ function AddLeadModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--card-border)] px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10">
               <UserPlusIcon className="h-5 w-5 text-[var(--primary)]" />
             </div>
             <div>

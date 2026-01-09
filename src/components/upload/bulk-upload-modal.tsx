@@ -253,7 +253,7 @@ export function BulkUploadModal({
         {/* Progress Bar */}
         {stats.total > 0 && (
           <div className="px-6 py-4 border-b border-[var(--card-border)]">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
               <span className="text-sm font-medium text-foreground">
                 Overall Progress
               </span>

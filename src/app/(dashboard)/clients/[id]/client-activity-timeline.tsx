@@ -93,7 +93,7 @@ export function ClientActivityTimeline({ activities }: ClientActivityTimelinePro
             <div key={activity.id} className="relative flex gap-4 pl-10">
               {/* Icon circle */}
               <div className={cn(
-                "absolute left-0 flex h-8 w-8 items-center justify-center rounded-full",
+                "absolute left-0 flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
                 activityColors[activity.type]
               )}>
                 {activityIcons[activity.type]}

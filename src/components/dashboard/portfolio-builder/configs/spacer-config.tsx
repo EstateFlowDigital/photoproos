@@ -33,7 +33,7 @@ export function SpacerConfigForm({ config, updateConfig }: SpacerConfigFormProps
             onChange={(e) => updateConfig({ height: parseInt(e.target.value, 10) })}
             className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-[var(--background-secondary)]"
           />
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <span className="text-xs text-foreground-muted">20px</span>
             <span className="text-sm font-medium text-foreground">{height}px</span>
             <span className="text-xs text-foreground-muted">300px</span>

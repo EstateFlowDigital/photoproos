@@ -181,7 +181,7 @@ function ActionCard({ variant, icon, title, subtitle, action }: ActionCardProps)
     >
       <div className="flex items-center gap-4">
         <div
-          className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconBgColors[variant]}`}
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${iconBgColors[variant]}`}
         >
           {icon}
         </div>

@@ -131,7 +131,7 @@ export function ApiKeyManager({ apiKeys, onRefresh, className }: ApiKeyManagerPr
   return (
     <div className={cn("space-y-4", className)}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h3 className="font-medium text-foreground">API Keys</h3>
           <p className="text-sm text-foreground-muted">

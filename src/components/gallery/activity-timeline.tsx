@@ -218,7 +218,7 @@ export function ActivityTimeline({
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
         <div className="flex items-center justify-between border-b border-[var(--card-border)] px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--background-elevated)]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--background-elevated)]">
               <Clock className="h-4 w-4 text-[var(--foreground-muted)]" />
             </div>
             <div>
@@ -230,7 +230,7 @@ export function ActivityTimeline({
           </div>
           <button
             onClick={() => fetchActivity()}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--background-elevated)] hover:text-[var(--foreground)]"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--background-elevated)] hover:text-[var(--foreground)]"
           >
             <RefreshCw className="h-4 w-4" />
           </button>
@@ -238,7 +238,7 @@ export function ActivityTimeline({
 
         {events.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--background-elevated)]">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background-elevated)]">
               <Clock className="h-6 w-6 text-[var(--foreground-muted)]" />
             </div>
             <h4 className="mt-4 font-medium text-[var(--foreground)]">No activity yet</h4>

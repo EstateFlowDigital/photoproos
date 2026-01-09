@@ -29,9 +29,9 @@ export function PortalHeader({ client, invoices = [], questionnaires = [], galle
   return (
     <header className="border-b border-[var(--card-border)] bg-[var(--card)]">
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--primary)]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]">
               <CameraIcon className="h-4 w-4 text-white" />
             </div>
             <span className="text-lg font-semibold text-[var(--foreground)]">Client Portal</span>
@@ -52,7 +52,7 @@ export function PortalHeader({ client, invoices = [], questionnaires = [], galle
               <p className="text-sm font-medium text-[var(--foreground)]">{displayName}</p>
               <p className="text-xs text-[var(--foreground-muted)]">{client.company || client.email}</p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-sm font-medium text-[var(--primary)]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-sm font-medium text-[var(--primary)]">
               {firstLetter}
             </div>
             <button

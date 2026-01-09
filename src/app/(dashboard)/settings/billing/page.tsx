@@ -185,7 +185,7 @@ export default async function BillingSettingsPage() {
           {billingStats?.stripeCustomerId ? (
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                <div className="flex h-12 w-16 items-center justify-center rounded-lg bg-[var(--background)]">
+                <div className="flex h-12 w-16 shrink-0 items-center justify-center rounded-lg bg-[var(--background)]">
                   <CreditCardIcon className="h-8 w-8 text-foreground-muted" />
                 </div>
                 <div>

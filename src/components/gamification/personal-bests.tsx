@@ -69,7 +69,7 @@ export function PersonalBestsCard({ bests, className }: PersonalBestsCardProps) 
   return (
     <div className={cn("personal-bests-card rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5", className)}>
       <div className="flex items-center gap-2 mb-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: "var(--reward-gradient)" }}>
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: "var(--reward-gradient)" }}>
           <Trophy className="h-4 w-4 text-white" />
         </div>
         <div>
@@ -118,7 +118,7 @@ function RecordItem({
       hasRecord ? bgColor : "bg-[var(--background-secondary)]"
     )}>
       <div className={cn(
-        "flex h-9 w-9 items-center justify-center rounded-lg",
+        "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
         hasRecord ? "bg-white/20" : "bg-[var(--background-tertiary)]"
       )}>
         <Icon className={cn("h-5 w-5", hasRecord ? color : "text-[var(--foreground-muted)]")} />

@@ -343,7 +343,7 @@ export function SMSSettingsClient({ settings, stats, templates, recentLogs }: Pr
                 href={`/settings/sms/templates?edit=${template.id}`}
                 className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 transition-colors hover:bg-[var(--background-hover)]"
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
                   <h3 className="text-sm font-medium text-foreground">{template.name}</h3>
                   <span
                     className={cn(

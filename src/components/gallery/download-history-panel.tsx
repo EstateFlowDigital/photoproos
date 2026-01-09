@@ -106,7 +106,7 @@ export function DownloadHistoryPanel({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5">
               <Download className="h-5 w-5 text-white/60" />
             </div>
             <div>
@@ -116,7 +116,7 @@ export function DownloadHistoryPanel({
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-white/60 hover:bg-white/5 hover:text-white"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white/60 hover:bg-white/5 hover:text-white"
           >
             <X className="h-5 w-5" />
           </button>
@@ -141,7 +141,7 @@ export function DownloadHistoryPanel({
             </div>
           ) : downloads.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/5">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-white/5">
                 <Download className="h-8 w-8 text-white/30" />
               </div>
               <h3 className="mt-4 text-lg font-medium text-white">No downloads yet</h3>

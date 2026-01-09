@@ -157,7 +157,7 @@ export function WidgetContainer({
             <button
               type="button"
               onClick={() => setShowMenu(!showMenu)}
-              className="flex h-6 w-6 items-center justify-center rounded text-foreground-muted opacity-0 transition-all hover:bg-[var(--background-hover)] hover:text-foreground group-hover:opacity-100"
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-foreground-muted opacity-0 transition-all hover:bg-[var(--background-hover)] hover:text-foreground group-hover:opacity-100"
               aria-label="Widget options"
               aria-expanded={showMenu}
             >

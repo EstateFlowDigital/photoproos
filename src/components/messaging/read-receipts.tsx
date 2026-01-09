@@ -94,7 +94,7 @@ export function ReadReceiptsDisplay({
             {displayedReaders.map((reader, index) => (
               <div
                 key={reader.id}
-                className="flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-br from-gray-400 to-gray-500 text-white text-[8px] font-medium border border-[var(--background)] ring-0"
+                className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gray-400 to-gray-500 text-white text-[8px] font-medium border border-[var(--background)] ring-0"
                 style={{ zIndex: displayedReaders.length - index }}
                 title={reader.name}
               >
@@ -111,7 +111,7 @@ export function ReadReceiptsDisplay({
             ))}
             {remainingCount > 0 && (
               <div
-                className="flex h-4 w-4 items-center justify-center rounded-full bg-[var(--background-tertiary)] text-[var(--foreground-muted)] text-[8px] font-medium border border-[var(--background)]"
+                className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[var(--background-tertiary)] text-[var(--foreground-muted)] text-[8px] font-medium border border-[var(--background)]"
                 style={{ zIndex: 0 }}
               >
                 +{remainingCount}

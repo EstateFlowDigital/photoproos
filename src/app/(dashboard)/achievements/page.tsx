@@ -132,7 +132,7 @@ export default async function AchievementsPage() {
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
             <h3 className="text-sm font-medium text-[var(--foreground-muted)]">Personal Records</h3>
             <div className="mt-3 space-y-2">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-xs text-[var(--foreground-muted)]">Best Month</span>
                 <span className="font-semibold text-[var(--foreground)]">
                   {personalBests.bestMonthRevenue.amountCents > 0
@@ -140,7 +140,7 @@ export default async function AchievementsPage() {
                     : "—"}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-xs text-[var(--foreground-muted)]">Fastest Delivery</span>
                 <span className="font-semibold text-[var(--foreground)]">
                   {personalBests.fastestDelivery.hours !== null
@@ -150,7 +150,7 @@ export default async function AchievementsPage() {
                     : "—"}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-xs text-[var(--foreground-muted)]">Best Week</span>
                 <span className="font-semibold text-[var(--foreground)]">
                   {personalBests.bestWeekDeliveries.count > 0
@@ -170,9 +170,9 @@ export default async function AchievementsPage() {
           href="/achievements/year-in-review"
           className="group rounded-xl border border-[var(--card-border)] bg-gradient-to-br from-[var(--primary)]/5 to-[var(--ai)]/5 p-5 transition-all hover:border-[var(--card-border-hover)] hover:from-[var(--primary)]/10 hover:to-[var(--ai)]/10"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--ai)]">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--ai)]">
                 <Calendar className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -193,9 +193,9 @@ export default async function AchievementsPage() {
           href="/skills"
           className="group rounded-xl border border-[var(--card-border)] bg-gradient-to-br from-[var(--warning)]/5 to-[var(--success)]/5 p-5 transition-all hover:border-[var(--card-border-hover)] hover:from-[var(--warning)]/10 hover:to-[var(--success)]/10"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[var(--warning)] to-[var(--success)]">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--warning)] to-[var(--success)]">
                 <Sparkles className="h-6 w-6 text-white" />
               </div>
               <div>

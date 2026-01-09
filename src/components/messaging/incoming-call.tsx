@@ -80,7 +80,7 @@ export function IncomingCall({ call, onAccept, onDecline }: IncomingCallProps) {
         </div>
 
         {/* Caller Avatar */}
-        <div className="relative mx-auto mb-6 flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-green-600 shadow-lg">
+        <div className="relative mx-auto mb-6 flex h-28 w-28 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-green-600 shadow-lg">
           {call.initiator.avatarUrl ? (
             <img
               src={call.initiator.avatarUrl}
@@ -93,7 +93,7 @@ export function IncomingCall({ call, onAccept, onDecline }: IncomingCallProps) {
         </div>
 
         {/* Call Type Icon */}
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--background-tertiary)]">
+        <div className="mx-auto mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background-tertiary)]">
           {isVideoCall ? (
             <Video className="h-6 w-6 text-[var(--primary)]" aria-hidden="true" />
           ) : (
@@ -121,7 +121,7 @@ export function IncomingCall({ call, onAccept, onDecline }: IncomingCallProps) {
             className="group flex flex-col items-center gap-2 disabled:opacity-50"
             aria-label="Decline call"
           >
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-500 text-white shadow-lg shadow-red-500/30 transition-transform group-hover:scale-110 group-active:scale-95">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-red-500 text-white shadow-lg shadow-red-500/30 transition-transform group-hover:scale-110 group-active:scale-95">
               <PhoneOff className="h-7 w-7" aria-hidden="true" />
             </div>
             <span className="text-xs text-[var(--foreground-muted)]">Decline</span>
@@ -134,7 +134,7 @@ export function IncomingCall({ call, onAccept, onDecline }: IncomingCallProps) {
             className="group flex flex-col items-center gap-2 disabled:opacity-50"
             aria-label={isVideoCall ? "Accept video call" : "Accept voice call"}
           >
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500 text-white shadow-lg shadow-green-500/30 transition-transform group-hover:scale-110 group-active:scale-95">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-green-500 text-white shadow-lg shadow-green-500/30 transition-transform group-hover:scale-110 group-active:scale-95">
               {isVideoCall ? (
                 <Video className="h-7 w-7" aria-hidden="true" />
               ) : (
@@ -150,7 +150,7 @@ export function IncomingCall({ call, onAccept, onDecline }: IncomingCallProps) {
         {/* Close button */}
         <button
           onClick={handleDecline}
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
+          className="absolute right-4 top-4 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
           aria-label="Dismiss"
         >
           <X className="h-5 w-5" aria-hidden="true" />

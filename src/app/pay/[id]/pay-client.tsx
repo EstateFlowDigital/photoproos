@@ -149,7 +149,7 @@ export function PayInvoiceClient({
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-3xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
               {organization.logoUrl ? (
                 <Image
@@ -278,8 +278,8 @@ export function PayInvoiceClient({
           </div>
 
           {/* Line Items */}
-          <div className="px-6 py-4">
-            <table className="w-full">
+          <div className="px-6 py-4 overflow-x-auto">
+            <table className="w-full min-w-[400px]">
               <thead>
                 <tr className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                   <th className="text-left pb-3">Description</th>

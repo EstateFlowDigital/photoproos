@@ -125,7 +125,7 @@ export default function PartnersPage() {
                 className="flex flex-col items-center rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 text-center"
                 data-element={`partners-current-${partner.name.toLowerCase()}`}
               >
-                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--background-tertiary)] text-lg font-bold text-foreground">
+                <div className="mb-3 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--background-tertiary)] text-lg font-bold text-foreground">
                   {partner.name[0]}
                 </div>
                 <p className="font-medium text-foreground">{partner.name}</p>

@@ -107,7 +107,7 @@ export function ForwardMessageModal({
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -156,7 +156,7 @@ export function ForwardMessageModal({
                     : "hover:bg-[var(--background-hover)]"
                 }`}
               >
-                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
                   selectedConversationId === conversation.id
                     ? "bg-[var(--primary)] text-white"
                     : "bg-[var(--background-tertiary)] text-[var(--foreground-muted)]"

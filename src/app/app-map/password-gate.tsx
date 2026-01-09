@@ -40,7 +40,7 @@ export function PasswordGate() {
     <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         <div className="card p-8 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-6">
+          <div className="mx-auto flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10 mb-6">
             <Lock className="h-8 w-8 text-primary" />
           </div>
 

@@ -149,7 +149,7 @@ export function DashboardSidebar({
           onClick={onClose}
           className="sidebar-brand flex items-center gap-3"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--primary)]">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]">
             <CameraIcon className="h-4 w-4 text-white" />
           </div>
           <span className="sidebar-label text-base font-semibold text-foreground">
@@ -160,7 +160,7 @@ export function DashboardSidebar({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
             aria-label="Close menu"
           >
             <X className="h-4 w-4" />
@@ -262,7 +262,7 @@ export function DashboardSidebar({
                   >
                     {section.industryIcon ? (
                       <span
-                        className="inline-flex h-6 w-6 items-center justify-center rounded-md border shrink-0"
+                        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border shrink-0"
                         style={{
                           backgroundColor: `${section.industryColor}15`,
                           borderColor: `${section.industryColor}30`,

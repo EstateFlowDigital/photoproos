@@ -1435,7 +1435,7 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
                           toggleTaskSelection(task.id);
                         }}
                         className={cn(
-                          "absolute -left-1 -top-1 z-10 flex h-5 w-5 items-center justify-center rounded border-2 transition-all",
+                          "absolute -left-1 -top-1 z-10 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-all",
                           selectedTaskIds.has(task.id)
                             ? "border-[var(--primary)] bg-[var(--primary)] text-white"
                             : "border-[var(--card-border)] bg-[var(--card)] opacity-0 group-hover:opacity-100"
@@ -1514,7 +1514,7 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
                         )}
                         {task.assignee && (
                           <div
-                            className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-xs font-medium text-[var(--primary)]"
+                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-xs font-medium text-[var(--primary)]"
                             title={task.assignee.fullName || undefined}
                           >
                             {task.assignee.fullName?.charAt(0) || "?"}
@@ -1654,7 +1654,7 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
                         <td className="px-4 py-3">
                           {task.assignee ? (
                             <div className="flex items-center gap-2">
-                              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-xs font-medium text-[var(--primary)]">
+                              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-xs font-medium text-[var(--primary)]">
                                 {task.assignee.fullName?.charAt(0) || "?"}
                               </div>
                               <span className="text-sm text-foreground">
@@ -2787,7 +2787,7 @@ function TaskDetailModal({
                     className="flex w-full items-center gap-2 rounded-lg p-2 text-left transition-colors hover:bg-[var(--background-hover)]"
                   >
                     <div
-                      className={`flex h-5 w-5 items-center justify-center rounded border ${
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
                         subtask.isCompleted
                           ? "border-[var(--success)] bg-[var(--success)] text-white"
                           : "border-[var(--card-border)]"

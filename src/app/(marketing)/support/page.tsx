@@ -129,7 +129,7 @@ export default function HelpPage() {
                 data-element={`support-category-${category.title.toLowerCase().replace(/\s+/g, '-').replace(/&/g, 'and')}`}
               >
                 <div className="mb-4 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
                     <category.icon className="h-5 w-5 text-[var(--primary)]" />
                   </div>
                   <div>
@@ -208,7 +208,7 @@ export default function HelpPage() {
               >
                 <div className="relative aspect-video bg-[var(--background-tertiary)]">
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--primary)] text-white transition-transform group-hover:scale-110">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-white transition-transform group-hover:scale-110">
                       <PlayIcon className="h-6 w-6" />
                     </div>
                   </div>

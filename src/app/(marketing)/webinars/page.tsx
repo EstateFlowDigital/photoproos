@@ -93,7 +93,7 @@ export default function WebinarsPage() {
       <section className="py-12 lg:py-16" data-element="webinars-upcoming-section">
         <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
           <div className="mb-8 flex items-center gap-3" data-element="webinars-upcoming-header">
-            <span className="flex h-3 w-3 items-center justify-center">
+            <span className="flex h-3 w-3 shrink-0 items-center justify-center">
               <span className="absolute h-3 w-3 animate-ping rounded-full bg-red-400 opacity-75"></span>
               <span className="relative h-2 w-2 rounded-full bg-red-500"></span>
             </span>
@@ -129,9 +129,9 @@ export default function WebinarsPage() {
                     <span className="text-foreground-secondary">{webinar.time}</span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--background-tertiary)] text-xs font-medium text-foreground">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--background-tertiary)] text-xs font-medium text-foreground">
                       {webinar.host.split(" ").map((n) => n[0]).join("")}
                     </div>
                     <div>
@@ -164,7 +164,7 @@ export default function WebinarsPage() {
               >
                 <div className="aspect-video bg-[var(--background-tertiary)] relative">
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--primary)]/90 text-white transition-transform group-hover:scale-110">
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/90 text-white transition-transform group-hover:scale-110">
                       <PlayIcon className="h-6 w-6 ml-1" />
                     </div>
                   </div>

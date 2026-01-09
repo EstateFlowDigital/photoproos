@@ -286,7 +286,7 @@ export function Lightbox({
                 setShowSlideshow(!showSlideshow);
                 if (!showSlideshow) setSlideshowPlaying(true);
               }}
-              className={`flex h-10 w-10 items-center justify-center rounded-full transition-all ${
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all ${
                 showSlideshow
                   ? "bg-[var(--primary)] text-white"
                   : "bg-white/10 text-white hover:bg-white/20"
@@ -306,7 +306,7 @@ export function Lightbox({
                 const nextIndex = (currentIndex + 1) % photos.length;
                 onCompare([photos[currentIndex], photos[nextIndex]]);
               }}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all hover:bg-white/20"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-white transition-all hover:bg-white/20"
               title="Compare photos"
             >
               <CompareIcon className="h-5 w-5" />
@@ -320,7 +320,7 @@ export function Lightbox({
                 e.stopPropagation();
                 setShowShareMenu(!showShareMenu);
               }}
-              className={`flex h-10 w-10 items-center justify-center rounded-full transition-all ${
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all ${
                 showShareMenu
                   ? "bg-white/20 text-white"
                   : "bg-white/10 text-white hover:bg-white/20"
@@ -363,7 +363,7 @@ export function Lightbox({
                 e.stopPropagation();
                 setShowRatingPanel(!showRatingPanel);
               }}
-              className={`flex h-10 w-10 items-center justify-center rounded-full transition-all ${
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all ${
                 showRatingPanel || userRatings[currentPhoto.id]
                   ? "bg-yellow-500 text-white"
                   : "bg-white/10 text-white hover:bg-white/20"
@@ -381,7 +381,7 @@ export function Lightbox({
                 e.stopPropagation();
                 onToggleFavorite(currentPhoto.id);
               }}
-              className={`flex h-10 w-10 items-center justify-center rounded-full transition-all ${
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all ${
                 isFavorited
                   ? "bg-red-500 text-white"
                   : "bg-white/10 text-white hover:bg-white/20"
@@ -399,7 +399,7 @@ export function Lightbox({
                 e.stopPropagation();
                 onDownload(currentPhoto);
               }}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all hover:bg-white/20"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-white transition-all hover:bg-white/20"
               title="Download photo (D)"
             >
               <DownloadIcon className="h-5 w-5" />
@@ -409,7 +409,7 @@ export function Lightbox({
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all hover:bg-white/20"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-white transition-all hover:bg-white/20"
             title="Close (ESC)"
           >
             <CloseIcon className="h-5 w-5" />
@@ -508,7 +508,7 @@ export function Lightbox({
           className="absolute right-4 top-20 z-20 w-64 rounded-xl border border-white/10 bg-[#1a1a1a]/95 p-4 shadow-xl backdrop-blur-sm"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
             <h3 className="text-sm font-medium text-white">Rate this photo</h3>
             {photoRatings[currentPhoto.id] && (
               <span className="text-xs text-white/60">
@@ -553,7 +553,7 @@ export function Lightbox({
               e.stopPropagation();
               setSlideshowPlaying(!slideshowPlaying);
             }}
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-black transition-colors hover:bg-white/90"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-black transition-colors hover:bg-white/90"
             title={slideshowPlaying ? "Pause (Space)" : "Play (Space)"}
           >
             {slideshowPlaying ? (

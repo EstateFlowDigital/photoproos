@@ -103,7 +103,7 @@ export default async function WebinarPage({ params }: PageProps) {
             {/* Video Player or Register */}
             {isUpcoming ? (
               <div className="mb-8 rounded-xl border border-[var(--card-border)] bg-gradient-to-b from-pink-500/5 to-transparent p-8 text-center">
-                <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-pink-500/10">
+                <div className="mb-4 inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-pink-500/10">
                   <CalendarIcon className="h-8 w-8 text-pink-400" />
                 </div>
                 <h2 className="mb-2 text-xl font-semibold text-foreground">
@@ -126,7 +126,7 @@ export default async function WebinarPage({ params }: PageProps) {
                   {webinar.videoUrl ? (
                     <div className="flex h-full items-center justify-center">
                       <div className="text-center">
-                        <div className="mb-4 inline-flex h-20 w-20 items-center justify-center rounded-full bg-[var(--primary)] text-white">
+                        <div className="mb-4 inline-flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-white">
                           <PlayIcon className="h-10 w-10 ml-1" />
                         </div>
                         <p className="text-foreground-secondary">
@@ -189,7 +189,7 @@ export default async function WebinarPage({ params }: PageProps) {
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
               <h3 className="mb-4 font-semibold text-foreground">Hosted By</h3>
               <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--primary)]/10 text-lg font-bold text-[var(--primary)]">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-lg font-bold text-[var(--primary)]">
                   {webinar.host.name
                     .split(" ")
                     .map((n) => n[0])
@@ -206,13 +206,13 @@ export default async function WebinarPage({ params }: PageProps) {
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
               <h3 className="mb-4 font-semibold text-foreground">Share This Webinar</h3>
               <div className="flex gap-3">
-                <button className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-secondary transition-colors hover:border-[var(--border-hover)] hover:text-foreground">
+                <button className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-secondary transition-colors hover:border-[var(--border-hover)] hover:text-foreground">
                   <TwitterIcon className="h-4 w-4" />
                 </button>
-                <button className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-secondary transition-colors hover:border-[var(--border-hover)] hover:text-foreground">
+                <button className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-secondary transition-colors hover:border-[var(--border-hover)] hover:text-foreground">
                   <LinkedInIcon className="h-4 w-4" />
                 </button>
-                <button className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-secondary transition-colors hover:border-[var(--border-hover)] hover:text-foreground">
+                <button className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-secondary transition-colors hover:border-[var(--border-hover)] hover:text-foreground">
                   <LinkIcon className="h-4 w-4" />
                 </button>
               </div>

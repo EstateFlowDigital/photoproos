@@ -132,7 +132,7 @@ export function TravelInfoCard({
     >
       {/* Header */}
       <div className="px-4 py-3 border-b border-[var(--card-border)] bg-[var(--background)]">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             <CarIcon className="h-4 w-4 text-foreground-muted" />
             <span className="text-sm font-medium text-foreground">Travel Info</span>
@@ -186,11 +186,11 @@ export function TravelInfoCard({
         {showFeeBreakdown && (
           <div className="mt-4 pt-4 border-t border-[var(--card-border)]">
             <div className="space-y-2 text-xs">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-foreground-muted">Free threshold</span>
                 <span className="text-foreground">{freeThresholdMiles} miles</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-foreground-muted">Rate per mile</span>
                 <span className="text-foreground">${(feePerMile / 100).toFixed(2)}/mi</span>
               </div>

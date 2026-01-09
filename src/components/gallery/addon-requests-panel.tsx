@@ -408,7 +408,7 @@ export function AddonRequestsPanel({ galleryId, photos = [] }: AddonRequestsPane
   if (requests.length === 0) {
     return (
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-8 text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--background-tertiary)]">
+        <div className="mx-auto mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background-tertiary)]">
           <svg
             className="h-6 w-6 text-[var(--foreground-muted)]"
             fill="none"

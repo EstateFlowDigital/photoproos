@@ -567,7 +567,7 @@ function CreateRecurringModal({ clients, onClose, onCreate }: CreateRecurringMod
 
           {/* Line Items */}
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
               <label className="text-sm font-medium text-foreground">Line Items</label>
               <button
                 type="button"

@@ -305,7 +305,7 @@ export function TourEmbed({
         <button
           type="button"
           onClick={onFullscreen}
-          className="tour-embed-fullscreen absolute right-3 top-3 z-30 flex h-11 w-11 items-center justify-center rounded-lg bg-black/50 text-white opacity-0 backdrop-blur-sm transition-opacity focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white group-hover:opacity-100"
+          className="tour-embed-fullscreen absolute right-3 top-3 z-30 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-black/50 text-white opacity-0 backdrop-blur-sm transition-opacity focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white group-hover:opacity-100"
           aria-label="View in fullscreen"
         >
           <Maximize2 className="h-5 w-5" />

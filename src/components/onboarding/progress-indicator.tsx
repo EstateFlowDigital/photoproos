@@ -15,7 +15,7 @@ interface ProgressIndicatorProps {
 
 export function ProgressIndicator({ steps, currentStep }: ProgressIndicatorProps) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-start justify-between gap-4 flex-wrap">
       {steps.map((step, index) => {
         const isCompleted = index < currentStep;
         const isCurrent = index === currentStep;

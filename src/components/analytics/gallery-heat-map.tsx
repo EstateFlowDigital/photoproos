@@ -204,7 +204,7 @@ export function GalleryHeatMap({
               <div key={photo.id} className="flex items-center gap-3">
                 <span
                   className={cn(
-                    "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold",
+                    "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold",
                     index === 0
                       ? "bg-[var(--warning)] text-white"
                       : index === 1

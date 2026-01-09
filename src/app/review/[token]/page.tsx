@@ -17,7 +17,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
     return (
       <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--error)]/10">
+          <div className="mx-auto flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--error)]/10">
             {isExpired ? (
               <Clock className="h-8 w-8 text-[var(--error)]" />
             ) : (
@@ -44,7 +44,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
     return (
       <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
+          <div className="mx-auto flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-green-500/10">
             <svg
               className="h-8 w-8 text-green-500"
               fill="none"

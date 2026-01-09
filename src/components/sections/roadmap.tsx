@@ -125,7 +125,7 @@ function PhaseCard({ phase, index }: { phase: RoadmapPhase; index: number }) {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold",
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold",
             config.bg,
             config.text
           )}>

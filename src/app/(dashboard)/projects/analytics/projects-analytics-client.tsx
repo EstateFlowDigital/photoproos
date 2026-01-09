@@ -162,7 +162,7 @@ export function ProjectsAnalyticsClient({ analytics }: ProjectsAnalyticsClientPr
             {byPriority.map((item) => {
               const colors = priorityColors[item.priority] || { bg: "bg-gray-500/10", text: "text-gray-500" };
               return (
-                <div key={item.priority} className="flex items-center justify-between">
+                <div key={item.priority} className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="flex items-center gap-3">
                     <span className={cn(
                       "rounded-full px-2.5 py-1 text-xs font-medium",
@@ -189,7 +189,7 @@ export function ProjectsAnalyticsClient({ analytics }: ProjectsAnalyticsClientPr
       {/* Completion Trend Chart */}
       {hasTrendData && (
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <h3 className="text-sm font-semibold text-foreground">30-Day Activity</h3>
             <div className="flex items-center gap-4 text-xs">
               <div className="flex items-center gap-1.5">
@@ -283,7 +283,7 @@ export function ProjectsAnalyticsClient({ analytics }: ProjectsAnalyticsClientPr
                             className="h-6 w-6 rounded-full"
                           />
                         ) : (
-                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-medium text-white">
+                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-medium text-white">
                             {assignee.assigneeName.charAt(0).toUpperCase()}
                           </div>
                         )}

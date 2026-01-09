@@ -339,7 +339,7 @@ export function RevenuePageClient({
         )}
         aria-labelledby="revenue-chart-heading"
       >
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
           <h2 id="revenue-chart-heading" className="font-semibold text-[var(--foreground)]">
             Revenue Trend
           </h2>
@@ -407,7 +407,7 @@ export function RevenuePageClient({
             ))}
           </div>
           <div className="pt-4 border-t border-[var(--border)]">
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
               <span className="text-sm text-[var(--foreground-muted)]">Outstanding Amount</span>
               <span className="text-lg font-semibold text-[var(--warning)]">
                 {formatCurrencyDetailed(stats.outstandingAmountCents / 100)}
@@ -452,7 +452,7 @@ export function RevenuePageClient({
 
               return (
                 <div key={status.status}>
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-start justify-between gap-4 flex-wrap mb-1">
                     <span className="text-sm capitalize text-[var(--foreground)]">
                       {status.status}
                     </span>

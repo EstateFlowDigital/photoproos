@@ -54,7 +54,7 @@ export function SettingCardWithPin({
           onClick={handlePinClick}
           disabled={!pinned && !canPin}
           className={cn(
-            "absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full transition-all duration-200 z-10",
+            "absolute top-2 right-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-200 z-10",
             pinned
               ? "text-amber-400 bg-amber-400/10"
               : "text-foreground-muted bg-transparent opacity-0 group-hover:opacity-100 hover:bg-[var(--background-hover)]",

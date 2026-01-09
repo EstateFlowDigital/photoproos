@@ -174,7 +174,7 @@ export function ProjectsTab({
                   {/* Selection indicator */}
                   <div
                     className={cn(
-                      "absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full transition-all",
+                      "absolute right-2 top-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all",
                       isSelected
                         ? "bg-[var(--primary)] text-white"
                         : "bg-black/40 text-white/60 group-hover:bg-black/60"

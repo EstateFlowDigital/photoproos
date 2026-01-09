@@ -101,7 +101,7 @@ export function GalleryConfigForm({
 
       {/* Project Selection */}
       <div>
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <label className="text-sm font-medium text-foreground">
             Select Projects{" "}
             <span className="text-foreground-muted">

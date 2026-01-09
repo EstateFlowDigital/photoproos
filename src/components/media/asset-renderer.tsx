@@ -441,7 +441,7 @@ function renderPlaceholder(
       )}
       aria-label={title}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--background-tertiary)]">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background-tertiary)]">
         <Icon className="h-6 w-6 text-foreground-muted" />
       </div>
       <span className="text-sm text-foreground-muted">{title}</span>

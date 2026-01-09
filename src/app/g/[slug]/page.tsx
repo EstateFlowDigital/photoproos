@@ -304,7 +304,7 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
           }}
         >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
                 <p className="font-medium" style={{ color: primaryColor }}>
                   Unlock this gallery to download your photos
@@ -382,7 +382,7 @@ export default async function PublicGalleryPage({ params, searchParams }: Public
         style={{ borderColor: colors.borderColor }}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <p className="text-sm" style={{ color: colors.mutedColor }}>
               Photos by {gallery.photographer.name}
             </p>

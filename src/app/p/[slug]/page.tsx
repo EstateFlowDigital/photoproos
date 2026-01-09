@@ -478,7 +478,7 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
                   <h3 className={styles.sectionHeading.replace('mb-6', 'mb-4').replace('mb-8', 'mb-4')}>Contact Agent</h3>
                   <div className="flex items-center gap-4">
                     <div
-                      className={`flex h-14 w-14 items-center justify-center rounded-full text-xl font-semibold ${!customAccentColor ? `${styles.accentBgLight} ${styles.accent}` : ""}`}
+                      className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-xl font-semibold ${!customAccentColor ? `${styles.accentBgLight} ${styles.accent}` : ""}`}
                       style={customAccentColor ? {
                         backgroundColor: `${customAccentColor}20`,
                         color: customAccentColor,
@@ -537,7 +537,7 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
             <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
               <div className="flex items-center gap-3">
                 <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg ${!customAccentColor ? styles.accentBgLight : ""}`}
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${!customAccentColor ? styles.accentBgLight : ""}`}
                   style={customAccentColor ? { backgroundColor: `${customAccentColor}20` } : undefined}
                 >
                   <CameraIcon
@@ -687,7 +687,7 @@ function MediaEmbed({ url, type }: { url: string; type: "video" | "tour" }) {
       rel="noopener noreferrer"
       className="flex items-center gap-4 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-6 transition-colors hover:border-[var(--primary)]"
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
         {type === "video" ? (
           <PlayIcon className="h-6 w-6 text-[var(--primary)]" />
         ) : (

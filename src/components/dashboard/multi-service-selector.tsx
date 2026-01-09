@@ -147,7 +147,7 @@ export function MultiServiceSelector({
       {/* Selected Services Summary */}
       {selectedServices.length > 0 && (
         <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
             <h4 className="text-sm font-medium text-foreground">
               Selected Services ({selectedServices.length})
             </h4>
@@ -202,7 +202,7 @@ export function MultiServiceSelector({
                       type="button"
                       onClick={() => handleRemoveService(sel.serviceId)}
                       disabled={disabled}
-                      className="flex h-6 w-6 items-center justify-center rounded-full text-foreground-muted hover:bg-[var(--error)]/10 hover:text-[var(--error)] transition-colors"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-foreground-muted hover:bg-[var(--error)]/10 hover:text-[var(--error)] transition-colors"
                     >
                       <CloseIcon className="h-4 w-4" />
                     </button>

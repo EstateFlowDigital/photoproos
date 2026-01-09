@@ -110,7 +110,7 @@ export function MessagesTab({ clientId: _clientId }: MessagesTabProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h2 className="text-lg font-semibold text-[var(--foreground)]">Messages</h2>
           <p className="text-sm text-[var(--foreground-muted)]">
@@ -362,11 +362,11 @@ function ConversationView({
       <div className="flex items-center gap-3 border-b border-[var(--card-border)] px-4 py-3">
         <button
           onClick={onBack}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)]">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)]">
           <MessageSquare className="h-5 w-5" />
         </div>
         <div>
@@ -429,7 +429,7 @@ function ConversationView({
           <button
             onClick={handleSendMessage}
             disabled={!newMessage.trim() || isPending}
-            className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] transition-colors disabled:opacity-50"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] transition-colors disabled:opacity-50"
           >
             <Send className="h-5 w-5" />
           </button>
@@ -519,7 +519,7 @@ function NewChatRequestView({
       <div className="flex items-center gap-3">
         <button
           onClick={onBack}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
@@ -605,7 +605,7 @@ function NewChatRequestView({
 function EmptyState({ onNewRequest }: { onNewRequest: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-[var(--card-border)] bg-[var(--card)] py-16">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--primary)]/10">
+      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10">
         <MessageSquare className="h-8 w-8 text-[var(--primary)]" />
       </div>
       <h3 className="mt-4 text-lg font-medium text-[var(--foreground)]">
@@ -629,7 +629,7 @@ function EmptyState({ onNewRequest }: { onNewRequest: () => void }) {
 function MessagesTabSkeleton() {
   return (
     <div className="space-y-6 animate-pulse">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="h-6 w-24 rounded bg-[var(--background-tertiary)]" />
           <div className="mt-1 h-4 w-48 rounded bg-[var(--background-tertiary)]" />

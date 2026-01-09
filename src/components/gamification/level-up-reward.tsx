@@ -195,7 +195,7 @@ export function LevelUpModal({ data, isOpen, onClose }: LevelUpModalProps) {
                       ? { duration: 0 }
                       : { type: "spring", damping: 15, stiffness: 200, delay: 0.2 }
                   }
-                  className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm mb-4"
+                  className="inline-flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm mb-4"
                 >
                   <span className="text-4xl font-bold text-white">{data.newLevel}</span>
                 </motion.div>
@@ -294,7 +294,7 @@ function RewardItem({ reward, index }: RewardItemProps) {
       }
       className="flex items-center gap-3 rounded-xl bg-[var(--background-secondary)] p-3"
     >
-      <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg", colorClass)}>
+      <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg", colorClass)}>
         <Icon className="h-5 w-5" aria-hidden="true" />
       </div>
       <div className="flex-1 min-w-0">
@@ -377,7 +377,7 @@ export function LevelUpToast({ level, onClose }: LevelUpToastProps) {
       className="level-up-toast relative flex items-center gap-4 rounded-xl border border-[var(--primary)]/30 bg-gradient-to-r from-[var(--primary)]/10 to-[var(--ai)]/10 p-4 shadow-lg backdrop-blur-sm"
       role="alert"
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--ai)]">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--ai)]">
         <span className="text-xl font-bold text-white">{level}</span>
       </div>
       <div>

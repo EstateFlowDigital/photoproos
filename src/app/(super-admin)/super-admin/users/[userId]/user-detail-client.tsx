@@ -690,7 +690,7 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
             "bg-[var(--card)]"
           )}
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
             <h2 className="text-lg font-semibold text-[var(--foreground)]">
               Recent Tickets
             </h2>

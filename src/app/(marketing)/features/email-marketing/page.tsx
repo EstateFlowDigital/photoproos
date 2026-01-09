@@ -160,7 +160,7 @@ export default function EmailMarketingFeaturePage() {
         <section className="mb-16" data-element="features-email-marketing-overview-section">
           <div className="prose prose-invert max-w-none">
             <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--ai)]/10 text-lg">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--ai)]/10 text-lg">
                 📧
               </span>
               Overview
@@ -179,7 +179,7 @@ export default function EmailMarketingFeaturePage() {
         {/* Planned Features */}
         <section className="mb-16" data-element="features-email-marketing-planned-section">
           <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-email-marketing-planned-heading">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--ai)]/10 text-lg">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--ai)]/10 text-lg">
               ✨
             </span>
             Planned Features
@@ -191,7 +191,7 @@ export default function EmailMarketingFeaturePage() {
                 className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5"
               >
                 <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--ai)]/10">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--ai)]/10">
                     <feature.icon className="h-5 w-5 text-[var(--ai)]" />
                   </div>
                   <span
@@ -215,7 +215,7 @@ export default function EmailMarketingFeaturePage() {
         {/* Templates Preview */}
         <section className="mb-16" data-element="features-email-marketing-templates-section">
           <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-email-marketing-templates-heading">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--ai)]/10 text-lg">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--ai)]/10 text-lg">
               📋
             </span>
             Pre-built Templates
@@ -229,7 +229,7 @@ export default function EmailMarketingFeaturePage() {
                 key={template.name}
                 className="flex items-center gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded bg-[var(--background)] text-foreground-muted">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-[var(--background)] text-foreground-muted">
                   <MailIcon className="h-4 w-4" />
                 </div>
                 <div>
@@ -244,7 +244,7 @@ export default function EmailMarketingFeaturePage() {
         {/* Roadmap */}
         <section className="mb-16" data-element="features-email-marketing-roadmap-section">
           <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-email-marketing-roadmap-heading">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--ai)]/10 text-lg">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--ai)]/10 text-lg">
               🗺️
             </span>
             Development Roadmap
@@ -286,7 +286,7 @@ export default function EmailMarketingFeaturePage() {
         {/* FAQ */}
         <section className="mb-16" data-element="features-email-marketing-faq-section">
           <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-email-marketing-faq-heading">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--ai)]/10 text-lg">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--ai)]/10 text-lg">
               ❓
             </span>
             Frequently Asked Questions

@@ -128,7 +128,7 @@ export default function PaymentsFeaturePage() {
                 },
               ].map((item) => (
                 <div key={item.step} className="relative text-center">
-                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)] text-lg font-bold text-white">
+                  <div className="mx-auto mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-lg font-bold text-white">
                     {item.step}
                   </div>
                   <h3 className="mb-2 font-semibold text-foreground">{item.title}</h3>
@@ -152,7 +152,7 @@ export default function PaymentsFeaturePage() {
                 key={feature.title}
                 className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6"
               >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--success)]/10">
+                <div className="mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--success)]/10">
                   <feature.icon className="h-6 w-6 text-[var(--success)]" />
                 </div>
                 <h3 className="mb-2 font-semibold text-foreground">{feature.title}</h3>

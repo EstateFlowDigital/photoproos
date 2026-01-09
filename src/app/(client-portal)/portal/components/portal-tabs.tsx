@@ -53,7 +53,7 @@ export function PortalTabs({ activeTab, onTabChange, pendingQuestionnaires, newL
             {tab.label}
             {hasBadge && (
               <span
-                className={`absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white ${
+                className={`absolute -right-1 -top-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white ${
                   tab.id === "leads" ? "bg-[var(--primary)]" : tab.id === "messages" ? "bg-[var(--primary)]" : "bg-[var(--warning)]"
                 }`}
                 aria-label={`${badgeCount} ${tab.id === "leads" ? "new leads" : tab.id === "messages" ? "unread messages" : "pending questionnaires"}`}

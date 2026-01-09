@@ -17,7 +17,7 @@ export default function OnboardingError({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-6">
       <div className="mx-auto max-w-md text-center">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
+        <div className="mx-auto mb-6 flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
           <AlertIcon className="h-8 w-8 text-red-600 dark:text-red-400" />
         </div>
         <h2 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">

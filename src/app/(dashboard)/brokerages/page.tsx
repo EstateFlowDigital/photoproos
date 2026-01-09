@@ -168,7 +168,7 @@ export default async function BrokeragesPage({ searchParams }: BrokeragesPagePro
                         />
                       ) : (
                         <div
-                          className="flex h-10 w-10 items-center justify-center rounded-lg text-sm font-bold text-white"
+                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white"
                           style={{ backgroundColor: brokerage.primaryColor || "#3b82f6" }}
                         >
                           {(brokerage.name || "B").charAt(0).toUpperCase()}

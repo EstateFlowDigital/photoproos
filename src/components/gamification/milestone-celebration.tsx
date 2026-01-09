@@ -133,7 +133,7 @@ export function MilestoneCelebration({
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: "spring", delay: 0.1, damping: 12 }}
-              className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[var(--warning)]/20 to-[var(--warning)]/30 text-5xl mb-4"
+              className="inline-flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--warning)]/20 to-[var(--warning)]/30 text-5xl mb-4"
               aria-hidden="true"
             >
               {milestone.icon}

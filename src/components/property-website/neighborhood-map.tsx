@@ -289,7 +289,7 @@ export function NeighborhoodMap({
               neighborhoodData.walkScore !== null &&
               neighborhoodData.walkScore !== undefined && (
                 <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
                     <span className="text-sm text-foreground-secondary">
                       Walk Score
                     </span>
@@ -313,7 +313,7 @@ export function NeighborhoodMap({
               neighborhoodData.bikeScore !== null &&
               neighborhoodData.bikeScore !== undefined && (
                 <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
                     <span className="text-sm text-foreground-secondary">
                       Bike Score
                     </span>
@@ -339,7 +339,7 @@ export function NeighborhoodMap({
               neighborhoodData.transitScore !== null &&
               neighborhoodData.transitScore !== undefined && (
                 <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
                     <span className="text-sm text-foreground-secondary">
                       Transit Score
                     </span>
@@ -365,7 +365,7 @@ export function NeighborhoodMap({
               neighborhoodData.crimeIndex !== null &&
               neighborhoodData.crimeIndex !== undefined && (
                 <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
                     <span className="text-sm text-foreground-secondary">
                       Safety
                     </span>
@@ -408,7 +408,7 @@ export function NeighborhoodMap({
             {neighborhoodData.nearestElementaryRating !== null &&
               neighborhoodData.nearestElementaryRating !== undefined && (
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#4CAF50]/20">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#4CAF50]/20">
                     <span className="text-xl">🏫</span>
                   </div>
                   <div>
@@ -424,7 +424,7 @@ export function NeighborhoodMap({
             {neighborhoodData.nearestMiddleRating !== null &&
               neighborhoodData.nearestMiddleRating !== undefined && (
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#2196F3]/20">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#2196F3]/20">
                     <span className="text-xl">🏫</span>
                   </div>
                   <div>
@@ -438,7 +438,7 @@ export function NeighborhoodMap({
             {neighborhoodData.nearestHighRating !== null &&
               neighborhoodData.nearestHighRating !== undefined && (
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#9C27B0]/20">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#9C27B0]/20">
                     <span className="text-xl">🏫</span>
                   </div>
                   <div>
@@ -550,7 +550,7 @@ export function NeighborhoodMap({
             {/* Property marker overlay */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform">
               <div
-                className="flex h-10 w-10 items-center justify-center rounded-full shadow-lg"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-lg"
                 style={{
                   backgroundColor:
                     config.propertyMarkerColor || "var(--primary)",

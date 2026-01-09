@@ -180,7 +180,7 @@ export function SelectionPanel({
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent size="lg">
           <DialogHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
                 <DialogTitle>Your Selections</DialogTitle>
                 <DialogDescription>

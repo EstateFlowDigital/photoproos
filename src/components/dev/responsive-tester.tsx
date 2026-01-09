@@ -239,7 +239,7 @@ export function ResponsiveTester({ children }: { children: React.ReactNode }) {
           {/* Viewport Preset Panel */}
           {showPanel && (
             <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[9999] bg-[#141414] border border-[rgba(255,255,255,0.12)] rounded-xl p-4 shadow-2xl w-[400px] max-h-[60vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
                 <h3 className="text-white font-medium">Viewport Presets</h3>
                 <button
                   onClick={() => setShowPanel(false)}

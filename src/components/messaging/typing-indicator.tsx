@@ -76,7 +76,7 @@ export function TypingIndicator({ conversationId, className = "" }: TypingIndica
         {typingUsers.slice(0, 3).map((user, index) => (
           <div
             key={user.userId}
-            className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-gray-400 to-gray-500 text-white text-[10px] font-medium border-2 border-[var(--card)]"
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gray-400 to-gray-500 text-white text-[10px] font-medium border-2 border-[var(--card)]"
             style={{ zIndex: 3 - index }}
             title={user.userName}
           >
@@ -201,7 +201,7 @@ export function InlineTypingIndicator({ typingUsers }: InlineTypingIndicatorProp
 
   return (
     <div className="inline-typing-indicator flex items-center gap-3 px-4 py-3">
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--background-tertiary)]">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--background-tertiary)]">
         <AnimatedDots />
       </div>
       <span className="text-sm text-[var(--foreground-muted)]">

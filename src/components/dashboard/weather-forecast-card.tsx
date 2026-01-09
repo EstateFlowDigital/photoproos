@@ -119,7 +119,7 @@ export function WeatherForecastCard({
     >
       {/* Header */}
       <div className="px-4 py-3 border-b border-[var(--card-border)] bg-[var(--background)]">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             <SunIcon className="h-4 w-4 text-foreground-muted" />
             <span className="text-sm font-medium text-foreground">Weather Forecast</span>

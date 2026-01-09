@@ -239,7 +239,7 @@ export function PhotographerPayClient({
                   className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4"
                 >
                   <div className="flex flex-col gap-3 mb-3 sm:flex-row sm:items-center sm:gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
                       {(member.user.fullName || member.user.email).charAt(0).toUpperCase()}
                     </div>
                     <div>

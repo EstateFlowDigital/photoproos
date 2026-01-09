@@ -163,15 +163,15 @@ export default async function EditInvoicePage({ params }: EditInvoicePageProps) 
             <h2 className="text-lg font-semibold text-foreground mb-4">Tips</h2>
             <div className="space-y-4 text-sm text-foreground-secondary">
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">1</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">1</div>
                 <p>Add line items from your services or create custom items.</p>
               </div>
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">2</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">2</div>
                 <p>Set a due date to enable automatic late fee calculation.</p>
               </div>
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">3</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">3</div>
                 <p>Preview your invoice before sending to the client.</p>
               </div>
             </div>
@@ -180,19 +180,19 @@ export default async function EditInvoicePage({ params }: EditInvoicePageProps) 
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Invoice Summary</h2>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Status</span>
                 <span className="inline-flex items-center rounded-full bg-[var(--background-tertiary)] px-2 py-0.5 text-xs font-medium text-foreground-muted capitalize">
                   {invoice.status}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Client</span>
                 <span className="text-sm font-medium text-foreground truncate max-w-[150px]">
                   {invoice.client?.fullName || invoice.clientName || "Not set"}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Total</span>
                 <span className="text-sm font-medium text-foreground">
                   {formatCurrency(invoice.totalCents)}
@@ -204,15 +204,15 @@ export default async function EditInvoicePage({ params }: EditInvoicePageProps) 
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Your Stats</h2>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Total Invoices</span>
                 <span className="text-sm font-medium text-foreground">{stats.totalInvoices}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Paid Invoices</span>
                 <span className="text-sm font-medium text-foreground">{stats.paidInvoices}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Pending Amount</span>
                 <span className="text-sm font-medium text-foreground">{formatCurrency(stats.pendingAmount)}</span>
               </div>

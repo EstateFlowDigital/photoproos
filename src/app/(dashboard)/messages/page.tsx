@@ -19,7 +19,7 @@ export default async function MessagesPage() {
   // On mobile, users see the sidebar. On desktop, they see this.
   return (
     <div data-element="messages-page" className="flex flex-1 flex-col items-center justify-center p-8 text-center">
-      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-hover)]">
+      <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-hover)]">
         <MessageSquare className="h-12 w-12 text-white" />
       </div>
       <h2 className="mt-6 text-2xl font-semibold text-[var(--foreground)]">

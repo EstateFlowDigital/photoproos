@@ -256,7 +256,7 @@ export function WalkthroughSettingsClient({
       <Card>
         <CardContent className="flex items-center justify-between py-4">
           <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10">
               <HelpCircle className="h-5 w-5 text-[var(--primary)]" />
             </div>
             <div>
@@ -385,7 +385,7 @@ function WalkthroughToggleItem({
       <div className="flex items-center gap-3">
         <div
           className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-lg",
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
             isDismissed
               ? "bg-[var(--border)]"
               : isVisible

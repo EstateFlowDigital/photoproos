@@ -53,7 +53,7 @@ export function ErrorState({
   return (
     <div className="flex min-h-[400px] flex-col items-center justify-center p-6">
       <div className="mx-auto max-w-md text-center">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--error)]/10">
+        <div className="mx-auto mb-6 flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--error)]/10">
           <Icon className="h-8 w-8 text-[var(--error)]" />
         </div>
         <h2 className="mb-2 text-xl font-semibold text-foreground">{title}</h2>

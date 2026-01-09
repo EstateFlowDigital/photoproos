@@ -205,7 +205,7 @@ function DashboardDemo() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <h3 className="text-lg font-semibold text-foreground">Dashboard</h3>
         <span className="text-xs text-foreground-muted">December 2025</span>
       </div>
@@ -248,7 +248,7 @@ function DashboardDemo() {
 function GalleriesDemo() {
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <h3 className="text-lg font-semibold text-foreground">Galleries</h3>
         <Button size="sm" variant="default">+ New Gallery</Button>
       </div>
@@ -294,7 +294,7 @@ function GalleriesDemo() {
 function ClientsDemo() {
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <h3 className="text-lg font-semibold text-foreground">Clients</h3>
         <Button size="sm" variant="default">+ Add Client</Button>
       </div>
@@ -324,7 +324,7 @@ function ClientsDemo() {
 function PaymentsDemo() {
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <h3 className="text-lg font-semibold text-foreground">Payments</h3>
         <div className="flex gap-2">
           <Button size="sm" variant="secondary">Export</Button>
@@ -377,7 +377,7 @@ function SchedulingDemo() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <h3 className="text-lg font-semibold text-foreground">Scheduling</h3>
         <div className="flex gap-2">
           <Button size="sm" variant="secondary">Week</Button>
@@ -387,7 +387,7 @@ function SchedulingDemo() {
 
       {/* Mini calendar week view */}
       <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] p-4">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
           <span className="text-sm font-medium text-foreground">December 2025</span>
           <div className="flex gap-1">
             <button className="p-1 rounded hover:bg-[var(--background-hover)]">
@@ -448,7 +448,7 @@ function SchedulingDemo() {
 function InvoicesDemo() {
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <h3 className="text-lg font-semibold text-foreground">Invoices</h3>
         <Button size="sm" variant="default">+ Create Invoice</Button>
       </div>

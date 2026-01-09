@@ -118,7 +118,7 @@ export function BlogListClient({ posts = [] }: Props) {
   return (
     <div className="space-y-6" data-element="blog-list-page">
       {/* Header */}
-      <div className="flex items-center justify-between" data-element="blog-list-header">
+      <div className="flex items-start justify-between gap-4 flex-wrap" data-element="blog-list-header">
         <div className="flex items-center gap-4">
           <Link
             href="/super-admin/marketing"

@@ -98,7 +98,7 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
           {/* Status Banner */}
           <div className={cn("rounded-xl border p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between", status.bg, "border-transparent")}>
             <div className="flex items-center gap-3">
-              <div className={cn("flex h-10 w-10 items-center justify-center rounded-full", status.bg)}>
+              <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-full", status.bg)}>
                 {payment.status === "paid" && <CheckIcon className={cn("h-5 w-5", status.text)} />}
                 {payment.status === "pending" && <ClockIcon className={cn("h-5 w-5", status.text)} />}
                 {payment.status === "overdue" && <AlertIcon className={cn("h-5 w-5", status.text)} />}
@@ -150,7 +150,7 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
               <h2 className="text-lg font-semibold text-foreground mb-4">Payment Method</h2>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--background)]">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--background)]">
                   <CreditCardIcon className="h-6 w-6 text-foreground-muted" />
                 </div>
                 <div>
@@ -168,7 +168,7 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
               {payment.status === "paid" && payment.paidAt && (
                 <div className="flex gap-4">
                   <div className="relative">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--success)]/10">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/10">
                       <CheckIcon className="h-4 w-4 text-[var(--success)]" />
                     </div>
                     <div className="absolute left-4 top-8 h-full w-px bg-[var(--card-border)]" />
@@ -182,7 +182,7 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
               )}
               <div className="flex gap-4">
                 <div className="relative">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--background)]">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--background)]">
                     <ActivityIcon className="h-4 w-4 text-foreground-muted" />
                   </div>
                 </div>
@@ -203,7 +203,7 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
               <h2 className="text-lg font-semibold text-foreground mb-4">Client</h2>
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-lg font-bold">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-lg font-bold">
                   {clientName.charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -226,7 +226,7 @@ export default async function PaymentDetailPage({ params }: PaymentDetailPagePro
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
               <h2 className="text-lg font-semibold text-foreground mb-4">Gallery</h2>
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
                   <PhotoIcon className="h-5 w-5" />
                 </div>
                 <div>

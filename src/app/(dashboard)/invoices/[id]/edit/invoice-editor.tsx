@@ -628,7 +628,7 @@ export function InvoiceEditor({ invoice, clients, services }: InvoiceEditorProps
 
           {/* Late Fee Settings */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
               <h3 className="text-sm font-semibold text-foreground">Late Fees</h3>
               <label className="relative inline-flex cursor-pointer items-center">
                 <input

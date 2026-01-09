@@ -64,7 +64,7 @@ export const GamificationHub = memo(function GamificationHub({
     >
       {/* Header with Level */}
       <div className="p-5 bg-gradient-to-r from-[var(--primary)]/10 to-[var(--ai)]/10 border-b border-[var(--card-border)]">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-4">
             <LevelBadge level={level} size="lg" showTitle />
             <div>
@@ -171,7 +171,7 @@ const QuickStat = memo(function QuickStat({
 }: QuickStatProps) {
   const content = (
     <div className="flex items-center gap-3 rounded-lg bg-[var(--background-secondary)] p-3">
-      <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--card)]", color)}>
+      <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--card)]", color)}>
         <Icon className="h-4 w-4" aria-hidden="true" />
       </div>
       <div>

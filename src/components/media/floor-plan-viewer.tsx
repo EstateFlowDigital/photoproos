@@ -233,7 +233,7 @@ export function FloorPlanViewer({
               type="button"
               onClick={handleZoomOut}
               disabled={zoom <= minZoom}
-              className="flex h-9 w-9 items-center justify-center rounded-md bg-white/10 text-white backdrop-blur-sm transition-colors hover:bg-white/20 focus-visible:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-50 sm:h-8 sm:w-8"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white/10 text-white backdrop-blur-sm transition-colors hover:bg-white/20 focus-visible:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-50 sm:h-8 sm:w-8"
               aria-label="Zoom out (or press minus key)"
             >
               <ZoomOut className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
@@ -245,7 +245,7 @@ export function FloorPlanViewer({
               type="button"
               onClick={handleZoomIn}
               disabled={zoom >= maxZoom}
-              className="flex h-9 w-9 items-center justify-center rounded-md bg-white/10 text-white backdrop-blur-sm transition-colors hover:bg-white/20 focus-visible:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-50 sm:h-8 sm:w-8"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white/10 text-white backdrop-blur-sm transition-colors hover:bg-white/20 focus-visible:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-50 sm:h-8 sm:w-8"
               aria-label="Zoom in (or press plus key)"
             >
               <ZoomIn className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
@@ -253,7 +253,7 @@ export function FloorPlanViewer({
             <button
               type="button"
               onClick={handleReset}
-              className="ml-1 flex h-9 w-9 items-center justify-center rounded-md bg-white/10 text-white backdrop-blur-sm transition-colors hover:bg-white/20 focus-visible:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:h-8 sm:w-8"
+              className="ml-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white/10 text-white backdrop-blur-sm transition-colors hover:bg-white/20 focus-visible:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:h-8 sm:w-8"
               aria-label="Reset view (or press 0)"
             >
               <RotateCcw className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
@@ -323,7 +323,7 @@ export function FloorPlanViewer({
           <button
             type="button"
             onClick={onFullscreen}
-            className="flex h-11 w-11 items-center justify-center rounded-lg bg-white/10 text-white backdrop-blur-sm transition-colors hover:bg-white/20 focus-visible:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:h-9 sm:w-9"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white backdrop-blur-sm transition-colors hover:bg-white/20 focus-visible:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:h-9 sm:w-9"
             aria-label="View in fullscreen"
           >
             <Maximize2 className="h-5 w-5 sm:h-4 sm:w-4" />

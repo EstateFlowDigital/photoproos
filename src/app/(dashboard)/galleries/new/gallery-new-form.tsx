@@ -763,7 +763,7 @@ function ToggleSetting({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-start justify-between gap-4 flex-wrap">
       <div>
         <span className="text-sm font-medium text-foreground">{label}</span>
         <p className="text-xs text-foreground-muted">{description}</p>

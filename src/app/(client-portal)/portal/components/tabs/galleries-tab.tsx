@@ -400,7 +400,7 @@ function GalleryCard({
               />
             </button>
           ) : (
-            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[var(--background-tertiary)]">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[var(--background-tertiary)]">
               <ImageIcon className="h-6 w-6 text-[var(--foreground-muted)]" />
             </div>
           )}

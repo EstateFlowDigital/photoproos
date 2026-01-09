@@ -833,7 +833,7 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
 
           {/* Custom Domain */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
               <h2 className="text-lg font-semibold text-foreground">Custom Domain</h2>
               {website.customDomain && (
                 <span className="text-xs font-medium text-[var(--success)] bg-[var(--success)]/10 px-2 py-1 rounded">
@@ -944,7 +944,7 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
       <button
         type="button"
         onClick={handlePreview}
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--primary)] text-white shadow-lg transition-all hover:bg-[var(--primary)]/90 hover:scale-105 lg:hidden"
+        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-white shadow-lg transition-all hover:bg-[var(--primary)]/90 hover:scale-105 lg:hidden"
         title="Preview website"
       >
         <PreviewIcon className="h-6 w-6" />

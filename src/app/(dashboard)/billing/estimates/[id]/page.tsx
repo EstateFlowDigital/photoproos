@@ -176,7 +176,7 @@ export default async function EstimateDetailPage({ params }: Props) {
         <div className="space-y-6">
           {/* Status & Dates */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
               <h3 className="font-semibold text-foreground">Status</h3>
               {getStatusBadge(isExpired && estimate.status !== "converted" ? "expired" : estimate.status)}
             </div>

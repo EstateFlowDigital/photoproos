@@ -37,7 +37,7 @@ export function PasswordGate({ slug, websiteName }: PasswordGateProps) {
       <div className="w-full max-w-md">
         <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-8">
           {/* Lock Icon */}
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--background-elevated)]">
+          <div className="mx-auto flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--background-elevated)]">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"

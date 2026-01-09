@@ -583,7 +583,7 @@ function ThreadItem({
       {/* Avatar */}
       <div className="flex-shrink-0">
         <div
-          className={`flex h-10 w-10 items-center justify-center rounded-full ${
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
             thread.client
               ? "bg-[var(--primary)]/10 text-[var(--primary)]"
               : "bg-[var(--background-tertiary)] text-foreground-muted"

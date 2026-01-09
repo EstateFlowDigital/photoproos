@@ -134,7 +134,7 @@ export function CallInterface({ call, currentUserId, onClose }: CallInterfacePro
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowParticipants(!showParticipants)}
-            className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${
               showParticipants ? "bg-white/20 text-white" : "text-white/70 hover:bg-white/10"
             }`}
             aria-label="Show participants"
@@ -144,13 +144,13 @@ export function CallInterface({ call, currentUserId, onClose }: CallInterfacePro
           </button>
           <button
             onClick={handleToggleFullscreen}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-white/70 hover:bg-white/10 transition-colors"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/10 transition-colors"
             aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
           >
             {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
           </button>
           <button
-            className="flex h-10 w-10 items-center justify-center rounded-full text-white/70 hover:bg-white/10 transition-colors"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/10 transition-colors"
             aria-label="Settings"
           >
             <Settings className="h-5 w-5" aria-hidden="true" />
@@ -176,7 +176,7 @@ export function CallInterface({ call, currentUserId, onClose }: CallInterfacePro
                 {/* Video placeholder - In production, embed actual video stream */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   {participant.isCameraOff ? (
-                    <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-gray-600 to-gray-700">
+                    <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gray-600 to-gray-700">
                       <span className="text-3xl font-medium text-white">
                         {getParticipantName(participant).split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
                       </span>
@@ -184,7 +184,7 @@ export function CallInterface({ call, currentUserId, onClose }: CallInterfacePro
                   ) : (
                     // Placeholder for video stream
                     <div className="h-full w-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-blue-600">
+                      <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-blue-600">
                         <span className="text-3xl font-medium text-white">
                           {getParticipantName(participant).split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
                         </span>
@@ -223,7 +223,7 @@ export function CallInterface({ call, currentUserId, onClose }: CallInterfacePro
                     key={participant.id}
                     className="flex items-center gap-3 rounded-lg p-2 hover:bg-white/5"
                   >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-gray-600 to-gray-700">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gray-600 to-gray-700">
                       <span className="text-sm font-medium text-white">
                         {getParticipantName(participant).split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
                       </span>
@@ -258,7 +258,7 @@ export function CallInterface({ call, currentUserId, onClose }: CallInterfacePro
         {/* Mute Button */}
         <button
           onClick={handleToggleMute}
-          className={`flex h-14 w-14 items-center justify-center rounded-full transition-colors ${
+          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full transition-colors ${
             isMuted
               ? "bg-red-500 text-white"
               : "bg-white/10 text-white hover:bg-white/20"
@@ -272,7 +272,7 @@ export function CallInterface({ call, currentUserId, onClose }: CallInterfacePro
         {/* Camera Button */}
         <button
           onClick={handleToggleCamera}
-          className={`flex h-14 w-14 items-center justify-center rounded-full transition-colors ${
+          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full transition-colors ${
             isCameraOff
               ? "bg-red-500 text-white"
               : "bg-white/10 text-white hover:bg-white/20"
@@ -286,7 +286,7 @@ export function CallInterface({ call, currentUserId, onClose }: CallInterfacePro
         {/* Screen Share Button */}
         <button
           onClick={handleToggleScreenShare}
-          className={`flex h-14 w-14 items-center justify-center rounded-full transition-colors ${
+          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full transition-colors ${
             isScreenSharing
               ? "bg-[var(--primary)] text-white"
               : "bg-white/10 text-white hover:bg-white/20"
@@ -301,7 +301,7 @@ export function CallInterface({ call, currentUserId, onClose }: CallInterfacePro
         <button
           onClick={isInitiator ? handleEndCall : handleLeaveCall}
           disabled={isEnding}
-          className="flex h-14 w-24 items-center justify-center gap-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+          className="flex h-14 w-24 shrink-0 items-center justify-center gap-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
           aria-label={isInitiator ? "End call for everyone" : "Leave call"}
         >
           <PhoneOff className="h-6 w-6" aria-hidden="true" />

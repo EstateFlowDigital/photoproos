@@ -338,8 +338,8 @@ export function GamificationSettingsClient() {
           href="/achievements"
           className="group rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 transition-all hover:border-[var(--border-hover)]"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--ai)]/15">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--ai)]/15">
               <Star className="h-5 w-5 text-[var(--ai)]" />
             </div>
             <ChevronRight className="h-4 w-4 text-foreground-muted transition-transform group-hover:translate-x-1" />
@@ -356,8 +356,8 @@ export function GamificationSettingsClient() {
           href="/achievements"
           className="group rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 transition-all hover:border-[var(--border-hover)]"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--warning)]/15">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--warning)]/15">
               <Trophy className="h-5 w-5 text-[var(--warning)]" />
             </div>
             <ChevronRight className="h-4 w-4 text-foreground-muted transition-transform group-hover:translate-x-1" />
@@ -376,8 +376,8 @@ export function GamificationSettingsClient() {
           href="/skills"
           className="group rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 transition-all hover:border-[var(--border-hover)]"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--success)]/15">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--success)]/15">
               <Zap className="h-5 w-5 text-[var(--success)]" />
             </div>
             <ChevronRight className="h-4 w-4 text-foreground-muted transition-transform group-hover:translate-x-1" />
@@ -396,8 +396,8 @@ export function GamificationSettingsClient() {
           href="/quests"
           className="group rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 transition-all hover:border-[var(--border-hover)]"
         >
-          <div className="flex items-center justify-between">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/15">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/15">
               <Target className="h-5 w-5 text-[var(--primary)]" />
             </div>
             <ChevronRight className="h-4 w-4 text-foreground-muted transition-transform group-hover:translate-x-1" />
@@ -502,7 +502,7 @@ export function GamificationSettingsClient() {
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
-                      "flex h-9 w-9 items-center justify-center rounded-lg transition-colors",
+                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors",
                       isEnabled
                         ? "bg-[var(--primary)]/15"
                         : "bg-[var(--background-tertiary)]"

@@ -153,9 +153,9 @@ export function SkillTree({ initialState, className }: SkillTreeProps) {
       )}
 
       {/* Header with points */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--ai)] to-[var(--primary)]">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--ai)] to-[var(--primary)]">
             <Sparkles className="h-6 w-6 text-white" aria-hidden="true" />
           </div>
           <div>
@@ -320,11 +320,11 @@ const SkillCard = memo(function SkillCard({
       {/* Status indicator */}
       <div className="absolute -top-2 -right-2" aria-hidden="true">
         {skill.isUnlocked ? (
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--success)] text-white">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--success)] text-white">
             <Check className="h-3.5 w-3.5" />
           </div>
         ) : !skill.canUnlock ? (
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--background-secondary)] text-[var(--foreground-muted)]">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--background-secondary)] text-[var(--foreground-muted)]">
             <Lock className="h-3 w-3" />
           </div>
         ) : null}
@@ -334,7 +334,7 @@ const SkillCard = memo(function SkillCard({
         {/* Icon */}
         <div
           className={cn(
-            "flex h-12 w-12 items-center justify-center rounded-xl text-2xl transition-all",
+            "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl transition-all",
             skill.isUnlocked
               ? "bg-[var(--success)]/15"
               : skill.canUnlock
@@ -427,7 +427,7 @@ export function SkillTreeWidget({ state, className }: SkillTreeWidgetProps) {
       className={cn("skill-tree-widget rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5", className)}
       aria-labelledby="skill-tree-widget-title"
     >
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-[var(--ai)]" aria-hidden="true" />
           <h3 id="skill-tree-widget-title" className="font-semibold text-[var(--foreground)]">Skill Trees</h3>
@@ -442,7 +442,7 @@ export function SkillTreeWidget({ state, className }: SkillTreeWidgetProps) {
 
       <div className="space-y-3" role="list" aria-label="Skill tree progress">
         {state.trees.map((tree) => (
-          <div key={tree.category} className="flex items-center justify-between" role="listitem">
+          <div key={tree.category} className="flex items-start justify-between gap-4 flex-wrap" role="listitem">
             <div className="flex items-center gap-2">
               <span className="text-lg" aria-hidden="true">{tree.icon}</span>
               <span className="text-sm text-[var(--foreground-secondary)]">{tree.name}</span>

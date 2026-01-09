@@ -123,7 +123,7 @@ export function BrokerageContractsSection({
                 <div className="flex items-center gap-4 min-w-0">
                   <div
                     className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-lg",
+                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
                       contract.isActive
                         ? "bg-[var(--success)]/10 text-[var(--success)]"
                         : "bg-[var(--foreground-muted)]/10 text-foreground-muted"

@@ -339,7 +339,7 @@ function RequestsList({
           <div key={request.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4 min-w-0">
               {showUser && request.user && (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/15 text-sm font-medium text-[var(--primary)]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/15 text-sm font-medium text-[var(--primary)]">
                   {(request.user.fullName || request.user.email).charAt(0).toUpperCase()}
                 </div>
               )}

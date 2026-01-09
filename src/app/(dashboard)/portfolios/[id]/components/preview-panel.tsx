@@ -81,7 +81,7 @@ export function PreviewPanel({
           {/* Refresh Button */}
           <button
             onClick={handleRefresh}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
             title="Refresh preview"
           >
             <RefreshIcon className={cn("h-4 w-4", isLoading && "animate-spin")} />
@@ -92,7 +92,7 @@ export function PreviewPanel({
             href={`/portfolio/${slug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
             title="Open in new tab"
           >
             <ExternalLinkIcon className="h-4 w-4" />
@@ -101,7 +101,7 @@ export function PreviewPanel({
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
             title="Close preview"
           >
             <CloseIcon className="h-4 w-4" />

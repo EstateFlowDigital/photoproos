@@ -1265,7 +1265,7 @@ ${Object.entries(styles)
             className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 w-80 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
               <h3 className="font-semibold text-[var(--foreground)]">Keyboard Shortcuts</h3>
               <button onClick={() => setShowShortcuts(false)} className="text-[var(--foreground-muted)]">
                 <X className="w-4 h-4" />

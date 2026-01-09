@@ -13,7 +13,7 @@ export function DashboardMenuButton({ onClick, className }: DashboardMenuButtonP
     <button
       onClick={onClick}
       className={cn(
-        "shell-menu-toggle flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground",
+        "shell-menu-toggle flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--card-border)] text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground",
         className
       )}
       aria-label="Open menu"

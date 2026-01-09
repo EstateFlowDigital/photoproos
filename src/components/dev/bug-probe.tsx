@@ -589,7 +589,7 @@ export function BugProbe() {
               )}
               <button
                 onClick={() => setHudMinimized(!hudMinimized)}
-                className="flex h-5 w-5 items-center justify-center rounded text-[#9ca3af] hover:bg-white/10 hover:text-white"
+                className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-[#9ca3af] hover:bg-white/10 hover:text-white"
                 title={hudMinimized ? "Expand HUD" : "Minimize HUD"}
               >
                 {hudMinimized ? (
@@ -639,7 +639,7 @@ export function BugProbe() {
               )}
               <button
                 onClick={captureScreenshot}
-                className="flex h-8 w-8 items-center justify-center rounded-md bg-white/5 text-[#d1d5db] hover:bg-white/10"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/5 text-[#d1d5db] hover:bg-white/10"
                 title="Capture screenshot"
                 disabled={screenshotting}
               >
@@ -648,7 +648,7 @@ export function BugProbe() {
               <button
                 onClick={recording ? () => stopRecording(false) : startRecording}
                 className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-md text-[#d1d5db] hover:bg-white/10",
+                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-[#d1d5db] hover:bg-white/10",
                   recording ? "bg-[var(--error)]/20 text-[var(--error)]" : "bg-white/5"
                 )}
                 title={recording ? "Stop recording" : "Start 30s screen record"}
@@ -657,14 +657,14 @@ export function BugProbe() {
               </button>
               <button
                 onClick={() => addEntry("note", "Testing checkpoint")}
-                className="flex h-8 w-8 items-center justify-center rounded-md bg-white/5 text-[#d1d5db] hover:bg-white/10"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/5 text-[#d1d5db] hover:bg-white/10"
                 title="Add testing line"
               >
                 <span className="text-[10px] font-bold">T</span>
               </button>
               <button
                 onClick={copyLog}
-                className="flex h-8 w-8 items-center justify-center rounded-md bg-white/5 text-[#d1d5db] hover:bg-white/10"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/5 text-[#d1d5db] hover:bg-white/10"
                 title="Copy session log"
               >
                 {copyState === "copied" ? (
@@ -677,7 +677,7 @@ export function BugProbe() {
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-md bg-white/5 text-[#d1d5db] hover:bg-white/10"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/5 text-[#d1d5db] hover:bg-white/10"
                 title="Minimize"
               >
                 <X className="h-4 w-4" />
@@ -693,7 +693,7 @@ export function BugProbe() {
                 const time = new Date(entry.ts).toLocaleTimeString();
                 return (
                   <div key={entry.id} className="px-3 py-2 space-y-1">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-start justify-between gap-4 flex-wrap">
                       <span
                         className={cn(
                           "rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase",
@@ -762,7 +762,7 @@ export function BugProbe() {
               />
               <button
                 onClick={addNote}
-                className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)] text-white hover:opacity-90"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)] text-white hover:opacity-90"
                 title="Add note"
               >
                 <StickyNote className="h-4 w-4" />

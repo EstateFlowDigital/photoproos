@@ -69,15 +69,15 @@ export default async function EditBrokeragePage({ params }: EditBrokeragePagePro
             <h2 className="text-lg font-semibold text-foreground mb-4">Tips</h2>
             <div className="space-y-4 text-sm text-foreground-secondary">
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">1</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">1</div>
                 <p>Update the logo to refresh co-branded marketing materials.</p>
               </div>
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">2</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">2</div>
                 <p>Keep contact information current for agent communications.</p>
               </div>
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">3</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">3</div>
                 <p>Primary color affects all brokerage-branded materials.</p>
               </div>
             </div>
@@ -86,12 +86,12 @@ export default async function EditBrokeragePage({ params }: EditBrokeragePagePro
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Brokerage Info</h2>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Agents</span>
                 <span className="text-sm font-medium text-foreground">{stats.brokerageAgents}</span>
               </div>
               {brokerage.website && (
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
                   <span className="text-sm text-foreground-muted">Website</span>
                   <a
                     href={brokerage.website}
@@ -109,11 +109,11 @@ export default async function EditBrokeragePage({ params }: EditBrokeragePagePro
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Your Stats</h2>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Total Brokerages</span>
                 <span className="text-sm font-medium text-foreground">{stats.totalBrokerages}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Total Agents</span>
                 <span className="text-sm font-medium text-foreground">{stats.totalAgents}</span>
               </div>

@@ -83,7 +83,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             {/* Meta */}
             <div className="flex flex-wrap items-center gap-4 text-sm text-foreground-secondary">
               <div className="flex items-center gap-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)]">
                   {post.author.name.charAt(0)}
                 </div>
                 <div>

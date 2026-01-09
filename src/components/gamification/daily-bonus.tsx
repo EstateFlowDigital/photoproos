@@ -75,9 +75,9 @@ export function DailyBonusCard({ initialState, onClaim, className }: DailyBonusC
   return (
     <div className={cn("daily-bonus-card rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4", className)}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: "var(--reward-gradient)" }}>
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: "var(--reward-gradient)" }}>
             <Gift className="h-4 w-4 text-white" />
           </div>
           <div>
@@ -129,7 +129,7 @@ export function DailyBonusCard({ initialState, onClaim, className }: DailyBonusC
                 {/* Day Circle */}
                 <motion.div
                   className={cn(
-                    "relative flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition-all",
+                    "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all",
                     isClaimed && "bg-[var(--success)] text-white",
                     isToday && "text-white ring-2 ring-[var(--reward-ring)]",
                     isFuture && "bg-[var(--background-secondary)] text-[var(--foreground-muted)]",

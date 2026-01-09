@@ -33,7 +33,7 @@ export function SettingsMobileMenuButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex h-10 w-10 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground lg:hidden",
+        "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground lg:hidden",
         className
       )}
       aria-label="Open settings menu"
@@ -138,7 +138,7 @@ export function SettingsMobileNav({ isOpen, onClose }: SettingsMobileNavProps) {
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
             aria-label="Close menu"
           >
             <XIcon className="h-5 w-5" />

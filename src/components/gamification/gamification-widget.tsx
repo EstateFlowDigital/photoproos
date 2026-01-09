@@ -51,7 +51,7 @@ export function GamificationWidget({
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <h3 className="font-semibold text-[var(--foreground)]">Your Progress</h3>
         <Link
           href="/achievements"

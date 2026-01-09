@@ -107,7 +107,7 @@ export function ReferralWidget({
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden">
       {/* Header with gradient */}
       <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 px-6 py-4 border-b border-[var(--card-border)]">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
             <span className="text-xl">🎁</span>
             Referral Program

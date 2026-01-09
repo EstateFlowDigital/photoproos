@@ -196,7 +196,7 @@ export function TourSpotlight({
           {/* Close button */}
           <button
             onClick={onSkip}
-            className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground transition-colors"
+            className="absolute right-3 top-3 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground transition-colors"
             aria-label="Skip tour"
           >
             <X className="h-4 w-4" />

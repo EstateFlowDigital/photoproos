@@ -144,7 +144,7 @@ export default function GalleriesFeaturePage() {
                 key={feature.title}
                 className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6"
               >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+                <div className="mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
                   <feature.icon className="h-6 w-6 text-[var(--primary)]" />
                 </div>
                 <h3 className="mb-2 font-semibold text-foreground">{feature.title}</h3>

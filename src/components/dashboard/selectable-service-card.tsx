@@ -62,7 +62,7 @@ export function SelectableServiceCard({
       <div
         onClick={handleCheckboxClick}
         className={cn(
-          "absolute top-3 right-3 flex h-5 w-5 items-center justify-center rounded border transition-all",
+          "absolute top-3 right-3 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-all",
           isSelected
             ? "bg-[var(--primary)] border-[var(--primary)]"
             : "border-[var(--card-border)] bg-[var(--background)] hover:border-[var(--primary)]",
@@ -183,7 +183,7 @@ export function SelectableServiceRow({
         <div
           onClick={handleCheckboxClick}
           className={cn(
-            "flex h-5 w-5 items-center justify-center rounded border transition-all cursor-pointer",
+            "flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-all cursor-pointer",
             isSelected
               ? "bg-[var(--primary)] border-[var(--primary)]"
               : "border-[var(--card-border)] bg-[var(--background)] hover:border-[var(--primary)]"

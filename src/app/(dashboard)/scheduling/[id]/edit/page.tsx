@@ -173,7 +173,7 @@ export default async function BookingEditPage({ params }: BookingEditPageProps) 
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
               <h2 className="text-lg font-semibold text-foreground mb-4">Client</h2>
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-bold">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-bold">
                   {(bookingForForm.client.name || "?").charAt(0)}
                 </div>
                 <div>

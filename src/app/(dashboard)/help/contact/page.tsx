@@ -180,7 +180,7 @@ export default function ContactSupportPage() {
           {/* Response Time */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--success)]/10 text-[var(--success)]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/10 text-[var(--success)]">
                 <svg
                   className="h-5 w-5"
                   xmlns="http://www.w3.org/2000/svg"

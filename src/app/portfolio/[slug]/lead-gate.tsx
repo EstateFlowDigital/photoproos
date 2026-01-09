@@ -52,7 +52,7 @@ export function LeadGate({ slug, websiteName, message, primaryColor }: LeadGateP
           {/* Header */}
           <div className="mb-6 text-center">
             <div
-              className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full"
+              className="mx-auto mb-4 flex h-16 w-16 shrink-0 items-center justify-center rounded-full"
               style={{ backgroundColor: `${accentColor}20` }}
             >
               <LockIcon className="h-8 w-8" style={{ color: accentColor }} />

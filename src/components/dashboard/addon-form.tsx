@@ -493,7 +493,7 @@ export function AddonForm({ initialData, mode }: AddonFormProps) {
 
         <div className="space-y-4">
           {/* Active Toggle */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <span className="text-sm font-medium text-foreground">Active</span>
               <p className="text-xs text-foreground-muted">
@@ -509,7 +509,7 @@ export function AddonForm({ initialData, mode }: AddonFormProps) {
           </div>
 
           {/* One-Time Toggle */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <span className="text-sm font-medium text-foreground">
                 One-Time Purchase

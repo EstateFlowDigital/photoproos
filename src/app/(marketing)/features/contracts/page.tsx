@@ -102,7 +102,7 @@ export default function ContractsFeaturePage() {
                 key={feature.title}
                 className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6"
               >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--ai)]/10">
+                <div className="mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--ai)]/10">
                   <feature.icon className="h-6 w-6 text-[var(--ai)]" />
                 </div>
                 <h3 className="mb-2 font-semibold text-foreground">{feature.title}</h3>
@@ -155,7 +155,7 @@ export default function ContractsFeaturePage() {
                   key={item.step}
                   className="flex items-start gap-4 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4 text-left"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-bold text-white">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-bold text-white">
                     {item.step}
                   </div>
                   <div>

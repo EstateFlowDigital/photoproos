@@ -256,7 +256,7 @@ function UploadDemo() {
       {/* Upload Area */}
       <div className="flex-1 p-6">
         <div className="flex h-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-[var(--border-visible)] bg-[var(--background-secondary)]">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--primary)]/10">
+          <div className="mb-4 flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10">
             <UploadIcon className="h-8 w-8 text-[var(--primary)]" />
           </div>
           <p className="mb-2 text-sm font-medium text-foreground">Drop photos here</p>
@@ -277,7 +277,7 @@ function UploadDemo() {
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-12 w-12 rounded-lg bg-[var(--background-secondary)] animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
           ))}
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--background-secondary)] text-xs text-foreground-muted">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--background-secondary)] text-xs text-foreground-muted">
             +20
           </div>
         </div>
@@ -339,7 +339,7 @@ function PaymentDemo() {
     <div className="flex h-full flex-col bg-[var(--background)] p-6">
       {/* Payment Notification */}
       <div className="mb-4 flex items-center gap-3 rounded-xl border border-[var(--success)]/30 bg-[var(--success)]/5 p-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--success)]/10">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/10">
           <CheckIcon className="h-5 w-5 text-[var(--success)]" />
         </div>
         <div className="flex-1">

@@ -73,7 +73,7 @@ export function TestimonialsSection({
                   />
                 ) : (
                   <div
-                    className="flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold text-white"
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white"
                     style={{
                       backgroundColor: templateConfig.colors.primary,
                     }}

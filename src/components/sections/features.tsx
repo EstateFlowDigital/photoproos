@@ -47,7 +47,7 @@ function FeatureCard({ title, description, icon, features, highlight, badge, cla
       )}
 
       {/* Icon */}
-      <div className="relative mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] transition-all duration-300 ease-out group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-[var(--primary)]/20 motion-reduce:transform-none" aria-hidden="true">
+      <div className="relative mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] transition-all duration-300 ease-out group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-[var(--primary)]/20 motion-reduce:transform-none" aria-hidden="true">
         {icon}
       </div>
 

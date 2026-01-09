@@ -767,7 +767,7 @@ export function BookingFormPublic({ form, organization, clientProfile }: Booking
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-sm">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                   <p className="text-xs uppercase tracking-[0.2em] text-foreground-muted">Step {currentStep + 1} of {BOOKING_STEPS.length}</p>
                   <h2 className="text-xl font-semibold text-foreground">{BOOKING_STEPS[currentStep].title}</h2>
@@ -814,7 +814,7 @@ export function BookingFormPublic({ form, organization, clientProfile }: Booking
                           }
                         >
                           <div className={cn(
-                            "flex h-10 w-10 items-center justify-center rounded-full",
+                            "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
                             isSelected ? "bg-white/20" : "bg-[var(--background-tertiary)] text-foreground"
                           )}>
                             {option.icon}
@@ -1351,7 +1351,7 @@ function PreferenceGroupSection({
               }
             >
               <div className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-full",
+                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
                 isSelected ? "bg-white/20" : "bg-[var(--background-tertiary)]"
               )}>
                 {option.icon || <Camera className="h-4 w-4" />}

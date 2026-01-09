@@ -118,7 +118,7 @@ export function MessagesWidget({
           className
         )}
       >
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--background-secondary)]">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--background-secondary)]">
           <svg
             className="h-5 w-5 text-foreground-muted"
             xmlns="http://www.w3.org/2000/svg"
@@ -141,7 +141,7 @@ export function MessagesWidget({
     <div className={cn("flex flex-col h-full", className)}>
       {/* Header with unread badge */}
       {unreadCount > 0 && (
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--primary)]/10 px-2 py-0.5 text-xs font-medium text-[var(--primary)]">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75" />

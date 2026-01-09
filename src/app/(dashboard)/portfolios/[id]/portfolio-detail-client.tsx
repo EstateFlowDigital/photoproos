@@ -311,7 +311,7 @@ export function PortfolioDetailClient({ website, availableProjects }: PortfolioD
                 >
                   <div
                     className={cn(
-                      "flex h-5 w-5 items-center justify-center rounded border",
+                      "flex h-5 w-5 shrink-0 items-center justify-center rounded border",
                       checked
                         ? "border-[var(--primary)] bg-[var(--primary)] text-white"
                         : "border-[var(--card-border)]"

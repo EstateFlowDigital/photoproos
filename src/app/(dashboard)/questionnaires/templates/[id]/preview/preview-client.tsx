@@ -235,7 +235,7 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
 
           {/* Portal Header */}
           <div className="bg-[var(--card)] border-b border-[var(--card-border)] px-6 py-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
                 <p className="text-sm text-[var(--foreground-muted)]">← Back to Portal</p>
                 <h1 className="text-lg font-semibold text-white mt-1">{template.name}</h1>

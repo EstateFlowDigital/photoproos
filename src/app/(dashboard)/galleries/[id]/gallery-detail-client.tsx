@@ -1109,7 +1109,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
           <div className="flex items-center gap-3">
             <div
               className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-lg",
+                "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
                 isExpired ? "bg-[var(--error)]/20" : "bg-[var(--warning)]/20"
               )}
             >
@@ -1614,7 +1614,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                               e.stopPropagation();
                               toggleFavorite(photo.id);
                             }}
-                            className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--error)] text-white shadow-lg transition-transform hover:scale-110"
+                            className="absolute top-2 right-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--error)] text-white shadow-lg transition-transform hover:scale-110"
                           >
                             <HeartIcon className="h-4 w-4" filled />
                           </button>
@@ -1624,7 +1624,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                           <div className="absolute top-2 right-2">
                             <div
                               className={cn(
-                                "flex h-6 w-6 items-center justify-center rounded-md border-2 transition-colors",
+                                "flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition-colors",
                                 selectedPhotos.has(photo.id)
                                   ? "border-[var(--primary)] bg-[var(--primary)]"
                                   : "border-white/80 bg-black/30"
@@ -1731,7 +1731,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
             <div className="space-y-6">
               {/* Notes Section */}
               <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
                   <h2 className="text-lg font-semibold text-foreground">Internal Notes</h2>
                   {!isEditingNotes && (
                     <button
@@ -1849,7 +1849,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                           >
                             <div
                               className={cn(
-                                "flex h-6 w-6 items-center justify-center rounded-full border-2 transition-colors",
+                                "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
                                 selectedPhotos.has(photo.id)
                                   ? "border-white bg-[var(--primary)] text-white"
                                   : "border-white/70 bg-black/30"
@@ -2409,7 +2409,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
           {activeTab === "invoices" && (
             <div className="space-y-6">
               <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
                   <h2 className="text-lg font-semibold text-foreground">Invoices</h2>
                   <button
                     onClick={handleCreateInvoice}
@@ -2431,7 +2431,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                       >
                         <div className="flex items-center gap-4">
                           <div className={cn(
-                            "flex h-10 w-10 items-center justify-center rounded-lg",
+                            "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
                             invoice.status === "paid" ? "bg-[var(--success)]/10" : "bg-[var(--warning)]/10"
                           )}>
                             <InvoiceIcon className={cn(
@@ -2483,7 +2483,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
               {gallery.status === "pending" && (
                 <div className="rounded-xl border border-[var(--warning)]/30 bg-[var(--warning)]/5 p-6">
                   <div className="flex items-start gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--warning)]/10">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--warning)]/10">
                       <AlertIcon className="h-5 w-5 text-[var(--warning)]" />
                     </div>
                     <div className="flex-1">
@@ -2514,7 +2514,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
           {activeTab === "addons" && (
             <div className="space-y-6">
               <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
                   <div>
                     <h2 className="text-lg font-semibold text-foreground">Add-on Requests</h2>
                     <p className="text-sm text-foreground-muted mt-1">
@@ -2553,7 +2553,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Client</h2>
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
                 {(gallery.client.name || "?").charAt(0)}
               </div>
               <div>
@@ -2606,7 +2606,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
 
           {/* Delivery Link */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
               <h2 className="text-lg font-semibold text-foreground">Delivery Link</h2>
               <button
                 onClick={handlePreviewDelivery}
@@ -2803,7 +2803,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                   </div>
                   <button
                     onClick={() => setShowCommentsPanel(false)}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-foreground-muted transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
                   >
                     <CloseIcon className="h-5 w-5" />
                   </button>
@@ -2835,7 +2835,7 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
                             <div className="flex items-center gap-2">
                               <div
                                 className={cn(
-                                  "flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium",
+                                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-medium",
                                   comment.isClient
                                     ? "bg-[var(--warning)]/10 text-[var(--warning)]"
                                     : "bg-[var(--primary)]/10 text-[var(--primary)]"
@@ -2995,7 +2995,7 @@ function SortablePhotoItem({ photo, isCover, isFavorite }: SortablePhotoItemProp
       )}
       {/* Favorite badge */}
       {isFavorite && (
-        <div className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-[var(--error)] text-white shadow-lg">
+        <div className="absolute top-2 right-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--error)] text-white shadow-lg">
           <HeartIcon className="h-4 w-4" filled />
         </div>
       )}
@@ -3091,7 +3091,7 @@ function SortableListItem({
             isSelected ? "bg-[var(--primary)]/30" : "bg-black/20"
           )}>
             <div className={cn(
-              "flex h-4 w-4 items-center justify-center rounded border-2",
+              "flex h-4 w-4 shrink-0 items-center justify-center rounded border-2",
               isSelected
                 ? "border-[var(--primary)] bg-[var(--primary)]"
                 : "border-white/80 bg-black/30"
@@ -3124,7 +3124,7 @@ function SortableListItem({
               e.stopPropagation();
               onToggleFavorite();
             }}
-            className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--error)]/10 text-[var(--error)] hover:bg-[var(--error)]/20 transition-colors"
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--error)]/10 text-[var(--error)] hover:bg-[var(--error)]/20 transition-colors"
           >
             <HeartIcon className="h-3.5 w-3.5" filled />
           </button>
@@ -3135,7 +3135,7 @@ function SortableListItem({
               e.stopPropagation();
               onToggleFavorite();
             }}
-            className="flex h-6 w-6 items-center justify-center rounded-full text-foreground-muted hover:text-[var(--error)] hover:bg-[var(--error)]/10 transition-colors opacity-0 group-hover:opacity-100"
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-foreground-muted hover:text-[var(--error)] hover:bg-[var(--error)]/10 transition-colors opacity-0 group-hover:opacity-100"
           >
             <HeartIcon className="h-3.5 w-3.5" />
           </button>
@@ -3256,7 +3256,7 @@ function DeliveryReadinessChecklist({
 
   return (
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
         <div>
           <h2 className="text-lg font-semibold text-foreground">Delivery Checklist</h2>
           <p className="text-xs text-foreground-muted mt-0.5">

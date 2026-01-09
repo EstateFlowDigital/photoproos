@@ -174,7 +174,7 @@ export function PricingConfig({ config, updateConfig }: PricingConfigProps) {
 
       {/* Packages */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <h4 className="text-sm font-semibold text-foreground">Packages</h4>
           <button
             type="button"

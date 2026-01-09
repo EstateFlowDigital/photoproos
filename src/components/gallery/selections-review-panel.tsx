@@ -176,7 +176,7 @@ export function SelectionsReviewPanel({
     <div className={cn("space-y-6", className)}>
       {/* Header Card */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
           <div>
             <h2 className="text-lg font-semibold text-[var(--foreground)]">Client Selections</h2>
             <p className="text-sm text-[var(--foreground-muted)]">
@@ -335,9 +335,9 @@ export function SelectionsReviewPanel({
             <div className="space-y-6">
               {Object.entries(selectionsByClient).map(([clientEmail, clientSelections]) => (
                 <div key={clientEmail} className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
                     <div className="flex items-center gap-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)]/10">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10">
                         <Users className="h-4 w-4 text-[var(--primary)]" />
                       </div>
                       <div>
@@ -382,7 +382,7 @@ export function SelectionsReviewPanel({
         /* Empty State */
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--background-elevated)]">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background-elevated)]">
               <ImageIcon className="h-6 w-6 text-[var(--foreground-muted)]" />
             </div>
             <h4 className="mt-4 font-medium text-[var(--foreground)]">No selections yet</h4>
@@ -464,7 +464,7 @@ function SelectionCard({ selection, compact, isExpanded, onToggleExpand }: Selec
         {selection.notes && (
           <button
             onClick={onToggleExpand}
-            className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)] text-white"
+            className="absolute top-2 right-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-white"
           >
             <StickyNote className="h-3 w-3" />
           </button>
@@ -488,11 +488,11 @@ function SelectionCard({ selection, compact, isExpanded, onToggleExpand }: Selec
       {/* Expanded Notes */}
       {selection.notes && isExpanded && (
         <div className="absolute inset-0 bg-black/80 p-3 flex flex-col">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
             <span className="text-xs font-medium text-white">Client Notes</span>
             <button
               onClick={onToggleExpand}
-              className="flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
             >
               <X className="h-3 w-3" />
             </button>

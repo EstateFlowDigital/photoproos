@@ -691,7 +691,7 @@ export function VideoGenerator({
           <div className="flex items-center gap-3 border-b border-[var(--card-border)] px-4 py-2">
             <button
               onClick={togglePlayback}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90"
               aria-label={isPlaying ? "Pause" : "Play"}
             >
               {isPlaying ? "⏸" : "▶"}

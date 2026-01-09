@@ -275,7 +275,7 @@ export function AnalyticsDashboardClient({
       {/* Revenue Forecast */}
       {forecastData && forecastData.monthlyRevenue.length > 0 && (
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6" data-tour="revenue-chart">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <h3 className="text-sm font-semibold text-foreground">Revenue Trend</h3>
             <div className="flex items-center gap-4 text-xs">
               <span className="flex items-center gap-1.5">

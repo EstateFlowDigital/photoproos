@@ -220,7 +220,7 @@ export function QuickBooksSettingsClient({
       {/* Connection Status Card */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#2CA01C]/10">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[#2CA01C]/10">
             <QuickBooksIcon className="h-8 w-8 text-[#2CA01C]" />
           </div>
           <div className="flex-1">
@@ -490,7 +490,7 @@ export function QuickBooksSettingsClient({
 
       {/* Sync History */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
           <h2 className="text-lg font-semibold text-foreground">Sync History</h2>
           <Button variant="secondary" size="sm" disabled={!config}>
             <RefreshIcon className="h-4 w-4" />

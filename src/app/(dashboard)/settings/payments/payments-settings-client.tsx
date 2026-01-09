@@ -235,7 +235,7 @@ export function PaymentsSettingsClient({
       {/* Stripe Connect Status */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#635bff]/10">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[#635bff]/10">
             <StripeIcon className="h-8 w-8 text-[#635bff]" />
           </div>
           <div className="flex-1">
@@ -551,7 +551,7 @@ export function PaymentsSettingsClient({
       {/* Tax Settings */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-start">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--primary)]/10 border-2 border-[var(--card-border)]">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 border-2 border-[var(--card-border)]">
             <ReceiptIcon className="h-6 w-6 text-[var(--primary)]" />
           </div>
           <div>
@@ -629,7 +629,7 @@ export function PaymentsSettingsClient({
       {/* Currency Settings */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-start">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--primary)]/10 border-2 border-[var(--card-border)]">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 border-2 border-[var(--card-border)]">
             <CurrencyIcon className="h-6 w-6 text-[var(--primary)]" />
           </div>
           <div>
@@ -793,7 +793,7 @@ function StepCard({
 }) {
   return (
     <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4">
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-bold text-white">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-sm font-bold text-white">
         {number}
       </div>
       <h3 className="mt-3 font-medium text-foreground">{title}</h3>

@@ -133,7 +133,7 @@ export function GlobalUploadModal() {
             {/* Show success message when all uploads complete */}
             {stats.uploading === 0 && stats.pending === 0 && stats.completed > 0 ? (
               <div className="flex items-center gap-3 p-3 rounded-lg bg-[var(--success)]/10 border border-[var(--success)]/20">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--success)]/20">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/20">
                   <CheckCircle2 className="h-5 w-5 text-[var(--success)]" />
                 </div>
                 <div>
@@ -148,7 +148,7 @@ export function GlobalUploadModal() {
               </div>
             ) : (
               <>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-start justify-between gap-4 flex-wrap mb-2">
                   <span className="text-sm font-medium text-foreground">
                     Overall Progress
                   </span>

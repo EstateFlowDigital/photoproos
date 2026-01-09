@@ -231,7 +231,7 @@ export function CreditNoteForm({ clients, invoices }: CreditNoteFormProps) {
 
       {/* Summary */}
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <span className="text-lg font-medium text-foreground">Credit Amount</span>
           <span className="text-2xl font-bold text-[var(--success)]">
             {formatCurrency(amountCents)}

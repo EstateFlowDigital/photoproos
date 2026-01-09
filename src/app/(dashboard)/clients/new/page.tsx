@@ -105,15 +105,15 @@ export default async function NewClientPage() {
             <h2 className="text-lg font-semibold text-foreground mb-4">Tips</h2>
             <div className="space-y-4 text-sm text-foreground-secondary">
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">1</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">1</div>
                 <p>Add a company name to organize galleries by business.</p>
               </div>
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">2</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">2</div>
                 <p>Select the right industry to help with analytics and reporting.</p>
               </div>
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">3</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">3</div>
                 <p>Use notes to track important details about the relationship.</p>
               </div>
             </div>

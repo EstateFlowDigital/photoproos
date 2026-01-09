@@ -136,7 +136,7 @@ export function ThreadView({
         </div>
         <button
           onClick={onClose}
-          className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] transition-colors"
           aria-label="Close thread"
         >
           <X className="h-5 w-5" />
@@ -282,7 +282,7 @@ function ThreadReply({
             >
               <button
                 onClick={() => setShowReactionPicker(!showReactionPicker)}
-                className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--background-hover)] transition-colors"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-sm hover:bg-[var(--background-hover)] transition-colors"
                 aria-label="Add reaction"
               >
                 <Smile className="h-3.5 w-3.5 text-[var(--foreground-muted)]" />

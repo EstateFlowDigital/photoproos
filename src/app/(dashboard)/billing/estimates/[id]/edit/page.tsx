@@ -100,15 +100,15 @@ export default async function EditEstimatePage({ params }: Props) {
             <h2 className="text-lg font-semibold text-foreground mb-4">Tips</h2>
             <div className="space-y-4 text-sm text-foreground-secondary">
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">1</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">1</div>
                 <p>Update line items to reflect any changes in scope or pricing.</p>
               </div>
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">2</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">2</div>
                 <p>Adjust the expiration date to give clients more time if needed.</p>
               </div>
               <div className="flex gap-3">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">3</div>
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-medium shrink-0">3</div>
                 <p>Preview the estimate before sending to your client.</p>
               </div>
             </div>
@@ -117,25 +117,25 @@ export default async function EditEstimatePage({ params }: Props) {
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Estimate Summary</h2>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Status</span>
                 <span className="inline-flex items-center rounded-full bg-[var(--background-tertiary)] px-2 py-0.5 text-xs font-medium text-foreground-muted capitalize">
                   {estimate.status}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Client</span>
                 <span className="text-sm font-medium text-foreground truncate max-w-[150px]">
                   {estimate.client?.fullName || "Not set"}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Total</span>
                 <span className="text-sm font-medium text-foreground">
                   {formatCurrency(estimate.totalCents)}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Line Items</span>
                 <span className="text-sm font-medium text-foreground">
                   {estimate.lineItems.length}
@@ -147,19 +147,19 @@ export default async function EditEstimatePage({ params }: Props) {
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <h2 className="text-lg font-semibold text-foreground mb-4">Your Stats</h2>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Total Estimates</span>
                 <span className="text-sm font-medium text-foreground">{stats.totalEstimates}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Awaiting Response</span>
                 <span className="text-sm font-medium text-foreground">{stats.pendingEstimates}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Accepted</span>
                 <span className="text-sm font-medium text-foreground">{stats.acceptedEstimates}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <span className="text-sm text-foreground-muted">Accepted Value</span>
                 <span className="text-sm font-medium text-foreground">{formatCurrency(stats.totalValue)}</span>
               </div>

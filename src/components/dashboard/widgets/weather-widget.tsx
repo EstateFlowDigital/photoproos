@@ -167,7 +167,7 @@ export function WeatherWidget({
     <div className={cn("space-y-4", className)}>
       {/* Current Weather */}
       {today && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <p className="text-xs text-foreground-muted">{location}</p>
             <div className="flex items-baseline gap-1">

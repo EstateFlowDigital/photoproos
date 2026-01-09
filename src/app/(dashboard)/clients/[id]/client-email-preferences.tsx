@@ -115,7 +115,7 @@ export function ClientEmailPreferences({
             <div className="flex items-center gap-3">
               <div
                 className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-lg",
+                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
                   preferences[option.key]
                     ? "bg-[var(--primary)]/10 text-[var(--primary)]"
                     : "bg-[var(--foreground-muted)]/10 text-foreground-muted"

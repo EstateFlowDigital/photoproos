@@ -281,7 +281,7 @@ export function PageWalkthrough({
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10">
                 <HelpCircle className="h-5 w-5 text-[var(--primary)]" />
               </div>
               <div>
@@ -347,7 +347,7 @@ export function PageWalkthrough({
                   />
                 ) : (
                   <div className="flex flex-col items-center gap-3 text-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10">
                       <Play className="h-6 w-6 text-[var(--primary)]" />
                     </div>
                     <div>
@@ -366,7 +366,7 @@ export function PageWalkthrough({
 
           {/* Steps */}
           <div className="walkthrough-steps space-y-3" role="group" aria-label="Tutorial steps">
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
               <h4 className="text-sm font-medium text-foreground" id={`${walkthroughId}-steps-label`}>
                 Quick Guide
               </h4>

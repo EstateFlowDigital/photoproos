@@ -88,7 +88,7 @@ export default function ClientsFeaturePage() {
             <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6" data-element="features-clients-preview-card">
               <div className="mb-6 flex items-start justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--primary)]/10 text-xl font-bold text-[var(--primary)]">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-xl font-bold text-[var(--primary)]">
                     SC
                   </div>
                   <div>
@@ -147,7 +147,7 @@ export default function ClientsFeaturePage() {
                 key={feature.title}
                 className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6"
               >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--ai)]/10">
+                <div className="mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--ai)]/10">
                   <feature.icon className="h-6 w-6 text-[var(--ai)]" />
                 </div>
                 <h3 className="mb-2 font-semibold text-foreground">{feature.title}</h3>

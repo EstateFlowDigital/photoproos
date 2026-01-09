@@ -69,7 +69,7 @@ export function VideoModal({ isOpen, onClose, videoUrl }: VideoModalProps) {
           ) : (
             // Placeholder when no video is available
             <div className="flex h-full w-full flex-col items-center justify-center gap-4 bg-gradient-to-br from-[var(--primary)]/20 via-[var(--background)] to-[var(--ai)]/20">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-lg">
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--card)] border border-[var(--card-border)] shadow-lg">
                 <PlayIcon className="h-8 w-8 text-[var(--primary)]" />
               </div>
               <div className="text-center">

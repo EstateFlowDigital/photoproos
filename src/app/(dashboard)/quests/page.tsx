@@ -125,10 +125,10 @@ export default async function QuestsPage() {
       <div className="space-y-8">
         {questState.categories.map((category) => (
           <section key={category.category}>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
               <div className="flex items-center gap-3">
                 <div
-                  className="flex h-10 w-10 items-center justify-center rounded-lg text-lg"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-lg"
                   style={{ backgroundColor: `${category.color}20` }}
                 >
                   {category.icon}

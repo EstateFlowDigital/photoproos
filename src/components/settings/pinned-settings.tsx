@@ -28,7 +28,7 @@ export function PinnedSettingsSection({ className }: PinnedSettingsSectionProps)
 
   return (
     <section className={className}>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
         <div className="flex items-center gap-2">
           <StarIcon className="h-4 w-4 text-amber-400" />
           <h2 className="text-base font-semibold text-foreground">
@@ -82,7 +82,7 @@ function PinnedSettingCard({ item, onUnpin }: PinnedSettingCardProps) {
           e.stopPropagation();
           onUnpin();
         }}
-        className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--background)] border border-[var(--card-border)] text-foreground-muted hover:text-[var(--error)] hover:border-[var(--error)]/50 opacity-0 group-hover:opacity-100 transition-all duration-200"
+        className="absolute -top-1.5 -right-1.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--background)] border border-[var(--card-border)] text-foreground-muted hover:text-[var(--error)] hover:border-[var(--error)]/50 opacity-0 group-hover:opacity-100 transition-all duration-200"
         title="Unpin"
       >
         <XIcon className="h-3 w-3" />
@@ -173,7 +173,7 @@ export function SettingsPinToggle({ href, label, iconName }: SettingsPinTogglePr
       }}
       disabled={!pinned && !canPin}
       className={cn(
-        "absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full transition-all duration-200",
+        "absolute top-2 right-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-200",
         pinned
           ? "text-amber-400 bg-amber-400/10"
           : "text-foreground-muted bg-transparent opacity-0 group-hover:opacity-100 hover:bg-[var(--background-hover)]",

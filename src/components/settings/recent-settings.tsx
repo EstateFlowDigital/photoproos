@@ -92,7 +92,7 @@ export function RecentSettingsSection({ className }: RecentSettingsSectionProps)
 
   return (
     <section className={className}>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
         <div className="flex items-center gap-2">
           <ClockIcon className="h-4 w-4 text-foreground-muted" />
           <h2 className="text-base font-semibold text-foreground">

@@ -261,7 +261,7 @@ export function ServicesStep({
       {/* Selected Summary */}
       {formData.selectedServices.length > 0 && (
         <div className="p-4 rounded-lg bg-[var(--background-secondary)] border border-[var(--border)]">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <span className="text-sm text-foreground-secondary">
               {formData.selectedServices.length} service{formData.selectedServices.length !== 1 ? "s" : ""} selected
             </span>

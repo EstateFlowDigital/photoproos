@@ -1240,7 +1240,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
               <div className="relative md:hidden">
                 <button
                   onClick={() => setShowMobileMenu(!showMobileMenu)}
-                  className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors"
                   style={{ backgroundColor: colors.cardBg, color: colors.textColor }}
                   aria-label="More options"
                   aria-expanded={showMobileMenu}
@@ -1773,7 +1773,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
           }}
         >
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
                 <p className="font-medium" style={{ color: primaryColor }}>
                   Unlock this gallery to download your photos
@@ -1965,14 +1965,14 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     <div className="absolute top-3 right-3 z-10">
                       {comparePhotos.find((p) => p.id === photo.id) ? (
                         <div
-                          className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold text-white"
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
                           style={{ backgroundColor: primaryColor }}
                         >
                           {comparePhotos.findIndex((p) => p.id === photo.id) + 1}
                         </div>
                       ) : (
                         <div
-                          className="flex h-7 w-7 items-center justify-center rounded-full border-2 text-sm font-medium"
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-sm font-medium"
                           style={{ borderColor: "rgba(255,255,255,0.5)", backgroundColor: "rgba(0,0,0,0.3)", color: "white" }}
                         >
                           +
@@ -1986,7 +1986,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     <div className="absolute top-3 right-3 z-10">
                       <div
                         className={cn(
-                          "flex h-6 w-6 items-center justify-center rounded border-2 transition-colors",
+                          "flex h-6 w-6 shrink-0 items-center justify-center rounded border-2 transition-colors",
                           selectedPhotoIds.has(photo.id)
                             ? "border-transparent"
                             : "border-white/50 bg-black/30"
@@ -2115,14 +2115,14 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     <div className="absolute top-3 right-3 z-10">
                       {comparePhotos.find((p) => p.id === photo.id) ? (
                         <div
-                          className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold text-white"
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
                           style={{ backgroundColor: primaryColor }}
                         >
                           {comparePhotos.findIndex((p) => p.id === photo.id) + 1}
                         </div>
                       ) : (
                         <div
-                          className="flex h-7 w-7 items-center justify-center rounded-full border-2 text-sm font-medium"
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-sm font-medium"
                           style={{ borderColor: "rgba(255,255,255,0.5)", backgroundColor: "rgba(0,0,0,0.3)", color: "white" }}
                         >
                           +
@@ -2136,7 +2136,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                     <div className="absolute top-3 right-3 z-10">
                       <div
                         className={cn(
-                          "flex h-6 w-6 items-center justify-center rounded border-2 transition-colors",
+                          "flex h-6 w-6 shrink-0 items-center justify-center rounded border-2 transition-colors",
                           selectedPhotoIds.has(photo.id)
                             ? "border-transparent"
                             : "border-white/50 bg-black/30"
@@ -2418,7 +2418,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
 
               {/* Photo Rating */}
               <div className="border-b p-4" style={{ borderColor: colors.borderColor }}>
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="flex items-center gap-2">
                     <StarIcon className="h-4 w-4" style={{ color: primaryColor }} />
                     <span className="text-sm font-medium">Rate this photo</span>
@@ -3210,7 +3210,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
                 { key: "P", action: "Play/pause slideshow" },
                 { key: "T", action: "Toggle thumbnails in slideshow" },
               ].map(({ key, action }) => (
-                <div key={key} className="flex items-center justify-between">
+                <div key={key} className="flex items-start justify-between gap-4 flex-wrap">
                   <span className="text-sm" style={{ color: colors.mutedColor }}>{action}</span>
                   <kbd
                     className="px-2 py-1 rounded text-xs font-mono"
@@ -3372,7 +3372,7 @@ export function GalleryClient({ gallery, isPreview, formatCurrency }: GalleryCli
         style={{ borderColor: colors.borderColor }}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <p className="text-sm" style={{ color: colors.mutedColor }}>
               Photos by {gallery.photographer.name}
             </p>

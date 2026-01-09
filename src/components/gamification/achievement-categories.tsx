@@ -143,7 +143,7 @@ const CategoryCard = memo(function CategoryCard({
     >
       {/* Icon & Name */}
       <div className="flex items-center gap-3 mb-3">
-        <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg", colorClass)}>
+        <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg", colorClass)}>
           <Icon className="h-5 w-5" aria-hidden="true" />
         </div>
         <div>

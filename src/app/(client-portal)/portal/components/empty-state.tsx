@@ -87,7 +87,7 @@ export function EmptyState({
   if (variant === "compact") {
     return (
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--background-tertiary)]">
+        <div className="mx-auto mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--background-tertiary)]">
           {illustration ? (
             <IllustrationIcon type={illustration} size="sm" />
           ) : (
@@ -122,7 +122,7 @@ export function EmptyState({
         <div className="pointer-events-none absolute -right-4 -top-4 h-32 w-32 rounded-full bg-gradient-to-br from-[var(--primary)]/20 to-transparent blur-2xl" />
 
         <div className="relative z-10">
-          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-[var(--primary)]/10 ring-4 ring-[var(--primary)]/20">
+          <div className="mx-auto mb-6 flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 ring-4 ring-[var(--primary)]/20">
             <span className="text-2xl font-bold text-[var(--primary)]">{progressPercent}%</span>
           </div>
 
@@ -185,11 +185,11 @@ export function EmptyState({
       <div className="relative z-10">
         {/* Illustration or Icon */}
         {illustration ? (
-          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--background-tertiary)] to-[var(--card)] shadow-lg ring-1 ring-[var(--card-border)]">
+          <div className="mx-auto mb-6 flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--background-tertiary)] to-[var(--card)] shadow-lg ring-1 ring-[var(--card-border)]">
             <IllustrationIcon type={illustration} />
           </div>
         ) : (
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-[var(--background-tertiary)] ring-1 ring-[var(--card-border)]">
+          <div className="mx-auto mb-6 flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-[var(--background-tertiary)] ring-1 ring-[var(--card-border)]">
             <div className="text-[var(--foreground-muted)]">{icon}</div>
           </div>
         )}

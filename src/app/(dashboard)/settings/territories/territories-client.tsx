@@ -431,7 +431,7 @@ export function TerritoriesClient({ initialTerritories, services }: TerritoriesC
       <Dialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
         <DialogContent size="sm">
           <div className="p-6 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--error)]/10">
+            <div className="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--error)]/10">
               <TrashIcon className="h-6 w-6 text-[var(--error)]" />
             </div>
             <DialogTitle className="mt-4 text-lg font-semibold text-foreground">

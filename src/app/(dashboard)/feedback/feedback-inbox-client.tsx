@@ -108,7 +108,7 @@ export function FeedbackInboxClient({
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Client Feedback</h1>
           <p className="text-sm text-foreground-muted mt-1">

@@ -156,7 +156,7 @@ export function NotificationBell({
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative flex h-10 w-10 items-center justify-center rounded-full bg-[var(--background-tertiary)] text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--card-border)] hover:text-[var(--foreground)]"
+        className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--background-tertiary)] text-[var(--foreground-secondary)] transition-colors hover:bg-[var(--card-border)] hover:text-[var(--foreground)]"
         aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
       >
         <BellIcon className="h-5 w-5" />

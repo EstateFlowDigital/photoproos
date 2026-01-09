@@ -185,7 +185,7 @@ function SocialLink({ href, label, children }: { href: string; label: string; ch
   return (
     <a
       href={href}
-      className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--card-border)] bg-[var(--card)] text-foreground-secondary transition-all hover:border-[var(--primary)] hover:text-[var(--primary)]"
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--card-border)] bg-[var(--card)] text-foreground-secondary transition-all hover:border-[var(--primary)] hover:text-[var(--primary)]"
       aria-label={label}
       target="_blank"
       rel="noreferrer"

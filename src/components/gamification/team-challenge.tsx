@@ -131,7 +131,7 @@ export const TeamChallengeCard = memo(function TeamChallengeCard({
       {/* Header */}
       <div className="flex items-start justify-between gap-3 flex-wrap p-4 border-b border-[var(--card-border)]">
         <div className="flex items-start gap-3">
-          <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg", colorClass)}>
+          <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg", colorClass)}>
             <Icon className="h-5 w-5" aria-hidden="true" />
           </div>
           <div>
@@ -284,7 +284,7 @@ const ParticipantRow = memo(function ParticipantRow({
           className="h-6 w-6 rounded-full object-cover"
         />
       ) : (
-        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--card)] text-xs font-medium text-[var(--foreground-muted)]">
+        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--card)] text-xs font-medium text-[var(--foreground-muted)]">
           {participant.userName?.[0]?.toUpperCase() || "?"}
         </div>
       )}
@@ -398,7 +398,7 @@ export const TeamChallengeWidget = memo(function TeamChallengeWidget({
         className
       )}
     >
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-[var(--ai)]" aria-hidden="true" />
           <h3 className="font-semibold text-[var(--foreground)]">Team Challenge</h3>
@@ -409,7 +409,7 @@ export const TeamChallengeWidget = memo(function TeamChallengeWidget({
       </div>
 
       <div className="flex items-center gap-3 mb-3">
-        <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg", colorClass)}>
+        <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg", colorClass)}>
           <Icon className="h-4 w-4" aria-hidden="true" />
         </div>
         <div className="flex-1 min-w-0">

@@ -270,7 +270,7 @@ export default async function EditGalleryPage({ params }: EditGalleryPageProps) 
               <div className="space-y-4">
                 {gallery.activityLogs.slice(0, 5).map((log) => (
                   <div key={log.id} className="flex gap-3">
-                    <div className={`flex h-8 w-8 items-center justify-center rounded-full shrink-0 ${getActivityStyle(log.type)}`}>
+                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full shrink-0 ${getActivityStyle(log.type)}`}>
                       {getActivityIcon(log.type)}
                     </div>
                     <div>

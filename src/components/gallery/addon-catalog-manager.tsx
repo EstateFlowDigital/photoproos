@@ -408,7 +408,7 @@ export function AddonCatalogManager({
   return (
     <div className={cn("space-y-6", className)}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h2 className="text-lg font-semibold text-[var(--foreground)]">
             Gallery Add-ons

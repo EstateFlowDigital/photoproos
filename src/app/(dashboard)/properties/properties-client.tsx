@@ -271,7 +271,7 @@ export function PropertiesClient({ websites }: PropertiesClientProps) {
               onClick={toggleSelectAll}
               className="flex items-center gap-2 text-sm text-foreground-muted hover:text-foreground"
             >
-              <div className={`flex h-5 w-5 items-center justify-center rounded border transition-colors ${
+              <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${
                 selectedIds.size === filteredWebsites.length && filteredWebsites.length > 0
                   ? "border-[var(--primary)] bg-[var(--primary)]"
                   : "border-[var(--card-border)] bg-[var(--card)]"

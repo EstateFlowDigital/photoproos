@@ -177,7 +177,7 @@ export function ClientMergeClient() {
   if (duplicates.length === 0) {
     return (
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-8 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--success)]/10">
+        <div className="mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/10">
           <CheckIcon className="h-6 w-6 text-[var(--success)]" />
         </div>
         <h3 className="mt-4 text-lg font-semibold text-foreground">No Duplicates Found</h3>
@@ -198,7 +198,7 @@ export function ClientMergeClient() {
     <div className="grid gap-6 lg:grid-cols-2">
       {/* Left: Duplicate Groups List */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <h2 className="text-lg font-semibold text-foreground">
             Potential Duplicates ({duplicates.length} groups)
           </h2>

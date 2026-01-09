@@ -184,7 +184,7 @@ export default function SocialMediaFeaturePage() {
         {/* Overview */}
         <section className="mb-16" data-element="features-social-media-overview-section">
           <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
               📱
             </span>
             Overview
@@ -202,7 +202,7 @@ export default function SocialMediaFeaturePage() {
         {/* Planned Features */}
         <section className="mb-16" data-element="features-social-media-planned-section">
           <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-social-media-planned-heading">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
               ✨
             </span>
             Planned Features
@@ -214,7 +214,7 @@ export default function SocialMediaFeaturePage() {
                 className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-5"
               >
                 <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-pink-500/10">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-pink-500/10">
                     <feature.icon className="h-5 w-5 text-pink-400" />
                   </div>
                   <span
@@ -238,7 +238,7 @@ export default function SocialMediaFeaturePage() {
         {/* Platform Support */}
         <section className="mb-16" data-element="features-social-media-platforms-section">
           <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-social-media-platforms-heading">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
               🌐
             </span>
             Platform Support
@@ -249,7 +249,7 @@ export default function SocialMediaFeaturePage() {
                 key={platform.name}
                 className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4"
               >
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{platform.icon}</span>
                     <span className="font-semibold text-foreground">{platform.name}</span>
@@ -283,7 +283,7 @@ export default function SocialMediaFeaturePage() {
         {/* Use Cases */}
         <section className="mb-16" data-element="features-social-media-usecases-section">
           <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-social-media-usecases-heading">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
               💡
             </span>
             Perfect For
@@ -309,7 +309,7 @@ export default function SocialMediaFeaturePage() {
         {/* Roadmap */}
         <section className="mb-16" data-element="features-social-media-roadmap-section">
           <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-social-media-roadmap-heading">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
               🗺️
             </span>
             Development Roadmap
@@ -351,7 +351,7 @@ export default function SocialMediaFeaturePage() {
         {/* FAQ */}
         <section className="mb-16" data-element="features-social-media-faq-section">
           <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3" data-element="features-social-media-faq-heading">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-pink-500/10 text-lg">
               ❓
             </span>
             Frequently Asked Questions

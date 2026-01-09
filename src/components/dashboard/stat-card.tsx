@@ -29,7 +29,7 @@ export function StatCard({ label, value, change, positive, className, href, icon
 
   const content = (
     <>
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <p className="text-sm text-foreground-muted">{label}</p>
         {icon}
         {href && (

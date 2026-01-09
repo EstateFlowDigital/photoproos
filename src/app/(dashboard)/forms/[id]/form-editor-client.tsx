@@ -591,7 +591,7 @@ export function FormEditorClient({ form }: FormEditorClientProps) {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                   <p className="text-sm font-medium text-foreground">Active</p>
                   <p className="text-xs text-foreground-muted">
@@ -674,7 +674,7 @@ export function FormEditorClient({ form }: FormEditorClientProps) {
             <div className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-6 space-y-6">
               <h3 className="text-lg font-semibold text-foreground">Notifications</h3>
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                   <p className="text-sm font-medium text-foreground">Email Notifications</p>
                   <p className="text-xs text-foreground-muted">
@@ -896,7 +896,7 @@ function FieldEditor({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <h3 className="text-sm font-semibold text-foreground">Field Settings</h3>
         <button
           type="button"
@@ -986,7 +986,7 @@ function FieldEditor({
 
       {/* Required Toggle (for non-layout fields) */}
       {!isLayoutField && field.type !== "hidden" && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <label className="text-sm text-foreground">Required</label>
           <button
             type="button"

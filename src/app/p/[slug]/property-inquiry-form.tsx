@@ -85,7 +85,7 @@ export function PropertyInquiryForm({
   if (isSubmitted) {
     return (
       <div className="rounded-xl border border-[var(--success)]/30 bg-[var(--success)]/10 p-6 text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--success)]/20">
+        <div className="mx-auto mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/20">
           <CheckIcon className="h-6 w-6 text-[var(--success)]" />
         </div>
         <h3 className="text-lg font-semibold text-[var(--success)]">Inquiry Sent!</h3>

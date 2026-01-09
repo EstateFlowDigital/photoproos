@@ -197,7 +197,7 @@ export function WatermarkTemplatesClient({ templates: initialTemplates }: Waterm
   return (
     <div className="space-y-6">
       {/* Header with Create Button */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <p className="text-sm text-foreground-muted">
           {templates.length} {templates.length === 1 ? "template" : "templates"}
         </p>
@@ -422,7 +422,7 @@ export function WatermarkTemplatesClient({ templates: initialTemplates }: Waterm
 
               {/* Opacity */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
                   <label className="text-sm font-medium text-foreground">Opacity</label>
                   <span className="text-sm text-foreground-muted">
                     {Math.round(formData.watermarkOpacity * 100)}%
@@ -441,7 +441,7 @@ export function WatermarkTemplatesClient({ templates: initialTemplates }: Waterm
 
               {/* Scale */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
                   <label className="text-sm font-medium text-foreground">Scale</label>
                   <span className="text-sm text-foreground-muted">
                     {formData.watermarkScale}x

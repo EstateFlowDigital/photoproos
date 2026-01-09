@@ -204,7 +204,7 @@ export function StatsConfig({ config, updateConfig }: StatsConfigProps) {
 
       {/* Stats List */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <h4 className="text-sm font-semibold text-foreground">Statistics</h4>
           <button
             type="button"

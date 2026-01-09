@@ -89,7 +89,7 @@ export function BackToTop({ showAfter = 300, className }: BackToTopProps) {
     <button
       onClick={scrollToTop}
       className={cn(
-        "fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--background-elevated)] border border-[var(--card-border)] text-foreground shadow-lg transition-all duration-300 hover:bg-[var(--background-hover)] hover:scale-110 hover:border-[var(--border-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] motion-reduce:transition-none motion-reduce:transform-none",
+        "fixed bottom-6 right-6 z-50 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--background-elevated)] border border-[var(--card-border)] text-foreground shadow-lg transition-all duration-300 hover:bg-[var(--background-hover)] hover:scale-110 hover:border-[var(--border-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] motion-reduce:transition-none motion-reduce:transform-none",
         isVisible
           ? "translate-y-0 opacity-100"
           : "translate-y-16 opacity-0 pointer-events-none",

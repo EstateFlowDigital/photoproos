@@ -683,7 +683,7 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
           {/* Tiered Sqft Pricing - Show for tiered_sqft bundles */}
           {formData.bundleType === "tiered_sqft" && (
             <div className="space-y-4 p-4 rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <h4 className="text-sm font-medium text-foreground">
                   Pricing Tiers
                 </h4>
@@ -996,7 +996,7 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
 
         <div className="space-y-4">
           {/* Active Toggle */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <span className="text-sm font-medium text-foreground">Active</span>
               <p className="text-xs text-foreground-muted">
@@ -1012,7 +1012,7 @@ export function BundleForm({ initialData, mode }: BundleFormProps) {
           </div>
 
           {/* Public Toggle */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <span className="text-sm font-medium text-foreground">Public</span>
               <p className="text-xs text-foreground-muted">

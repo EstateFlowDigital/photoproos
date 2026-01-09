@@ -213,7 +213,7 @@ export function AgreementSignature({
       )}
 
       {/* Clear button and info */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <button
           type="button"
           onClick={clearSignature}

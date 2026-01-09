@@ -263,7 +263,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                     className="flex flex-col gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--background)] p-4 transition-colors hover:bg-[var(--background-hover)] sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="flex items-center gap-4 min-w-0">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
                         <PhotoIcon className="h-5 w-5" />
                       </div>
                       <div className="min-w-0">
@@ -313,7 +313,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                   >
                     <div className="flex items-center gap-4 min-w-0">
                       <div className={cn(
-                        "flex h-10 w-10 items-center justify-center rounded-lg",
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
                         payment.status === "paid" ? "bg-[var(--success)]/10 text-[var(--success)]" : "bg-[var(--warning)]/10 text-[var(--warning)]"
                       )}>
                         {payment.status === "paid" ? <CheckIcon className="h-5 w-5" /> : <ClockIcon className="h-5 w-5" />}
@@ -362,7 +362,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                   >
                     <div className="flex items-center gap-4 min-w-0">
                       <div className={cn(
-                        "flex h-10 w-10 items-center justify-center rounded-lg",
+                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
                         log.status === "delivered" ? "bg-[var(--success)]/10 text-[var(--success)]" :
                         log.status === "sent" ? "bg-blue-500/10 text-blue-400" :
                         log.status === "failed" || log.status === "bounced" ? "bg-[var(--error)]/10 text-[var(--error)]" :
@@ -406,7 +406,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           {/* Client Info */}
           <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
             <div className="flex items-center gap-4 mb-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-2xl font-bold">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] text-2xl font-bold">
                 {(client.fullName || client.email).charAt(0).toUpperCase()}
               </div>
               <div>

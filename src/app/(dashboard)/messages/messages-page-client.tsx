@@ -268,7 +268,7 @@ function ConversationCard({
 function EmptyState({ onNewConversation }: { onNewConversation: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-[var(--card-border)] bg-[var(--card)] py-16">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--primary)]/10">
+      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10">
         <MessageSquare className="h-8 w-8 text-[var(--primary)]" />
       </div>
       <h3 className="mt-4 text-lg font-medium text-[var(--foreground)]">

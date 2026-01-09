@@ -5,7 +5,7 @@ import { BlogListClient } from "./blog-list-client";
 function LoadingSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="space-y-2">
           <div className="h-8 w-32 bg-[var(--background-tertiary)] rounded animate-pulse" />
           <div className="h-4 w-48 bg-[var(--background-tertiary)] rounded animate-pulse" />

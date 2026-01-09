@@ -198,7 +198,7 @@ export function BookingCrewPanel({ bookingId }: BookingCrewPanelProps) {
   if (isLoading) {
     return (
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
           <h2 className="text-lg font-semibold text-foreground">Crew</h2>
         </div>
         <div className="flex items-center justify-center py-8">
@@ -211,7 +211,7 @@ export function BookingCrewPanel({ bookingId }: BookingCrewPanelProps) {
   if (error) {
     return (
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
           <h2 className="text-lg font-semibold text-foreground">Crew</h2>
         </div>
         <p className="text-sm text-[var(--error)]">{error}</p>
@@ -222,7 +222,7 @@ export function BookingCrewPanel({ bookingId }: BookingCrewPanelProps) {
   return (
     <>
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
           <h2 className="text-lg font-semibold text-foreground">Crew</h2>
           <button
             onClick={() => setShowAddModal(true)}
@@ -322,7 +322,7 @@ function CrewMemberCard({
             className="h-10 w-10 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
             {(member.user.fullName || member.user.email).charAt(0).toUpperCase()}
           </div>
         )}
@@ -425,7 +425,7 @@ function AddCrewModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-lg rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl max-h-[85vh] flex flex-col">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
           <h3 className="text-lg font-semibold text-foreground">Add Crew Member</h3>
           <button
             onClick={onClose}
@@ -500,7 +500,7 @@ function AddCrewModal({
                           className="h-10 w-10 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
                           {(suggestion.fullName || suggestion.email).charAt(0).toUpperCase()}
                         </div>
                       )}
@@ -578,7 +578,7 @@ function AddCrewModal({
                         className="h-10 w-10 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold">
                         {(member.fullName || member.email).charAt(0).toUpperCase()}
                       </div>
                     )}
@@ -666,7 +666,7 @@ function EditCrewModal({
               className="h-12 w-12 rounded-full object-cover"
             />
           ) : (
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold text-lg">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-semibold text-lg">
               {(member.user.fullName || member.user.email).charAt(0).toUpperCase()}
             </div>
           )}

@@ -33,7 +33,7 @@ export function DevToolsSettings() {
     return (
       <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
         <div className="flex items-start gap-3 mb-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
             <SettingsIcon className="h-5 w-5" />
           </div>
           <div>
@@ -49,7 +49,7 @@ export function DevToolsSettings() {
     <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
       <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--card-border)] bg-[var(--primary)]/10 text-[var(--primary)]">
             <SettingsIcon className="h-5 w-5" />
           </div>
           <div>
