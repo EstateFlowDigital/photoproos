@@ -106,7 +106,7 @@ export default async function QuestsPage() {
 
       {/* Active Quest Banner */}
       {questState.currentQuest && (
-        <div className="rounded-xl border border-[var(--primary)]/30 bg-gradient-to-br from-[var(--primary)]/5 to-[var(--ai)]/5 p-5">
+        <div className="rounded-xl border border-[var(--primary)]/30 bg-gradient-to-br from-[var(--primary)]/5 to-[var(--ai)]/5">
           <div className="flex items-center gap-2 mb-4">
             <Target className="h-5 w-5 text-[var(--primary)]" />
             <h2 className="text-lg font-semibold text-[var(--foreground)]">Current Quest</h2>
