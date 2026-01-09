@@ -397,7 +397,6 @@ Complete directory of all 403 pages in the application. Use this as a reference 
 |------------|-----------|--------|
 | [/products](https://app.photoproos.com/products) | [src/app/(dashboard)/products/page.tsx](src/app/(dashboard)/products/page.tsx) | |
 | [/products/new](https://app.photoproos.com/products/new) | [src/app/(dashboard)/products/new/page.tsx](src/app/(dashboard)/products/new/page.tsx) | (stub) |
-| [/products/:id](https://app.photoproos.com/products/:id) | [src/app/(dashboard)/products/[id]/page.tsx](src/app/(dashboard)/products/[id]/page.tsx) | (stub) |
 | [/products/:catalogId](https://app.photoproos.com/products/:catalogId) | [src/app/(dashboard)/products/[catalogId]/page.tsx](src/app/(dashboard)/products/[catalogId]/page.tsx) | |
 | [/collections](https://app.photoproos.com/collections) | [src/app/(dashboard)/collections/page.tsx](src/app/(dashboard)/collections/page.tsx) | (stub) |
 | [/collections/:id](https://app.photoproos.com/collections/:id) | [src/app/(dashboard)/collections/[id]/page.tsx](src/app/(dashboard)/collections/[id]/page.tsx) | (stub) |
