@@ -404,18 +404,43 @@ function ActivityList({
           <div className="divide-y divide-[var(--card-border)]/50">
             {dayActivities.map((activity) => {
               const linkUrl = getActivityLinkUrl(activity);
-              const ActivityWrapper = linkUrl ? Link : "div";
+
+              const wrapperProps = {
+                key: activity.id,
+                className: `flex items-start gap-4 p-4 ${
+                  linkUrl
+                    ? "hover:bg-[var(--background-hover)] transition-colors cursor-pointer"
+                    : ""
+                }`,
+              };
+
+              if (linkUrl) {
+                return (
+                  <Link href={linkUrl} {...wrapperProps}>
+                    <div className="flex-shrink-0 mt-0.5">
+                      <ActivityIcon type={activity.type} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-foreground">
+                        {activity.description}
+                      </p>
+                      <div className="mt-1 flex items-center gap-2 text-xs text-foreground-muted">
+                        {activity.user && (
+                          <>
+                            <span>{activity.user.fullName || activity.user.email}</span>
+                            <span>•</span>
+                          </>
+                        )}
+                        <span>{formatTimeAgo(activity.createdAt)}</span>
+                      </div>
+                    </div>
+                    <ChevronRightIcon className="h-4 w-4 flex-shrink-0 text-foreground-muted" />
+                  </Link>
+                );
+              }
 
               return (
-                <ActivityWrapper
-                  key={activity.id}
-                  href={linkUrl || ""}
-                  className={`flex items-start gap-4 p-4 ${
-                    linkUrl
-                      ? "hover:bg-[var(--background-hover)] transition-colors cursor-pointer"
-                      : ""
-                  }`}
-                >
+                <div {...wrapperProps}>
                   <div className="flex-shrink-0 mt-0.5">
                     <ActivityIcon type={activity.type} />
                   </div>
@@ -433,10 +458,7 @@ function ActivityList({
                       <span>{formatTimeAgo(activity.createdAt)}</span>
                     </div>
                   </div>
-                  {linkUrl && (
-                    <ChevronRightIcon className="h-4 w-4 flex-shrink-0 text-foreground-muted" />
-                  )}
-                </ActivityWrapper>
+                </div>
               );
             })}
           </div>
