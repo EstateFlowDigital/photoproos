@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Mobile Search Button Border** - Added border to mobile search button in dashboard topbar to match styling of Quick Actions and Workspace buttons
 
 ### Fixed
+- **Infinite Re-render Loop in Spotlight Component** - Fixed "Too many re-renders" error affecting dashboard, clients, and other pages. The Spotlight component's MutationObserver was watching document.body for DOM changes, but its own portal modifications triggered the observer, causing state updates in an infinite loop. Added a ref-based comparison to only update state when the target element's rect actually changes
+- **WalkthroughWrapper Callback Optimization** - Wrapped `handleStateChange` in `useCallback` with a ref pattern to prevent PageWalkthrough's useEffect from re-running on every parent render
 - **Gmail OAuth CORS Error** - Fixed CORS errors caused by Next.js Link prefetching OAuth redirect URLs. Changed OAuth authorization links from `<Link>` to `<a>` tags in inbox and email settings pages to prevent prefetch requests that triggered CORS errors
 - **Client Activity Timeline Date Serialization** - Fixed date handling in ClientActivityTimeline component to properly handle both Date objects and ISO strings after server-to-client serialization, preventing React Error #301
 - **Table Horizontal Scrolling** - All data tables across the application now have proper horizontal scrolling with minimum width constraints to prevent column scrunching on smaller screens. Tables updated include: leaderboard, orders, payments, leads, questionnaires, retainers, estimates, credit notes, tax reports, brokerages, blog list, email logs, and more

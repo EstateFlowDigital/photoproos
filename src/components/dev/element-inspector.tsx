@@ -1586,14 +1586,8 @@ ${Object.entries(styles)
     setNavigationHistory([]);
   };
 
-  if (hidden) return null;
-
-  const hoverRect = hovered?.getBoundingClientRect();
-  const changedCount =
-    Object.entries(styles).filter(([prop, value]) => originalStylesRef.current.get(prop) !== value).length +
-    customProps.filter((p) => p.prop && p.value).length;
-
   // Handle overlay click to select element underneath
+  // NOTE: This hook must be defined before any early returns to comply with Rules of Hooks
   const handleOverlayClick = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
@@ -1633,6 +1627,7 @@ ${Object.entries(styles)
   );
 
   // Handle overlay hover to highlight element underneath
+  // NOTE: This hook must be defined before any early returns to comply with Rules of Hooks
   const handleOverlayMouseMove = useCallback(
     (e: React.MouseEvent) => {
       if (selected) return;
@@ -1651,6 +1646,13 @@ ${Object.entries(styles)
     },
     [selected]
   );
+
+  if (hidden) return null;
+
+  const hoverRect = hovered?.getBoundingClientRect();
+  const changedCount =
+    Object.entries(styles).filter(([prop, value]) => originalStylesRef.current.get(prop) !== value).length +
+    customProps.filter((p) => p.prop && p.value).length;
 
   return (
     <>

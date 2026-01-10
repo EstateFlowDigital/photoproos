@@ -2,6 +2,10 @@ import { Suspense } from "react";
 import { getOrgDiscounts, getOrgDiscountStats } from "@/lib/actions/organization-discounts";
 import { DiscountsSettingsClient } from "./discounts-settings-client";
 
+// Uses org headers/session data; ensure dynamic rendering
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 // Loading skeleton
 function LoadingSkeleton() {
   return (

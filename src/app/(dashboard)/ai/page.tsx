@@ -2,6 +2,10 @@ import { Suspense } from "react";
 import { getConversations, getAIUsageStats } from "@/lib/actions/ai";
 import { AIPageClient } from "./ai-client";
 
+// AI page is session-aware and uses headers; force dynamic rendering
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function AILoader() {
   const [conversationsResult, statsResult] = await Promise.all([
     getConversations(),

@@ -38,15 +38,17 @@ export function WalkthroughWrapper({
   // Get the walkthrough config for this page
   const config = getWalkthroughConfig(pageId);
 
-  // If no config exists for this page, don't render
-  if (!config) {
-    return null;
-  }
+  // Use a ref to track the previous state for rollback without adding to useCallback dependencies
+  const stateRef = React.useRef(state);
+  React.useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   // Handle state changes with optimistic updates
-  const handleStateChange = async (newState: WalkthroughState) => {
+  // NOTE: Wrapped in useCallback to prevent PageWalkthrough's useEffect from re-running on every render
+  const handleStateChange = React.useCallback(async (newState: WalkthroughState) => {
     // Optimistically update the state
-    const previousState = state;
+    const previousState = stateRef.current;
     setState(newState);
     setIsUpdating(true);
 
@@ -66,7 +68,12 @@ export function WalkthroughWrapper({
     } finally {
       setIsUpdating(false);
     }
-  };
+  }, [pageId]);
+
+  // If no config exists for this page, don't render
+  if (!config) {
+    return null;
+  }
 
   return (
     <PageWalkthrough

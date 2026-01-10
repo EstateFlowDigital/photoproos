@@ -75,10 +75,15 @@ export function Spotlight({
     };
   }, [isActive, mounted]);
 
+  // Use a ref to track the last rect values to prevent infinite re-render loops
+  // The MutationObserver watches document.body, and our portal changes trigger it
+  const lastRectRef = React.useRef<ElementRect | null>(null);
+
   // Find and track the target element
   React.useEffect(() => {
     if (!isActive || !mounted) {
       setTargetRect(null);
+      lastRectRef.current = null;
       return;
     }
 
@@ -86,13 +91,26 @@ export function Spotlight({
       const element = document.querySelector(targetSelector);
       if (element) {
         const rect = element.getBoundingClientRect();
-        // Use viewport-relative coordinates (no scrollY) since overlay is fixed
-        setTargetRect({
+        const newRect = {
           top: rect.top,
           left: rect.left,
           width: rect.width,
           height: rect.height,
-        });
+        };
+
+        // Only update state if the rect actually changed to prevent infinite loops
+        // The MutationObserver triggers on our own portal changes, so we need this check
+        const lastRect = lastRectRef.current;
+        if (
+          !lastRect ||
+          lastRect.top !== newRect.top ||
+          lastRect.left !== newRect.left ||
+          lastRect.width !== newRect.width ||
+          lastRect.height !== newRect.height
+        ) {
+          lastRectRef.current = newRect;
+          setTargetRect(newRect);
+        }
 
         // Scroll element into view if needed (before locking scroll)
         if (scrollIntoView) {
@@ -107,7 +125,10 @@ export function Spotlight({
           }
         }
       } else {
-        setTargetRect(null);
+        if (lastRectRef.current !== null) {
+          lastRectRef.current = null;
+          setTargetRect(null);
+        }
       }
     };
 
