@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useMemo, useTransition } from "react";
+import { useRef, useState, useMemo, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -139,6 +139,14 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
 
   const isAllSelected = sortedClients.length > 0 && sortedClients.every((c) => selectedIds.has(c.id));
 
+  // Stabilize virtualizer callbacks to avoid re-render loops
+  const clientsRef = useRef(sortedClients);
+  clientsRef.current = sortedClients;
+
+  const getItemKey = useCallback((index: number) => clientsRef.current[index]?.id ?? index, []);
+  const estimateRowSize = useCallback(() => 84, []);
+  const measureRow = useCallback((el: Element | null) => el?.getBoundingClientRect().height ?? 0, []);
+
   // Export selected clients to CSV
   const handleExportCSV = () => {
     const selectedClients = sortedClients.filter((c) => selectedIds.has(c.id));
@@ -223,10 +231,10 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
   const rowVirtualizer = useVirtualizer({
     count: sortedClients.length,
     getScrollElement: () => tableParentRef.current,
-    estimateSize: () => 84,
+    estimateSize: estimateRowSize,
     overscan: 8,
-    getItemKey: (index) => sortedClients[index]?.id ?? index,
-    measureElement: (el) => el?.getBoundingClientRect().height ?? 0,
+    getItemKey,
+    measureElement: measureRow,
   });
 
   const handleClientCreated = (_client: { id: string }) => {
