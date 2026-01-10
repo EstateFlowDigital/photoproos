@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode, RefObject } from "react";
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { cn } from "@/lib/utils";
 
@@ -35,19 +35,37 @@ export function VirtualList<T>({
   const internalRef = useRef<HTMLDivElement | null>(null);
   const parentRef = scrollRef ?? internalRef;
 
+  // Keep stable references so the virtualizer doesn't thrash when parents re-render
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
+
+  const getItemKeyRef = useRef(getItemKey);
+  getItemKeyRef.current = getItemKey;
+
+  const estimateSizeRef = useRef(estimateSize);
+  estimateSizeRef.current = estimateSize;
+
+  const itemKeyGetter = useCallback((index: number) => {
+    const item = itemsRef.current[index];
+    const keyFn = getItemKeyRef.current;
+    return keyFn ? keyFn(item, index) : index;
+  }, []);
+
+  const sizeEstimator = useCallback(
+    (index: number) => {
+      const item = itemsRef.current[index];
+      const baseEstimate = estimateSizeRef.current ? estimateSizeRef.current(item, index) : 180;
+      return baseEstimate + itemGap;
+    },
+    [itemGap]
+  );
+
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: (index) => {
-      const item = items[index];
-      const baseEstimate = estimateSize ? estimateSize(item, index) : 180;
-      return baseEstimate + itemGap;
-    },
+    estimateSize: sizeEstimator,
     overscan,
-    getItemKey: (index) => {
-      const item = items[index];
-      return getItemKey ? getItemKey(item, index) : index;
-    },
+    getItemKey: itemKeyGetter,
     measureElement: (el) => el?.getBoundingClientRect().height ?? 0,
   });
 
@@ -64,7 +82,7 @@ export function VirtualList<T>({
         <div style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
           {virtualizer.getVirtualItems().map((virtualItem) => {
             const item = items[virtualItem.index];
-            const key = getItemKey ? getItemKey(item, virtualItem.index) : virtualItem.key;
+            const key = itemKeyGetter(virtualItem.index);
             return (
               <div
                 key={key}
