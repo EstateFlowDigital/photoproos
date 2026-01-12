@@ -430,7 +430,7 @@ export function FeedbackPageClient({ feedback, stats }: FeedbackPageClientProps)
                   {item.user?.avatarUrl ? (
                     <img
                       src={item.user.avatarUrl}
-                      alt=""
+                      alt={`${item.user?.fullName || item.user?.email || "User"}'s avatar`}
                       className="w-10 h-10 rounded-full"
                     />
                   ) : (

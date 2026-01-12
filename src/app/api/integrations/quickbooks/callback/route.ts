@@ -165,8 +165,12 @@ export async function GET(request: NextRequest) {
     const tokenExpiry = new Date(Date.now() + tokens.expires_in * 1000);
 
     // Get company info from QuickBooks
-    const environment = process.env.QUICKBOOKS_ENVIRONMENT || "sandbox";
-    const apiBase = environment === "production"
+    const environment = process.env.QUICKBOOKS_ENVIRONMENT;
+    if (!environment) {
+      console.warn("QUICKBOOKS_ENVIRONMENT not set, defaulting to sandbox. Set to 'production' for live data.");
+    }
+    const qbEnvironment = environment === "production" ? "production" : "sandbox";
+    const apiBase = qbEnvironment === "production"
       ? "https://quickbooks.api.intuit.com"
       : "https://sandbox-quickbooks.api.intuit.com";
 

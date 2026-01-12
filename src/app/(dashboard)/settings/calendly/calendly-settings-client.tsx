@@ -120,6 +120,12 @@ export function CalendlySettingsClient({
       const webhookResult = await setupCalendlyWebhook();
       if (webhookResult.success) {
         toast.success("Webhook configured for real-time booking sync");
+      } else {
+        toast.error("Connected but webhook setup failed. Bookings may not sync automatically.");
+        setMessage({
+          type: "error",
+          text: `Webhook setup failed: ${webhookResult.error || "Unknown error"}. You can try reconnecting later.`,
+        });
       }
 
       // Reload the page to get fresh config

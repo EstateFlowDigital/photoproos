@@ -422,7 +422,7 @@ export function TaskDetailClient({ task: initialTask, teamMembers, clients, gall
                 <span className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Assignee</span>
                 <div className="mt-1 flex items-center gap-2">
                   {task.assignee.avatarUrl ? (
-                    <img src={task.assignee.avatarUrl} alt="" className="h-6 w-6 rounded-full" />
+                    <img src={task.assignee.avatarUrl} alt={`${task.assignee.fullName || task.assignee.email}'s avatar`} className="h-6 w-6 rounded-full" />
                   ) : (
                     <div className="h-6 w-6 rounded-full bg-[var(--primary)] flex items-center justify-center text-xs text-white font-medium">
                       {(task.assignee.fullName || task.assignee.email).charAt(0).toUpperCase()}

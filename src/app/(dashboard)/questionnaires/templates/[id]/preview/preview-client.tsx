@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AgreementSignature } from "@/components/portal/agreement-signature";
 import { Checkbox } from "@/components/ui/checkbox";
+import { sanitizeRichText } from "@/lib/sanitize";
 import type { FormFieldType, LegalAgreementType } from "@prisma/client";
 
 interface TemplateField {
@@ -339,7 +340,7 @@ export function QuestionnairePreviewClient({ template }: QuestionnairePreviewCli
                           <div className="max-h-48 overflow-y-auto rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4 text-sm text-[var(--foreground-secondary)]">
                             <div
                               dangerouslySetInnerHTML={{
-                                __html: agreement.content.replace(/\n/g, "<br />"),
+                                __html: sanitizeRichText(agreement.content.replace(/\n/g, "<br />")),
                               }}
                             />
                           </div>

@@ -56,7 +56,9 @@ export function GalleryActions({
       document.body.removeChild(a);
       showToast("Proof sheet downloaded successfully", "success");
     } catch (error) {
-      console.error("Error downloading proof sheet:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[GalleryActions] Error downloading proof sheet:", error);
+      }
       const message = error instanceof Error ? error.message : "Failed to download proof sheet";
       showToast(message, "error");
     } finally {
@@ -85,7 +87,9 @@ export function GalleryActions({
       document.body.removeChild(a);
       showToast("Favorites exported successfully", "success");
     } catch (error) {
-      console.error("Error exporting favorites:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[GalleryActions] Error exporting favorites:", error);
+      }
       showToast(error instanceof Error ? error.message : "Failed to export favorites", "error");
     } finally {
       setIsExportingFavorites(false);
@@ -102,7 +106,9 @@ export function GalleryActions({
         showToast(result.error || "Failed to open team chat", "error");
       }
     } catch (error) {
-      console.error("Error opening team chat:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[GalleryActions] Error opening team chat:", error);
+      }
       showToast("Failed to open team chat", "error");
     } finally {
       setIsOpeningChat(false);

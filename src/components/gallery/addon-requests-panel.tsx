@@ -562,7 +562,7 @@ export function AddonRequestsPanel({ galleryId, photos = [] }: AddonRequestsPane
                             {thumbnail ? (
                               <img
                                 src={thumbnail}
-                                alt=""
+                                alt="Requested photo"
                                 className="h-full w-full object-cover"
                               />
                             ) : (

@@ -111,7 +111,7 @@ export async function getContract(id: string) {
 
     return contract;
   } catch (error) {
-    console.error("[Contracts] Error fetching contract:", error);
+    console.warn("[Contracts] Error fetching contract:", error);
     return null;
   }
 }
@@ -157,7 +157,7 @@ export async function createContract(
 
     return success({ id: contract.id });
   } catch (error) {
-    console.error("[Contracts] Error creating contract:", error);
+    console.warn("[Contracts] Error creating contract:", error);
     if (error instanceof Error) {
       return fail(error.message);
     }
@@ -212,7 +212,7 @@ export async function updateContract(
 
     return ok();
   } catch (error) {
-    console.error("[Contracts] Error updating contract:", error);
+    console.warn("[Contracts] Error updating contract:", error);
     if (error instanceof Error) {
       return fail(error.message);
     }
@@ -252,7 +252,7 @@ export async function deleteContract(id: string): Promise<ActionResult> {
 
     return ok();
   } catch (error) {
-    console.error("[Contracts] Error deleting contract:", error);
+    console.warn("[Contracts] Error deleting contract:", error);
     if (error instanceof Error) {
       return fail(error.message);
     }
@@ -351,7 +351,7 @@ export async function sendContract(id: string): Promise<ActionResult> {
         console.log(`[Contracts] Signing invitation sent to ${signer.email}`);
       } catch (emailError) {
         // Log email failure but don't fail the overall action
-        console.error(
+        console.warn(
           `[Contracts] Failed to send signing invitation to ${signer.email}:`,
           emailError
         );
@@ -360,7 +360,7 @@ export async function sendContract(id: string): Promise<ActionResult> {
 
     // Fire all emails concurrently (non-blocking for the response)
     Promise.all(emailPromises).catch((error) => {
-      console.error("[Contracts] Error sending signing invitation emails:", error);
+      console.warn("[Contracts] Error sending signing invitation emails:", error);
     });
 
     // Log activity for the organization
@@ -382,7 +382,7 @@ export async function sendContract(id: string): Promise<ActionResult> {
 
     return ok();
   } catch (error) {
-    console.error("[Contracts] Error sending contract:", error);
+    console.warn("[Contracts] Error sending contract:", error);
     if (error instanceof Error) {
       return fail(error.message);
     }
@@ -437,7 +437,7 @@ export async function duplicateContract(
 
     return success({ id: newContract.id });
   } catch (error) {
-    console.error("[Contracts] Error duplicating contract:", error);
+    console.warn("[Contracts] Error duplicating contract:", error);
     if (error instanceof Error) {
       return fail(error.message);
     }

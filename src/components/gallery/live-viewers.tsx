@@ -262,7 +262,12 @@ export function useGalleryPresence(
             galleryId,
             visitorId: visitorIdRef.current,
           }),
-        }).catch(() => {});
+        }).catch((err) => {
+          // Non-critical: presence removal can fail silently but log for debugging
+          if (process.env.NODE_ENV === "development") {
+            console.warn("[LiveViewers] Failed to remove presence on cleanup:", err);
+          }
+        });
       }
     };
   }, [galleryId, pollInterval]);

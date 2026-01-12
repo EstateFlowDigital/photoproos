@@ -1617,7 +1617,7 @@ export function ProjectsClient({ board, teamMembers, clients, galleries }: Proje
                         key={task.id}
                         ref={listVirtualizer.measureElement}
                         onClick={() => setSelectedTask(task)}
-                        className="absolute left-0 right-0 table w-full cursor-pointer border-b border-[var(--card-border)] bg-transparent hover:bg-[var(--background-hover)]"
+                        className="absolute left-0 right-0 w-full table table-fixed cursor-pointer border-b border-[var(--card-border)] bg-transparent hover:bg-[var(--background-hover)]"
                         style={{ transform: `translateY(${virtualItem.start}px)` }}
                       >
                         <td className="px-4 py-3">

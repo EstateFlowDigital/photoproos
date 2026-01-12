@@ -127,22 +127,22 @@ export default async function BrokeragesPage({ searchParams }: BrokeragesPagePro
           <table className="w-full min-w-[800px]">
             <thead className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
                   Brokerage
                 </th>
-                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted md:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted md:table-cell">
                   Contact
                 </th>
-                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted lg:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted lg:table-cell">
                   Agents
                 </th>
-                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted sm:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted sm:table-cell">
                   Revenue
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
                   <span className="sr-only">Actions</span>
                 </th>
               </tr>

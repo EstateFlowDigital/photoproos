@@ -78,6 +78,9 @@ export function CreatePropertyModal({
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
+  // US ZIP code regex: 5 digits or 5+4 format
+  const ZIP_REGEX = /^\d{5}(-\d{4})?$/;
+
   const handleBlur = (field: string, value: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
 
@@ -89,8 +92,14 @@ export function CreatePropertyModal({
       setFieldErrors((prev) => ({ ...prev, city: "City is required" }));
     } else if (field === "state" && !value.trim()) {
       setFieldErrors((prev) => ({ ...prev, state: "State is required" }));
-    } else if (field === "zipCode" && !value.trim()) {
-      setFieldErrors((prev) => ({ ...prev, zipCode: "ZIP is required" }));
+    } else if (field === "zipCode") {
+      if (!value.trim()) {
+        setFieldErrors((prev) => ({ ...prev, zipCode: "ZIP is required" }));
+      } else if (!ZIP_REGEX.test(value.trim())) {
+        setFieldErrors((prev) => ({ ...prev, zipCode: "Invalid ZIP format (e.g., 12345 or 12345-6789)" }));
+      } else {
+        setFieldErrors((prev) => ({ ...prev, zipCode: undefined }));
+      }
     } else {
       setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
     }
@@ -346,6 +355,7 @@ export function CreatePropertyModal({
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
                       placeholder="500000"
+                      min="0"
                       className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] pl-7 pr-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                     />
                   </div>
@@ -360,6 +370,7 @@ export function CreatePropertyModal({
                     value={beds}
                     onChange={(e) => setBeds(e.target.value)}
                     placeholder="3"
+                    min="0"
                     className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                   />
                 </div>
@@ -374,6 +385,7 @@ export function CreatePropertyModal({
                     onChange={(e) => setBaths(e.target.value)}
                     placeholder="2"
                     step="0.5"
+                    min="0"
                     className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                   />
                 </div>
@@ -390,6 +402,7 @@ export function CreatePropertyModal({
                     value={sqft}
                     onChange={(e) => setSqft(e.target.value)}
                     placeholder="1500"
+                    min="0"
                     className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                   />
                 </div>
@@ -403,6 +416,8 @@ export function CreatePropertyModal({
                     value={yearBuilt}
                     onChange={(e) => setYearBuilt(e.target.value)}
                     placeholder="2000"
+                    min="1800"
+                    max={new Date().getFullYear()}
                     className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
                   />
                 </div>

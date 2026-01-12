@@ -171,19 +171,19 @@ export function LeadsViewClient({ leads }: LeadsViewClientProps) {
           <table className="w-full min-w-[600px]">
             <thead className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
                   Lead
                 </th>
-                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted md:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted md:table-cell">
                   Property
                 </th>
-                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted lg:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted lg:table-cell">
                   Date
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
                   <span className="sr-only">Actions</span>
                 </th>
               </tr>

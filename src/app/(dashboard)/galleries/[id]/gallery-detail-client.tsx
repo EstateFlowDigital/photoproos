@@ -335,7 +335,9 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
             setDownloadHistoryTotal(result.data.total);
           }
         } catch (error) {
-          console.error("Failed to fetch download history:", error);
+          if (process.env.NODE_ENV === "development") {
+            console.warn("[GalleryDetail] Failed to fetch download history:", error);
+          }
         } finally {
           setIsLoadingDownloads(false);
         }
@@ -359,7 +361,9 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
           );
         }
       } catch (error) {
-        console.error("Failed to fetch add-on requests:", error);
+        if (process.env.NODE_ENV === "development") {
+          console.warn("[GalleryDetail] Failed to fetch add-on requests:", error);
+        }
       }
     };
     fetchAddonRequestsCount();
@@ -948,7 +952,9 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
         showToast(result.error, "error");
       }
     } catch (error) {
-      console.error("Failed to export downloads:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[GalleryDetail] Failed to export downloads:", error);
+      }
       showToast("Failed to export download history", "error");
     } finally {
       setIsExportingDownloads(false);

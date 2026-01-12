@@ -373,19 +373,19 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
                     aria-label="Select all clients"
                   />
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
                   Client
                 </th>
-                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted md:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted md:table-cell">
                   Industry
                 </th>
-                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted lg:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted lg:table-cell">
                   Projects
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
                   Revenue
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
                   <span className="sr-only">Actions</span>
                 </th>
               </tr>
@@ -406,7 +406,7 @@ export function ClientsPageClient({ clients, searchQuery, allTags = [], activeTa
                     ref={rowVirtualizer.measureElement}
                     data-index={virtualRow.index}
                     className={cn(
-                      "group relative table w-full cursor-pointer transition-colors hover:bg-[var(--background-hover)]",
+                      "group absolute left-0 right-0 w-full table table-fixed cursor-pointer transition-colors hover:bg-[var(--background-hover)]",
                       isSelected && "bg-[var(--primary)]/5"
                     )}
                     style={{ transform: `translateY(${virtualRow.start}px)` }}

@@ -338,7 +338,7 @@ export function TicketDetailClient({ ticket }: TicketDetailClientProps) {
           {ticket.user.avatarUrl ? (
             <img
               src={ticket.user.avatarUrl}
-              alt=""
+              alt={`${ticket.user.fullName || ticket.user.email}'s avatar`}
               className="w-12 h-12 rounded-full"
             />
           ) : (
@@ -401,7 +401,7 @@ export function TicketDetailClient({ ticket }: TicketDetailClientProps) {
               ) : msg.senderAvatar ? (
                 <img
                   src={msg.senderAvatar}
-                  alt=""
+                  alt={`${msg.senderName || "User"}'s avatar`}
                   className="w-8 h-8 rounded-full flex-shrink-0"
                 />
               ) : (

@@ -11,8 +11,7 @@ import { UploadProvider } from "@/contexts/upload-context";
 import { GlobalUploadModal } from "@/components/upload/global-upload-modal";
 import { SupportButton } from "@/components/support";
 import { FeedbackModal } from "@/components/feedback";
-import { BugProbe } from "@/components/dev/bug-probe";
-import { DebugBanner } from "@/components/debug/debug-banner";
+import { DevToolsWrapper } from "@/components/dev/dev-tools-wrapper";
 import { prisma } from "@/lib/db";
 import { getDefaultModulesForIndustries } from "@/lib/constants/industries";
 import { getUnreadNotificationCount } from "@/lib/actions/notifications";
@@ -69,8 +68,15 @@ export default async function DashboardLayout({
   const fontOption = FONT_OPTIONS.find((f) => f.id === user.fontFamily) || FONT_OPTIONS[0];
   const densityOption = DENSITY_OPTIONS.find((d) => d.id === user.density) || DENSITY_OPTIONS[1];
   const fontSizeOption = FONT_SIZE_OPTIONS.find((f) => f.id === user.fontSize) || FONT_SIZE_OPTIONS[1];
+
+  // Validate hex color to prevent CSS injection
+  const isValidHexColor = (color: string): boolean => /^#[0-9A-Fa-f]{6}$/.test(color);
+  const safeAccentColor = user.dashboardAccent && isValidHexColor(user.dashboardAccent)
+    ? user.dashboardAccent
+    : "#3b82f6";
+
   const userAppearance = {
-    dashboardAccent: user.dashboardAccent || "#3b82f6",
+    dashboardAccent: safeAccentColor,
     sidebarCompact: user.sidebarCompact || false,
     sidebarPosition: (user.sidebarPosition as "left" | "right") || "left",
     fontFamily: fontOption.fontFamily,
@@ -246,9 +252,8 @@ export default async function DashboardLayout({
           </DashboardLayoutClient>
           <SupportButton />
           <FeedbackModal />
-          {/* Developer debugging tools - BugProbe shows only for dev account */}
-          <BugProbe />
-          <DebugBanner />
+          {/* Developer debugging tools - wrapped in error boundaries to prevent crashes */}
+          <DevToolsWrapper />
           </KeyboardShortcutsProvider>
           </CommandPaletteProvider>
         </TourProvider>

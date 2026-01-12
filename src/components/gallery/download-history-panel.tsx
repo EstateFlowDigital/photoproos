@@ -161,7 +161,7 @@ export function DownloadHistoryPanel({
                     {download.thumbnailUrl ? (
                       <img
                         src={download.thumbnailUrl}
-                        alt=""
+                        alt={`Thumbnail for ${download.filename}`}
                         className="h-full w-full object-cover"
                       />
                     ) : download.type === "batch" ? (

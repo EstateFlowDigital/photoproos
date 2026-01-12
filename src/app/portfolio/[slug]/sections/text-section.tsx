@@ -2,6 +2,7 @@
 
 import type { PortfolioTemplate } from "@prisma/client";
 import type { PORTFOLIO_TEMPLATES } from "@/lib/portfolio-templates";
+import { sanitizeRichText } from "@/lib/sanitize";
 
 interface TextSectionProps {
   config: Record<string, unknown>;
@@ -34,7 +35,7 @@ export function TextSection({ config, templateConfig }: TextSectionProps) {
             color: templateConfig.colors.textMuted,
             lineHeight: 1.8,
           }}
-          dangerouslySetInnerHTML={{ __html: content }}
+          dangerouslySetInnerHTML={{ __html: sanitizeRichText(content) }}
         />
       </div>
     </section>

@@ -187,7 +187,7 @@ export function InvoicesPageClient({ invoices, statusFilter }: InvoicesPageClien
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Search and Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         {/* Search */}
@@ -311,7 +311,7 @@ export function InvoicesPageClient({ invoices, statusFilter }: InvoicesPageClien
                     ref={rowVirtualizer.measureElement}
                     data-index={virtualRow.index}
                     className={cn(
-                      "group relative table w-full cursor-pointer transition-colors hover:bg-[var(--background-hover)]",
+                      "group absolute left-0 right-0 w-full table table-fixed cursor-pointer transition-colors hover:bg-[var(--background-hover)]",
                       isSelected && "bg-[var(--primary)]/5"
                     )}
                     style={{ transform: `translateY(${virtualRow.start}px)` }}

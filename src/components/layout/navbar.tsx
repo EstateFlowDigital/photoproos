@@ -110,7 +110,7 @@ const resourceItems: DropdownItem[] = [
   {
     title: "Help Center",
     description: "Get help with using PhotoProOS.",
-    href: "/help",
+    href: "/support",
     icon: <HelpIcon className="h-4 w-4" />,
   },
   {

@@ -419,7 +419,7 @@ export function SuperAdminLayoutClient({
             {adminUser?.imageUrl && (
               <img
                 src={adminUser.imageUrl}
-                alt=""
+                alt={`${adminUser?.name || adminUser?.email || "Admin"}'s avatar`}
                 className="w-8 h-8 rounded-full"
               />
             )}

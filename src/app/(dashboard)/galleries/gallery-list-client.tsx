@@ -408,7 +408,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Controls Bar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {/* Search Input */}
@@ -745,7 +745,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
                             {gallery.thumbnailUrl && (
                               <img
                                 src={gallery.thumbnailUrl}
-                                alt=""
+                                alt={`${gallery.name} thumbnail`}
                                 className="h-10 w-14 rounded-md object-cover"
                               />
                             )}

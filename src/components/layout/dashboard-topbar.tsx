@@ -104,21 +104,18 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
 
   const userDisplayName = React.useMemo(() => {
     if (!user) return "Workspace";
-    const anyUser: any = user;
+    // Clerk user object has various name properties depending on auth method
     return (
-      anyUser.fullName ||
-      anyUser.username ||
-      anyUser.firstName ||
-      anyUser.emailAddress ||
-      anyUser.primaryEmailAddress?.emailAddress ||
+      user.fullName ||
+      user.username ||
+      user.firstName ||
+      user.primaryEmailAddress?.emailAddress ||
       "Workspace"
     );
   }, [user]);
 
   const userSecondary = React.useMemo(() => {
-    const anyUser: any = user;
-    const email =
-      anyUser?.primaryEmailAddress?.emailAddress || anyUser?.emailAddress || null;
+    const email = user?.primaryEmailAddress?.emailAddress || null;
     return organization?.slug || email || "Signed in";
   }, [organization, user]);
 

@@ -395,7 +395,7 @@ const LeaderboardRow = memo(function LeaderboardRow({
         {entry.userAvatar ? (
           <img
             src={entry.userAvatar}
-            alt=""
+            alt={`${entry.userName || "Team Member"}'s avatar`}
             className="h-8 w-8 rounded-full object-cover"
           />
         ) : (
@@ -542,7 +542,7 @@ const LeaderboardWidgetRow = memo(function LeaderboardWidgetRow({
 
       {/* Avatar */}
       {entry.userAvatar ? (
-        <img src={entry.userAvatar} alt="" className="h-7 w-7 rounded-full object-cover" />
+        <img src={entry.userAvatar} alt={`${entry.userName || "Team Member"}'s avatar`} className="h-7 w-7 rounded-full object-cover" />
       ) : (
         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--background-secondary)] text-xs font-medium text-[var(--foreground-muted)]">
           {entry.userName?.[0]?.toUpperCase() || "?"}

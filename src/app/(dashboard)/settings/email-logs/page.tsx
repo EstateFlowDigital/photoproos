@@ -243,6 +243,7 @@ export default function EmailLogsPage() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url); // Clean up blob URL to prevent memory leak
 
       showToast(`Exported ${logsToExport.length} email${logsToExport.length > 1 ? "s" : ""}`, "success");
     } catch {

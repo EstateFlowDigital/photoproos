@@ -257,25 +257,25 @@ export function RecurringInvoicesClient() {
           <table className="w-full min-w-[800px]">
             <thead className="border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
                   Client
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
                   Frequency
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
                   Amount
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
                   Next Invoice
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground-muted">
                   Created
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground-muted">
                   Actions
                 </th>
               </tr>

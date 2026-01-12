@@ -84,6 +84,9 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
         onClick={() => setIsOpen(!isOpen)}
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--card)] text-foreground-secondary transition-colors hover:bg-[var(--background-hover)] hover:text-foreground"
         title="Toggle theme"
+        aria-label="Toggle application theme"
+        aria-haspopup="true"
+        aria-expanded={isOpen}
       >
         {resolvedTheme === "dark" ? (
           <MoonIcon className="h-4 w-4" />

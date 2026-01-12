@@ -36,7 +36,7 @@ async function getOrganizationServices(organizationId: string): Promise<Database
       isDefault: service.isDefault,
     }));
   } catch (error) {
-    console.error("Error fetching organization services:", error);
+    console.warn("[EditGallery] Error fetching organization services:", error);
     return [];
   }
 }
@@ -61,7 +61,7 @@ async function getClients(organizationId: string) {
       email: c.email,
     }));
   } catch (error) {
-    console.error("Error fetching clients:", error);
+    console.warn("[EditGallery] Error fetching clients:", error);
     return [];
   }
 }

@@ -475,7 +475,7 @@ export function UserDetailClient({ user }: UserDetailClientProps) {
         {user.avatarUrl ? (
           <img
             src={user.avatarUrl}
-            alt=""
+            alt={`${user.fullName || user.email}'s avatar`}
             className="w-20 h-20 rounded-full"
           />
         ) : (

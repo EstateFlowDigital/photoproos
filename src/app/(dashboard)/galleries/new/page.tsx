@@ -27,7 +27,7 @@ async function getClients(organizationId: string) {
       email: c.email,
     }));
   } catch (error) {
-    console.error("Error fetching clients:", error);
+    console.warn("[NewGallery] Error fetching clients:", error);
     return [];
   }
 }
@@ -62,7 +62,7 @@ async function getStats(organizationId: string) {
       revenueThisMonth: revenueThisMonth._sum.amountCents || 0,
     };
   } catch (error) {
-    console.error("Error fetching stats:", error);
+    console.warn("[NewGallery] Error fetching stats:", error);
     return { totalGalleries: 0, deliveredThisMonth: 0, revenueThisMonth: 0 };
   }
 }

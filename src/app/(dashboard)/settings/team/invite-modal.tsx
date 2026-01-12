@@ -8,6 +8,9 @@ interface InviteModalProps {
   onClose: () => void;
 }
 
+// Email validation regex
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function InviteModal({ isOpen, onClose }: InviteModalProps) {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"admin" | "member">("member");
@@ -17,10 +20,18 @@ export function InviteModal({ isOpen, onClose }: InviteModalProps) {
 
   if (!isOpen) return null;
 
+  const isValidEmail = EMAIL_REGEX.test(email);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(false);
+
+    // Validate email format
+    if (!isValidEmail) {
+      setError("Please enter a valid email address");
+      return;
+    }
 
     startTransition(async () => {
       const result = await createInvitation({ email, role });
@@ -115,7 +126,7 @@ export function InviteModal({ isOpen, onClose }: InviteModalProps) {
               <button type="button" className="btn-secondary" onClick={onClose}>
                 Cancel
               </button>
-              <button type="submit" className="btn-primary" disabled={isPending || !email}>
+              <button type="submit" className="btn-primary" disabled={isPending || !isValidEmail}>
                 {isPending ? "Sending..." : "Send Invitation"}
               </button>
             </div>

@@ -200,7 +200,9 @@ export function GalleryNewForm({ clients, templates }: GalleryNewFormProps) {
         showToast(result.error || "Failed to create gallery", "error");
       }
     } catch (error) {
-      console.error("Error creating gallery:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[GalleryNewForm] Error creating gallery:", error);
+      }
       showToast("An unexpected error occurred", "error");
     } finally {
       setIsSubmitting(false);

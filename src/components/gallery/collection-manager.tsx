@@ -577,7 +577,7 @@ export function CollectionManager({
                       >
                         <img
                           src={photo.thumbnailUrl || ""}
-                          alt=""
+                          alt="Cover photo option"
                           className="h-full w-full object-cover"
                         />
                       </button>

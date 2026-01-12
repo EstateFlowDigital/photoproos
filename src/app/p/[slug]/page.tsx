@@ -318,7 +318,7 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
               {asset.thumbnailUrl ? (
                 <img
                   src={asset.thumbnailUrl}
-                  alt=""
+                  alt="Portfolio photo"
                   className="h-full w-full object-cover"
                 />
               ) : (
@@ -454,7 +454,7 @@ export default async function PropertyWebsitePage({ params }: PageProps) {
                     {asset.thumbnailUrl ? (
                       <img
                         src={asset.thumbnailUrl}
-                        alt=""
+                        alt="Portfolio photo"
                         className="h-full w-full object-cover transition-transform group-hover:scale-105"
                       />
                     ) : (

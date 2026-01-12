@@ -265,7 +265,7 @@ export function NewConversationPageClient({
                       {member.avatarUrl ? (
                         <img
                           src={member.avatarUrl}
-                          alt=""
+                          alt={`${member.fullName || member.email}'s avatar`}
                           className="h-10 w-10 rounded-full object-cover"
                         />
                       ) : (

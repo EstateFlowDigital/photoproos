@@ -12,6 +12,7 @@ import { buildDashboardNav } from "@/lib/navigation/dashboard-nav";
 import { updateAppearancePreferences } from "@/lib/actions/appearance";
 import { ElementInspector } from "@/components/dev/element-inspector";
 import { ErrorTracker } from "@/components/dev/error-tracker";
+import { ErrorBoundary } from "@/components/debug/error-boundary";
 
 interface AutoThemeConfig {
   enabled: boolean;
@@ -412,9 +413,13 @@ export function DashboardLayoutClient({
         </main>
       </div>
 
-      {/* Dev Tools */}
-      <ElementInspector />
-      <ErrorTracker />
+      {/* Dev Tools - wrapped in error boundary to prevent crashes from breaking the app */}
+      <ErrorBoundary label="ElementInspector">
+        <ElementInspector />
+      </ErrorBoundary>
+      <ErrorBoundary label="ErrorTracker">
+        <ErrorTracker />
+      </ErrorBoundary>
     </div>
   );
 }

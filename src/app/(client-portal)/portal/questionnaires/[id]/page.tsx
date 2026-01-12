@@ -19,15 +19,15 @@ export default async function QuestionnaireCompletionPage({ params }: Props) {
 
   if (!result.data) {
     return (
-      <div data-element="portal-questionnaire-page" className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div data-element="portal-questionnaire-page" className="min-h-screen bg-[var(--background)] flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-xl font-semibold text-white">Questionnaire Not Found</h1>
-          <p className="mt-2 text-[#7c7c7c]">
+          <h1 className="text-xl font-semibold text-[var(--foreground)]">Questionnaire Not Found</h1>
+          <p className="mt-2 text-[var(--foreground-muted)]">
             This questionnaire may have already been completed or is no longer available.
           </p>
           <Link
             href="/portal"
-            className="mt-4 inline-block rounded-lg bg-[#3b82f6] px-4 py-2 text-sm font-medium text-white hover:bg-[#3b82f6]/90"
+            className="mt-4 inline-block rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--primary)]/90"
           >
             Return to Portal
           </Link>

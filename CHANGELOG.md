@@ -8,6 +8,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **ComingSoonPage Component** - New reusable component (`src/components/dashboard/coming-soon-page.tsx`) for placeholder pages with:
+  - "Coming Soon" badge with sparkle icon
+  - Feature list with checkmarks
+  - Email notification signup form
+  - Related links section
+  - Consistent styling using design tokens
+- **Client Portal Page Wrapper** - New `PortalPageWrapper` component (`src/app/(client-portal)/portal/components/portal-page-wrapper.tsx`) providing consistent navigation across all portal pages:
+  - Sticky header with logo and navigation
+  - Desktop nav with 5 quick links (Home, Galleries, Downloads, Favorites, Contracts)
+  - Mobile hamburger menu with full navigation
+  - User info and logout button
+  - "Back to Portal" breadcrumb on sub-pages
+  - Footer with help and contact links
+
+### Changed
+- **50+ Placeholder Pages Updated** - Migrated placeholder pages to use new `ComingSoonPage` component with consistent Beta badge and "Get Notified" form:
+  - **Financial**: `/payroll`, `/refunds`, `/failed-payments`, `/commissions`
+  - **Marketing**: `/campaigns`, `/email-campaigns`, `/social`, `/seo`, `/ads`
+  - **Reports**: `/reports`, `/reports/revenue`, `/reports/clients`, `/benchmarks`
+  - **Commerce**: `/gift-cards`, `/coupons`, `/memberships`, `/digital-products`, `/prints`, `/wall-art`
+  - **Content/Media**: `/albums`, `/videos`, `/proofing`, `/slideshows`, `/collections`, `/sneak-peeks`
+  - **Client Management**: `/segments`, `/abandoned-carts`, `/vip`, `/referrals`, `/loyalty`, `/reviews`
+  - **Automation**: `/workflows`, `/automations`
+  - **Business Tools**: `/expenses`, `/gear`, `/mileage`, `/rentals`, `/studio`, `/tours`, `/pipeline`, `/vendors`, `/goals`, `/reveal`
+  - `/waitlist` - Booking waitlist management
+- **PortalComingSoon Component** - New portal-specific coming soon component for client portal placeholder pages
+- **Client Portal Pages Updated** - Migrated 6 client portal placeholder pages with navigation wrapper:
+  - `/portal/payments`, `/portal/schedule`, `/portal/proofing`, `/portal/selects`, `/portal/files`, `/portal/booking`
 - **Multi-Media Gallery Support** - Galleries now support videos, virtual tours (Matterport, iGuide, etc.), floor plans, and aerial footage alongside photos:
   - `AssetRenderer` component renders all media types with appropriate players
   - `VideoEmbed` supports 8 video providers: Vimeo, YouTube, Bunny, Mux, Cloudflare, Wistia, Sprout, and direct URLs
@@ -33,6 +61,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Mobile Search Button Border** - Added border to mobile search button in dashboard topbar to match styling of Quick Actions and Workspace buttons
 
 ### Fixed
+- **Client Portal Navigation Consistency** - Fixed 3 client portal pages missing `PortalPageWrapper` navigation:
+  - `/portal/contracts` - Added client component wrapper with portal navigation
+  - `/portal/favorites` - Added client component wrapper with portal navigation
+  - `/portal/proofing/[id]` - Refactored to use `PortalComingSoon` component with proper wrapper
+- **Hardcoded Colors in Questionnaires** - Fixed hardcoded hex colors in client portal questionnaire page (`/portal/questionnaires/[id]`) to use CSS variable tokens:
+  - Changed `bg-[#0a0a0a]` to `bg-[var(--background)]`
+  - Changed `text-[#7c7c7c]` to `text-[var(--foreground-muted)]`
+  - Changed `bg-[#3b82f6]` to `bg-[var(--primary)]`
+- **Dashboard Container Spacing Standardization** - Standardized page container spacing from `space-y-8` to `space-y-6` for consistency across all dashboard pages:
+  - `/settings` main page
+  - `/settings/support` page
+  - `/help/contact` page
+  - `/help/faq` page
+  - `/help/[category]` category pages
+  - `/help/[category]/[slug]` article pages
+- **List Page Container Spacing** - Fixed list page client components using `space-y-4` instead of standard `space-y-6`:
+  - `invoices-page-client.tsx` - Changed root container from `space-y-4` to `space-y-6`
+  - `gallery-list-client.tsx` - Changed root container from `space-y-4` to `space-y-6`
+- **Table Header Padding Standardization** - Standardized table header padding from `px-6 py-3` to `px-4 py-3` to match the majority pattern across dashboard tables:
+  - `clients-page-client.tsx` - All table headers
+  - `contracts-page-client.tsx` - All table headers
+  - `recurring-invoices-client.tsx` - All table headers
+  - `brokerages/page.tsx` - All table headers
+  - `properties/leads-view-client.tsx` - All table headers
+- **Calendly Integration Error Handling** - Fixed silent webhook setup failures in Calendly integration. Now shows error toast and message when webhook configuration fails, informing users that bookings may not sync automatically
+- **Dropbox Integration Error Logging** - Improved error handling in Dropbox folder creation during OAuth callback. Now properly logs warnings for failed folder creation (with status codes) instead of silently ignoring errors
+- **QuickBooks Environment Validation** - Added warning log when `QUICKBOOKS_ENVIRONMENT` is not set, defaulting safely to sandbox. Prevents accidental production API calls when environment is misconfigured
+- **Type Safety Improvements** - Removed unsafe `as any` type assertions:
+  - `galleries/[id]/page.tsx` - Gallery selection fields now properly typed (allowSelections, selectionLimit, selectionsSubmitted)
+  - `dashboard-topbar.tsx` - User display name extraction now uses proper Clerk user type properties
+- **CSS Injection Prevention** - Added hex color validation for user dashboard accent color. Invalid colors fallback to default blue (#3b82f6) instead of being injected into CSS
+- **Silent Error Handler Fixes** - Added proper error logging to previously silent catch blocks:
+  - `live-viewers.tsx` - Presence removal errors now logged in development mode
+- **Help Link in Navigation** - Fixed navbar and footer "Help Center" links pointing to `/help` (dashboard-only protected route) which caused unauthenticated visitors to be redirected. Links now point to `/support` which is the public help center page
+- **Memory Leak in Blob URLs** - Fixed memory leaks from uncleaned blob URLs in:
+  - Email logs CSV export - Now revokes blob URL after download
+  - Branding settings form - Tracks all logo preview blob URLs with a ref and cleans them up on unmount and replacement
+- **Console Error Cleanup** - Converted excessive `console.error` statements to `console.warn` or development-only logging across the codebase:
+  - Gallery detail client - Download history, add-on requests, and export errors now only log in development
+  - Gallery actions - Proof sheet, favorites export, and team chat errors now only log in development
+  - Gallery new form - Gallery creation errors now only log in development
+  - Gallery pages - Server-side fetch errors now use console.warn with proper tags
+  - Support tickets - Slack notification failures now only log in development
+  - Contracts - All error handlers now use console.warn instead of console.error
+  - BugProbe screen recording - Cleans up recording blob URLs on unmount and when new recording replaces old
+- **Accessibility Issues (Empty Alt Text)** - Fixed 18+ instances of empty `alt=""` attributes on images that needed descriptive alt text:
+  - User/team avatars now include user names (e.g., "John's avatar")
+  - Gallery thumbnails now describe their content
+  - Collection cover images include collection names
+  - Download history thumbnails include filenames
+  - Portfolio photos now have descriptive alt text
+- **Form Validation Gaps** - Improved form validation across multiple components:
+  - Team invite modal - Added email regex validation (not just HTML5 type="email")
+  - Create client modal - Added phone number format validation with error display
+  - Create property modal - Added ZIP code format validation (5 digits or 5+4 format)
+  - Create property modal - Added `min="0"` to price, beds, baths, sqft fields
+  - Create property modal - Added year built constraints (1800 to current year)
+- **Virtualized Table Row Positioning** - Fixed broken table layouts in clients, invoices, and projects pages. The virtual table rows had incorrect CSS (missing `table-fixed` class) which caused layout issues. Ensured all virtualized rows use `absolute left-0 right-0 w-full table table-fixed` pattern to match the working galleries pattern
+- **Dashboard Crash Protection with Error Boundaries** - Added error boundaries around dev tools (ElementInspector, BugProbe, ErrorTracker, DebugBanner) to prevent crashes in developer tools from breaking the entire dashboard. Created `DevToolsWrapper` component to encapsulate error boundary wrapping
 - **Infinite Re-render Loop in Spotlight Component** - Fixed "Too many re-renders" error affecting dashboard, clients, and other pages. The Spotlight component's MutationObserver was watching document.body for DOM changes, but its own portal modifications triggered the observer, causing state updates in an infinite loop. Added a ref-based comparison to only update state when the target element's rect actually changes
 - **WalkthroughWrapper Callback Optimization** - Wrapped `handleStateChange` in `useCallback` with a ref pattern to prevent PageWalkthrough's useEffect from re-running on every parent render
 - **Gmail OAuth CORS Error** - Fixed CORS errors caused by Next.js Link prefetching OAuth redirect URLs. Changed OAuth authorization links from `<Link>` to `<a>` tags in inbox and email settings pages to prevent prefetch requests that triggered CORS errors
@@ -45,6 +132,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Add People button opens modal (placeholder for future feature)
   - Info panel shows participant list with roles (Team Member vs Client)
   - Quick actions available in info panel (Mute, Pin, Add People)
+- **Memory Leak in Social Proof Toast** - Fixed untracked setTimeout calls inside setInterval that could cause state updates on unmounted components. Nested timers are now properly tracked and cleaned up when component unmounts
+- **Theme Toggle Accessibility** - Added proper ARIA attributes (`aria-label`, `aria-haspopup`, `aria-expanded`) to theme toggle button for better screen reader support
+
+### Security
+- **XSS Protection via HTML Sanitization** - Added comprehensive XSS protection across the application using DOMPurify:
+  - Created `src/lib/sanitize.ts` with three sanitization utilities: `sanitizeHtml()`, `sanitizeEmailHtml()`, and `sanitizeRichText()`
+  - Contract signing page (`/sign/[token]`) - Contract content now sanitized before rendering
+  - Contract detail page (`/contracts/[id]`) - Contract content now sanitized in dashboard view
+  - Inbox/Email client - Email HTML bodies are now sanitized to prevent malicious email content
+  - Portfolio text sections - User-generated content now sanitized
+  - Questionnaire forms - Legal agreement content now sanitized in both portal and preview views
+  - All sanitizers remove script tags, event handlers, and dangerous URLs while preserving safe formatting
 
 ### Added
 - **Element Inspector Design Tokens Reference** - New "Tokens" tab in the inspector panel showing all design system variables:

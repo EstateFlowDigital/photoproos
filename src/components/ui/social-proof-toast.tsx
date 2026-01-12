@@ -42,30 +42,43 @@ export function SocialProofToast({
     // Don't show if user has dismissed
     if (hasInteracted) return;
 
+    // Track both timers for cleanup
+    let hideTimer: NodeJS.Timeout | null = null;
+
     // Initial delay
     const initialTimer = setTimeout(() => {
       setIsVisible(true);
 
-      // Hide after duration
-      setTimeout(() => setIsVisible(false), duration);
+      // Hide after duration - track this timer
+      hideTimer = setTimeout(() => setIsVisible(false), duration);
     }, delay);
 
-    return () => clearTimeout(initialTimer);
+    return () => {
+      clearTimeout(initialTimer);
+      if (hideTimer) clearTimeout(hideTimer);
+    };
   }, [delay, duration, hasInteracted]);
 
   // Show next notification after interval
   React.useEffect(() => {
     if (hasInteracted) return;
 
+    // Track hide timer for cleanup
+    let hideTimer: NodeJS.Timeout | null = null;
+
     const intervalTimer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % recentSignups.length);
       setIsVisible(true);
 
-      // Hide after duration
-      setTimeout(() => setIsVisible(false), duration);
+      // Hide after duration - track and cleanup previous timer
+      if (hideTimer) clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => setIsVisible(false), duration);
     }, interval);
 
-    return () => clearInterval(intervalTimer);
+    return () => {
+      clearInterval(intervalTimer);
+      if (hideTimer) clearTimeout(hideTimer);
+    };
   }, [interval, duration, hasInteracted]);
 
   const handleDismiss = () => {

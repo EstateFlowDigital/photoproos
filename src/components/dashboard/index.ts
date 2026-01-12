@@ -73,6 +73,7 @@ export { RelatedItems } from "./related-items";
 export { Breadcrumb } from "./breadcrumb";
 export { getChecklistItems } from "@/lib/utils/checklist-items";
 export { CollapsibleSection } from "./collapsible-section";
+export { ComingSoonPage, type ComingSoonPageProps } from "./coming-soon-page";
 
 // NOTE: The following components are complex client components with hooks.
 // They should be imported directly to avoid barrel export issues with server components:

@@ -48,7 +48,7 @@ export default async function SettingsPage() {
     : "open";
 
   return (
-    <div data-element="settings-page" className="space-y-8 p-4 sm:p-6 lg:p-8">
+    <div data-element="settings-page" className="space-y-6 p-4 sm:p-6 lg:p-8">
       {/* Page Walkthrough */}
       <WalkthroughWrapper
         pageId="settings"

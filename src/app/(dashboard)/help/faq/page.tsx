@@ -195,7 +195,7 @@ export default function FAQPage() {
   const [activeCategory, setActiveCategory] = React.useState(categories[0]);
 
   return (
-    <div data-element="help-faq-page" className="space-y-8">
+    <div data-element="help-faq-page" className="space-y-6">
       {/* Breadcrumb */}
       <HelpBreadcrumb
         items={[

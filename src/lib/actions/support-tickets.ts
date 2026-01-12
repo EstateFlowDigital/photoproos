@@ -210,14 +210,16 @@ export async function createSupportTicket(data: {
     });
 
     // Send Slack notification (fire and forget)
-    notifySlackNewTicket(ticket.id, data.subject, data.category).catch(
-      console.error
-    );
+    notifySlackNewTicket(ticket.id, data.subject, data.category).catch((err) => {
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[SupportTickets] Slack notification failed:", err);
+      }
+    });
 
     revalidatePath("/support");
     return ok({ id: ticket.id });
   } catch (error) {
-    console.error("Error creating support ticket:", error);
+    console.warn("[SupportTickets] Error creating support ticket:", error);
     return fail("Failed to create ticket");
   }
 }
@@ -277,13 +279,17 @@ export async function sendSupportMessage(
     });
 
     // Notify Slack
-    notifySlackNewMessage(ticketId, content).catch(console.error);
+    notifySlackNewMessage(ticketId, content).catch((err) => {
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[SupportTickets] Slack message notification failed:", err);
+      }
+    });
 
     revalidatePath("/support");
     revalidatePath(`/support/${ticketId}`);
     return ok({ id: message.id });
   } catch (error) {
-    console.error("Error sending message:", error);
+    console.warn("[SupportTickets] Error sending message:", error);
     return fail("Failed to send message");
   }
 }

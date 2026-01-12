@@ -726,7 +726,7 @@ export function UsersPageClient({
               {user.avatarUrl ? (
                 <img
                   src={user.avatarUrl}
-                  alt=""
+                  alt={`${user.fullName || user.email}'s avatar`}
                   className="w-10 h-10 rounded-full"
                 />
               ) : (

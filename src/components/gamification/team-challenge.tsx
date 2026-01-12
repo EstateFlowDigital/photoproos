@@ -280,7 +280,7 @@ const ParticipantRow = memo(function ParticipantRow({
       {participant.userAvatar ? (
         <img
           src={participant.userAvatar}
-          alt=""
+          alt={`${participant.userName || "Participant"}'s avatar`}
           className="h-6 w-6 rounded-full object-cover"
         />
       ) : (

@@ -33,6 +33,7 @@ interface FieldErrors {
   firstName?: string;
   lastName?: string;
   email?: string;
+  phone?: string;
   industry?: string;
 }
 
@@ -62,11 +63,24 @@ export function CreateClientModal({
     return undefined;
   };
 
+  // Phone validation - optional field, but validates format if provided
+  // Accepts: (123) 456-7890, 123-456-7890, 1234567890, +1 123-456-7890
+  const validatePhone = (phone: string): string | undefined => {
+    if (!phone) return undefined; // Phone is optional
+    const phoneRegex = /^[+]?[(]?[0-9]{1,3}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,4}[-\s.]?[0-9]{1,9}$/;
+    if (!phoneRegex.test(phone.replace(/\s/g, ""))) {
+      return "Please enter a valid phone number";
+    }
+    return undefined;
+  };
+
   const handleBlur = (field: string, value: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
 
     if (field === "email") {
       setFieldErrors((prev) => ({ ...prev, email: validateEmail(value) }));
+    } else if (field === "phone") {
+      setFieldErrors((prev) => ({ ...prev, phone: validatePhone(value) }));
     } else if (field === "firstName" && !value) {
       setFieldErrors((prev) => ({ ...prev, firstName: "First name is required" }));
     } else if (field === "lastName" && !value) {
@@ -231,8 +245,17 @@ export function CreateClientModal({
                 id="modal-phone"
                 name="phone"
                 placeholder="(555) 123-4567"
-                className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                onBlur={(e) => handleBlur("phone", e.target.value)}
+                className={cn(
+                  "w-full rounded-lg border bg-[var(--background)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-1",
+                  touched.phone && fieldErrors.phone
+                    ? "border-[var(--error)] focus:border-[var(--error)] focus:ring-[var(--error)]"
+                    : "border-[var(--card-border)] focus:border-[var(--primary)] focus:ring-[var(--primary)]"
+                )}
               />
+              {touched.phone && fieldErrors.phone && (
+                <p className="mt-1 text-xs text-[var(--error)]">{fieldErrors.phone}</p>
+              )}
             </div>
 
             {/* Company */}

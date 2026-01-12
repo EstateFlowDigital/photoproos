@@ -38,6 +38,7 @@ import {
   ArchiveRestore,
   Loader2,
 } from "lucide-react";
+import { sanitizeEmailHtml } from "@/lib/sanitize";
 
 type FilterType = "all" | "unread" | "starred" | "archived";
 
@@ -847,10 +848,11 @@ function MessageBubble({
         <div
           className={`mt-2 text-sm ${isOutbound ? "text-white/90" : "text-foreground"}`}
           dangerouslySetInnerHTML={{
-            __html:
+            __html: sanitizeEmailHtml(
               message.bodyHtml ||
               message.bodyText?.replace(/\n/g, "<br>") ||
-              "",
+              ""
+            ),
           }}
         />
         {message.hasAttachments && message.attachments.length > 0 && (

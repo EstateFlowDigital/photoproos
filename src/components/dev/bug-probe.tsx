@@ -105,6 +105,15 @@ export function BugProbe() {
     }
   }, []);
 
+  // Clean up recording blob URL on unmount to prevent memory leak
+  useEffect(() => {
+    return () => {
+      if (recordedUrl) {
+        URL.revokeObjectURL(recordedUrl);
+      }
+    };
+  }, [recordedUrl]);
+
   // Load dev settings on mount and listen for changes
   useEffect(() => {
     const loadSettings = () => {
@@ -492,6 +501,10 @@ export function BugProbe() {
       };
       recorder.onstop = () => {
         const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
+        // Revoke old recording URL to prevent memory leak
+        if (recordedUrl) {
+          URL.revokeObjectURL(recordedUrl);
+        }
         const url = URL.createObjectURL(blob);
         setRecordedUrl(url);
         addEntry("recording", "Screen recording captured (webm)", { url });

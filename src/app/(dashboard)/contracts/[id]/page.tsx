@@ -8,6 +8,7 @@ import { cancelContract } from "@/lib/actions/contract-signing";
 import { ContractDownloadButton } from "./contract-download-button";
 import { cn } from "@/lib/utils";
 import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
+import { sanitizeRichText } from "@/lib/sanitize";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -189,7 +190,7 @@ export default async function ContractDetailPage({ params }: ContractDetailPageP
             <div className="p-6">
               <div
                 className="prose prose-invert max-w-none text-foreground"
-                dangerouslySetInnerHTML={{ __html: contract.content }}
+                dangerouslySetInnerHTML={{ __html: sanitizeRichText(contract.content) }}
               />
             </div>
           </div>

@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { PageHeader } from "@/components/dashboard";
+import { ComingSoonPage } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 
@@ -10,56 +10,27 @@ export default async function RevenueReportPage() {
   }
 
   return (
-    <div data-element="reports-revenue-page" className="space-y-6">
-      <PageHeader
+    <div data-element="reports-revenue-page">
+      <ComingSoonPage
         title="Revenue Report"
         subtitle="Track income and revenue trends"
-        backHref="/reports"
+        icon="💰"
+        description="Revenue by service type, client, time period, and growth trends."
+        features={[
+          "Revenue breakdown by service type and package",
+          "Top clients by revenue and booking frequency",
+          "Monthly, quarterly, and yearly trend analysis",
+          "Average order value and booking value metrics",
+          "Revenue forecasting based on booked sessions",
+          "Comparison with previous periods",
+        ]}
+        relatedLinks={[
+          { label: "All Reports", href: "/reports" },
+          { label: "Profit & Loss", href: "/reports/profit-loss" },
+          { label: "Analytics", href: "/analytics" },
+          { label: "Invoices", href: "/invoices" },
+        ]}
       />
-
-      <div className="card p-12 text-center">
-        <div className="text-4xl mb-4">💰</div>
-        <h2 className="text-xl font-semibold text-foreground mb-2">Page Coming Soon</h2>
-        <p className="text-foreground-muted max-w-md mx-auto mb-8">
-          Revenue by service type, client, time period, and growth trends.
-        </p>
-
-        <div className="text-left max-w-lg mx-auto mb-8">
-          <h3 className="text-sm font-semibold text-foreground mb-3">Features included:</h3>
-          <ul className="space-y-2 text-sm text-foreground-muted">
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Revenue breakdown by service type and package</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Top clients by revenue and booking frequency</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Monthly, quarterly, and yearly trend analysis</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Average order value and booking value metrics</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Revenue forecasting based on booked sessions</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Comparison with previous periods</span>
-            </li>
-          </ul>
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-3">
-          <a href="/reports/profit-loss" className="btn btn-secondary text-sm">Profit & Loss</a>
-          <a href="/analytics" className="btn btn-secondary text-sm">Analytics</a>
-          <a href="/invoices" className="btn btn-secondary text-sm">Invoices</a>
-        </div>
-      </div>
     </div>
   );
 }

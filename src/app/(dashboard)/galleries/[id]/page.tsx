@@ -126,10 +126,10 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
           })),
         }
       : undefined,
-    // Selection settings
-    allowSelections: (gallery as any).allowSelections ?? false,
-    selectionLimit: (gallery as any).selectionLimit ?? null,
-    selectionsSubmitted: (gallery as any).selectionsSubmitted ?? false,
+    // Selection settings (fields exist on Project model)
+    allowSelections: gallery.allowSelections ?? false,
+    selectionLimit: gallery.selectionLimit ?? null,
+    selectionsSubmitted: gallery.selectionsSubmitted ?? false,
   };
 
   return (

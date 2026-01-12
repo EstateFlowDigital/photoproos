@@ -244,7 +244,7 @@ async function createInitialFolders(accessToken: string): Promise<void> {
 
   for (const folder of folders) {
     try {
-      await fetch("https://api.dropboxapi.com/2/files/create_folder_v2", {
+      const response = await fetch("https://api.dropboxapi.com/2/files/create_folder_v2", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -252,8 +252,15 @@ async function createInitialFolders(accessToken: string): Promise<void> {
         },
         body: JSON.stringify({ path: folder, autorename: false }),
       });
-    } catch {
-      // Folder might already exist, ignore errors
+
+      // 409 means folder already exists, which is fine
+      if (!response.ok && response.status !== 409) {
+        const errorText = await response.text().catch(() => "Unknown error");
+        console.warn(`Failed to create Dropbox folder ${folder}: ${response.status} - ${errorText}`);
+      }
+    } catch (error) {
+      // Network error - log but don't fail the flow
+      console.warn(`Network error creating Dropbox folder ${folder}:`, error);
     }
   }
 }

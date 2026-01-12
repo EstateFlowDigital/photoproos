@@ -314,7 +314,7 @@ export function SmartCollectionsPanel({
                           {photo.thumbnailUrl && (
                             <img
                               src={photo.thumbnailUrl}
-                              alt=""
+                              alt="Collection preview"
                               className="h-full w-full object-cover"
                             />
                           )}

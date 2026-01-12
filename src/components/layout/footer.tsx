@@ -119,12 +119,12 @@ export function Footer() {
           {/* Resources Column */}
           <FooterColumn title="Resources">
             <FooterLink href="/blog">Blog</FooterLink>
-            <FooterLink href="/help">Help Center</FooterLink>
+            <FooterLink href="/support">Help Center</FooterLink>
             <FooterLink href="/guides">Guides & Tutorials</FooterLink>
             <FooterLink href="/webinars">Webinars</FooterLink>
             <FooterLink href="/changelog">Changelog</FooterLink>
             <FooterLink href="/roadmap">Product Roadmap</FooterLink>
-            <FooterLink href="/help" badge="Soon">API Documentation</FooterLink>
+            <FooterLink href="/support" badge="Soon">API Documentation</FooterLink>
           </FooterColumn>
 
           {/* Company Column */}

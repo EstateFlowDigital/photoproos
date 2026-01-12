@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef } from "react";
+import { useState, useTransition, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { updateOrganizationBranding } from "@/lib/actions/settings";
 import { useToast } from "@/components/ui/toast";
@@ -78,9 +78,31 @@ export function BrandingSettingsForm({
   const faviconInputRef = useRef<HTMLInputElement>(null);
   const invoiceLogoInputRef = useRef<HTMLInputElement>(null);
 
+  // Track blob URLs for cleanup to prevent memory leaks
+  const blobUrlsRef = useRef<Set<string>>(new Set());
+
+  // Clean up blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      blobUrlsRef.current.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+      blobUrlsRef.current.clear();
+    };
+  }, []);
+
+  // Helper to revoke a blob URL and remove from tracking
+  const revokeBlobUrl = useCallback((url: string | null) => {
+    if (url && url.startsWith("blob:")) {
+      URL.revokeObjectURL(url);
+      blobUrlsRef.current.delete(url);
+    }
+  }, []);
+
   const handleFileSelect = async (
     file: File,
     setter: (url: string | null) => void,
+    currentUrl: string | null,
     maxSize: number = 2
   ) => {
     if (file.size > maxSize * 1024 * 1024) {
@@ -88,12 +110,21 @@ export function BrandingSettingsForm({
       return;
     }
 
-    // For now, create a local URL preview
-    // In production, this would upload to cloud storage
+    // Revoke old blob URL to prevent memory leak
+    revokeBlobUrl(currentUrl);
+
+    // Create new blob URL and track it
     const url = URL.createObjectURL(file);
+    blobUrlsRef.current.add(url);
     setter(url);
     showToast("Logo selected. Click Save Changes to upload.", "info");
   };
+
+  // Helper to remove a logo and clean up its blob URL
+  const handleRemoveLogo = useCallback((currentUrl: string | null, setter: (url: string | null) => void) => {
+    revokeBlobUrl(currentUrl);
+    setter(null);
+  }, [revokeBlobUrl]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -182,7 +213,7 @@ export function BrandingSettingsForm({
                     const file = e.target.files?.[0];
                     if (file) {
                       setLogoError(false);
-                      handleFileSelect(file, setLogoUrl);
+                      handleFileSelect(file, setLogoUrl, logoUrl);
                     }
                   }}
                 />
@@ -205,7 +236,7 @@ export function BrandingSettingsForm({
                       <Button
                         variant="outline"
                         type="button"
-                        onClick={() => setLogoUrl(null)}
+                        onClick={() => handleRemoveLogo(logoUrl, setLogoUrl)}
                       >
                         Remove
                       </Button>
@@ -245,7 +276,7 @@ export function BrandingSettingsForm({
                     const file = e.target.files?.[0];
                     if (file) {
                       setLogoLightError(false);
-                      handleFileSelect(file, setLogoLightUrl);
+                      handleFileSelect(file, setLogoLightUrl, logoLightUrl);
                     }
                   }}
                 />
@@ -268,7 +299,7 @@ export function BrandingSettingsForm({
                       <Button
                         variant="outline"
                         type="button"
-                        onClick={() => setLogoLightUrl(null)}
+                        onClick={() => handleRemoveLogo(logoLightUrl, setLogoLightUrl)}
                       >
                         Remove
                       </Button>
@@ -305,7 +336,7 @@ export function BrandingSettingsForm({
                     const file = e.target.files?.[0];
                     if (file) {
                       setFaviconError(false);
-                      handleFileSelect(file, setFaviconUrl, 1);
+                      handleFileSelect(file, setFaviconUrl, faviconUrl, 1);
                     }
                   }}
                 />
@@ -328,7 +359,7 @@ export function BrandingSettingsForm({
                       <Button
                         variant="outline"
                         type="button"
-                        onClick={() => setFaviconUrl(null)}
+                        onClick={() => handleRemoveLogo(faviconUrl, setFaviconUrl)}
                       >
                         Remove
                       </Button>
@@ -558,7 +589,7 @@ export function BrandingSettingsForm({
                   const file = e.target.files?.[0];
                   if (file) {
                     setInvoiceLogoError(false);
-                    handleFileSelect(file, setInvoiceLogoUrl);
+                    handleFileSelect(file, setInvoiceLogoUrl, invoiceLogoUrl);
                   }
                 }}
               />
@@ -581,7 +612,7 @@ export function BrandingSettingsForm({
                     <Button
                       variant="outline"
                       type="button"
-                      onClick={() => setInvoiceLogoUrl(null)}
+                      onClick={() => handleRemoveLogo(invoiceLogoUrl, setInvoiceLogoUrl)}
                     >
                       Use Default
                     </Button>

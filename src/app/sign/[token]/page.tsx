@@ -6,6 +6,7 @@ import SignaturePad from "signature_pad";
 import { getContractForSigning, signContract } from "@/lib/actions/contract-signing";
 import { Loader2, CheckCircle2, AlertCircle, Pen, Type, FileText } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { sanitizeRichText } from "@/lib/sanitize";
 
 interface ContractData {
   contract: {
@@ -260,7 +261,7 @@ export default function ContractSigningPage() {
               {showContract && (
                 <div
                   className="p-6 max-h-[500px] overflow-y-auto prose prose-invert prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: contract.content }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeRichText(contract.content) }}
                 />
               )}
             </div>

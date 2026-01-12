@@ -279,7 +279,7 @@ export function ProjectsAnalyticsClient({ analytics }: ProjectsAnalyticsClientPr
                         {assignee.assigneeAvatar ? (
                           <img
                             src={assignee.assigneeAvatar}
-                            alt=""
+                            alt={`${assignee.assigneeName}'s avatar`}
                             className="h-6 w-6 rounded-full"
                           />
                         ) : (

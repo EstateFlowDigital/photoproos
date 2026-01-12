@@ -12,6 +12,8 @@ export { PortalHeader } from "./portal-header";
 export { PortalStats } from "./portal-stats";
 export { PortalTabs } from "./portal-tabs";
 export { PortalFooter } from "./portal-footer";
+export { PortalPageWrapper } from "./portal-page-wrapper";
+export { PortalComingSoon, type PortalComingSoonProps } from "./portal-coming-soon";
 
 // Enhanced Components
 export { ActionCards } from "./action-cards";

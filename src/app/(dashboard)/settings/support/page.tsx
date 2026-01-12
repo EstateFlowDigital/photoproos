@@ -42,7 +42,7 @@ function LoadingSkeleton() {
 
 export default function SupportPage() {
   return (
-    <div data-element="settings-support-page" className="space-y-8">
+    <div data-element="settings-support-page" className="space-y-6">
       <PageHeader
         title="Support"
         description="View your support tickets and get help"

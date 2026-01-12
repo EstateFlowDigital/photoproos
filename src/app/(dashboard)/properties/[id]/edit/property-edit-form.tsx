@@ -894,7 +894,7 @@ export function PropertyEditForm({ website }: PropertyEditFormProps) {
                 <div key={asset.id} className="aspect-square overflow-x-auto rounded-lg bg-[var(--background)]">
                   <img
                     src={asset.thumbnailUrl || asset.originalUrl}
-                    alt=""
+                    alt="Gallery photo"
                     className="h-full w-full object-cover"
                   />
                 </div>

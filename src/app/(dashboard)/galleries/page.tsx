@@ -88,7 +88,7 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
       orderBy: { createdAt: "desc" },
     });
   } catch (error) {
-    console.error("[Galleries] Failed to fetch galleries:", error);
+    console.warn("[Galleries] Failed to fetch galleries:", error);
     // Re-throw to trigger error boundary for critical failure
     throw new Error("Failed to load galleries. Please try again.");
   }
@@ -115,7 +115,7 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
       }),
     ]);
   } catch (error) {
-    console.error("[Galleries] Failed to fetch secondary data:", error);
+    console.warn("[Galleries] Failed to fetch secondary data:", error);
     // Continue with defaults - these aren't critical for viewing galleries
   }
 
