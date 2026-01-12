@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Dashboard Layout Improvements** - Cleaned up dashboard spacing and organization:
+  - Moved Edit/Add Widget controls to PageHeader actions for cleaner layout
+  - Reduced vertical spacing between header and widget grid
+  - Made walkthrough video placeholder border more visible (changed to `border-visible` token)
+  - Combined PageHeader and WidgetDashboard into unified DashboardClient component
 - **Dashboard Widget Integration** - Fixed 8 dashboard widgets that were showing placeholder text instead of actual content:
   - `revenue-chart` - Now displays current month, previous month, and YTD revenue
   - `client-growth` - Now shows total clients and new client counts with comparison

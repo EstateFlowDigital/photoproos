@@ -334,7 +334,7 @@ export function PageWalkthrough({
           {config.videoPlaceholder && (
             <div className="walkthrough-video-placeholder">
               <div
-                className="relative flex aspect-video items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)]"
+                className="relative flex aspect-video items-center justify-center rounded-lg border-2 border-[var(--border-visible)] bg-[var(--background-tertiary)]"
                 role="img"
                 aria-label="Video tutorial placeholder"
               >

@@ -52,6 +52,12 @@ interface WidgetDashboardProps {
   dashboardData: DashboardData;
   onAddWidget: () => void;
   className?: string;
+  /** Whether editing mode is active (controlled externally) */
+  isEditing?: boolean;
+  /** Callback when editing mode changes (controlled externally) */
+  onEditingChange?: (editing: boolean) => void;
+  /** Hide the built-in header controls (when rendered externally) */
+  hideControls?: boolean;
 }
 
 // Date type that handles serialization from server to client
@@ -957,10 +963,16 @@ export function WidgetDashboard({
   dashboardData,
   onAddWidget,
   className,
+  isEditing: externalIsEditing,
+  onEditingChange,
+  hideControls = false,
 }: WidgetDashboardProps) {
   const { showToast } = useToast();
   const [widgets, setWidgets] = React.useState(config.widgets);
-  const [isEditing, setIsEditing] = React.useState(false);
+  // Support both controlled and uncontrolled editing state
+  const [internalIsEditing, setInternalIsEditing] = React.useState(false);
+  const isEditing = externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
+  const setIsEditing = onEditingChange ?? setInternalIsEditing;
   const [activeId, setActiveId] = React.useState<string | null>(null);
   const [isSaving, setIsSaving] = React.useState(false);
 
@@ -1039,31 +1051,33 @@ export function WidgetDashboard({
   const activeWidget = activeId ? widgets.find((w) => w.id === activeId) : null;
 
   return (
-    <div className={cn("space-y-4", className)}>
-      {/* Header Controls */}
-      <div className="flex items-center justify-end gap-2">
-        <button
-          onClick={() => setIsEditing(!isEditing)}
-          className={cn(
-            "flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
-            isEditing
-              ? "bg-[var(--primary)] text-white"
-              : "bg-[var(--background)] text-foreground-secondary hover:text-foreground border border-[var(--card-border)]"
-          )}
-        >
-          <Settings2 className="h-4 w-4" />
-          {isEditing ? "Done" : "Edit"}
-        </button>
-        {isEditing && (
+    <div className={cn(hideControls ? "" : "space-y-4", className)}>
+      {/* Header Controls (only if not hidden) */}
+      {!hideControls && (
+        <div className="flex items-center justify-end gap-2">
           <button
-            onClick={onAddWidget}
-            className="flex items-center gap-2 rounded-lg bg-[var(--primary)] px-3 py-1.5 text-sm font-medium text-white hover:bg-[var(--primary)]/90 transition-colors"
+            onClick={() => setIsEditing(!isEditing)}
+            className={cn(
+              "flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+              isEditing
+                ? "bg-[var(--primary)] text-white"
+                : "bg-[var(--background)] text-foreground-secondary hover:text-foreground border border-[var(--card-border)]"
+            )}
           >
-            <Plus className="h-4 w-4" />
-            Add Widget
+            <Settings2 className="h-4 w-4" />
+            {isEditing ? "Done" : "Edit"}
           </button>
-        )}
-      </div>
+          {isEditing && (
+            <button
+              onClick={onAddWidget}
+              className="flex items-center gap-2 rounded-lg bg-[var(--primary)] px-3 py-1.5 text-sm font-medium text-white hover:bg-[var(--primary)]/90 transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Add Widget
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Widget Grid - Responsive: 1 col mobile, 2 tablet, 4 desktop */}
       <DndContext

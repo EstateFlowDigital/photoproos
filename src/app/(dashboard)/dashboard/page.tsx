@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 import { Suspense } from "react";
-import { PageHeader } from "@/components/dashboard";
 import { getOverdueInvoicesForDashboard } from "@/lib/actions/invoices";
 import { getChecklistItemsWithStatus, getOnboardingProgress } from "@/lib/actions/onboarding-checklist";
 import { TourStarter } from "@/components/tour";
@@ -518,12 +517,6 @@ export default async function DashboardPage() {
         {/* Page Walkthrough */}
         <WalkthroughWrapper pageId="dashboard" initialState={walkthroughState} />
 
-        {/* Page Header */}
-        <PageHeader
-          title="Dashboard"
-          subtitle={`Welcome back! Here's what's happening with ${organization.name}.`}
-        />
-
         {/* Onboarding Checklist */}
         {showChecklist && checklistItems.length > 0 && (
           <OnboardingChecklist
@@ -533,10 +526,12 @@ export default async function DashboardPage() {
           />
         )}
 
-        {/* Widget-based Dashboard */}
+        {/* Page Header + Widget Dashboard (combined for proper layout) */}
         <DashboardClient
           config={widgetConfig}
           dashboardData={dashboardData}
+          title="Dashboard"
+          subtitle={`Welcome back! Here's what's happening with ${organization.name}.`}
         />
       </div>
     </ErrorBoundary>
