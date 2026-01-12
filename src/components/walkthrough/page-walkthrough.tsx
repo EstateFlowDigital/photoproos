@@ -272,7 +272,7 @@ export function PageWalkthrough({
         tabIndex={0}
         className={cn(
           "walkthrough-card",
-          "border-[var(--primary)]/30 bg-gradient-to-br from-[var(--primary)]/5 to-transparent",
+          "border-2 border-[var(--border-visible)] bg-gradient-to-br from-[var(--primary)]/5 to-transparent",
           "focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50 focus:ring-offset-2 focus:ring-offset-[var(--background)]",
           transitionClasses,
           className
