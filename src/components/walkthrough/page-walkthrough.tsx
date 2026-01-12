@@ -189,7 +189,7 @@ export function PageWalkthrough({
         className={cn(
           "walkthrough-minimized",
           "flex flex-wrap items-center justify-between gap-3 rounded-xl",
-          "border-2 border-[var(--border-visible)] bg-[var(--card)]",
+          "border border-[var(--card-border)] bg-[var(--card)]",
           "px-4 py-3",
           "shadow-sm",
           transitionClasses,
@@ -272,7 +272,7 @@ export function PageWalkthrough({
         tabIndex={0}
         className={cn(
           "walkthrough-card",
-          "border-2 border-[var(--border-visible)] bg-gradient-to-br from-[var(--primary)]/5 to-transparent",
+          "border border-[var(--card-border)] bg-gradient-to-br from-[var(--primary)]/5 to-transparent",
           "focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50 focus:ring-offset-2 focus:ring-offset-[var(--background)]",
           transitionClasses,
           className
@@ -334,7 +334,7 @@ export function PageWalkthrough({
           {config.videoPlaceholder && (
             <div className="walkthrough-video-placeholder">
               <div
-                className="relative flex aspect-video items-center justify-center rounded-lg border-2 border-[var(--border-visible)] bg-[var(--background-tertiary)]"
+                className="relative flex aspect-video items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--background-tertiary)]"
                 role="img"
                 aria-label="Video tutorial placeholder"
               >
