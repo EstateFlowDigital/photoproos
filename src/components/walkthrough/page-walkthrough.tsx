@@ -189,7 +189,7 @@ export function PageWalkthrough({
         className={cn(
           "walkthrough-minimized",
           "flex flex-wrap items-center justify-between gap-3 rounded-xl",
-          "border border-[var(--card-border)] bg-[var(--card)]",
+          "border-2 border-[var(--border-visible)] bg-[var(--card)]",
           "px-4 py-3",
           "shadow-sm",
           transitionClasses,
