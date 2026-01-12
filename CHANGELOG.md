@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Dashboard Widget Integration** - Fixed 8 dashboard widgets that were showing placeholder text instead of actual content:
+  - `revenue-chart` - Now displays current month, previous month, and YTD revenue
+  - `client-growth` - Now shows total clients and new client counts with comparison
+  - `todo-list` - Connected to task data
+  - `deadlines` - Shows upcoming task deadlines with links
+  - `weather` - Widget now properly integrated
+  - `notes` - Personal notes widget connected
+  - `contract-status` - Displays recent contracts with status badges
+  - `referral-widget` - Shows referral program stats (code, successful referrals, earnings)
+  - Added missing data queries to dashboard page for all widget types
+  - Updated `DashboardData` interface with all required fields
+  - Added switch cases for all widget types in `widget-dashboard.tsx`
+
 ### Added
 - **ComingSoonPage Component** - New reusable component (`src/components/dashboard/coming-soon-page.tsx`) for placeholder pages with:
   - "Coming Soon" badge with sparkle icon

@@ -33,6 +33,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { useToast } from "@/components/ui/toast";
 import { MessagesWidget } from "./widgets/messages-widget";
+import { RevenueWidget } from "./widgets/revenue-widget";
+import { TodoListWidget } from "./widgets/todo-list-widget";
+import { WeatherWidget } from "./widgets/weather-widget";
+import { DeadlinesWidget } from "./widgets/deadlines-widget";
+import { NotesWidget } from "./widgets/notes-widget";
+import { ContractStatusWidget } from "./widgets/contract-status-widget";
+import { ClientGrowthWidget } from "./widgets/client-growth-widget";
+import { ReferralWidget } from "./referral-widget";
 import { LevelBadge, StreakBadge } from "@/components/gamification";
 
 // ============================================================================
@@ -125,6 +133,67 @@ export interface DashboardData {
     createdAt: SerializedDate;
     isUnread: boolean;
   }>;
+  // Revenue chart data
+  revenueChart?: {
+    currentMonthRevenue: number;
+    previousMonthRevenue: number;
+    yearToDateRevenue: number;
+    monthlyGoal?: number;
+  };
+  // Client growth data
+  clientGrowth?: {
+    totalClients: number;
+    newClientsThisMonth: number;
+    newClientsLastMonth: number;
+    clientsByMonth?: Array<{ month: string; count: number }>;
+  };
+  // Todo list data
+  todos?: Array<{
+    id: string;
+    title: string;
+    completed: boolean;
+    dueDate?: SerializedDate;
+    priority?: "low" | "medium" | "high";
+  }>;
+  // Deadlines data
+  deadlines?: Array<{
+    id: string;
+    title: string;
+    dueDate: SerializedDate;
+    type: "gallery" | "contract" | "invoice" | "task" | "project";
+    href: string;
+    priority?: "low" | "medium" | "high";
+  }>;
+  // Weather data
+  weather?: {
+    location?: string;
+    forecast?: Array<{
+      date: SerializedDate;
+      high: number;
+      low: number;
+      condition: "sunny" | "cloudy" | "rainy" | "partly-cloudy" | "stormy";
+      description: string;
+    }>;
+  };
+  // Notes data
+  notes?: string;
+  // Contract status data
+  contracts?: Array<{
+    id: string;
+    title: string;
+    client: string;
+    status: "draft" | "sent" | "viewed" | "signed" | "expired";
+    sentAt?: SerializedDate;
+    signedAt?: SerializedDate;
+    expiresAt?: SerializedDate;
+  }>;
+  // Referral program data
+  referral?: {
+    referralCode: string | null;
+    successfulReferrals: number;
+    totalEarnedCents: number;
+    pendingReferrals: number;
+  };
 }
 
 // ============================================================================
@@ -344,6 +413,99 @@ function WidgetContent({ widget, dashboardData }: WidgetContentProps) {
 
     case "messages":
       return <MessagesWidget messages={dashboardData.messages} isCompact={isCompact} />;
+
+    case "revenue-chart":
+      return dashboardData.revenueChart ? (
+        <RevenueWidget
+          currentMonthRevenue={dashboardData.revenueChart.currentMonthRevenue}
+          previousMonthRevenue={dashboardData.revenueChart.previousMonthRevenue}
+          yearToDateRevenue={dashboardData.revenueChart.yearToDateRevenue}
+          monthlyGoal={dashboardData.revenueChart.monthlyGoal}
+        />
+      ) : (
+        <div className="flex h-full items-center justify-center text-foreground-muted text-sm">
+          Revenue data unavailable
+        </div>
+      );
+
+    case "client-growth":
+      return dashboardData.clientGrowth ? (
+        <ClientGrowthWidget
+          totalClients={dashboardData.clientGrowth.totalClients}
+          newClientsThisMonth={dashboardData.clientGrowth.newClientsThisMonth}
+          newClientsLastMonth={dashboardData.clientGrowth.newClientsLastMonth}
+          clientsByMonth={dashboardData.clientGrowth.clientsByMonth}
+        />
+      ) : (
+        <div className="flex h-full items-center justify-center text-foreground-muted text-sm">
+          Client data unavailable
+        </div>
+      );
+
+    case "todo-list":
+      return (
+        <TodoListWidget
+          items={dashboardData.todos}
+          showCompleted={false}
+          maxItems={10}
+        />
+      );
+
+    case "deadlines":
+      return (
+        <DeadlinesWidget
+          deadlines={dashboardData.deadlines?.map(d => ({
+            ...d,
+            dueDate: new Date(d.dueDate),
+          }))}
+          maxItems={5}
+        />
+      );
+
+    case "weather":
+      return (
+        <WeatherWidget
+          location={dashboardData.weather?.location}
+          forecast={dashboardData.weather?.forecast?.map(f => ({
+            ...f,
+            date: new Date(f.date),
+          }))}
+        />
+      );
+
+    case "notes":
+      return (
+        <NotesWidget
+          initialNotes={dashboardData.notes || ""}
+        />
+      );
+
+    case "contract-status":
+      return (
+        <ContractStatusWidget
+          contracts={dashboardData.contracts?.map(c => ({
+            ...c,
+            sentAt: c.sentAt ? new Date(c.sentAt) : undefined,
+            signedAt: c.signedAt ? new Date(c.signedAt) : undefined,
+            expiresAt: c.expiresAt ? new Date(c.expiresAt) : undefined,
+          }))}
+          maxItems={5}
+        />
+      );
+
+    case "referral-widget":
+      return dashboardData.referral ? (
+        <ReferralWidget
+          referralCode={dashboardData.referral.referralCode}
+          successfulReferrals={dashboardData.referral.successfulReferrals}
+          totalEarnedCents={dashboardData.referral.totalEarnedCents}
+          pendingReferrals={dashboardData.referral.pendingReferrals}
+        />
+      ) : (
+        <div className="flex h-full items-center justify-center text-foreground-muted text-sm">
+          Referral data unavailable
+        </div>
+      );
 
     default:
       return (

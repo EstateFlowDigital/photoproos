@@ -16,6 +16,7 @@ import { ErrorBoundary } from "@/components/debug/error-boundary";
 import { triggerLoginStreak } from "@/lib/gamification/trigger";
 import { getDailyBonusState, getGamificationState } from "@/lib/actions/gamification";
 import { getRecentMessagesForWidget } from "@/lib/actions/messages";
+import { getMyReferralStats, getMyReferralProfile } from "@/lib/actions/platform-referrals";
 import { DashboardClient } from "./dashboard-client";
 import type { DashboardData } from "@/components/dashboard/widget-dashboard";
 import nextDynamic from "next/dynamic";
@@ -115,6 +116,13 @@ export default async function DashboardPage() {
     onboardingProgressResult,
     gamificationStateResult,
     recentMessagesResult,
+    referralStatsResult,
+    referralProfileResult,
+    yearToDateRevenue,
+    newClientsThisMonth,
+    newClientsLastMonth,
+    recentContracts,
+    upcomingDeadlines,
   ] = await Promise.all([
     // This month's revenue
     prisma.invoice.aggregate({
@@ -277,6 +285,62 @@ export default async function DashboardPage() {
 
     // Recent messages for widget
     getRecentMessagesForWidget(5),
+
+    // Referral stats
+    getMyReferralStats(),
+
+    // Referral profile (for referral code)
+    getMyReferralProfile(),
+
+    // Year to date revenue
+    prisma.invoice.aggregate({
+      where: {
+        organizationId: organization.id,
+        status: "paid",
+        paidAt: { gte: new Date(now.getFullYear(), 0, 1) },
+      },
+      _sum: { totalCents: true },
+    }),
+
+    // Clients added this month
+    prisma.client.count({
+      where: {
+        organizationId: organization.id,
+        createdAt: { gte: thisMonthStart },
+      },
+    }),
+
+    // Clients added last month
+    prisma.client.count({
+      where: {
+        organizationId: organization.id,
+        createdAt: { gte: lastMonthStart, lte: lastMonthEnd },
+      },
+    }),
+
+    // Recent contracts for status widget
+    prisma.contract.findMany({
+      where: { organizationId: organization.id },
+      include: {
+        client: { select: { fullName: true, company: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+
+    // Upcoming deadlines (tasks with due dates)
+    prisma.task.findMany({
+      where: {
+        organizationId: organization.id,
+        dueDate: { gte: now, lte: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000) },
+        status: { not: "completed" },
+      },
+      include: {
+        project: { select: { id: true, name: true } },
+      },
+      orderBy: { dueDate: "asc" },
+      take: 10,
+    }),
   ]);
 
   // Process results
@@ -292,6 +356,9 @@ export default async function DashboardPage() {
   const onboardingProgress = onboardingProgressResult.success ? onboardingProgressResult.data : null;
   const gamificationState = gamificationStateResult.success ? gamificationStateResult.data : null;
   const recentMessages = recentMessagesResult.success ? recentMessagesResult.data : [];
+  const referralStats = referralStatsResult.success ? referralStatsResult.data : null;
+  const referralProfile = referralProfileResult.success ? referralProfileResult.data : null;
+  const yearToDateRevenueValue = (yearToDateRevenue._sum.totalCents || 0) / 100;
 
   // Calculate changes
   const revenueChange = calculatePercentChange(thisMonthRevenueValue, lastMonthRevenueValue / 100);
@@ -401,6 +468,44 @@ export default async function DashboardPage() {
       })),
     } : undefined,
     messages: recentMessages,
+    // Revenue chart widget data
+    revenueChart: {
+      currentMonthRevenue: thisMonthRevenueValue,
+      previousMonthRevenue: lastMonthRevenueValue / 100,
+      yearToDateRevenue: yearToDateRevenueValue,
+    },
+    // Client growth widget data
+    clientGrowth: {
+      totalClients,
+      newClientsThisMonth,
+      newClientsLastMonth,
+    },
+    // Contract status widget data
+    contracts: recentContracts.map((c) => ({
+      id: c.id,
+      title: c.title,
+      client: c.client?.company || c.client?.fullName || "Unknown",
+      status: c.status as "draft" | "sent" | "viewed" | "signed" | "expired",
+      sentAt: c.sentAt || undefined,
+      signedAt: c.signedAt || undefined,
+      expiresAt: c.expiresAt || undefined,
+    })),
+    // Deadlines widget data
+    deadlines: upcomingDeadlines.map((d) => ({
+      id: d.id,
+      title: d.title,
+      dueDate: d.dueDate!,
+      type: "task" as const,
+      href: d.projectId ? `/projects/tasks/${d.id}` : "/projects",
+      priority: d.priority as "low" | "medium" | "high" | undefined,
+    })),
+    // Referral widget data
+    referral: referralStats ? {
+      referralCode: referralProfile?.referralCode || null,
+      successfulReferrals: referralStats.subscribedReferrals,
+      totalEarnedCents: referralStats.totalEarnedCents,
+      pendingReferrals: referralStats.pendingReferrals,
+    } : undefined,
   };
 
   return (
