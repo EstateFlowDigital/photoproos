@@ -51,7 +51,7 @@ export function HeroAnalyticsSection() {
   const [isVideoModalOpen, setIsVideoModalOpen] = React.useState(false);
 
   return (
-    <section className="relative z-10 min-h-screen overflow-hidden bg-background">
+    <section className="relative z-10 overflow-hidden bg-background pb-8 lg:pb-16">
       <GridBackground />
 
       {/* Gradient accent - top */}
@@ -68,7 +68,7 @@ export function HeroAnalyticsSection() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 mx-auto max-w-[1600px] px-4 pt-28 lg:px-8 lg:pt-32 xl:px-12">
+      <div className="relative z-10 mx-auto max-w-[1600px] px-4 pt-24 lg:px-8 lg:pt-28 xl:px-12">
         {/* Text content */}
         <div className="mx-auto max-w-3xl text-center">
           {/* Badge */}
@@ -95,15 +95,15 @@ export function HeroAnalyticsSection() {
           </p>
 
           {/* CTA Buttons */}
-          <div className="hero-animate hero-animate-4 mt-8 flex flex-wrap justify-center gap-4">
-            <Button variant="default" size="lg" asChild className="h-12 px-8 text-base">
+          <div className="hero-animate hero-animate-4 mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+            <Button variant="default" size="lg" asChild className="h-12 px-8 text-base w-full sm:w-auto shadow-lg shadow-[var(--primary)]/25 hover:shadow-xl hover:shadow-[var(--primary)]/30 transition-shadow">
               <Link href="/signup">Get Started Free</Link>
             </Button>
             <Button
               variant="outline"
               size="lg"
               onClick={() => setIsVideoModalOpen(true)}
-              className="h-12 px-8 text-base flex items-center gap-2"
+              className="h-12 px-8 text-base w-full sm:w-auto flex items-center justify-center gap-2"
             >
               <PlayIcon className="h-4 w-4" />
               Watch Demo
@@ -111,7 +111,7 @@ export function HeroAnalyticsSection() {
           </div>
 
           {/* Social proof */}
-          <div className="hero-animate hero-animate-5 mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-foreground-muted">
+          <div className="hero-animate hero-animate-5 mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-sm text-foreground-muted">
             <div className="flex items-center gap-2">
               <CheckIcon className="h-4 w-4 text-[var(--success)]" />
               <span>No credit card required</span>
@@ -130,12 +130,9 @@ export function HeroAnalyticsSection() {
         </div>
 
         {/* Dashboard mockup */}
-        <div className="hero-animate hero-animate-6 mt-12 lg:mt-16">
+        <div className="hero-animate hero-animate-6 mt-10 lg:mt-14">
           <AnalyticsDashboardMockup animate />
         </div>
-
-        {/* Bottom spacer */}
-        <div className="h-12 lg:h-20" />
       </div>
 
       {/* Video Modal */}

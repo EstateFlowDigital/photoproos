@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
-import { ComingSoonPage } from "@/components/dashboard";
+import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+import { VendorsClient } from "./vendors-client";
 
 export default async function VendorsPage() {
   const auth = await getAuthContext();
@@ -10,26 +11,13 @@ export default async function VendorsPage() {
   }
 
   return (
-    <div data-element="vendors-page">
-      <ComingSoonPage
+    <div className="space-y-6" data-element="vendors-page">
+      <PageHeader
         title="Vendors"
         subtitle="Manage vendor relationships and referrals"
-        icon="🤝"
-        description="Track vendor contacts, referral agreements, and collaboration history."
-        features={[
-          "Vendor contact directory",
-          "Preferred vendor lists by category",
-          "Referral tracking and agreements",
-          "Collaboration history and notes",
-          "Share vendor info with clients",
-          "Vendor rating and reviews",
-        ]}
-        relatedLinks={[
-          { label: "Referrals", href: "/referrals" },
-          { label: "Clients", href: "/clients" },
-          { label: "Contacts", href: "/contacts" },
-        ]}
       />
+
+      <VendorsClient />
     </div>
   );
 }

@@ -226,9 +226,9 @@ export function IndustryTabsSection() {
           </p>
         </div>
 
-        {/* Tab Navigation */}
+        {/* Tab Navigation - horizontal scroll on mobile, centered on desktop */}
         <div
-          className="mb-8 flex flex-wrap justify-center gap-2"
+          className="mb-8 -mx-6 px-6 lg:mx-0 lg:px-0"
           style={{
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? "none" : "translateY(20px)",
@@ -236,21 +236,23 @@ export function IndustryTabsSection() {
             transitionDelay: "300ms",
           }}
         >
-          {industries.map((industry) => (
-            <button
-              key={industry.id}
-              onClick={() => setActiveIndustry(industry.id)}
-              className={cn(
-                "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
-                activeIndustry === industry.id
-                  ? "bg-[var(--primary)] text-white shadow-lg shadow-[var(--primary)]/20"
-                  : "bg-[var(--background-elevated)] text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground border border-[var(--card-border)]"
-              )}
-            >
-              <industry.icon className="h-4 w-4" />
-              <span>{industry.name}</span>
-            </button>
-          ))}
+          <div className="flex lg:flex-wrap lg:justify-center gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide">
+            {industries.map((industry) => (
+              <button
+                key={industry.id}
+                onClick={() => setActiveIndustry(industry.id)}
+                className={cn(
+                  "flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap shrink-0",
+                  activeIndustry === industry.id
+                    ? "bg-[var(--primary)] text-white shadow-lg shadow-[var(--primary)]/20"
+                    : "bg-[var(--background-elevated)] text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground border border-[var(--card-border)]"
+                )}
+              >
+                <industry.icon className="h-4 w-4" />
+                <span>{industry.name}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Tab Content */}
@@ -281,11 +283,11 @@ export function IndustryTabsSection() {
               </p>
 
               {/* Benefits */}
-              <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+              <ul className="mt-6 grid gap-3 md:grid-cols-2">
                 {currentIndustry.benefits.map((benefit, index) => (
-                  <li key={index} className="flex items-start gap-2 text-sm">
+                  <li key={index} className="flex items-start gap-2.5 text-sm">
                     <CheckCircleIcon className="h-5 w-5 shrink-0 text-[var(--success)] mt-0.5" />
-                    <span className="text-foreground-secondary">{benefit}</span>
+                    <span className="text-foreground-secondary leading-snug">{benefit}</span>
                   </li>
                 ))}
               </ul>
@@ -323,38 +325,38 @@ export function IndustryTabsSection() {
                 </blockquote>
 
                 {/* Metrics */}
-                <div className="grid grid-cols-3 gap-4 pt-6 border-t border-[var(--card-border)]">
-                  <div>
-                    <p className="text-2xl font-bold text-foreground">
+                <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-6 border-t border-[var(--card-border)]">
+                  <div className="text-center sm:text-left">
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">
                       {currentIndustry.caseStudy.metric1.value}
                     </p>
-                    <p className="text-xs text-foreground-muted mt-1">
+                    <p className="text-[11px] sm:text-xs text-foreground-muted mt-1 leading-tight">
                       {currentIndustry.caseStudy.metric1.label}
                     </p>
                     {currentIndustry.caseStudy.metric1.change && (
-                      <p className="text-xs text-[var(--success)] font-medium mt-0.5">
+                      <p className="text-[11px] sm:text-xs text-[var(--success)] font-medium mt-0.5">
                         {currentIndustry.caseStudy.metric1.change}
                       </p>
                     )}
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold text-foreground">
+                  <div className="text-center sm:text-left">
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">
                       {currentIndustry.caseStudy.metric2.value}
                     </p>
-                    <p className="text-xs text-foreground-muted mt-1">
+                    <p className="text-[11px] sm:text-xs text-foreground-muted mt-1 leading-tight">
                       {currentIndustry.caseStudy.metric2.label}
                     </p>
                     {currentIndustry.caseStudy.metric2.change && (
-                      <p className="text-xs text-[var(--success)] font-medium mt-0.5">
+                      <p className="text-[11px] sm:text-xs text-[var(--success)] font-medium mt-0.5">
                         {currentIndustry.caseStudy.metric2.change}
                       </p>
                     )}
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold text-foreground">
+                  <div className="text-center sm:text-left">
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">
                       {currentIndustry.caseStudy.metric3.value}
                     </p>
-                    <p className="text-xs text-foreground-muted mt-1">
+                    <p className="text-[11px] sm:text-xs text-foreground-muted mt-1 leading-tight">
                       {currentIndustry.caseStudy.metric3.label}
                     </p>
                   </div>

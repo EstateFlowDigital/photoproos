@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
-import { ComingSoonPage } from "@/components/dashboard";
+import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+import { GoalsClient } from "./goals-client";
 
 export default async function GoalsPage() {
   const auth = await getAuthContext();
@@ -10,26 +11,13 @@ export default async function GoalsPage() {
   }
 
   return (
-    <div data-element="goals-page">
-      <ComingSoonPage
+    <div className="space-y-6" data-element="goals-page">
+      <PageHeader
         title="Goals"
         subtitle="Set and track business goals"
-        icon="🎯"
-        description="Set revenue, booking, and growth goals. Track progress with visual dashboards."
-        features={[
-          "Monthly and annual revenue goals",
-          "Booking count targets by service type",
-          "Visual progress bars and charts",
-          "Milestone celebrations and notifications",
-          "Compare performance to previous periods",
-          "Team goals and individual targets",
-        ]}
-        relatedLinks={[
-          { label: "Analytics", href: "/analytics" },
-          { label: "Revenue Report", href: "/reports/revenue" },
-          { label: "Dashboard", href: "/dashboard" },
-        ]}
       />
+
+      <GoalsClient />
     </div>
   );
 }

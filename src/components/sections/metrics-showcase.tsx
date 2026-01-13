@@ -77,7 +77,7 @@ export function MetricsShowcaseSection() {
             Trusted by photographers worldwide
           </p>
           <div className="relative inline-block">
-            <span className="text-[80px] lg:text-[120px] font-bold leading-none tracking-tight">
+            <span className="text-[56px] sm:text-[80px] lg:text-[120px] font-bold leading-none tracking-tight">
               <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent">
                 {photographerCount.toLocaleString()}+
               </span>
@@ -90,7 +90,7 @@ export function MetricsShowcaseSection() {
               }}
             />
           </div>
-          <p className="text-xl lg:text-2xl text-foreground-secondary mt-2">
+          <p className="text-lg sm:text-xl lg:text-2xl text-foreground-secondary mt-2">
             Photographers trust PhotoProOS
           </p>
         </div>

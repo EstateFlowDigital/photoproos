@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
-import { ComingSoonPage } from "@/components/dashboard";
+import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+import { PrintsClient } from "./prints-client";
 
 export default async function PrintsPage() {
   const auth = await getAuthContext();
@@ -10,26 +11,13 @@ export default async function PrintsPage() {
   }
 
   return (
-    <div data-element="prints-page">
-      <ComingSoonPage
-        title="Print Products"
+    <div className="space-y-6" data-element="prints-page">
+      <PageHeader
+        title="Print Orders"
         subtitle="Manage print orders and fulfillment"
-        icon="🖨️"
-        description="Sell prints with automated fulfillment through lab partners."
-        features={[
-          "Multiple print sizes and paper types",
-          "Automatic fulfillment through WHCC, Miller's, Bay Photo",
-          "Custom pricing with markup settings",
-          "Print preview with color profiles",
-          "Drop-shipping directly to clients",
-          "Order tracking and notifications",
-        ]}
-        relatedLinks={[
-          { label: "Albums", href: "/albums" },
-          { label: "Wall Art", href: "/wall-art" },
-          { label: "Orders", href: "/orders" },
-        ]}
       />
+
+      <PrintsClient />
     </div>
   );
 }

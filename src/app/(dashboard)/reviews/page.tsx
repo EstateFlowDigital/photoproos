@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
-import { ComingSoonPage } from "@/components/dashboard";
+import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+import { ReviewsClient } from "./reviews-client";
 
 export default async function ReviewsPage() {
   const auth = await getAuthContext();
@@ -10,26 +11,13 @@ export default async function ReviewsPage() {
   }
 
   return (
-    <div data-element="reviews-page">
-      <ComingSoonPage
+    <div className="space-y-6" data-element="reviews-page">
+      <PageHeader
         title="Reviews"
         subtitle="Manage client reviews and testimonials"
-        icon="⭐"
-        description="Collect reviews, display testimonials, and sync with Google and Yelp."
-        features={[
-          "Automated review request emails",
-          "Google and Yelp review integration",
-          "Testimonial collection and display",
-          "Video testimonial hosting",
-          "Review widgets for your website",
-          "Response management and alerts",
-        ]}
-        relatedLinks={[
-          { label: "Surveys", href: "/surveys" },
-          { label: "Referrals", href: "/referrals" },
-          { label: "Automations", href: "/automations" },
-        ]}
       />
+
+      <ReviewsClient />
     </div>
   );
 }

@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
-import { ComingSoonPage } from "@/components/dashboard";
+import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+import { SlideshowsClient } from "./slideshows-client";
 
 export default async function SlideshowsPage() {
   const auth = await getAuthContext();
@@ -10,26 +11,13 @@ export default async function SlideshowsPage() {
   }
 
   return (
-    <div data-element="slideshows-page">
-      <ComingSoonPage
+    <div className="space-y-6" data-element="slideshows-page">
+      <PageHeader
         title="Slideshows"
-        subtitle="Create and share photo slideshows"
-        icon="🎬"
-        description="Build beautiful slideshows with music, transitions, and shareable links."
-        features={[
-          "Drag-and-drop slideshow builder",
-          "Licensed music library for commercial use",
-          "Professional transitions and animations",
-          "Shareable links for clients and social media",
-          "Download as video file (MP4)",
-          "Embed on websites and blogs",
-        ]}
-        relatedLinks={[
-          { label: "Galleries", href: "/galleries" },
-          { label: "Sneak Peeks", href: "/sneak-peeks" },
-          { label: "Reveal Sessions", href: "/reveal" },
-        ]}
+        subtitle="Create and share photo slideshows with music"
       />
+
+      <SlideshowsClient />
     </div>
   );
 }

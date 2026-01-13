@@ -42,36 +42,69 @@ const roadmapPhases: RoadmapPhase[] = [
     phase: "Phase 3",
     title: "Marketing Hub",
     status: "upcoming",
-    description: "Email campaigns, social media management, and marketing automations.",
+    description: "Smart file storage, content repurposing, social scheduling, and marketing automations.",
     items: [
-      { title: "Email Marketing", icon: EmailIcon },
-      { title: "Content Calendar", icon: CalendarIcon },
-      { title: "Social Media Manager", icon: TeamIcon },
-      { title: "Referral Program", icon: LocationIcon },
+      { title: "Smart File Storage", icon: StorageIcon },
+      { title: "AI Content Repurposing", icon: SparklesIcon },
+      { title: "Social Media Scheduler", icon: CalendarIcon },
+      { title: "Email Campaigns", icon: EmailIcon },
+      { title: "AI Caption Generator", icon: SparklesIcon },
+      { title: "Testimonial Automation", icon: StarIcon },
+      { title: "Brand Kit & Templates", icon: PaletteIcon },
     ],
   },
   {
     phase: "Phase 4",
-    title: "Analytics Hub",
+    title: "AI Studio",
     status: "planned",
-    description: "Deep business insights, revenue forecasting, and custom reporting.",
+    description: "AI-powered tools to automate editing, staging, and client communication.",
     items: [
-      { title: "Business Metrics", icon: AnalyticsIcon },
-      { title: "Revenue Forecasting", icon: ExpenseIcon },
-      { title: "Client Insights", icon: ClientIcon },
-      { title: "Custom Reports", icon: ContractIcon },
+      { title: "AI Virtual Staging", icon: SparklesIcon },
+      { title: "AI Booking Chatbot", icon: ChatIcon },
+      { title: "Property Description AI", icon: ContractIcon },
+      { title: "Twilight Converter", icon: MoonIcon },
+      { title: "Smart Lead Scoring", icon: TargetIcon },
+      { title: "AI Email Composer", icon: SparklesIcon },
+      { title: "MLS Auto-Formatter", icon: PipelineIcon },
     ],
   },
   {
     phase: "Phase 5",
+    title: "Analytics & Intelligence",
+    status: "planned",
+    description: "Deep business insights, revenue forecasting, and smart workflow automation.",
+    items: [
+      { title: "Revenue Forecasting", icon: ExpenseIcon },
+      { title: "Client Lifetime Value", icon: ClientIcon },
+      { title: "Smart Workflow Builder", icon: PipelineIcon },
+      { title: "Competitor Insights", icon: AnalyticsIcon },
+      { title: "AI Questionnaire Builder", icon: SparklesIcon },
+      { title: "Contract AI", icon: ContractIcon },
+    ],
+  },
+  {
+    phase: "Phase 6",
     title: "Website Builder",
     status: "planned",
     description: "Build your photography portfolio and business website without code.",
     items: [
       { title: "Portfolio Builder", icon: GalleryIcon },
-      { title: "Blog & Content", icon: ContractIcon },
+      { title: "AI Blog Writer", icon: SparklesIcon },
       { title: "SEO Tools", icon: AnalyticsIcon },
       { title: "Custom Domains", icon: WebsiteIcon },
+      { title: "Lead Magnet Generator", icon: TargetIcon },
+    ],
+  },
+  {
+    phase: "Phase 7",
+    title: "Community & Marketplace",
+    status: "planned",
+    description: "Connect with other photographers, vendors, and grow your network.",
+    items: [
+      { title: "Photographer Marketplace", icon: TeamIcon },
+      { title: "Vendor Network", icon: LocationIcon },
+      { title: "Education Hub", icon: BookIcon },
+      { title: "Referral Tracking", icon: ExpenseIcon },
     ],
   },
 ];
@@ -185,7 +218,7 @@ export function RoadmapSection() {
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
             </span>
             <span className="text-sm text-foreground-secondary">
-              <span className="font-medium text-[var(--primary)]">5 phases</span> to complete business OS
+              <span className="font-medium text-[var(--primary)]">7 phases</span> to complete business OS
             </span>
           </div>
           <h2
@@ -382,6 +415,71 @@ function EmailIcon({ className }: { className?: string }) {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M3 4a2 2 0 0 0-2 2v1.161l8.441 4.221a1.25 1.25 0 0 0 1.118 0L19 7.162V6a2 2 0 0 0-2-2H3Z" />
       <path d="m19 8.839-7.77 3.885a2.75 2.75 0 0 1-2.46 0L1 8.839V14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.839Z" />
+    </svg>
+  );
+}
+
+function StorageIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M2 4.75C2 3.784 2.784 3 3.75 3h12.5c.966 0 1.75.784 1.75 1.75v2.5A1.75 1.75 0 0 1 16.25 9H3.75A1.75 1.75 0 0 1 2 7.25v-2.5Zm0 8c0-.966.784-1.75 1.75-1.75h12.5c.966 0 1.75.784 1.75 1.75v2.5A1.75 1.75 0 0 1 16.25 17H3.75A1.75 1.75 0 0 1 2 15.25v-2.5ZM13.5 5.5a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm1 8a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function SparklesIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10 1a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 10 1ZM5.05 3.05a.75.75 0 0 1 1.06 0l1.062 1.06A.75.75 0 1 1 6.11 5.173L5.05 4.11a.75.75 0 0 1 0-1.06ZM14.95 3.05a.75.75 0 0 1 0 1.06l-1.06 1.062a.75.75 0 0 1-1.062-1.061l1.061-1.06a.75.75 0 0 1 1.06 0ZM3 10a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5A.75.75 0 0 1 3 10ZM14 10a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5h-1.5A.75.75 0 0 1 14 10ZM7.172 13.828a.75.75 0 0 1 0 1.061l-1.06 1.06a.75.75 0 0 1-1.062-1.06l1.06-1.06a.75.75 0 0 1 1.062 0ZM10 14a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 10 14ZM12.828 13.828a.75.75 0 0 1 1.061 0l1.06 1.06a.75.75 0 1 1-1.06 1.062l-1.06-1.061a.75.75 0 0 1 0-1.061ZM10 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" />
+    </svg>
+  );
+}
+
+function StarIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function PaletteIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M3.5 2A1.5 1.5 0 0 0 2 3.5V15a3 3 0 1 0 6 0V3.5A1.5 1.5 0 0 0 6.5 2h-3Zm11.753 6.99L9.5 14.743V6.257l1.51-1.51a1.5 1.5 0 0 1 2.122 0l2.121 2.121a1.5 1.5 0 0 1 0 2.122ZM8.364 18H16.5a1.5 1.5 0 0 0 1.5-1.5v-3a1.5 1.5 0 0 0-1.5-1.5h-2.136l-6 6Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ChatIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 2c-2.236 0-4.43.18-6.57.524C1.993 2.755 1 4.014 1 5.426v5.148c0 1.413.993 2.67 2.43 2.902.848.137 1.705.248 2.57.331v3.443a.75.75 0 0 0 1.28.53l3.58-3.579a.78.78 0 0 1 .527-.224 41.202 41.202 0 0 0 5.183-.5c1.437-.232 2.43-1.49 2.43-2.903V5.426c0-1.413-.993-2.67-2.43-2.902A41.289 41.289 0 0 0 10 2Zm0 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM8 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm5 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function MoonIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M7.455 2.004a.75.75 0 0 1 .26.77 7 7 0 0 0 9.958 7.967.75.75 0 0 1 1.067.853A8.5 8.5 0 1 1 6.647 1.921a.75.75 0 0 1 .808.083Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function TargetIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M12.232 4.232a2.5 2.5 0 0 1 3.536 3.536l-1.225 1.224a.75.75 0 0 0 1.061 1.06l1.224-1.224a4 4 0 0 0-5.656-5.656l-3 3a4 4 0 0 0 .225 5.865.75.75 0 0 0 .977-1.138 2.5 2.5 0 0 1-.142-3.667l3-3Z" />
+      <path d="M11.603 7.963a.75.75 0 0 0-.977 1.138 2.5 2.5 0 0 1 .142 3.667l-3 3a2.5 2.5 0 0 1-3.536-3.536l1.225-1.224a.75.75 0 0 0-1.061-1.06l-1.224 1.224a4 4 0 1 0 5.656 5.656l3-3a4 4 0 0 0-.225-5.865Z" />
+    </svg>
+  );
+}
+
+function BookIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10.75 16.82A7.462 7.462 0 0 1 15 15.5c.71 0 1.396.098 2.046.282A.75.75 0 0 0 18 15.06v-11a.75.75 0 0 0-.546-.721A9.006 9.006 0 0 0 15 3a8.963 8.963 0 0 0-4.25 1.065V16.82ZM9.25 4.065A8.963 8.963 0 0 0 5 3c-.85 0-1.673.118-2.454.339A.75.75 0 0 0 2 4.06v11a.75.75 0 0 0 .954.721A7.506 7.506 0 0 1 5 15.5c1.579 0 3.042.487 4.25 1.32V4.065Z" />
     </svg>
   );
 }

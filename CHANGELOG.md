@@ -8,6 +8,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **16 New Functional Dashboard Pages** - Converted placeholder "Coming Soon" pages to fully functional pages with mock data and UI:
+  - `/pipeline` - Kanban-style sales pipeline with drag-drop stages (inquiry, quoted, negotiating, booked, completed)
+  - `/vendors` - Vendor management with categories (venue, florist, catering, DJ, makeup, planner), ratings, and referral tracking
+  - `/gift-cards` - Gift card management with balance tracking, status (active, partially used, expired), and redemption
+  - `/waitlist` - Priority-based booking waitlist with status changes and contact tracking
+  - `/slideshows` - Photo slideshow management with publishing workflow, views, and music tracks
+  - `/coupons` - Coupon/promo code management with percentage/fixed discounts, usage limits, and expiration
+  - `/campaigns` - Marketing campaign management with email stats (sent, opened, clicked), scheduling, and status
+  - `/prints` - Print order management with order tracking, status updates, and shipping
+  - `/referrals` - Referral program management with status tracking, rewards, and conversion metrics
+  - `/expenses` - Expense tracking with categories, receipt uploads, tax deductibility, and monthly summaries
+  - `/mileage` - Mileage tracking with IRS rate calculations, trip purposes, and project linking
+  - `/reviews` - Client review management with multi-source aggregation (Google, Yelp, Facebook), response tracking
+  - `/gear` - Equipment inventory with categories, serial numbers, insurance values, and maintenance schedules
+  - `/goals` - Business goal tracking with progress bars, revenue/booking/client targets, and period comparisons
+  - `/loyalty` - Loyalty program with tiered membership (Bronze, Silver, Gold, Platinum), points, and rewards
+  - `/proofing` - Photo proofing sessions with client selection progress, deadlines, and approval status
+- **Landing Page A/B Test Variant Components** - Fixed hero, metrics, and CTA variant components for `/lp/[variant]` pages
+
+- **Expanded Public Roadmap to 7 Phases** - Major roadmap expansion with 40 features across all phases:
+  - Phase 3 (Marketing Hub): Smart File Storage, AI Content Repurposing, Social Media Scheduler, Email Campaigns, AI Caption Generator, Testimonial Automation, Brand Kit & Templates
+  - Phase 4 (AI Studio): AI Virtual Staging, AI Booking Chatbot, Property Description AI, Twilight Converter, Smart Lead Scoring, AI Email Composer, MLS Auto-Formatter
+  - Phase 5 (Analytics & Intelligence): Revenue Forecasting, Client Lifetime Value, Smart Workflow Builder, Competitor Insights, AI Questionnaire Builder, Contract AI
+  - Phase 6 (Website Builder): Portfolio Builder, AI Blog Writer, SEO Tools, Custom Domains, Lead Magnet Generator
+  - Phase 7 (Community & Marketplace): Photographer Marketplace, Vendor Network, Education Hub, Referral Tracking
+  - Added 8 new icon components (SparklesIcon, StarIcon, PaletteIcon, ChatIcon, MoonIcon, TargetIcon, BookIcon, StorageIcon)
+- **Feature Voting Database Seed** - Created `prisma/seed-roadmap.ts` to populate all 40 features for community voting:
+  - 7 RoadmapPhase records with status and ordering
+  - 40 FeatureRequest records linked to roadmap items
+  - 40 RoadmapItem records for detailed roadmap display
+  - Features categorized across galleries, payments, scheduling, clients, marketing, analytics, integrations, and other
+- **Complete Feature Specifications** - Extended `docs/phase-2-storage-spec.md` with detailed specs for all 40 features:
+  - Database schema additions for each feature
+  - Technical implementation approaches
+  - API integrations required
+  - Workflow and automation logic
+  - Pricing and revenue model considerations
+- **Smart File Storage Specification** - Created comprehensive Phase 2 feature spec for Smart File Storage system:
+  - Dual storage options (PhotoProOS Storage + Dropbox integration)
+  - Visual folder interface with gallery thumbnail covers
+  - Smart organization (by date, client, location, style)
+  - AI-powered categorization and smart search
+  - Map view for location-based browsing
+  - Cache mode for storage optimization
+  - Pricing tiers ($9-$249/mo) with margin analysis
+  - Full database schema and implementation phases
+  - Document saved at `docs/phase-2-storage-spec.md`
+- **Public Roadmap Update** - Added "Smart File Storage" to Phase 3 (Marketing Hub) on the public roadmap
 - **Sign Out Button** - Added sign out option to workspace dropdown in topbar with dedicated `/sign-out` page using Clerk authentication
 - **Improved Help Dropdown** - Updated Help dropdown with internal navigation links:
   - Help Center → `/help`

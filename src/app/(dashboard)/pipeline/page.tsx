@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
-import { ComingSoonPage } from "@/components/dashboard";
+import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+import { PipelineClient } from "./pipeline-client";
 
 export default async function PipelinePage() {
   const auth = await getAuthContext();
@@ -10,26 +11,13 @@ export default async function PipelinePage() {
   }
 
   return (
-    <div data-element="pipeline-page">
-      <ComingSoonPage
+    <div className="space-y-6" data-element="pipeline-page">
+      <PageHeader
         title="Sales Pipeline"
         subtitle="Visualize and manage your sales funnel"
-        icon="📈"
-        description="Kanban-style pipeline view to track leads from inquiry to booking."
-        features={[
-          "Drag-and-drop Kanban board for lead management",
-          "Customizable pipeline stages (Inquiry → Quoted → Booked → Complete)",
-          "Deal value tracking and forecasting",
-          "Conversion rate analytics by stage",
-          "Automated follow-up reminders",
-          "Lead source tracking and ROI analysis",
-        ]}
-        relatedLinks={[
-          { label: "View Leads", href: "/leads" },
-          { label: "Opportunities", href: "/opportunities" },
-          { label: "Proposals", href: "/proposals" },
-        ]}
       />
+
+      <PipelineClient />
     </div>
   );
 }
