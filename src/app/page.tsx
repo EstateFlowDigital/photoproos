@@ -140,11 +140,6 @@ export default async function Home() {
 
       <div className="section-divider" />
 
-      {/* Features Section - Core product features */}
-      <FeaturesSection />
-
-      <div className="section-divider" />
-
       {/* Industry Tabs - Photography verticals with case studies */}
       <IndustryTabsSection />
 
@@ -167,23 +162,9 @@ export default async function Home() {
 
       <div className="section-divider" />
 
-      {/* Integrations - All app connections with interactive demo */}
-      <LazySection placeholderHeight={500}>
-        <IntegrationsSection />
-      </LazySection>
-
-      <div className="section-divider" />
-
       {/* Case Studies - Success stories with metrics */}
       <LazySection placeholderHeight={500}>
         <CaseStudiesSection />
-      </LazySection>
-
-      <div className="section-divider" />
-
-      {/* ROI Calculator - Show potential savings */}
-      <LazySection placeholderHeight={400}>
-        <ROICalculatorSection />
       </LazySection>
 
       <div className="section-divider" />

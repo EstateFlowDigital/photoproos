@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Streamlined Landing Page Layout** - Reorganized landing page for better content flow:
+  - Removed redundant Features section (content now covered in Five Pillars)
+  - Removed duplicate Integrations section (IntegrationSpotlight covers this)
+  - Removed ROI Calculator section (streamlined conversion funnel)
+  - Updated page flow: Hero → Metrics → HowItWorks → Five Pillars → Industry Tabs → Client Experience → Tool Replacement → Integration Spotlight → Case Studies → Comparison → Security → Testimonials → Pricing → FAQ → CTA
+
+- **Fixed Responsive Button Layouts** - Updated button containers across sections:
+  - Changed `flex flex-wrap` to `flex flex-col sm:flex-row` for mobile-first stacking
+  - Added `shrink-0` to prevent button text wrapping
+  - Added consistent `size="lg"` for touch-friendly mobile buttons
+
+- **Updated Metrics Showcase** - Changed monthly processed amount from $2.4M to $2.0M to match design
+
 ### Added
 - **Complete Landing Page with All Interactive Sections** - Added all available sections to the main landing page with interactive demos throughout:
 

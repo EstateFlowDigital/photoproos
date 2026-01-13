@@ -44,7 +44,7 @@ export function MetricsShowcaseSection() {
   const { ref, isVisible } = useScrollAnimation();
 
   const photographerCount = useAnimatedCounter(2500, 2000, isVisible);
-  const processedAmount = useAnimatedCounter(2.4, 2000, isVisible);
+  const processedAmount = useAnimatedCounter(2.0, 2000, isVisible);
   const galleriesCount = useAnimatedCounter(50000, 2500, isVisible);
 
   return (

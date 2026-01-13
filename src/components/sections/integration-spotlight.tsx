@@ -172,7 +172,7 @@ export function IntegrationSpotlightSection() {
 
             {/* CTA */}
             <div
-              className="mt-8 flex flex-wrap gap-4"
+              className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4"
               style={{
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible ? "none" : "translateY(30px)",
@@ -180,10 +180,10 @@ export function IntegrationSpotlightSection() {
                 transitionDelay: "400ms",
               }}
             >
-              <Button asChild className="bg-white text-[var(--ai)] hover:bg-white/90">
+              <Button asChild size="lg" className="bg-white text-[var(--ai)] hover:bg-white/90 shrink-0">
                 <Link href="/features/payments">Learn about Payments</Link>
               </Button>
-              <Button asChild variant="outline" className="border-white/30 text-white hover:bg-white/10">
+              <Button asChild size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 shrink-0">
                 <Link href="/integrations">View All Integrations</Link>
               </Button>
             </div>
