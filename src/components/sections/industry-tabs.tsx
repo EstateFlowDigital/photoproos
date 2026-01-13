@@ -206,7 +206,7 @@ export function IndustryTabsSection() {
             }}
           >
             <span className="text-sm text-foreground-secondary">
-              Optimized for <span className="font-medium text-[var(--primary)]">your industry</span>
+              <span className="font-medium text-[var(--primary)]">Your industry</span>, your way
             </span>
           </div>
           <h2
@@ -219,7 +219,7 @@ export function IndustryTabsSection() {
             }}
           >
             <span className="text-foreground-muted">Purpose-built for</span>{" "}
-            <span className="text-foreground">every photography vertical</span>
+            <span className="text-foreground">professionals like you</span>
           </h2>
           <p
             className="mx-auto mt-4 max-w-2xl text-base text-foreground-secondary lg:text-lg"
@@ -230,7 +230,7 @@ export function IndustryTabsSection() {
               transitionDelay: "200ms",
             }}
           >
-            Select your specialty to see how PhotoProOS adapts to your workflow
+            From real estate to weddings to commercial—tools designed for how you actually work
           </p>
         </div>
 

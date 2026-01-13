@@ -74,30 +74,30 @@ export function HeroAnalyticsSection() {
           {/* Badge */}
           <div className="hero-animate hero-animate-1 mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--success)] opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--success)]" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
             </span>
             <span className="text-sm text-foreground-secondary">
-              <span className="font-medium text-[var(--success)]">Now in beta</span> — Start free today
+              <span className="font-medium text-[var(--primary)]">Complete platform</span> — Photography-specific, all-in-one
             </span>
           </div>
 
           {/* Main Headline */}
           <h1 className="hero-animate hero-animate-2 text-[40px] font-medium leading-[1.1] tracking-[-0.02em] md:text-[56px] lg:text-[64px]">
-            <span className="text-foreground-muted">Analytics that drive</span>
+            <span className="text-foreground-muted">The Business OS for</span>
             <br />
-            <span className="text-foreground">your photography business</span>
+            <span className="text-foreground">Professional Photographers</span>
           </h1>
 
           {/* Subheadline */}
           <p className="hero-animate hero-animate-3 mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-foreground-secondary lg:text-xl">
-            Deliver stunning galleries, collect payments automatically, and run your entire photography business from one beautifully designed platform.
+            From booking to delivery to marketing—one platform that handles it all. Operate. Deliver. Get Paid. Grow. Automate.
           </p>
 
           {/* CTA Buttons */}
           <div className="hero-animate hero-animate-4 mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <Button variant="default" size="lg" asChild className="h-12 px-8 text-base w-full sm:w-auto shadow-lg shadow-[var(--primary)]/25 hover:shadow-xl hover:shadow-[var(--primary)]/30 transition-shadow">
-              <Link href="/signup">Get Started Free</Link>
+              <Link href="/signup">Start Free</Link>
             </Button>
             <Button
               variant="outline"
@@ -106,7 +106,7 @@ export function HeroAnalyticsSection() {
               className="h-12 px-8 text-base w-full sm:w-auto flex items-center justify-center gap-2"
             >
               <PlayIcon className="h-4 w-4" />
-              Watch Demo
+              Take the Tour
             </Button>
           </div>
 
@@ -114,17 +114,17 @@ export function HeroAnalyticsSection() {
           <div className="hero-animate hero-animate-5 mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-sm text-foreground-muted">
             <div className="flex items-center gap-2">
               <CheckIcon className="h-4 w-4 text-[var(--success)]" />
-              <span>No credit card required</span>
+              <span>Replaces 10+ tools</span>
             </div>
             <div className="hidden sm:block h-4 w-px bg-[var(--border)]" />
             <div className="flex items-center gap-2">
               <CheckIcon className="h-4 w-4 text-[var(--success)]" />
-              <span>5 free galleries included</span>
+              <span>6 photography verticals</span>
             </div>
             <div className="hidden sm:block h-4 w-px bg-[var(--border)]" />
             <div className="flex items-center gap-2">
               <CheckIcon className="h-4 w-4 text-[var(--success)]" />
-              <span>Cancel anytime</span>
+              <span>AI-powered automation</span>
             </div>
           </div>
         </div>

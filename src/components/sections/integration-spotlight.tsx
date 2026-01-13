@@ -124,7 +124,7 @@ export function IntegrationSpotlightSection() {
               }}
             >
               <span className="text-sm text-white/90">
-                <span className="font-medium text-white">Seamlessly integrated</span> with Stripe
+                <span className="font-medium text-white">Enterprise-grade</span> payments
               </span>
             </div>
 
@@ -137,7 +137,7 @@ export function IntegrationSpotlightSection() {
                 transitionDelay: "100ms",
               }}
             >
-              Get paid instantly when clients download
+              Payment infrastructure that scales with you
             </h2>
 
             <p
@@ -149,7 +149,7 @@ export function IntegrationSpotlightSection() {
                 transitionDelay: "200ms",
               }}
             >
-              Stripe's world-class payment processing built right in. Accept cards, Apple Pay, and more—with instant payouts directly to your bank account.
+              The same payment technology trusted by the world's biggest companies, built into your photography workflow.
             </p>
 
             {/* Features */}
@@ -222,11 +222,11 @@ export function IntegrationSpotlightSection() {
 // ============================================
 
 const integrationFeatures = [
-  "Accept all major cards, Apple Pay, Google Pay",
-  "Instant payouts to your bank account",
-  "Automatic invoice generation",
-  "Payment plans and deposit support",
-  "International currency support",
+  "PCI-compliant payment processing",
+  "Multi-currency support for global clients",
+  "Advanced invoicing with PO support",
+  "Customizable payment terms (Net 30/60)",
+  "Detailed financial reporting and analytics",
 ];
 
 const integrationPartners = [

@@ -85,7 +85,7 @@ export function ClientExperienceSection() {
               }}
             >
               <span className="text-sm text-foreground-secondary">
-                Built for <span className="font-medium text-[var(--primary)]">your clients</span>
+                <span className="font-medium text-[var(--primary)]">White-label</span> client experience
               </span>
             </div>
 
@@ -98,8 +98,8 @@ export function ClientExperienceSection() {
                 transitionDelay: "200ms",
               }}
             >
-              <span className="text-foreground">Your clients will</span>{" "}
-              <span className="text-foreground-muted">love it too</span>
+              <span className="text-foreground">Give clients an experience</span>{" "}
+              <span className="text-foreground-muted">that matches your brand</span>
             </h2>
 
             <p
@@ -111,8 +111,7 @@ export function ClientExperienceSection() {
                 transitionDelay: "300ms",
               }}
             >
-              Beautiful, branded galleries that make it easy for clients to browse, favorite,
-              pay, and download their photos—all in one seamless experience.
+              A polished, professional portal that elevates your business and makes you look as good as your photos.
             </p>
 
             {/* Steps */}
@@ -146,7 +145,7 @@ export function ClientExperienceSection() {
 
             {/* Stats */}
             <div
-              className="mt-8 flex items-center gap-8"
+              className="mt-8 flex flex-wrap items-center gap-6 sm:gap-8"
               style={{
                 opacity: isVisible ? 1 : 0,
                 transform: isVisible ? "none" : "translateY(30px)",
@@ -155,18 +154,18 @@ export function ClientExperienceSection() {
               }}
             >
               <div>
-                <p className="text-3xl font-bold text-foreground">98%</p>
-                <p className="text-sm text-foreground-muted">Client satisfaction</p>
+                <p className="text-3xl font-bold text-foreground">4.9</p>
+                <p className="text-sm text-foreground-muted">Average client rating</p>
               </div>
               <div className="h-12 w-px bg-[var(--border)]" />
               <div>
                 <p className="text-3xl font-bold text-foreground">&lt;2min</p>
-                <p className="text-sm text-foreground-muted">Average checkout time</p>
+                <p className="text-sm text-foreground-muted">Checkout time</p>
               </div>
               <div className="h-12 w-px bg-[var(--border)] hidden sm:block" />
               <div className="hidden sm:block">
-                <p className="text-3xl font-bold text-foreground">4.9/5</p>
-                <p className="text-sm text-foreground-muted">Gallery rating</p>
+                <p className="text-3xl font-bold text-foreground">100%</p>
+                <p className="text-sm text-foreground-muted">White-label branded</p>
               </div>
             </div>
           </div>
@@ -184,26 +183,26 @@ export function ClientExperienceSection() {
 const journeySteps = [
   {
     icon: MailIcon,
-    title: "Receive gallery link",
-    description: "Clients get a beautiful, branded email with their gallery link",
+    title: "Branded gallery delivery",
+    description: "Your logo, your colors—every gallery reflects your brand",
     color: "bg-gradient-to-br from-[var(--primary)] to-blue-600",
   },
   {
     icon: HeartIcon,
-    title: "Browse & favorite",
-    description: "Easy-to-use gallery with favorites, search, and filtering",
+    title: "Curated viewing experience",
+    description: "Portfolio-quality presentation that impresses clients",
     color: "bg-gradient-to-br from-[var(--error)] to-rose-600",
   },
   {
     icon: CreditCardIcon,
-    title: "Pay securely",
-    description: "One-click checkout with Stripe—no account required",
+    title: "Seamless checkout",
+    description: "Professional payment flow with Stripe—no account required",
     color: "bg-gradient-to-br from-[var(--ai)] to-purple-600",
   },
   {
     icon: DownloadIcon,
-    title: "Download instantly",
-    description: "High-resolution downloads ready immediately after payment",
+    title: "Instant fulfillment",
+    description: "Automatic delivery of high-resolution files immediately",
     color: "bg-gradient-to-br from-[var(--success)] to-emerald-600",
   },
 ];

@@ -8,6 +8,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Integrated Landing Page Variant Content** - Updated main landing page sections with refined messaging from A/B test variants:
+
+  **Hero Section:**
+  - Updated headline to "The Business OS for Professional Photographers"
+  - New subheadline emphasizing platform pillars: "Operate. Deliver. Get Paid. Grow. Automate."
+  - Updated social proof to highlight key value props: "Replaces 10+ tools", "6 photography verticals", "AI-powered automation"
+  - CTAs updated to "Start Free" and "Take the Tour"
+
+  **Metrics Showcase:**
+  - Updated tagline to "Trusted by professionals across every vertical"
+  - Supporting stats now show "6 Industries" with "Purpose-built workflows"
+  - Updated description to "Photographers run their business on PhotoProOS"
+
+  **Industry Tabs:**
+  - Updated badge to "Your industry, your way"
+  - New headline: "Purpose-built for professionals like you"
+  - Subheadline: "From real estate to weddings to commercial—tools designed for how you actually work"
+
+  **Client Experience:**
+  - Updated to "White-label client experience" positioning
+  - New headline: "Give clients an experience that matches your brand"
+  - Journey steps updated: "Branded gallery delivery", "Curated viewing experience", "Seamless checkout", "Instant fulfillment"
+  - Stats updated: 4.9 average client rating, 100% white-label branded
+
+  **Integration Spotlight:**
+  - Updated to "Enterprise-grade payments" positioning
+  - New headline: "Payment infrastructure that scales with you"
+  - Features now emphasize enterprise capabilities: PCI compliance, multi-currency, Net 30/60 terms
+
+  **CTA Section:**
+  - Updated badge to "Ready to go pro?"
+  - New headline: "Your business deserves professional-grade tools"
+  - CTAs updated to "Upgrade Your Business" and "Schedule a Demo"
+
 - **Streamlined Landing Page Layout** - Reorganized landing page for better content flow:
   - Removed redundant Features section (content now covered in Five Pillars)
   - Removed duplicate Integrations section (IntegrationSpotlight covers this)

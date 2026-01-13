@@ -74,7 +74,7 @@ export function MetricsShowcaseSection() {
           }}
         >
           <p className="text-sm font-medium uppercase tracking-wider text-foreground-muted mb-4">
-            Trusted by photographers worldwide
+            Trusted by professionals across every vertical
           </p>
           <div className="relative inline-block">
             <span className="text-[56px] sm:text-[80px] lg:text-[120px] font-bold leading-none tracking-tight">
@@ -91,7 +91,7 @@ export function MetricsShowcaseSection() {
             />
           </div>
           <p className="text-lg sm:text-xl lg:text-2xl text-foreground-secondary mt-2">
-            Photographers trust PhotoProOS
+            Photographers run their business on PhotoProOS
           </p>
         </div>
 
@@ -107,22 +107,22 @@ export function MetricsShowcaseSection() {
         >
           <MetricCard
             value={`$${processedAmount.toFixed(1)}M+`}
-            label="Processed Monthly"
-            description="In photographer payments"
+            label="Monthly Volume"
+            description="Professional-grade scale"
             icon={<DollarIcon />}
             color="blue"
           />
           <MetricCard
-            value={`${galleriesCount.toLocaleString()}+`}
-            label="Galleries Delivered"
-            description="Photos shared with clients"
+            value="6"
+            label="Industries"
+            description="Purpose-built workflows"
             icon={<GalleryIcon />}
             color="purple"
           />
           <MetricCard
             value="99.9%"
-            label="Uptime"
-            description="Enterprise-grade reliability"
+            label="Uptime SLA"
+            description="Your business, always on"
             icon={<ShieldIcon />}
             color="green"
           />

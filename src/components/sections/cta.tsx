@@ -55,7 +55,7 @@ export function CTASection() {
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]"></span>
             </span>
             <span className="text-sm text-foreground-secondary">
-              <span className="font-medium text-[var(--primary)]">Free plan</span> available
+              <span className="font-medium text-[var(--primary)]">Ready to go pro?</span>
             </span>
           </div>
 
@@ -68,8 +68,8 @@ export function CTASection() {
               transitionDelay: "100ms",
             }}
           >
-            <span className="text-foreground">Ready to run your photography</span>{" "}
-            <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">business like a pro?</span>
+            <span className="text-foreground">Your business deserves</span>{" "}
+            <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">professional-grade tools.</span>
           </h2>
 
           <p
@@ -81,8 +81,8 @@ export function CTASection() {
               transitionDelay: "200ms",
             }}
           >
-            Stop juggling Dropbox, PayPal, and spreadsheets. Get galleries, payments, clients, and scheduling in one platform.
-            Start free, upgrade when you're ready.
+            Join photographers who've upgraded from scattered tools to one unified platform.
+            Start free—no credit card required.
           </p>
 
           <div
@@ -95,8 +95,8 @@ export function CTASection() {
             }}
           >
             <ShimmerButton asChild size="lg" className="px-8 py-4 text-base">
-              <Link href="/dashboard">
-                Start free trial
+              <Link href="/signup">
+                Upgrade Your Business
                 <ArrowIcon className="ml-2 h-4 w-4" />
               </Link>
             </ShimmerButton>
@@ -107,7 +107,7 @@ export function CTASection() {
               gradient="linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899, #3b82f6)"
               className="px-8 py-4 text-base"
             >
-              <Link href="/webinars">Watch demo</Link>
+              <Link href="/demo">Schedule a Demo</Link>
             </GradientButton>
           </div>
 
