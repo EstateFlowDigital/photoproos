@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
-import { ComingSoonPage } from "@/components/dashboard";
+import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+import { VipClient } from "./vip-client";
 
 export default async function VipPage() {
   const auth = await getAuthContext();
@@ -10,26 +11,13 @@ export default async function VipPage() {
   }
 
   return (
-    <div data-element="vip-page">
-      <ComingSoonPage
+    <div className="space-y-6" data-element="vip-page">
+      <PageHeader
         title="VIP Clients"
         subtitle="Manage top-tier client relationships"
-        icon="👑"
-        description="Identify VIP clients, offer exclusive perks, and track high-value relationships."
-        features={[
-          "Automatic VIP status based on spend thresholds",
-          "Exclusive perks and priority booking",
-          "VIP-only pricing and discounts",
-          "Lifetime value tracking per client",
-          "Anniversary and milestone reminders",
-          "VIP communication templates",
-        ]}
-        relatedLinks={[
-          { label: "Clients", href: "/clients" },
-          { label: "Loyalty Program", href: "/loyalty" },
-          { label: "Segments", href: "/segments" },
-        ]}
       />
+
+      <VipClient />
     </div>
   );
 }

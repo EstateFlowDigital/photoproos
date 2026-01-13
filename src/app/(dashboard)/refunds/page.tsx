@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
-import { ComingSoonPage } from "@/components/dashboard";
+import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+import { RefundsClient } from "./refunds-client";
 
 export default async function RefundsPage() {
   const auth = await getAuthContext();
@@ -10,24 +11,13 @@ export default async function RefundsPage() {
   }
 
   return (
-    <ComingSoonPage
-      title="Refunds"
-      subtitle="Process and track refunds"
-      icon="💸"
-      description="Process refunds, track refund history, and manage refund policies."
-      features={[
-        "Full and partial refund processing",
-        "Refund reason tracking",
-        "Automatic Stripe/Square integration",
-        "Refund policy templates",
-        "Client notification emails",
-        "Refund reports and analytics",
-      ]}
-      relatedLinks={[
-        { label: "Payments", href: "/payments" },
-        { label: "Invoices", href: "/invoices" },
-        { label: "Reports", href: "/reports" },
-      ]}
-    />
+    <div className="space-y-6" data-element="refunds-page">
+      <PageHeader
+        title="Refunds"
+        subtitle="Process and track refunds"
+      />
+
+      <RefundsClient />
+    </div>
   );
 }

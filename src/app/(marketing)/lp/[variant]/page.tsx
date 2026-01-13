@@ -2,16 +2,19 @@ import { notFound } from "next/navigation";
 import dynamic from "next/dynamic";
 import { getLandingPageContent, type LandingPageVariant } from "@/lib/landing-content";
 
-// Dynamic imports for sections
+// Dynamic imports for sections (optimized loading)
 const Navbar = dynamic(() => import("@/components/layout/navbar").then((m) => m.Navbar));
 const Footer = dynamic(() => import("@/components/layout/footer").then((m) => m.Footer));
 const HeroVariant = dynamic(() => import("./hero-variant").then((m) => m.HeroVariant));
 const LogosSection = dynamic(() => import("@/components/sections/logos").then((m) => m.LogosSection));
+const FivePillarsSection = dynamic(() => import("@/components/sections/five-pillars").then((m) => m.FivePillarsSection));
+const ToolReplacementSection = dynamic(() => import("@/components/sections/tool-replacement").then((m) => m.ToolReplacementSection));
 const MetricsVariant = dynamic(() => import("./metrics-variant").then((m) => m.MetricsVariant));
 const HowItWorksSection = dynamic(() => import("@/components/sections/how-it-works").then((m) => m.HowItWorksSection));
 const FeaturesSection = dynamic(() => import("@/components/sections/features").then((m) => m.FeaturesSection));
 const IndustryTabsSection = dynamic(() => import("@/components/sections/industry-tabs").then((m) => m.IndustryTabsSection));
 const ClientExperienceSection = dynamic(() => import("@/components/sections/client-experience").then((m) => m.ClientExperienceSection));
+const CaseStudiesSection = dynamic(() => import("@/components/sections/case-studies").then((m) => m.CaseStudiesSection));
 const IntegrationSpotlightSection = dynamic(() => import("@/components/sections/integration-spotlight").then((m) => m.IntegrationSpotlightSection));
 const TestimonialsSection = dynamic(() => import("@/components/sections/testimonials").then((m) => m.TestimonialsSection));
 const PricingSection = dynamic(() => import("@/components/sections/pricing").then((m) => m.PricingSection));
@@ -63,44 +66,55 @@ export default async function LandingPageVariant({
         Variant {variant.toUpperCase()}: {content.name}
       </div>
 
+      {/* Navigation */}
       <Navbar />
 
-      {/* Hero - Variant-specific content */}
+      {/* Hero Section - Variant-specific content */}
       <HeroVariant content={content.hero} variant={content.variant} />
 
-      {/* Social Proof */}
+      {/* Social Proof - Trusted By Logos */}
       <LogosSection />
 
-      {/* Metrics - Variant-specific content */}
+      {/* Five Pillars - Platform Overview */}
+      <FivePillarsSection />
+
+      {/* Tool Replacement - Replace 10+ Tools */}
+      <ToolReplacementSection />
+
+      {/* Metrics Showcase - Variant-specific stats */}
       <MetricsVariant content={content.metrics} />
 
-      {/* How It Works */}
+      {/* How It Works - Quick Overview */}
       <HowItWorksSection />
 
-      {/* Features */}
+      {/* Features - Detailed Capabilities */}
       <FeaturesSection />
 
-      {/* Industry Tabs */}
+      {/* Industry Tabs - Vertical-specific Solutions */}
       <IndustryTabsSection />
 
-      {/* Client Experience */}
+      {/* Client Experience - Gallery & Payment Journey */}
       <ClientExperienceSection />
 
-      {/* Integration Spotlight */}
+      {/* Case Studies - Real Results */}
+      <CaseStudiesSection />
+
+      {/* Integration Spotlight - Stripe & Payments */}
       <IntegrationSpotlightSection />
 
-      {/* Testimonials */}
+      {/* Testimonials - Social Proof */}
       <TestimonialsSection />
 
-      {/* Pricing */}
+      {/* Pricing - Plans & Tiers */}
       <PricingSection />
 
-      {/* FAQ */}
+      {/* FAQ - Common Questions */}
       <FAQSection />
 
-      {/* CTA - Variant-specific content */}
+      {/* Final CTA - Variant-specific */}
       <CtaVariant content={content.cta} />
 
+      {/* Footer */}
       <Footer />
     </main>
   );

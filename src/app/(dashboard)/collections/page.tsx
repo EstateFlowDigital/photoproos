@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
-import { ComingSoonPage } from "@/components/dashboard";
+import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+import { CollectionsClient } from "./collections-client";
 
 export default async function CollectionsPage() {
   const auth = await getAuthContext();
@@ -10,26 +11,13 @@ export default async function CollectionsPage() {
   }
 
   return (
-    <div data-element="collections-page">
-      <ComingSoonPage
+    <div className="space-y-6" data-element="collections-page">
+      <PageHeader
         title="Collections"
         subtitle="Curated photo collections"
-        icon="🎨"
-        description="Create themed collections from multiple projects for marketing or portfolio use."
-        features={[
-          "Curate images from multiple projects",
-          "Themed collections (portraits, weddings, etc.)",
-          "Portfolio showcase builder",
-          "Marketing asset organization",
-          "Share collections publicly or privately",
-          "Export for social media",
-        ]}
-        relatedLinks={[
-          { label: "Galleries", href: "/galleries" },
-          { label: "Projects", href: "/projects" },
-          { label: "Social", href: "/social" },
-        ]}
       />
+
+      <CollectionsClient />
     </div>
   );
 }

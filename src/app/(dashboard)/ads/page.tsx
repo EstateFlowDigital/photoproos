@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
-import { ComingSoonPage } from "@/components/dashboard";
+import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+import { AdsClient } from "./ads-client";
 
 export default async function AdsPage() {
   const auth = await getAuthContext();
@@ -10,24 +11,13 @@ export default async function AdsPage() {
   }
 
   return (
-    <ComingSoonPage
-      title="Ad Campaigns"
-      subtitle="Manage paid advertising"
-      icon="📢"
-      description="Create and track Facebook, Google, and Instagram ad campaigns."
-      features={[
-        "Facebook and Instagram ad management",
-        "Google Ads integration",
-        "Ad spend tracking and budgeting",
-        "ROI and conversion tracking",
-        "Audience targeting suggestions",
-        "Campaign performance analytics",
-      ]}
-      relatedLinks={[
-        { label: "Campaigns", href: "/campaigns" },
-        { label: "Social", href: "/social" },
-        { label: "Reports", href: "/reports" },
-      ]}
-    />
+    <div className="space-y-6" data-element="ads-page">
+      <PageHeader
+        title="Ad Campaigns"
+        subtitle="Manage paid advertising"
+      />
+
+      <AdsClient />
+    </div>
   );
 }

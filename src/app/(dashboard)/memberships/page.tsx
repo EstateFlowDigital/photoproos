@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
-import { ComingSoonPage } from "@/components/dashboard";
+import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+import { MembershipsClient } from "./memberships-client";
 
 export default async function MembershipsPage() {
   const auth = await getAuthContext();
@@ -10,26 +11,13 @@ export default async function MembershipsPage() {
   }
 
   return (
-    <div data-element="memberships-page">
-      <ComingSoonPage
+    <div className="space-y-6" data-element="memberships-page">
+      <PageHeader
         title="Memberships"
         subtitle="Client membership programs"
-        icon="💎"
-        description="Create membership tiers with recurring billing, perks, and exclusive access."
-        features={[
-          "Multiple membership tiers",
-          "Recurring subscription billing",
-          "Member-only pricing and perks",
-          "Automatic renewal management",
-          "Member portal and dashboard",
-          "Membership analytics",
-        ]}
-        relatedLinks={[
-          { label: "Loyalty Program", href: "/loyalty" },
-          { label: "VIP Clients", href: "/vip" },
-          { label: "Products", href: "/products" },
-        ]}
       />
+
+      <MembershipsClient />
     </div>
   );
 }

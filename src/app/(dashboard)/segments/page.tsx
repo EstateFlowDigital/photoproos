@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
-import { ComingSoonPage } from "@/components/dashboard";
+import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+import { SegmentsClient } from "./segments-client";
 
 export default async function SegmentsPage() {
   const auth = await getAuthContext();
@@ -10,26 +11,13 @@ export default async function SegmentsPage() {
   }
 
   return (
-    <div data-element="segments-page">
-      <ComingSoonPage
+    <div className="space-y-6" data-element="segments-page">
+      <PageHeader
         title="Client Segments"
         subtitle="Group clients for targeted marketing"
-        icon="👥"
-        description="Create dynamic segments based on behavior, spending, and engagement."
-        features={[
-          "Dynamic segments that auto-update",
-          "Filter by lifetime value, recency, frequency",
-          "Session type and service preferences",
-          "Email engagement and open rates",
-          "Target segments in email campaigns",
-          "Win-back segments for inactive clients",
-        ]}
-        relatedLinks={[
-          { label: "Clients", href: "/clients" },
-          { label: "Email Campaigns", href: "/email-campaigns" },
-          { label: "VIP Clients", href: "/vip" },
-        ]}
       />
+
+      <SegmentsClient />
     </div>
   );
 }

@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Landing Page Improvements** - Major landing page enhancements for Variant C (Business OS):
+  - **Five Pillars Section** - Interactive tabbed section showcasing 5 platform pillars: Operate, Deliver, Get Paid, Grow, Automate with full keyboard navigation and ARIA accessibility
+  - **Tool Replacement Section** - Visual comparison showing how PhotoProOS replaces 10+ tools with animated scroll effects and cost savings calculator
+  - **Case Studies Section** - Filterable case studies by industry with real photographer success stories and key metrics
+  - **Navbar Updates** - Improved button styling with text link for login and primary button for "Get Started Free" CTA
+  - **Section Order Optimization** - Reordered landing page sections for better conversion flow
+  - All new sections are fully accessible (WCAG 2.1 AA), mobile responsive, and use semantic design tokens
+
+### Changed
 - **16 New Functional Dashboard Pages** - Converted placeholder "Coming Soon" pages to fully functional pages with mock data and UI:
   - `/pipeline` - Kanban-style sales pipeline with drag-drop stages (inquiry, quoted, negotiating, booked, completed)
   - `/vendors` - Vendor management with categories (venue, florist, catering, DJ, makeup, planner), ratings, and referral tracking
@@ -25,6 +34,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `/goals` - Business goal tracking with progress bars, revenue/booking/client targets, and period comparisons
   - `/loyalty` - Loyalty program with tiered membership (Bronze, Silver, Gold, Platinum), points, and rewards
   - `/proofing` - Photo proofing sessions with client selection progress, deadlines, and approval status
+- **25 More Functional Dashboard Pages** - Additional placeholder pages converted to fully functional with mock data:
+  - `/tours` - Virtual tour management with panoramas, hotspots, views tracking, and embed codes
+  - `/videos` - Video content management with upload, streaming, duration, views, and download tracking
+  - `/vip` - VIP client tiers (Gold, Platinum, Diamond) with lifetime value, perks, and membership management
+  - `/wall-art` - Wall art products (canvas, metal, acrylic) with room visualization, sizing, and order management
+  - `/sneak-peeks` - Quick preview galleries with social sharing permissions and client notifications
+  - `/social` - Social media post management with Instagram/Facebook integration and scheduling
+  - `/studio` - Studio space booking with spaces management, reservation calendar, and booking status
+  - `/reports` - Business analytics dashboard with revenue, bookings, clients reports and export options
+  - `/reveal` - In-person sales session management with revenue tracking and appointment scheduling
+  - `/segments` - Client segmentation (dynamic/static) with rules-based filtering and member counts
+  - `/seo` - SEO score tracking with page analysis, keyword rankings, and optimization suggestions
+  - `/refunds` - Refund request management with approval workflow, reasons tracking, and status updates
+  - `/rentals` - Equipment rental tracking with availability, check-in/out, and revenue monitoring
+  - `/payroll` - Contractor/employee payment processing with pay periods, methods, and status tracking
+  - `/memberships` - Membership tier management with plans configuration and active member tracking
+  - `/failed-payments` - Payment failure recovery with retry functionality and dunning management
+  - `/digital-products` - Digital product sales (presets, LUTs, guides) with downloads and revenue tracking
+  - `/email-campaigns` - Email campaign management with newsletter, promotional, announcement types, open/click rates
+  - `/collections` - Photo collection curation with visibility settings (public, private, unlisted), categories
+  - `/commissions` - Partner commission tracking for referrals, associates, affiliates with payout workflow
+  - `/benchmarks` - Industry benchmark comparison with performance score and category filters
+  - `/ads` - Paid ad campaign management across Facebook, Instagram, Google, TikTok with metrics
+  - `/albums` - Photo album design with templates, cover types, client review workflow, print ordering
+  - `/automations` - Workflow automation builder with triggers and action chains
+  - `/abandoned-carts` - Cart recovery dashboard with value tracking and automated email recovery
 - **Landing Page A/B Test Variant Components** - Fixed hero, metrics, and CTA variant components for `/lp/[variant]` pages
 
 - **Expanded Public Roadmap to 7 Phases** - Major roadmap expansion with 40 features across all phases:

@@ -408,12 +408,15 @@ export function Navbar({ className }: NavbarProps) {
       </div>
 
       {/* Right Side Actions */}
-      <div className="hidden gap-2 lg:flex">
-        <Button variant="secondary" asChild>
-          <Link href="/dashboard">Log in</Link>
-        </Button>
+      <div className="hidden items-center gap-4 lg:flex">
+        <Link
+          href="/sign-in"
+          className="text-sm font-medium text-foreground-secondary transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-[var(--button-radius)] px-3 py-2"
+        >
+          Log in
+        </Link>
         <Button variant="default" asChild>
-          <Link href="/dashboard">Start free trial</Link>
+          <Link href="/sign-up">Get Started Free</Link>
         </Button>
       </div>
 
@@ -558,12 +561,12 @@ export function Navbar({ className }: NavbarProps) {
             {/* CTA Buttons */}
             <div className="mt-auto space-y-3 pt-6">
               <Button variant="default" size="lg" className="w-full" asChild>
-                <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
-                  Start free trial
+                <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>
+                  Get Started Free
                 </Link>
               </Button>
-              <Button variant="outline" size="lg" className="w-full" asChild>
-                <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+              <Button variant="ghost" size="lg" className="w-full" asChild>
+                <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
                   Log in
                 </Link>
               </Button>
