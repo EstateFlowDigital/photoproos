@@ -269,3 +269,128 @@ export async function addFieldNote(
     return fail("Failed to add note");
   }
 }
+
+// ============================================================================
+// FIELD NOTES
+// ============================================================================
+
+export type FieldNote = {
+  id: string;
+  content: string;
+  createdAt: Date;
+  bookingId: string | null;
+  bookingTitle: string | null;
+  clientName: string | null;
+};
+
+export async function getFieldNotes(): Promise<ActionResult<FieldNote[]>> {
+  try {
+    if (process.env.NEXT_PHASE === "phase-production-build") {
+      return success([]);
+    }
+
+    const auth = await getAuthContext();
+    if (!auth?.userId) {
+      return fail("Unauthorized");
+    }
+
+    // Get recent check-ins with notes
+    const checkIns = await prisma.bookingCheckIn.findMany({
+      where: {
+        userId: auth.userId,
+        notes: { not: null },
+      },
+      include: {
+        booking: {
+          include: {
+            client: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
+
+    const notes: FieldNote[] = checkIns
+      .filter((c) => c.notes)
+      .map((c) => ({
+        id: c.id,
+        content: c.notes!,
+        createdAt: c.createdAt,
+        bookingId: c.bookingId,
+        bookingTitle: c.booking?.title || null,
+        clientName: c.booking?.client?.fullName || c.booking?.clientName || null,
+      }));
+
+    return success(notes);
+  } catch (error) {
+    console.error("Error getting field notes:", error);
+    return fail("Failed to get notes");
+  }
+}
+
+export async function createFieldNote(data: {
+  content: string;
+  bookingId?: string;
+}): Promise<ActionResult<{ id: string }>> {
+  try {
+    const auth = await getAuthContext();
+    if (!auth?.userId) {
+      return fail("Unauthorized");
+    }
+
+    // If a booking is specified, verify it belongs to the user's organization
+    if (data.bookingId) {
+      const booking = await prisma.booking.findFirst({
+        where: {
+          id: data.bookingId,
+          organizationId: auth.organizationId,
+        },
+      });
+
+      if (!booking) {
+        return fail("Booking not found");
+      }
+    }
+
+    // Create a check-in record with the note
+    const checkIn = await prisma.bookingCheckIn.create({
+      data: {
+        bookingId: data.bookingId || "",
+        userId: auth.userId,
+        checkInType: "note",
+        latitude: 0,
+        longitude: 0,
+        notes: data.content,
+      },
+    });
+
+    revalidatePath("/field/notes");
+    return success({ id: checkIn.id });
+  } catch (error) {
+    console.error("Error creating field note:", error);
+    return fail("Failed to create note");
+  }
+}
+
+export async function deleteFieldNote(noteId: string): Promise<ActionResult<void>> {
+  try {
+    const auth = await getAuthContext();
+    if (!auth?.userId) {
+      return fail("Unauthorized");
+    }
+
+    await prisma.bookingCheckIn.delete({
+      where: {
+        id: noteId,
+        userId: auth.userId,
+      },
+    });
+
+    revalidatePath("/field/notes");
+    return ok();
+  } catch (error) {
+    console.error("Error deleting field note:", error);
+    return fail("Failed to delete note");
+  }
+}

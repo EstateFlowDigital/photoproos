@@ -325,6 +325,13 @@
 
   /* Touch Target (Accessibility) */
   --touch-target-min: 44px;
+
+  /* --- Grid Pattern (for hero backgrounds) --- */
+  --grid-line: rgba(255, 255, 255, 0.03);
+  --grid-line-accent: rgba(255, 255, 255, 0.06);
+  --grid-gradient-from: rgba(139, 92, 246, 0.12);
+  --grid-gradient-to: rgba(59, 130, 246, 0.08);
+  --grid-dot: rgba(255, 255, 255, 0.15);
 }
 
 /* ============================================
@@ -403,6 +410,13 @@
   --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.12);
   --shadow-2xl: 0 16px 48px rgba(0, 0, 0, 0.15);
   --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.10);
+
+  /* --- Grid Pattern (for hero backgrounds) --- */
+  --grid-line: rgba(0, 0, 0, 0.04);
+  --grid-line-accent: rgba(0, 0, 0, 0.08);
+  --grid-gradient-from: rgba(139, 92, 246, 0.08);
+  --grid-gradient-to: rgba(59, 130, 246, 0.05);
+  --grid-dot: rgba(0, 0, 0, 0.08);
 }
 
 /* ============================================

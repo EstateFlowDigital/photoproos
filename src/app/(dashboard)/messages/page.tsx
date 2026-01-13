@@ -5,6 +5,8 @@ import Link from "next/link";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import { getUserConversations } from "@/lib/actions/conversations";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 
 export default async function MessagesPage() {
   const auth = await getAuthContext();
@@ -12,13 +14,21 @@ export default async function MessagesPage() {
     redirect("/sign-in");
   }
 
-  const result = await getUserConversations();
+  const [result, walkthroughPreferenceResult] = await Promise.all([
+    getUserConversations(),
+    getWalkthroughPreference("messages"),
+  ]);
   const conversations = result.success && result.data ? result.data : [];
+  const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data
+    ? walkthroughPreferenceResult.data.state
+    : "open";
 
   // Empty state - shown in main content area when no conversation is selected
   // On mobile, users see the sidebar. On desktop, they see this.
   return (
-    <div data-element="messages-page" className="flex flex-1 flex-col items-center justify-center p-8 text-center">
+    <div data-element="messages-page" className="flex flex-1 flex-col p-8">
+      <WalkthroughWrapper pageId="messages" initialState={walkthroughState} />
+      <div className="flex flex-1 flex-col items-center justify-center text-center">
       <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-hover)]">
         <MessageSquare className="h-12 w-12 text-white" />
       </div>
@@ -54,6 +64,7 @@ export default async function MessagesPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

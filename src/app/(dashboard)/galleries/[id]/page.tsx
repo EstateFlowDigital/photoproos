@@ -7,6 +7,8 @@ import { GalleryActions } from "./gallery-actions";
 import { getGallery, deliverGallery } from "@/lib/actions/galleries";
 import { getClientInvoices } from "@/lib/actions/invoices";
 import { getGalleryDownloadAnalytics } from "@/lib/actions/download-tracking";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 
 interface GalleryDetailPageProps {
   params: Promise<{ id: string }>;
@@ -25,11 +27,16 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
   const isRealEstateGallery = gallery.service?.category === "real_estate";
   const hasPropertyWebsite = !!gallery.propertyWebsite;
 
-  // Fetch invoices and analytics in parallel
-  const [invoices, analyticsResult] = await Promise.all([
+  // Fetch invoices, analytics, and walkthrough preference in parallel
+  const [invoices, analyticsResult, walkthroughPreferenceResult] = await Promise.all([
     gallery.client?.id ? getClientInvoices(gallery.client.id) : Promise.resolve([]),
     gallery.status === "delivered" ? getGalleryDownloadAnalytics(id) : Promise.resolve(null),
+    getWalkthroughPreference("gallery-detail"),
   ]);
+
+  const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data
+    ? walkthroughPreferenceResult.data.state
+    : "open";
 
   // Map to the format expected by GalleryDetailClient
   const mappedGallery = {
@@ -140,6 +147,7 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
           { label: gallery.name },
         ]}
       />
+      <WalkthroughWrapper pageId="gallery-detail" initialState={walkthroughState} />
       <PageHeader
         title={gallery.name}
         subtitle={

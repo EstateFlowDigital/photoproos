@@ -13,7 +13,8 @@ export default async function PortalDownloadsPage() {
 
   return (
     <PortalDownloadsClient
-      clientName={data.client.fullName}
+      galleries={data.galleries}
+      clientId={data.client.id}
       clientEmail={data.client.email}
     />
   );

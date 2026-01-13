@@ -55,12 +55,12 @@ export function SecuritySection() {
 
   return (
     <section id="security" ref={ref} className="relative z-10 py-20 lg:py-32 overflow-hidden">
-      {/* Background Pattern */}
+      {/* Background Pattern - uses CSS variables for theme-aware colors */}
       <div className="pointer-events-none absolute inset-0">
         <div
           className="absolute inset-0 opacity-20"
           style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 1px)`,
+            backgroundImage: `radial-gradient(circle at 1px 1px, var(--grid-dot) 1px, transparent 1px)`,
             backgroundSize: "24px 24px",
           }}
         />

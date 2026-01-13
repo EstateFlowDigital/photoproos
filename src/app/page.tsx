@@ -4,30 +4,33 @@ import dynamic from "next/dynamic";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 
-const HeroSection = dynamic(() => import("@/components/sections/hero").then((m) => m.HeroSection), {
-  loading: () => <div className="h-[600px]" aria-hidden />,
-});
+// New analytics-focused hero
+const HeroAnalyticsSection = dynamic(
+  () => import("@/components/sections/hero-analytics").then((m) => m.HeroAnalyticsSection),
+  { loading: () => <div className="h-[600px]" aria-hidden /> }
+);
+
+// New sections
+const MetricsShowcaseSection = dynamic(() =>
+  import("@/components/sections/metrics-showcase").then((m) => m.MetricsShowcaseSection)
+);
+const IndustryTabsSection = dynamic(() =>
+  import("@/components/sections/industry-tabs").then((m) => m.IndustryTabsSection)
+);
+const ClientExperienceSection = dynamic(() =>
+  import("@/components/sections/client-experience").then((m) => m.ClientExperienceSection)
+);
+const IntegrationSpotlightSection = dynamic(() =>
+  import("@/components/sections/integration-spotlight").then((m) => m.IntegrationSpotlightSection)
+);
+
+// Existing sections
 const LogosSection = dynamic(() => import("@/components/sections/logos").then((m) => m.LogosSection));
 const HowItWorksSection = dynamic(() =>
   import("@/components/sections/how-it-works").then((m) => m.HowItWorksSection)
 );
-const NoiseToKnowledgeSection = dynamic(() =>
-  import("@/components/sections/noise-to-knowledge").then((m) => m.NoiseToKnowledgeSection)
-);
 const FeaturesSection = dynamic(() =>
   import("@/components/sections/features").then((m) => m.FeaturesSection)
-);
-const UseCasesSection = dynamic(() =>
-  import("@/components/sections/use-cases").then((m) => m.UseCasesSection)
-);
-const ComparisonSection = dynamic(() =>
-  import("@/components/sections/comparison").then((m) => m.ComparisonSection)
-);
-const IntegrationsSection = dynamic(() =>
-  import("@/components/sections/integrations").then((m) => m.IntegrationsSection)
-);
-const ROICalculatorSection = dynamic(() =>
-  import("@/components/sections/roi-calculator").then((m) => m.ROICalculatorSection)
 );
 const PricingSection = dynamic(() =>
   import("@/components/sections/pricing").then((m) => m.PricingSection)
@@ -35,15 +38,13 @@ const PricingSection = dynamic(() =>
 const TestimonialsSection = dynamic(() =>
   import("@/components/sections/testimonials").then((m) => m.TestimonialsSection)
 );
-const SecuritySection = dynamic(() =>
-  import("@/components/sections/security").then((m) => m.SecuritySection)
-);
-const RoadmapSection = dynamic(() =>
-  import("@/components/sections/roadmap").then((m) => m.RoadmapSection)
-);
 const FAQSection = dynamic(() => import("@/components/sections/faq").then((m) => m.FAQSection));
 const CTASection = dynamic(() => import("@/components/sections/cta").then((m) => m.CTASection));
+
+// Lazy loading wrapper
 import { LazySection } from "@/components/sections/lazy-section";
+
+// UI enhancements
 const ScrollProgress = dynamic(() =>
   import("@/components/ui/scroll-progress").then((m) => m.ScrollProgress)
 );
@@ -79,33 +80,25 @@ export default async function Home() {
       {/* Exit Intent Popup */}
       <ExitIntentPopup />
 
-      {/* Social Proof Toast - Shows recent signup notifications */}
+      {/* Social Proof Toast */}
       <SocialProofToast />
 
       {/* Live Chat Widget */}
       <ChatWidget />
 
-      {/* Background Gradient */}
-      <div className="pointer-events-none absolute inset-0 z-0">
-        <div
-          className="absolute left-1/2 top-0 h-[1000px] w-full max-w-[1512px] -translate-x-1/2"
-          style={{
-            background: `
-              radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
-              radial-gradient(ellipse 60% 40% at 70% 10%, rgba(139, 92, 246, 0.1) 0%, transparent 50%)
-            `,
-          }}
-        />
-      </div>
-
       {/* Navigation */}
       <Navbar />
 
-      {/* Hero Section - Main value proposition with interactive demo */}
-      <HeroSection />
+      {/* Hero Section - Analytics-focused with dashboard mockup */}
+      <HeroAnalyticsSection />
 
-      {/* Logos Section - Social proof and stats */}
+      {/* Logos Section - Social proof */}
       <LogosSection />
+
+      <div className="section-divider" />
+
+      {/* Metrics Showcase - Platform stats */}
+      <MetricsShowcaseSection />
 
       <div className="section-divider" />
 
@@ -114,46 +107,23 @@ export default async function Home() {
 
       <div className="section-divider" />
 
-      {/* Value Proposition - Why PhotoProOS (Before/After) */}
-      <NoiseToKnowledgeSection />
-
-      <div className="section-divider" />
-
       {/* Features Section - Core product features */}
       <FeaturesSection />
 
       <div className="section-divider" />
 
-      {/* Use Cases Section - Photography verticals */}
-      <UseCasesSection />
+      {/* Industry Tabs - Photography verticals with case studies */}
+      <IndustryTabsSection />
 
       <div className="section-divider" />
 
-      {/* Comparison Section - vs Competitors */}
-      <LazySection placeholderHeight={280}>
-        <ComparisonSection />
-      </LazySection>
+      {/* Client Experience - Show how easy it is for clients */}
+      <ClientExperienceSection />
 
       <div className="section-divider" />
 
-      {/* Integrations Section - Third-party apps */}
-      <LazySection placeholderHeight={260}>
-        <IntegrationsSection />
-      </LazySection>
-
-      <div className="section-divider" />
-
-      {/* ROI Calculator - Show potential savings */}
-      <LazySection placeholderHeight={320}>
-        <ROICalculatorSection />
-      </LazySection>
-
-      <div className="section-divider" />
-
-      {/* Pricing Section - Plans and pricing */}
-      <LazySection placeholderHeight={320}>
-        <PricingSection />
-      </LazySection>
+      {/* Integration Spotlight - Stripe payments feature */}
+      <IntegrationSpotlightSection />
 
       <div className="section-divider" />
 
@@ -164,16 +134,9 @@ export default async function Home() {
 
       <div className="section-divider" />
 
-      {/* Security Section - Trust and compliance */}
-      <LazySection placeholderHeight={260}>
-        <SecuritySection />
-      </LazySection>
-
-      <div className="section-divider" />
-
-      {/* Roadmap Section - Upcoming features */}
-      <LazySection placeholderHeight={260}>
-        <RoadmapSection />
+      {/* Pricing Section - Plans and pricing */}
+      <LazySection placeholderHeight={320}>
+        <PricingSection />
       </LazySection>
 
       <div className="section-divider" />

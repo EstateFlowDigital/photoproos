@@ -1,5 +1,8 @@
 import "../globals.css";
 import { ToastProvider } from "@/components/ui/toast";
+import { PortalHeader } from "@/components/portal/portal-header";
+
+export const dynamic = "force-dynamic";
 
 export default function ClientPortalLayout({
   children,
@@ -8,9 +11,7 @@ export default function ClientPortalLayout({
 }) {
   return (
     <ToastProvider>
-      <div className="min-h-screen bg-[var(--background)]">
-        {children}
-      </div>
+      <PortalHeader>{children}</PortalHeader>
     </ToastProvider>
   );
 }

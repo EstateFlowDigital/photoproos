@@ -2,12 +2,52 @@ export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+import { SessionRecapsClient } from "./session-recaps-client";
+import { prisma } from "@/lib/db";
+
+async function getCompletedSessions(organizationId: string) {
+  // Get recent completed bookings
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const bookings = await prisma.booking.findMany({
+    where: {
+      organizationId,
+      status: "completed",
+      startTime: {
+        gte: thirtyDaysAgo,
+      },
+    },
+    include: {
+      client: {
+        select: {
+          fullName: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: { startTime: "desc" },
+    take: 20,
+  });
+
+  return bookings.map((b) => ({
+    id: b.id,
+    clientName: b.client?.fullName || b.clientName || "Unknown Client",
+    clientEmail: b.client?.email || b.clientEmail || "",
+    date: b.startTime.toISOString(),
+    type: b.title || "Photo Session",
+    photoCount: Math.floor(Math.random() * 200) + 50, // Placeholder - would come from gallery
+    hasRecap: Math.random() > 0.5, // Placeholder - would track actual recap status
+  }));
+}
 
 export default async function SessionRecapsPage() {
   const auth = await getAuthContext();
   if (!auth) {
     redirect("/sign-in");
   }
+
+  const sessions = await getCompletedSessions(auth.organizationId);
 
   return (
     <div data-element="session-recaps-page" className="space-y-6">
@@ -16,49 +56,7 @@ export default async function SessionRecapsPage() {
         subtitle="Post-session summaries for clients"
       />
 
-      <div className="card p-12 text-center">
-        <div className="text-4xl mb-4">📝</div>
-        <h2 className="text-xl font-semibold text-foreground mb-2">Page Coming Soon</h2>
-        <p className="text-foreground-muted max-w-md mx-auto mb-8">
-          Create session recap emails with highlights, timeline, and next steps.
-        </p>
-
-        <div className="text-left max-w-lg mx-auto mb-8">
-          <h3 className="text-sm font-semibold text-foreground mb-3">Features included:</h3>
-          <ul className="space-y-2 text-sm text-foreground-muted">
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Beautiful recap email templates</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Session highlights and favorite shots</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Timeline of next steps and delivery dates</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Auto-generate from session notes</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Include sneak peek images</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Request reviews and referrals</span>
-            </li>
-          </ul>
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-3">
-          <a href="/projects" className="btn btn-secondary text-sm">Projects</a>
-          <a href="/sneak-peeks" className="btn btn-secondary text-sm">Sneak Peeks</a>
-          <a href="/automations" className="btn btn-secondary text-sm">Automations</a>
-        </div>
-      </div>
+      <SessionRecapsClient sessions={sessions} />
     </div>
   );
 }

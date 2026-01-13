@@ -13,8 +13,8 @@ export default async function PortalFavoritesPage() {
 
   return (
     <PortalFavoritesClient
-      clientName={data.client.fullName}
-      clientEmail={data.client.email}
+      galleries={data.galleries}
+      clientId={data.client.id}
     />
   );
 }

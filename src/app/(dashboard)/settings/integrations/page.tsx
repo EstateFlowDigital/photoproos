@@ -4,6 +4,8 @@ import { PageHeader } from "@/components/dashboard";
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { IntegrationsClient } from "./integrations-client";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 
 // ============================================================================
 // Data Fetching
@@ -126,10 +128,18 @@ async function getIntegrationsData() {
 // ============================================================================
 
 export default async function IntegrationsSettingsPage() {
-  const data = await getIntegrationsData();
+  const [data, walkthroughPreferenceResult] = await Promise.all([
+    getIntegrationsData(),
+    getWalkthroughPreference("integrations"),
+  ]);
+
+  const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data
+    ? walkthroughPreferenceResult.data.state
+    : "open";
 
   return (
     <div data-element="settings-integrations-page" className="space-y-6">
+      <WalkthroughWrapper pageId="integrations" initialState={walkthroughState} />
       <PageHeader
         title="Integrations"
         subtitle="Connect third-party apps and services to extend PhotoProOS"

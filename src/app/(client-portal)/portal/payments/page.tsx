@@ -12,9 +12,6 @@ export default async function PortalPaymentsPage() {
   }
 
   return (
-    <PortalPaymentsClient
-      clientName={data.client.fullName}
-      clientEmail={data.client.email}
-    />
+    <PortalPaymentsClient invoices={data.invoices} />
   );
 }

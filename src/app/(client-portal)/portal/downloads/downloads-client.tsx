@@ -1,136 +1,167 @@
 "use client";
 
-import { useState } from "react";
-import { PortalPageWrapper } from "../components";
-import { Bell, CheckCircle2, Sparkles } from "lucide-react";
+import { useState, useEffect } from "react";
+import { DownloadsTab, type DownloadType } from "../components/tabs/downloads-tab";
+import {
+  getGalleryZipDownload,
+  getWebSizeDownload,
+  getHighResDownload,
+  getMarketingKitDownload,
+} from "@/lib/actions/portal-downloads";
+import { useToast } from "@/components/ui/toast";
+import type { GalleryData } from "../components/types";
 
 interface PortalDownloadsClientProps {
-  clientName?: string;
-  clientEmail?: string;
+  galleries: GalleryData[];
+  clientId: string;
+  clientEmail: string;
 }
 
-export function PortalDownloadsClient({
-  clientName,
-  clientEmail,
-}: PortalDownloadsClientProps) {
-  const [email, setEmail] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+export function PortalDownloadsClient({ galleries, clientId, clientEmail }: PortalDownloadsClientProps) {
+  const { showToast } = useToast();
+  const [downloadingGallery, setDownloadingGallery] = useState<string | null>(null);
+  const [downloadType, setDownloadType] = useState<DownloadType>(null);
 
-  const handleNotifySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
+  // Favorites state (persisted to localStorage)
+  const [favorites, setFavorites] = useState<Set<string>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(`portal_favorites_${clientId}`);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return Array.isArray(parsed) ? new Set(parsed) : new Set();
+        }
+      } catch {
+        localStorage.removeItem(`portal_favorites_${clientId}`);
+      }
+    }
+    return new Set();
+  });
 
-    setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setIsSubmitted(true);
-    setIsSubmitting(false);
+  // Persist favorites to localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`portal_favorites_${clientId}`, JSON.stringify([...favorites]));
+    }
+  }, [favorites, clientId]);
+
+  const handleZipDownload = async (galleryId: string) => {
+    setDownloadingGallery(galleryId);
+    setDownloadType("zip");
+    try {
+      const result = await getGalleryZipDownload(galleryId);
+      if (result.success && result.data?.downloadUrl) {
+        window.open(result.data.downloadUrl, "_blank");
+        showToast("Download started", "success");
+      } else {
+        showToast(result.error || "Download failed", "error");
+      }
+    } catch {
+      showToast("Download failed", "error");
+    } finally {
+      setDownloadingGallery(null);
+      setDownloadType(null);
+    }
+  };
+
+  const handleWebSizeDownload = async (galleryId: string) => {
+    setDownloadingGallery(galleryId);
+    setDownloadType("web");
+    try {
+      const result = await getWebSizeDownload(galleryId);
+      if (result.success && result.data?.downloadUrl) {
+        window.open(result.data.downloadUrl, "_blank");
+        showToast("Download started", "success");
+      } else {
+        showToast(result.error || "Download failed", "error");
+      }
+    } catch {
+      showToast("Download failed", "error");
+    } finally {
+      setDownloadingGallery(null);
+      setDownloadType(null);
+    }
+  };
+
+  const handleHighResDownload = async (galleryId: string) => {
+    setDownloadingGallery(galleryId);
+    setDownloadType("highres");
+    try {
+      const result = await getHighResDownload(galleryId);
+      if (result.success && result.data?.downloadUrl) {
+        window.open(result.data.downloadUrl, "_blank");
+        showToast("Download started", "success");
+      } else {
+        showToast(result.error || "Download failed", "error");
+      }
+    } catch {
+      showToast("Download failed", "error");
+    } finally {
+      setDownloadingGallery(null);
+      setDownloadType(null);
+    }
+  };
+
+  const handleMarketingKitDownload = async (galleryId: string) => {
+    setDownloadingGallery(galleryId);
+    setDownloadType("marketing");
+    try {
+      const result = await getMarketingKitDownload(galleryId);
+      if (result.success && result.data?.downloadUrl) {
+        window.open(result.data.downloadUrl, "_blank");
+        showToast("Download started", "success");
+      } else {
+        showToast(result.error || "Marketing kit not available", "error");
+      }
+    } catch {
+      showToast("Download failed", "error");
+    } finally {
+      setDownloadingGallery(null);
+      setDownloadType(null);
+    }
+  };
+
+  const handleSelectedDownload = async (galleryId: string, _photoIds: string[]) => {
+    setDownloadingGallery(galleryId);
+    setDownloadType("selected");
+    try {
+      // For now, download the full gallery - individual photo download can be added later
+      const result = await getGalleryZipDownload(galleryId);
+      if (result.success && result.data?.downloadUrl) {
+        window.open(result.data.downloadUrl, "_blank");
+        showToast("Download started", "success");
+      } else {
+        showToast(result.error || "Download failed", "error");
+      }
+    } catch {
+      showToast("Download failed", "error");
+    } finally {
+      setDownloadingGallery(null);
+      setDownloadType(null);
+    }
   };
 
   return (
-    <PortalPageWrapper
-      clientName={clientName}
-      clientEmail={clientEmail}
-    >
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6" data-element="portal-downloads-page">
-        <h1 className="mb-2 text-2xl font-bold text-foreground">Downloads</h1>
-        <p className="mb-8 text-foreground-muted">Your download history and available files</p>
-
-        <div className="card relative overflow-hidden p-8 text-center md:p-12">
-          {/* Beta Badge */}
-          <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-[var(--primary)]/10 px-3 py-1.5 text-xs font-medium text-[var(--primary)]">
-            <Sparkles className="h-3.5 w-3.5" />
-            Coming Soon
-          </div>
-
-          <div className="mb-4 text-5xl">&#x2B07;&#xFE0F;</div>
-          <h2 className="mb-2 text-xl font-semibold text-foreground">
-            Feature in Development
-          </h2>
-          <p className="mx-auto mb-8 max-w-md text-foreground-muted">
-            Re-download previously purchased files and track download history.
-          </p>
-
-          {/* Features List */}
-          <div className="mx-auto mb-8 max-w-lg text-left">
-            <h3 className="mb-4 text-sm font-semibold text-foreground">
-              Features included:
-            </h3>
-            <ul className="space-y-3">
-              {[
-                "All purchased files in one place",
-                "High-resolution downloads",
-                "Web and print-optimized versions",
-                "Download history tracking",
-                "Bulk download options",
-                "Cloud storage integration",
-              ].map((feature, index) => (
-                <li key={index} className="flex items-start gap-3 text-sm text-foreground-muted">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--primary)]" />
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Notify Form */}
-          <div className="mx-auto mb-8 max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--background-tertiary)] p-6">
-            {isSubmitted ? (
-              <div className="flex flex-col items-center gap-2 text-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--success)]/10">
-                  <CheckCircle2 className="h-5 w-5 text-[var(--success)]" />
-                </div>
-                <p className="font-medium text-foreground">You&apos;re on the list!</p>
-                <p className="text-sm text-foreground-muted">
-                  We&apos;ll notify you when this feature is available.
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="mb-3 flex items-center justify-center gap-2">
-                  <Bell className="h-4 w-4 text-foreground-muted" />
-                  <span className="text-sm font-medium text-foreground">
-                    Get notified when it&apos;s ready
-                  </span>
-                </div>
-                <form onSubmit={handleNotifySubmit} className="flex gap-2">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                    required
-                  />
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90 disabled:opacity-50"
-                  >
-                    {isSubmitting ? "..." : "Notify Me"}
-                  </button>
-                </form>
-              </>
-            )}
-          </div>
-
-          {/* Related Links */}
-          <div className="flex flex-wrap justify-center gap-3">
-            <a
-              href="/portal"
-              className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-            >
-              Portal Home
-            </a>
-            <a
-              href="/portal/galleries"
-              className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-            >
-              Galleries
-            </a>
-          </div>
-        </div>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6" data-element="portal-downloads-page">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-foreground">Downloads</h1>
+        <p className="mt-1 text-foreground-muted">
+          Download your photos and marketing materials
+        </p>
       </div>
-    </PortalPageWrapper>
+
+      <DownloadsTab
+        galleries={galleries}
+        downloadingGallery={downloadingGallery}
+        downloadType={downloadType}
+        onZipDownload={handleZipDownload}
+        onWebSizeDownload={handleWebSizeDownload}
+        onHighResDownload={handleHighResDownload}
+        onMarketingKitDownload={handleMarketingKitDownload}
+        favorites={favorites}
+        onSelectedDownload={handleSelectedDownload}
+        clientEmail={clientEmail}
+      />
+    </div>
   );
 }

@@ -58,14 +58,14 @@ export function HowItWorksSection() {
 
   return (
     <section id="how-it-works" ref={ref} className="relative z-10 py-20 lg:py-32 overflow-hidden">
-      {/* Background */}
+      {/* Background - uses CSS variables for theme-aware colors */}
       <div className="pointer-events-none absolute inset-0">
         <div
           className="absolute inset-0 opacity-30"
           style={{
             backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
+              linear-gradient(var(--grid-line) 1px, transparent 1px),
+              linear-gradient(90deg, var(--grid-line) 1px, transparent 1px)
             `,
             backgroundSize: "64px 64px",
           }}

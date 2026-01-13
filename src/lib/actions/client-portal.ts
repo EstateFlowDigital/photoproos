@@ -351,6 +351,44 @@ export async function getClientPropertyDetails(propertyId: string) {
 }
 
 /**
+ * Get minimal data for the client portal header/navigation
+ */
+export async function getClientPortalHeaderData() {
+  const session = await getClientSession();
+
+  if (!session) {
+    return null;
+  }
+
+  // Fetch client with organization data
+  const client = await prisma.client.findUnique({
+    where: { id: session.clientId },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      organization: {
+        select: {
+          name: true,
+          logoUrl: true,
+        },
+      },
+    },
+  });
+
+  if (!client) {
+    return null;
+  }
+
+  return {
+    clientName: client.fullName,
+    clientEmail: client.email,
+    organizationName: client.organization?.name ?? null,
+    organizationLogo: client.organization?.logoUrl ?? null,
+  };
+}
+
+/**
  * Get gallery download information for client
  */
 export async function getClientGalleryDownload(galleryId: string) {
@@ -413,4 +451,48 @@ export async function getClientGalleryDownload(galleryId: string) {
     assets: assetsWithSignedUrls,
     totalSize: assetsWithSignedUrls.reduce((sum, a) => sum + (a.sizeBytes || 0), 0),
   };
+}
+
+/**
+ * Get contracts for the client portal
+ */
+export async function getClientContracts() {
+  const session = await getClientSession();
+
+  if (!session) {
+    return null;
+  }
+
+  const contracts = await prisma.contract.findMany({
+    where: {
+      clientId: session.clientId,
+    },
+    include: {
+      signers: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          signedAt: true,
+        },
+        orderBy: { sortOrder: "asc" },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return contracts.map((contract) => ({
+    id: contract.id,
+    title: contract.title,
+    status: contract.status,
+    sentAt: contract.sentAt?.toISOString() ?? null,
+    signedAt: contract.signedAt?.toISOString() ?? null,
+    createdAt: contract.createdAt.toISOString(),
+    signers: contract.signers.map((s) => ({
+      id: s.id,
+      email: s.email,
+      name: s.name,
+      signedAt: s.signedAt?.toISOString() ?? null,
+    })),
+  }));
 }

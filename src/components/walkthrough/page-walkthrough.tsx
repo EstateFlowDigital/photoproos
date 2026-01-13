@@ -1,27 +1,19 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import {
   ChevronDown,
-  ChevronUp,
-  ChevronLeft,
-  ChevronRight,
   X,
   Minimize2,
   Maximize2,
-  Eye,
   EyeOff,
   Play,
   HelpCircle,
   CheckCircle2,
-  Circle,
-  ArrowRight,
-  MousePointer2,
-  Sparkles,
+  ImageIcon,
 } from "lucide-react";
-import { Spotlight } from "./spotlight";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -57,7 +49,8 @@ interface PageWalkthroughProps {
  * PageWalkthrough Component
  *
  * A tutorial/guide component that appears on pages to help users learn features.
- * Supports four states: open, minimized, hidden, and dismissed.
+ * Uses an accordion-style layout where all steps are visible and expandable.
+ * Each step can include an optional image/screenshot.
  *
  * @example
  * <PageWalkthrough
@@ -75,61 +68,13 @@ export function PageWalkthrough({
   className,
   reduceMotion = false,
 }: PageWalkthroughProps) {
-  const [currentStep, setCurrentStep] = React.useState(0);
+  const [expandedSteps, setExpandedSteps] = React.useState<Set<string>>(
+    new Set([config.steps[0]?.id]) // First step expanded by default
+  );
   const [showDismissWarning, setShowDismissWarning] = React.useState(false);
-  const [interactiveMode, setInteractiveMode] = React.useState(false);
   const contentRef = React.useRef<HTMLDivElement>(null);
   const cardRef = React.useRef<HTMLDivElement>(null);
   const walkthroughId = `walkthrough-${pageId}`;
-
-  // Check if any steps have interactive targets
-  const hasInteractiveSteps = config.steps.some((step) => step.targetSelector);
-  const currentStepConfig = config.steps[currentStep];
-  const showSpotlight = interactiveMode && currentStepConfig?.targetSelector;
-
-  // Handle keyboard navigation
-  React.useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Only handle if walkthrough is focused or active
-      if (!cardRef.current?.contains(document.activeElement)) return;
-
-      switch (event.key) {
-        case "ArrowRight":
-        case "ArrowDown":
-          if (currentStep < config.steps.length - 1) {
-            event.preventDefault();
-            setCurrentStep(currentStep + 1);
-          }
-          break;
-        case "ArrowLeft":
-        case "ArrowUp":
-          if (currentStep > 0) {
-            event.preventDefault();
-            setCurrentStep(currentStep - 1);
-          }
-          break;
-        case "Escape":
-          event.preventDefault();
-          if (interactiveMode) {
-            setInteractiveMode(false);
-          } else {
-            onStateChange("minimized");
-          }
-          break;
-        case "Home":
-          event.preventDefault();
-          setCurrentStep(0);
-          break;
-        case "End":
-          event.preventDefault();
-          setCurrentStep(config.steps.length - 1);
-          break;
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [currentStep, config.steps.length, interactiveMode, onStateChange]);
 
   // Don't render if dismissed or hidden
   if (state === "dismissed" || state === "hidden") {
@@ -163,16 +108,16 @@ export function PageWalkthrough({
     setShowDismissWarning(false);
   };
 
-  const handleNextStep = () => {
-    if (currentStep < config.steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handlePrevStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
+  const toggleStep = (stepId: string) => {
+    setExpandedSteps((prev) => {
+      const next = new Set(prev);
+      if (next.has(stepId)) {
+        next.delete(stepId);
+      } else {
+        next.add(stepId);
+      }
+      return next;
+    });
   };
 
   const transitionClasses = reduceMotion
@@ -250,24 +195,14 @@ export function PageWalkthrough({
     );
   }
 
-  // Open state - full walkthrough card
+  // Open state - full walkthrough card with accordion
   return (
     <>
-      {/* Live region for screen reader announcements */}
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        Step {currentStep + 1} of {config.steps.length}: {currentStepConfig?.title}
-      </div>
-
       <Card
         ref={cardRef}
         id={walkthroughId}
         role="region"
-        aria-label={`${config.title} tutorial - Step ${currentStep + 1} of ${config.steps.length}`}
+        aria-label={`${config.title} tutorial`}
         aria-describedby={`${walkthroughId}-description`}
         tabIndex={0}
         className={cn(
@@ -364,176 +299,36 @@ export function PageWalkthrough({
             </div>
           )}
 
-          {/* Steps */}
-          <div className="walkthrough-steps space-y-3" role="group" aria-label="Tutorial steps">
-            <div className="flex items-start justify-between gap-4 flex-wrap">
-              <h4 className="text-sm font-medium text-foreground" id={`${walkthroughId}-steps-label`}>
-                Quick Guide
-              </h4>
-              <span className="text-xs text-foreground-muted" aria-live="polite">
-                Step {currentStep + 1} of {config.steps.length}
-              </span>
-            </div>
-            {/* Screen reader instructions */}
-            <p className="sr-only">
-              Use arrow keys to navigate between steps. Press Escape to minimize.
-            </p>
+          {/* Steps Accordion */}
+          <div className="walkthrough-steps space-y-2" role="group" aria-label="Tutorial steps">
+            <h4 className="text-sm font-medium text-foreground mb-3">
+              Quick Guide
+            </h4>
 
-            {/* Step Progress */}
-            <div
-              className="flex gap-1"
-              role="progressbar"
-              aria-valuenow={currentStep + 1}
-              aria-valuemin={1}
-              aria-valuemax={config.steps.length}
-              aria-label="Tutorial progress"
-            >
-              {config.steps.map((_, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    "h-1 flex-1 rounded-full transition-colors",
-                    index <= currentStep
-                      ? "bg-[var(--primary)]"
-                      : "bg-[var(--border)]"
-                  )}
-                />
-              ))}
-            </div>
-
-            {/* Current Step */}
-            <div
-              className={cn(
-                "rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4",
-                transitionClasses
-              )}
-            >
-              <WalkthroughStepContent
-                step={config.steps[currentStep]}
-                isActive
+            {config.steps.map((step, index) => (
+              <WalkthroughAccordionItem
+                key={step.id}
+                step={step}
+                index={index}
+                isExpanded={expandedSteps.has(step.id)}
+                onToggle={() => toggleStep(step.id)}
+                reduceMotion={reduceMotion}
               />
-            </div>
-
-            {/* Step Navigation */}
-            <div className="flex items-start justify-between gap-4 flex-wrap pt-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handlePrevStep}
-                disabled={currentStep === 0}
-                aria-label="Previous step"
-              >
-                <ChevronUp className="mr-1 h-4 w-4" />
-                Previous
-              </Button>
-
-              {currentStep < config.steps.length - 1 ? (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={handleNextStep}
-                  aria-label="Next step"
-                >
-                  Next
-                  <ChevronDown className="ml-1 h-4 w-4" />
-                </Button>
-              ) : (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={handleMinimize}
-                  aria-label="Complete tutorial"
-                >
-                  <CheckCircle2 className="mr-1 h-4 w-4" />
-                  Got it!
-                </Button>
-              )}
-            </div>
+            ))}
           </div>
 
-          {/* Interactive Mode Toggle */}
-          {hasInteractiveSteps && (
-            <div className="flex items-start justify-between gap-4 flex-wrap rounded-lg border border-[var(--primary)]/20 bg-[var(--primary)]/5 p-3">
-              <div className="flex items-center gap-2">
-                <MousePointer2 className="h-4 w-4 text-[var(--primary)]" />
-                <span className="text-sm font-medium text-foreground">
-                  Interactive Mode
-                </span>
-              </div>
-              <Button
-                variant={interactiveMode ? "primary" : "secondary"}
-                size="sm"
-                onClick={() => setInteractiveMode(!interactiveMode)}
-                aria-pressed={interactiveMode}
-              >
-                {interactiveMode ? (
-                  <>
-                    <Eye className="mr-1 h-3 w-3" />
-                    Active
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-1 h-3 w-3" />
-                    Try It
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
-
-          {/* All Steps Overview */}
-          <details className="walkthrough-all-steps">
-            <summary className="cursor-pointer text-sm font-medium text-foreground-secondary hover:text-foreground">
-              View all steps
-            </summary>
-            <ul className="mt-3 space-y-2" role="list">
-              {config.steps.map((step, index) => (
-                <li key={step.id}>
-                  <button
-                    onClick={() => setCurrentStep(index)}
-                    className={cn(
-                      "flex w-full items-start gap-3 rounded-lg p-2 text-left transition-colors",
-                      "hover:bg-[var(--ghost-hover)]",
-                      index === currentStep && "bg-[var(--primary)]/5"
-                    )}
-                    aria-current={index === currentStep ? "step" : undefined}
-                  >
-                    <span
-                      className={cn(
-                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs",
-                        index < currentStep
-                          ? "bg-[var(--success)] text-white"
-                          : index === currentStep
-                            ? "bg-[var(--primary)] text-white"
-                            : "bg-[var(--border)] text-foreground-muted"
-                      )}
-                    >
-                      {index < currentStep ? (
-                        <CheckCircle2 className="h-3 w-3" />
-                      ) : (
-                        index + 1
-                      )}
-                    </span>
-                    <div>
-                      <p
-                        className={cn(
-                          "text-sm font-medium",
-                          index === currentStep
-                            ? "text-foreground"
-                            : "text-foreground-secondary"
-                        )}
-                      >
-                        {step.title}
-                      </p>
-                      <p className="text-xs text-foreground-muted line-clamp-1">
-                        {step.description}
-                      </p>
-                    </div>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </details>
+          {/* Got it button */}
+          <div className="flex justify-end pt-2">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleMinimize}
+              aria-label="Complete tutorial"
+            >
+              <CheckCircle2 className="mr-1 h-4 w-4" />
+              Got it!
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -543,109 +338,134 @@ export function PageWalkthrough({
         onCancel={handleCancelDismiss}
         pageTitle={config.title}
       />
-
-      {/* Spotlight Overlay for Interactive Mode */}
-      {showSpotlight && currentStepConfig?.targetSelector && (
-        <Spotlight
-          targetSelector={currentStepConfig.targetSelector}
-          isActive={true}
-          padding={currentStepConfig.highlightPadding ?? 8}
-          position={currentStepConfig.tooltipPosition ?? "auto"}
-          onClickOutside={() => setInteractiveMode(false)}
-        >
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              {currentStepConfig.icon && (
-                <currentStepConfig.icon className="h-5 w-5 text-[var(--primary)]" />
-              )}
-              <h4 className="font-semibold text-foreground">
-                {currentStepConfig.title}
-              </h4>
-            </div>
-            <p className="text-sm text-foreground-secondary">
-              {currentStepConfig.description}
-            </p>
-            <div className="flex items-start justify-between gap-4 flex-wrap gap-2 pt-1">
-              <span className="text-xs text-foreground-muted">
-                Step {currentStep + 1} of {config.steps.length}
-              </span>
-              <div className="flex gap-2">
-                {currentStep > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handlePrevStep}
-                  >
-                    <ChevronLeft className="mr-1 h-3 w-3" />
-                    Back
-                  </Button>
-                )}
-                {currentStepConfig.actionLabel && currentStepConfig.actionHref && (
-                  <Link href={currentStepConfig.actionHref}>
-                    <Button variant="secondary" size="sm">
-                      {currentStepConfig.actionLabel}
-                      <ArrowRight className="ml-1 h-3 w-3" />
-                    </Button>
-                  </Link>
-                )}
-                {currentStep < config.steps.length - 1 ? (
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={handleNextStep}
-                  >
-                    Next
-                    <ChevronRight className="ml-1 h-3 w-3" />
-                  </Button>
-                ) : (
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={() => setInteractiveMode(false)}
-                  >
-                    <CheckCircle2 className="mr-1 h-3 w-3" />
-                    Done
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        </Spotlight>
-      )}
     </>
   );
 }
 
 /**
- * Individual step content component
+ * Accordion item for a single walkthrough step
  */
-interface WalkthroughStepContentProps {
+interface WalkthroughAccordionItemProps {
   step: WalkthroughStep;
-  isActive?: boolean;
+  index: number;
+  isExpanded: boolean;
+  onToggle: () => void;
+  reduceMotion?: boolean;
 }
 
-function WalkthroughStepContent({
+function WalkthroughAccordionItem({
   step,
-  isActive,
-}: WalkthroughStepContentProps) {
+  index,
+  isExpanded,
+  onToggle,
+  reduceMotion = false,
+}: WalkthroughAccordionItemProps) {
   const StepIcon = step.icon;
+  const transitionClasses = reduceMotion ? "" : "transition-all duration-200 ease-in-out";
 
   return (
-    <div className="flex items-start gap-3">
-      {StepIcon ? (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
-          <StepIcon className="h-4 w-4 text-[var(--primary)]" />
-        </div>
-      ) : (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
-          <ArrowRight className="h-4 w-4 text-[var(--primary)]" />
-        </div>
+    <div
+      className={cn(
+        "rounded-lg border border-[var(--card-border)] bg-[var(--card)] overflow-hidden",
+        transitionClasses
       )}
-      <div>
-        <h5 className="font-medium text-foreground">{step.title}</h5>
-        <p className="mt-1 text-sm text-foreground-secondary">
-          {step.description}
-        </p>
+    >
+      {/* Accordion Header */}
+      <button
+        onClick={onToggle}
+        className={cn(
+          "flex w-full items-center gap-3 p-3 text-left",
+          "hover:bg-[var(--ghost-hover)]",
+          transitionClasses
+        )}
+        aria-expanded={isExpanded}
+        aria-controls={`step-${step.id}-content`}
+      >
+        {/* Step Number */}
+        <span
+          className={cn(
+            "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium",
+            "bg-[var(--primary)] text-white"
+          )}
+        >
+          {index + 1}
+        </span>
+
+        {/* Step Icon */}
+        {StepIcon && (
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]/10">
+            <StepIcon className="h-4 w-4 text-[var(--primary)]" />
+          </div>
+        )}
+
+        {/* Step Title */}
+        <div className="flex-1 min-w-0">
+          <h5 className="font-medium text-foreground text-sm">{step.title}</h5>
+        </div>
+
+        {/* Expand/Collapse Icon */}
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 shrink-0 text-foreground-muted",
+            transitionClasses,
+            isExpanded && "rotate-180"
+          )}
+        />
+      </button>
+
+      {/* Accordion Content */}
+      <div
+        id={`step-${step.id}-content`}
+        className={cn(
+          "grid",
+          transitionClasses,
+          isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="px-3 pb-3 pt-0 space-y-3">
+            {/* Description */}
+            <p className="text-sm text-foreground-secondary pl-9">
+              {step.description}
+            </p>
+
+            {/* Step Image */}
+            <div className="pl-9">
+              {step.image ? (
+                <div className="relative aspect-video rounded-lg border border-[var(--card-border)] overflow-hidden bg-[var(--background-tertiary)]">
+                  <Image
+                    src={step.image}
+                    alt={step.imageAlt || `${step.title} screenshot`}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="relative flex aspect-video items-center justify-center rounded-lg border border-dashed border-[var(--border)] bg-[var(--background-tertiary)]">
+                  <div className="flex flex-col items-center gap-2 text-center">
+                    <ImageIcon className="h-8 w-8 text-foreground-muted" />
+                    <p className="text-xs text-foreground-muted">
+                      Screenshot coming soon
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Action Button (if provided) */}
+            {step.actionLabel && step.actionHref && (
+              <div className="pl-9">
+                <a
+                  href={step.actionHref}
+                  className="inline-flex items-center gap-1 text-sm font-medium text-[var(--primary)] hover:underline"
+                >
+                  {step.actionLabel}
+                  <ChevronDown className="h-3 w-3 -rotate-90" />
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

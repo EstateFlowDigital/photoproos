@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard";
 import { HelpBreadcrumb } from "@/components/help";
+import { ContactForm } from "./contact-form";
 
 // ============================================================================
 // Page
@@ -78,101 +79,7 @@ export default function ContactSupportPage() {
           </div>
 
           {/* Contact Form */}
-          <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6">
-            <h3 className="text-base font-semibold text-foreground">
-              Send us a Message
-            </h3>
-            <p className="mt-1 text-sm text-foreground-muted">
-              Fill out the form below and we&apos;ll respond as soon as possible.
-            </p>
-
-            <form className="mt-6 space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-foreground"
-                  >
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    className="mt-1.5 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                    placeholder="Your name"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-foreground"
-                  >
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    className="mt-1.5 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                    placeholder="you@example.com"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="subject"
-                  className="block text-sm font-medium text-foreground"
-                >
-                  Subject
-                </label>
-                <select
-                  id="subject"
-                  name="subject"
-                  className="mt-1.5 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] px-3 py-2 text-sm text-foreground focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                >
-                  <option>General Question</option>
-                  <option>Technical Issue</option>
-                  <option>Billing Inquiry</option>
-                  <option>Feature Request</option>
-                  <option>Account Issue</option>
-                  <option>Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="message"
-                  className="block text-sm font-medium text-foreground"
-                >
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows={5}
-                  className="mt-1.5 w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-secondary)] px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                  placeholder="Describe your issue or question in detail..."
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3">
-                <Link
-                  href="/help"
-                  className="rounded-lg border border-[var(--card-border)] bg-transparent px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-                >
-                  Cancel
-                </Link>
-                <button
-                  type="submit"
-                  className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary-hover)]"
-                >
-                  Send Message
-                </button>
-              </div>
-            </form>
-          </div>
+          <ContactForm />
         </div>
 
         {/* Sidebar */}

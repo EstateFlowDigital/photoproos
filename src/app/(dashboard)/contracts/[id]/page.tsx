@@ -11,6 +11,8 @@ import { formatStatusLabel, getStatusBadgeClasses } from "@/lib/status-badges";
 import { sanitizeRichText } from "@/lib/sanitize";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 
 interface ContractDetailPageProps {
   params: Promise<{ id: string }>;
@@ -40,11 +42,18 @@ function formatDateShort(date: Date): string {
 export default async function ContractDetailPage({ params }: ContractDetailPageProps) {
   const { id } = await params;
 
-  const contract = await getContract(id);
+  const [contract, walkthroughPreferenceResult] = await Promise.all([
+    getContract(id),
+    getWalkthroughPreference("contract-detail"),
+  ]);
 
   if (!contract) {
     notFound();
   }
+
+  const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data
+    ? walkthroughPreferenceResult.data.state
+    : "open";
 
   const statusLabel = contract.status === "sent"
     ? "Awaiting Signature"
@@ -104,6 +113,8 @@ export default async function ContractDetailPage({ params }: ContractDetailPageP
           { label: contract.name },
         ]}
       />
+
+      <WalkthroughWrapper pageId="contract-detail" initialState={walkthroughState} />
 
       <PageHeader
         title={contract.name}

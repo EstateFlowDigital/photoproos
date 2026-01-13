@@ -7,11 +7,192 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Landing Page Redesign** - Complete redesign inspired by analytics-driven SaaS aesthetics:
+  - New analytics-focused hero section with dashboard mockup showing photographer metrics
+  - Industry Tabs section with horizontal tab navigation for 6 photography verticals
+  - Client Experience section showcasing the gallery/payment journey for clients
+  - Metrics Showcase section displaying platform statistics with animated counters
+  - Integration Spotlight section with Stripe payments feature and gradient background
+- **Landing Components Library** - New reusable components at `/src/components/landing/`:
+  - `metric-card.tsx` - Animated metric cards with change indicators
+  - `revenue-chart.tsx` - SVG bar chart, mini chart, and sparkline components
+  - `device-mockup.tsx` - Browser, phone, and tablet mockup frames
+  - `analytics-dashboard-mockup.tsx` - Full dashboard preview with sidebar and metrics
+
+### Changed
+- Reorganized landing page section order for improved user flow
+- Replaced original hero with new analytics-focused hero section
+- Replaced Use Cases section with tabbed Industry section with case studies
+- Replaced Integrations section with focused Stripe Integration Spotlight
+- Removed several sections (Noise-to-Knowledge, Comparison, ROI Calculator, Security, Roadmap) for cleaner flow
+
+### Fixed
+- **Light Mode Support** - Added CSS custom properties for theme-aware grid patterns:
+  - Added `--grid-line`, `--grid-line-accent`, `--grid-gradient-from`, `--grid-gradient-to`, `--grid-dot` tokens
+  - Updated hero-analytics, metrics-showcase, cta, how-it-works, testimonials, and security sections to use CSS variables
+  - Grid backgrounds now automatically adapt to light/dark mode
+
+### Added
+- **Functional Client Portal Pages** - Built out full functionality for previously placeholder portal pages:
+  - `/portal/galleries` - View all galleries with photo counts, download options, and view buttons
+  - `/portal/invoices` - View invoices with payment and PDF download functionality
+  - `/portal/contracts` - View contracts with status badges, signer tracking, and sign now buttons
+  - `/portal/downloads` - Download galleries in multiple formats (web-ready, high-res, marketing pack)
+  - `/portal/payments` - View payment history with outstanding balances and pay now functionality
+  - `/portal/favorites` - Manage favorited photos across galleries with grid/list views
+  - Added `getClientContracts()` server action for portal contract fetching
+- **Video Tutorials Page** - Fully functional video tutorials hub at `/help/videos`:
+  - 18 video tutorials across 6 categories (Getting Started, Galleries, Payments, Clients, Automation, Advanced)
+  - Search functionality for finding specific tutorials
+  - Category filter tabs with counts
+  - Modal video player for playback
+  - Popular and Recently Added sections
+  - Video duration and type badges
+- **Support Ticket Creation Form** - New ticket form at `/support/new`:
+  - Category selection with visual icons (Support Request, Report Issue, Billing, Questions, Feature Request, Other)
+  - Priority selector (Low, Medium, High, Urgent) with descriptions
+  - Rich message input with helpful placeholders
+  - Suggested help articles sidebar
+  - Response time expectations by priority
+  - Redirects to ticket detail on success
+- **Help Contact Form** - Functional contact form at `/help/contact`:
+  - Form fields for name, email, subject (dropdown), and message
+  - Creates support ticket via existing `createSupportTicket` action
+  - Success state with ticket link and confirmation message
+  - Subject-to-category mapping for proper ticket categorization
+- **Field Notes Page** - Voice-to-text field notes at `/field/notes`:
+  - Voice dictation using Web Speech API with microphone button
+  - Link notes to active bookings for context
+  - Note list with creation timestamps
+  - Persistent storage with server actions
+  - Quick add floating action button
+- **Field Weather Page** - Photography weather conditions at `/field/weather`:
+  - Current weather with temperature, humidity, wind, and UV index
+  - Golden hour and blue hour calculations with sun times
+  - Active alerts when shooting during optimal light windows
+  - Hourly and 7-day forecast from Open-Meteo API
+  - Location-based using browser geolocation
+- **Field Upload Page** - On-location photo upload at `/field/upload`:
+  - File selection with image preview grid
+  - Upload to booking or gallery destination
+  - Upload progress tracking and status indicators
+  - Queue management with individual file removal
+  - Support for jpg, jpeg, png, gif, webp, heic, raw formats
+- **Field Checklist Page** - Shoot checklists at `/field/checklist`:
+  - 4 built-in templates: Real Estate, Portrait, Commercial, Event Photography
+  - Custom item addition to any checklist
+  - Progress tracking with completion percentage
+  - localStorage persistence for offline use
+  - Collapsible sections for better organization
+- **Timesheets Page** - Time tracking at `/timesheets`:
+  - Live timer with start/stop functionality
+  - Manual time entry modal with project selection
+  - Weekly view with date navigation
+  - Billable vs non-billable hour tracking
+  - Daily and weekly hour summaries
+  - Edit and delete existing entries
+  - localStorage persistence for demo data
+- **Session Recaps Page** - Post-shoot recap emails at `/session-recaps`:
+  - Session list with pending/sent status filters
+  - Stats cards for total sessions, pending recaps, and sent count
+  - Recap composer modal with highlights, sneak peek count, delivery date
+  - Next steps checklist with custom item addition
+  - Review and referral request toggle options
+  - Email simulation with toast notifications
+- **Security Settings Page** - Account security at `/settings/security`:
+  - Security score indicator (strong/needs attention)
+  - Two-factor authentication toggle with setup modal (QR code placeholder)
+  - Active sessions list with device info and revoke options
+  - Login history with success/failure indicators
+  - Password management section
+  - Account information display (email, created date, last sign-in)
+- **Reports - Profit & Loss Page** - Financial reporting at `/reports/profit-loss`:
+  - Period selector (month, quarter, YTD, 12 months)
+  - Summary cards for revenue, expenses, net profit, and profit margin
+  - Monthly revenue vs expenses comparison chart
+  - Revenue breakdown by category (Photo Sessions, Print Sales, Gallery Sales, etc.)
+  - Expenses breakdown by category (Equipment, Software, Marketing, Insurance, etc.)
+  - Profit summary with gross/net calculations and tax estimates
+  - Export to PDF and Excel buttons
+- **Reports - Tax Summary Page** - Tax preparation at `/reports/tax-summary`:
+  - Tax year selector
+  - Overview cards for gross income, deductions, net taxable income, and tax liability
+  - Quarterly estimated tax tracker with paid/unpaid status
+  - Income by source breakdown with 1099 indicators
+  - Deductions by category with icons (Equipment, Software, Travel, Home Office, etc.)
+  - Tax calculation breakdown (self-employment tax, income tax, total liability)
+  - Export for accountant button
+- **Reports - Booking Analytics Page** - Booking insights at `/reports/bookings`:
+  - Period selector with booking statistics
+  - Overview cards for total bookings, avg value, conversion rate, cancellation rate
+  - Booking status breakdown (completed, pending, cancelled)
+  - Monthly booking trend chart
+  - Bookings by service type with revenue
+  - Conversion rates by lead source
+  - Seasonal booking patterns analysis
+- **Reports - Team Performance Page** - Team productivity at `/reports/team`:
+  - Overview cards for team members, avg utilization, revenue, hours
+  - Sortable team performance table (by revenue, bookings, utilization)
+  - Individual metrics: bookings, revenue, hours, utilization rate, rating
+  - Workload distribution chart across team members
+  - Utilization color coding (green 80%+, yellow 60%+, red below)
+- **API Keys Page** - Developer integration at `/api-keys`:
+  - Create new API key with name, environment (test/production), and permissions
+  - Permission selector with 10 scopes (galleries, clients, bookings, invoices, webhooks)
+  - Key list with reveal/hide toggle and copy functionality
+  - Key metadata (created date, last used, expiration)
+  - Delete key functionality
+  - API documentation link
+- **Activity Feed Page** - Account activity at `/activity`:
+  - Timeline of all account events
+  - Filter by activity type (bookings, payments, galleries, clients, messages)
+  - Grouped by day with relative timestamps
+  - Activity icons and colors by type
+  - User attribution for each event
+  - Export button for activity reports
+
+### Fixed
+- **Help Contact Form Submission** - Contact form at `/help/contact` now properly submits to create support tickets (was previously non-functional HTML form)
+- **Support Ticket Creation** - `/support/new` page now has full form functionality instead of placeholder content
+
+### Added
+- **Walkthroughs to Additional Pages** - Extended walkthrough tutorials to more dashboard pages:
+  - `/properties` - Property Websites walkthrough (all views: list, leads, analytics)
+  - `/settings/integrations` - Integrations walkthrough
+  - `/messages` - Messages & Communication walkthrough (compose, conversations, reply, organize)
+  - `/projects` - Project Management walkthrough (kanban board, tasks, details, filtering)
+  - `/questionnaires` - Client Questionnaires walkthrough (templates, create, send, responses)
+  - `/products` - Product Catalog walkthrough (catalogs, add products, pricing, link to galleries)
+  - `/inbox` - Email Inbox walkthrough (connect email, threads, reply, organize)
+  - `/leads` - Lead Management walkthrough (sources, review, respond, analytics)
+- **Detail Page Walkthroughs** - Added walkthrough tutorials to detail/view pages:
+  - `/galleries/[id]` - Gallery detail page (manage photos, settings, delivery, analytics)
+  - `/clients/[id]` - Client profile page (overview, history, communications, quick actions)
+  - `/invoices/[id]` - Invoice detail page (overview, send, track payments, edit)
+  - `/contracts/[id]` - Contract detail page (overview, send for signature, track, download)
+
+### Changed
+- **Walkthrough Accordion Layout** - Redesigned page walkthroughs to use accordion-style layout:
+  - All steps now visible at once with expandable accordions
+  - Each step includes a screenshot/image placeholder area
+  - First step expanded by default for immediate context
+  - Smooth expand/collapse animations with CSS grid
+  - Step numbers, icons, and action links preserved in new layout
+  - Image support added to `WalkthroughStep` type (`image` and `imageAlt` fields)
+  - Applied across all dashboard pages (Dashboard, Galleries, Clients, Invoices, etc.)
+
+### Removed
+- **Walkthrough Interactive Mode** - Removed non-functional interactive mode feature from page walkthroughs:
+  - The feature required `data-tour` attributes on page elements which were never implemented
+  - Removed Spotlight overlay component, Interactive Mode toggle, and related state
+  - Replaced single-step navigation with accordion layout showing all steps
+
 ### Fixed
 - **Dashboard Layout Improvements** - Cleaned up dashboard spacing and organization:
   - Moved Edit/Add Widget controls to PageHeader actions for cleaner layout
   - Reduced vertical spacing between header and widget grid
-  - Made walkthrough video placeholder border more visible (changed to `border-visible` token)
+  - Standardized walkthrough card borders to match other cards (uses `--card-border` token)
   - Combined PageHeader and WidgetDashboard into unified DashboardClient component
 - **Dashboard Widget Integration** - Fixed 8 dashboard widgets that were showing placeholder text instead of actual content:
   - `revenue-chart` - Now displays current month, previous month, and YTD revenue
@@ -40,6 +221,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - User info and logout button
   - "Back to Portal" breadcrumb on sub-pages
   - Footer with help and contact links
+- **Client Portal Header Integration** - Added `PortalHeader` server component to client portal layout:
+  - Automatically wraps authenticated portal pages with navigation
+  - Fetches client and organization data for personalized header
+  - Shows organization logo/name when available
+  - Unauthenticated users (login page) see content without wrapper
+  - New server action `getClientPortalHeaderData()` for minimal header data fetch
 
 ### Changed
 - **50+ Placeholder Pages Updated** - Migrated placeholder pages to use new `ComingSoonPage` component with consistent Beta badge and "Get Notified" form:

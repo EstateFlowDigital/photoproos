@@ -5,6 +5,8 @@ import { getTeamMembers } from "@/lib/actions/settings";
 import { getClients } from "@/lib/actions/clients";
 import { getGalleries } from "@/lib/actions/galleries";
 import { ProjectsClient } from "./projects-client";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 
 export const dynamic = "force-dynamic";
 
@@ -19,11 +21,12 @@ export default async function ProjectsPage() {
   const defaultBoard = await getOrCreateDefaultBoard();
 
   // Fetch all data in parallel
-  const [board, teamMembersRaw, clientsRaw, galleriesRaw] = await Promise.all([
+  const [board, teamMembersRaw, clientsRaw, galleriesRaw, walkthroughPreferenceResult] = await Promise.all([
     getBoard(defaultBoard.id),
     getTeamMembers(),
     getClients(),
     getGalleries(),
+    getWalkthroughPreference("projects"),
   ]);
 
   if (!board) {
@@ -52,8 +55,13 @@ export default async function ProjectsPage() {
     name: g.name,
   }));
 
+  const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data
+    ? walkthroughPreferenceResult.data.state
+    : "open";
+
   return (
-    <div data-element="projects-page">
+    <div data-element="projects-page" className="space-y-6">
+      <WalkthroughWrapper pageId="projects" initialState={walkthroughState} />
       <ProjectsClient
         board={board}
         teamMembers={teamMembers}

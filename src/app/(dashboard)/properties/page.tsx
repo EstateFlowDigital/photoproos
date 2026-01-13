@@ -12,6 +12,8 @@ import { PageHeader, PageContextNav } from "@/components/dashboard";
 import { PropertiesPageClient } from "./properties-page-client";
 import { LeadsViewClient } from "./leads-view-client";
 import { AnalyticsViewClient } from "./analytics-view-client";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 
 interface PageProps {
   searchParams: Promise<{ view?: string }>;
@@ -25,12 +27,19 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
     redirect("/sign-in");
   }
 
+  // Fetch walkthrough preference
+  const walkthroughPreferenceResult = await getWalkthroughPreference("property-websites");
+  const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data
+    ? walkthroughPreferenceResult.data.state
+    : "open";
+
   // Handle Leads view
   if (view === "leads") {
     const leads = await getAllPropertyLeads(auth.organizationId);
 
     return (
       <div className="space-y-6" data-element="properties-page">
+        <WalkthroughWrapper pageId="property-websites" initialState={walkthroughState} />
         <PageHeader
           title="Property Leads"
           subtitle="Manage all leads from your property websites"
@@ -53,6 +62,7 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
 
     return (
       <div className="space-y-6" data-element="properties-page">
+        <WalkthroughWrapper pageId="property-websites" initialState={walkthroughState} />
         <PageHeader
           title="Property Analytics"
           subtitle="Performance overview across all properties"
@@ -84,7 +94,8 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
   };
 
   return (
-    <div data-element="properties-page">
+    <div className="space-y-6" data-element="properties-page">
+      <WalkthroughWrapper pageId="property-websites" initialState={walkthroughState} />
       <PropertiesPageClient
         websites={websites}
         projects={projects}

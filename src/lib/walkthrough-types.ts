@@ -32,7 +32,13 @@ export type WalkthroughPageId =
   | "analytics"
   | "reports"
   | "property-websites"
-  | "marketing-kit";
+  | "marketing-kit"
+  | "messages"
+  | "projects"
+  | "questionnaires"
+  | "products"
+  | "inbox"
+  | "leads";
 
 /**
  * Position for spotlight tooltip
@@ -47,6 +53,10 @@ export interface WalkthroughStep {
   title: string;
   description: string;
   icon?: ComponentType<{ className?: string }>;
+  /** Image URL to display for this step (screenshot/illustration) */
+  image?: string;
+  /** Alt text for the step image */
+  imageAlt?: string;
   /** CSS selector for the element to highlight (e.g., "[data-tour='quick-actions']") */
   targetSelector?: string;
   /** Padding around the highlighted element in pixels */
@@ -250,6 +260,51 @@ export const WALKTHROUGH_PAGES: WalkthroughMeta[] = [
     description: "Generate and export business reports",
     icon: "file-bar-chart",
     category: "settings",
+  },
+  // Communication
+  {
+    pageId: "messages",
+    label: "Messages",
+    description: "Communicate with team and clients",
+    icon: "message-square",
+    category: "clients",
+  },
+  {
+    pageId: "inbox",
+    label: "Inbox",
+    description: "Manage email communication",
+    icon: "inbox",
+    category: "clients",
+  },
+  // Projects & Leads
+  {
+    pageId: "projects",
+    label: "Projects",
+    description: "Manage projects and tasks",
+    icon: "kanban",
+    category: "core",
+  },
+  {
+    pageId: "leads",
+    label: "Leads",
+    description: "Track and convert leads",
+    icon: "user-plus",
+    category: "clients",
+  },
+  // Products & Questionnaires
+  {
+    pageId: "products",
+    label: "Products",
+    description: "Manage product catalogs",
+    icon: "shopping-bag",
+    category: "financial",
+  },
+  {
+    pageId: "questionnaires",
+    label: "Questionnaires",
+    description: "Create and manage questionnaires",
+    icon: "clipboard-list",
+    category: "clients",
   },
 ];
 

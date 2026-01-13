@@ -10,6 +10,8 @@ import type { LineItemType } from "@prisma/client";
 import { InvoiceActions } from "./invoice-actions";
 import { InvoiceSplitSection } from "./invoice-split-section";
 import { formatCurrency } from "@/lib/utils/units";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 
 function formatDate(date: Date): string {
   return new Intl.DateTimeFormat("en-US", {
@@ -74,6 +76,12 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
     notFound();
   }
 
+  // Fetch walkthrough preference
+  const walkthroughPreferenceResult = await getWalkthroughPreference("invoice-detail");
+  const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data
+    ? walkthroughPreferenceResult.data.state
+    : "open";
+
   const isOverdue = invoice.status === "sent" && new Date(invoice.dueDate) < new Date();
   const displayStatus = isOverdue && invoice.status !== "overdue" ? "overdue" : invoice.status;
   const statusLabel = isOverdue && invoice.status !== "overdue"
@@ -86,6 +94,17 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
 
   return (
     <div className="space-y-6" data-element="invoices-detail-page">
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-2 text-sm text-foreground-muted">
+        <Link href="/invoices" className="hover:text-foreground transition-colors">
+          Invoices
+        </Link>
+        <ChevronRightIcon className="h-4 w-4" />
+        <span className="text-foreground">{invoice.invoiceNumber}</span>
+      </nav>
+
+      <WalkthroughWrapper pageId="invoice-detail" initialState={walkthroughState} />
+
       <PageHeader
         title={invoice.invoiceNumber}
         subtitle={`Invoice for ${invoice.clientName || "Unknown Client"}`}
@@ -100,15 +119,6 @@ export default async function InvoiceDetailPage({ params }: InvoiceDetailPagePro
           />
         }
       />
-
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-foreground-muted">
-        <Link href="/invoices" className="hover:text-foreground transition-colors">
-          Invoices
-        </Link>
-        <ChevronRightIcon className="h-4 w-4" />
-        <span className="text-foreground">{invoice.invoiceNumber}</span>
-      </nav>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}

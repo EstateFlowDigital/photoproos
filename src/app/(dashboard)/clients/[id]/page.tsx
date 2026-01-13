@@ -8,6 +8,8 @@ import { ClientActions } from "./client-actions";
 import { ClientEmailPreferences } from "./client-email-preferences";
 import { ClientActivityTimeline } from "./client-activity-timeline";
 import { getClientEmailLogs, getClientEmailHealth } from "@/lib/actions/email-logs";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 
 const industryLabels: Record<string, { label: string; color: string }> = {
   real_estate: { label: "Real Estate", color: "bg-blue-500/10 text-blue-400" },
@@ -55,8 +57,8 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     notFound();
   }
 
-  // Fetch payments, invoices, communications, email logs, and email health for this client
-  const [payments, invoices, communications, emailLogsResult, emailHealth] = await Promise.all([
+  // Fetch payments, invoices, communications, email logs, email health, and walkthrough preference
+  const [payments, invoices, communications, emailLogsResult, emailHealth, walkthroughPreferenceResult] = await Promise.all([
     prisma.payment.findMany({
       where: {
         project: {
@@ -79,9 +81,13 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     }),
     getClientEmailLogs(id, { limit: 10 }),
     getClientEmailHealth(id),
+    getWalkthroughPreference("client-detail"),
   ]);
 
   const emailLogs = emailLogsResult.logs || [];
+  const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data
+    ? walkthroughPreferenceResult.data.state
+    : "open";
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -193,6 +199,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           { label: client.fullName || client.email },
         ]}
       />
+      <WalkthroughWrapper pageId="client-detail" initialState={walkthroughState} />
       <PageHeader
         title={client.fullName || client.email}
         subtitle={client.company || (client.fullName ? client.email : undefined)}

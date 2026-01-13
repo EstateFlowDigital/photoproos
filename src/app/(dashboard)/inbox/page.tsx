@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { InboxPageClient } from "./inbox-page-client";
 import { prisma } from "@/lib/prisma";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 
 // Types for email data
 export interface EmailAccountData {
@@ -158,10 +160,11 @@ export default async function InboxPage() {
     redirect("/sign-in");
   }
 
-  // Fetch email accounts and threads
-  const [accounts, { threads, total }] = await Promise.all([
+  // Fetch email accounts, threads, and walkthrough preference
+  const [accounts, { threads, total }, walkthroughPreferenceResult] = await Promise.all([
     getEmailAccounts(auth.organizationId),
     getEmailThreads(auth.organizationId),
+    getWalkthroughPreference("inbox"),
   ]);
 
   // Calculate stats
@@ -173,8 +176,13 @@ export default async function InboxPage() {
     },
   });
 
+  const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data
+    ? walkthroughPreferenceResult.data.state
+    : "open";
+
   return (
-    <div data-element="inbox-page">
+    <div data-element="inbox-page" className="space-y-6">
+      <WalkthroughWrapper pageId="inbox" initialState={walkthroughState} />
       <InboxPageClient
         accounts={accounts}
         threads={threads}

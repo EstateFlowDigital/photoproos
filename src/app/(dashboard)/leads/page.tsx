@@ -5,20 +5,28 @@ import { getPortfolioInquiries, getPortfolioWebsitesForLeadCreation } from "@/li
 import { getChatInquiries } from "@/lib/actions/chat-inquiries";
 import { getAllSubmissions } from "@/lib/actions/booking-forms";
 import { LeadsPageClient } from "./leads-page-client";
+import { WalkthroughWrapper } from "@/components/walkthrough";
+import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
 
 export default async function LeadsPage() {
   const _organizationId = await requireOrganizationId();
 
-  // Fetch portfolio inquiries, chat inquiries, booking form submissions, and portfolio websites
-  const [portfolioInquiries, chatInquiries, bookingSubmissions, portfolioWebsites] = await Promise.all([
+  // Fetch portfolio inquiries, chat inquiries, booking form submissions, portfolio websites, and walkthrough preference
+  const [portfolioInquiries, chatInquiries, bookingSubmissions, portfolioWebsites, walkthroughPreferenceResult] = await Promise.all([
     getPortfolioInquiries(),
     getChatInquiries(),
     getAllSubmissions(),
     getPortfolioWebsitesForLeadCreation(),
+    getWalkthroughPreference("leads"),
   ]);
+
+  const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data
+    ? walkthroughPreferenceResult.data.state
+    : "open";
 
   return (
     <div className="space-y-6" data-element="leads-page">
+      <WalkthroughWrapper pageId="leads" initialState={walkthroughState} />
       <PageHeader
         title="Leads"
         subtitle="Manage inquiries from your portfolio websites, chat widget, and booking forms"
