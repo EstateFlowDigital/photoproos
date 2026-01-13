@@ -2438,3 +2438,365 @@ export function ArchitectureDemo() {
     </div>
   );
 }
+
+// ============================================
+// INTEGRATION CONNECTION DEMO
+// ============================================
+
+export function IntegrationConnectDemo() {
+  const [connecting, setConnecting] = React.useState<string | null>(null);
+  const [connected, setConnected] = React.useState<Set<string>>(new Set(["stripe"]));
+  const [syncingData, setSyncingData] = React.useState(false);
+
+  const integrations = [
+    { id: "stripe", name: "Stripe", icon: "💳", color: "#635BFF" },
+    { id: "lightroom", name: "Lightroom", icon: "📷", color: "#31A8FF" },
+    { id: "google-drive", name: "Google Drive", icon: "☁️", color: "#4285F4" },
+    { id: "quickbooks", name: "QuickBooks", icon: "📊", color: "#2CA01C" },
+  ];
+
+  const handleConnect = (id: string) => {
+    if (connected.has(id)) return;
+    setConnecting(id);
+    setTimeout(() => {
+      setConnected((prev) => new Set([...prev, id]));
+      setConnecting(null);
+      setSyncingData(true);
+      setTimeout(() => setSyncingData(false), 1500);
+    }, 1500);
+  };
+
+  return (
+    <div className="h-full bg-[var(--background)] p-4 flex flex-col">
+      <div className="text-center mb-4">
+        <p className="text-sm font-semibold text-foreground">Connect Your Tools</p>
+        <p className="text-xs text-foreground-muted">Click to connect integrations</p>
+      </div>
+
+      {syncingData && (
+        <div className="mb-3 rounded-lg bg-[var(--success)]/10 border border-[var(--success)]/20 p-2 flex items-center gap-2">
+          <div className="h-3 w-3 rounded-full border-2 border-[var(--success)]/20 border-t-[var(--success)] animate-spin" />
+          <span className="text-xs text-[var(--success)]">Syncing data...</span>
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-2 flex-1">
+        {integrations.map((integration) => {
+          const isConnected = connected.has(integration.id);
+          const isConnecting = connecting === integration.id;
+
+          return (
+            <button
+              key={integration.id}
+              onClick={() => handleConnect(integration.id)}
+              disabled={isConnected || isConnecting}
+              className={cn(
+                "rounded-lg border p-3 flex flex-col items-center justify-center transition-all",
+                isConnected
+                  ? "border-[var(--success)]/30 bg-[var(--success)]/5"
+                  : isConnecting
+                  ? "border-[var(--primary)]/30 bg-[var(--primary)]/5"
+                  : "border-[var(--card-border)] bg-[var(--card)] hover:border-[var(--primary)]/30 hover:bg-[var(--primary)]/5"
+              )}
+            >
+              <span className="text-2xl mb-1">{integration.icon}</span>
+              <span className="text-[10px] font-medium text-foreground">{integration.name}</span>
+              {isConnecting && (
+                <div className="mt-1 h-2 w-2 rounded-full border border-[var(--primary)]/20 border-t-[var(--primary)] animate-spin" />
+              )}
+              {isConnected && (
+                <span className="mt-1 text-[8px] text-[var(--success)] flex items-center gap-0.5">
+                  <CheckCircleIcon className="h-2.5 w-2.5" /> Connected
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-3 pt-3 border-t border-[var(--card-border)]">
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-foreground-muted">{connected.size} of {integrations.length} connected</span>
+          <div className="flex gap-1">
+            {integrations.map((i) => (
+              <div
+                key={i.id}
+                className={cn(
+                  "h-2 w-2 rounded-full",
+                  connected.has(i.id) ? "bg-[var(--success)]" : "bg-[var(--foreground-muted)]/20"
+                )}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// SECURITY SCAN DEMO
+// ============================================
+
+export function SecurityScanDemo() {
+  const [scanning, setScanning] = React.useState(false);
+  const [scanProgress, setScanProgress] = React.useState(0);
+  const [scanComplete, setScanComplete] = React.useState(false);
+  const [checks, setChecks] = React.useState([
+    { id: "ssl", name: "SSL Encryption", status: "pending" as "pending" | "checking" | "passed" },
+    { id: "backup", name: "Backup Status", status: "pending" as "pending" | "checking" | "passed" },
+    { id: "2fa", name: "2FA Enabled", status: "pending" as "pending" | "checking" | "passed" },
+    { id: "gdpr", name: "GDPR Compliance", status: "pending" as "pending" | "checking" | "passed" },
+  ]);
+
+  const runScan = () => {
+    if (scanning) return;
+    setScanning(true);
+    setScanProgress(0);
+    setScanComplete(false);
+    setChecks(checks.map((c) => ({ ...c, status: "pending" as const })));
+
+    checks.forEach((check, index) => {
+      setTimeout(() => {
+        setChecks((prev) =>
+          prev.map((c) => (c.id === check.id ? { ...c, status: "checking" as const } : c))
+        );
+        setScanProgress(((index + 0.5) / checks.length) * 100);
+
+        setTimeout(() => {
+          setChecks((prev) =>
+            prev.map((c) => (c.id === check.id ? { ...c, status: "passed" as const } : c))
+          );
+          setScanProgress(((index + 1) / checks.length) * 100);
+
+          if (index === checks.length - 1) {
+            setTimeout(() => {
+              setScanning(false);
+              setScanComplete(true);
+            }, 300);
+          }
+        }, 400);
+      }, index * 600);
+    });
+  };
+
+  return (
+    <div className="h-full bg-[var(--background)] p-4 flex flex-col">
+      <div className="text-center mb-4">
+        <div className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-[var(--success)]/10 mb-2">
+          <ShieldCheckIcon className="h-5 w-5 text-[var(--success)]" />
+        </div>
+        <p className="text-sm font-semibold text-foreground">Security Status</p>
+        <p className="text-xs text-foreground-muted">Run a security scan</p>
+      </div>
+
+      {scanning && (
+        <div className="mb-3">
+          <div className="h-1.5 rounded-full bg-[var(--background-secondary)] overflow-hidden">
+            <div
+              className="h-full bg-[var(--success)] transition-all duration-300"
+              style={{ width: `${scanProgress}%` }}
+            />
+          </div>
+          <p className="text-[10px] text-foreground-muted text-center mt-1">
+            Scanning... {Math.round(scanProgress)}%
+          </p>
+        </div>
+      )}
+
+      <div className="flex-1 space-y-2">
+        {checks.map((check) => (
+          <div
+            key={check.id}
+            className={cn(
+              "rounded-lg border p-2.5 flex items-center gap-2 transition-all",
+              check.status === "passed"
+                ? "border-[var(--success)]/30 bg-[var(--success)]/5"
+                : check.status === "checking"
+                ? "border-[var(--primary)]/30 bg-[var(--primary)]/5"
+                : "border-[var(--card-border)] bg-[var(--card)]"
+            )}
+          >
+            {check.status === "pending" && (
+              <div className="h-4 w-4 rounded-full border-2 border-[var(--foreground-muted)]/20" />
+            )}
+            {check.status === "checking" && (
+              <div className="h-4 w-4 rounded-full border-2 border-[var(--primary)]/20 border-t-[var(--primary)] animate-spin" />
+            )}
+            {check.status === "passed" && (
+              <div className="h-4 w-4 rounded-full bg-[var(--success)] flex items-center justify-center">
+                <CheckSmallIcon className="h-2.5 w-2.5 text-white" />
+              </div>
+            )}
+            <span className="text-xs text-foreground flex-1">{check.name}</span>
+            {check.status === "passed" && (
+              <span className="text-[10px] text-[var(--success)]">Secure</span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-3 pt-3 border-t border-[var(--card-border)]">
+        {scanComplete ? (
+          <div className="text-center">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-[var(--success)]/10 px-3 py-1.5">
+              <CheckCircleIcon className="h-4 w-4 text-[var(--success)]" />
+              <span className="text-xs font-medium text-[var(--success)]">All checks passed!</span>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={runScan}
+            disabled={scanning}
+            className={cn(
+              "w-full py-2 rounded-lg text-xs font-medium transition-all",
+              scanning
+                ? "bg-[var(--background-secondary)] text-foreground-muted cursor-not-allowed"
+                : "bg-[var(--success)] text-white hover:bg-[var(--success)]/90"
+            )}
+          >
+            {scanning ? "Scanning..." : "Run Security Scan"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// COMPARISON INTERACTIVE DEMO
+// ============================================
+
+export function ComparisonDemo() {
+  const [hoveredFeature, setHoveredFeature] = React.useState<string | null>(null);
+  const [selectedView, setSelectedView] = React.useState<"features" | "pricing">("features");
+
+  const features = [
+    { id: "galleries", name: "Client Galleries", us: true, them: true },
+    { id: "payments", name: "Built-in Payments", us: true, them: false },
+    { id: "crm", name: "Client CRM", us: true, them: "basic" },
+    { id: "booking", name: "Booking System", us: true, them: false },
+    { id: "contracts", name: "E-Signatures", us: true, them: false },
+    { id: "analytics", name: "Analytics", us: true, them: "basic" },
+  ];
+
+  return (
+    <div className="h-full bg-[var(--background)] p-4 flex flex-col">
+      <div className="flex gap-1 p-0.5 rounded-lg bg-[var(--background-secondary)] mb-4">
+        {(["features", "pricing"] as const).map((view) => (
+          <button
+            key={view}
+            onClick={() => setSelectedView(view)}
+            className={cn(
+              "flex-1 py-1.5 rounded text-xs font-medium transition-all",
+              selectedView === view
+                ? "bg-[var(--card)] text-foreground shadow-sm"
+                : "text-foreground-muted hover:text-foreground"
+            )}
+          >
+            {view === "features" ? "Features" : "Pricing"}
+          </button>
+        ))}
+      </div>
+
+      {selectedView === "features" ? (
+        <>
+          <div className="grid grid-cols-3 gap-2 mb-3 text-center">
+            <div className="text-[10px] text-foreground-muted">Feature</div>
+            <div className="text-[10px] font-medium text-[var(--primary)]">PhotoProOS</div>
+            <div className="text-[10px] text-foreground-muted">Others</div>
+          </div>
+
+          <div className="flex-1 space-y-1.5">
+            {features.map((feature) => (
+              <div
+                key={feature.id}
+                onMouseEnter={() => setHoveredFeature(feature.id)}
+                onMouseLeave={() => setHoveredFeature(null)}
+                className={cn(
+                  "grid grid-cols-3 gap-2 py-1.5 px-2 rounded-lg transition-all",
+                  hoveredFeature === feature.id && "bg-[var(--primary)]/5"
+                )}
+              >
+                <span className="text-[10px] text-foreground">{feature.name}</span>
+                <div className="flex justify-center">
+                  {feature.us === true ? (
+                    <CheckCircleIcon className="h-4 w-4 text-[var(--success)]" />
+                  ) : (
+                    <span className="text-[10px] text-foreground-muted">{String(feature.us)}</span>
+                  )}
+                </div>
+                <div className="flex justify-center">
+                  {feature.them === true ? (
+                    <CheckCircleIcon className="h-4 w-4 text-foreground-muted" />
+                  ) : feature.them === false ? (
+                    <XCircleSmallIcon className="h-4 w-4 text-foreground-muted/30" />
+                  ) : (
+                    <span className="text-[10px] text-foreground-muted">{feature.them}</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="flex-1 flex flex-col justify-center">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-xl border-2 border-[var(--primary)] bg-[var(--primary)]/5 p-3 text-center">
+              <p className="text-[10px] text-[var(--primary)] font-medium mb-1">PhotoProOS</p>
+              <p className="text-2xl font-bold text-foreground">$29</p>
+              <p className="text-[10px] text-foreground-muted">/month</p>
+              <p className="text-[9px] text-[var(--success)] mt-2">All features included</p>
+            </div>
+            <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-3 text-center">
+              <p className="text-[10px] text-foreground-muted font-medium mb-1">Others Combined</p>
+              <p className="text-2xl font-bold text-foreground">$150+</p>
+              <p className="text-[10px] text-foreground-muted">/month</p>
+              <p className="text-[9px] text-[var(--error)] mt-2">Multiple subscriptions</p>
+            </div>
+          </div>
+
+          <div className="mt-4 text-center">
+            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--success)]/10 px-2 py-1 text-[10px] font-medium text-[var(--success)]">
+              Save $120+/month
+            </span>
+          </div>
+        </div>
+      )}
+
+      <div className="mt-3 pt-3 border-t border-[var(--card-border)] text-center">
+        <span className="text-[10px] text-foreground-muted">
+          {selectedView === "features" ? "6 features exclusive to PhotoProOS" : "One price, everything included"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// ADDITIONAL ICONS FOR NEW DEMOS
+// ============================================
+
+function ShieldCheckIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M9.661 2.237a.75.75 0 0 1 .678 0 12.02 12.02 0 0 0 7.596 1.049.75.75 0 0 1 .88.633 12.065 12.065 0 0 1-4.453 11.218 11.977 11.977 0 0 1-5.002 2.616.75.75 0 0 1-.42 0 11.977 11.977 0 0 1-5.002-2.616A12.065 12.065 0 0 1 .466 3.919a.75.75 0 0 1 .88-.633 12.02 12.02 0 0 0 7.596-1.049h.72Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function CheckSmallIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function XCircleSmallIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z" clipRule="evenodd" />
+    </svg>
+  );
+}

@@ -3,6 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
+import { IntegrationConnectDemo } from "@/components/landing/interactive-demos";
 
 interface Integration {
   name: string;
@@ -127,6 +128,20 @@ export function IntegrationsSection() {
           >
             Connect PhotoProOS to the apps you already use. No more manual exports or copy-pasting.
           </p>
+        </div>
+
+        {/* Interactive Demo */}
+        <div
+          className="mb-12"
+          style={{
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? "none" : "translateY(30px)",
+            transition: "opacity 700ms ease-out, transform 700ms ease-out",
+            transitionDelay: "250ms",
+          }}
+        >
+          <p className="text-sm font-medium text-foreground-muted mb-4 text-center">Try connecting an integration</p>
+          <IntegrationConnectDemo />
         </div>
 
         {/* Category Filter */}

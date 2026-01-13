@@ -41,6 +41,32 @@ const TestimonialsSection = dynamic(() =>
 const FAQSection = dynamic(() => import("@/components/sections/faq").then((m) => m.FAQSection));
 const CTASection = dynamic(() => import("@/components/sections/cta").then((m) => m.CTASection));
 
+// Additional sections with interactive demos
+const HeroSection = dynamic(() =>
+  import("@/components/sections/hero").then((m) => m.HeroSection)
+);
+const FivePillarsSection = dynamic(() =>
+  import("@/components/sections/five-pillars").then((m) => m.FivePillarsSection)
+);
+const ToolReplacementSection = dynamic(() =>
+  import("@/components/sections/tool-replacement").then((m) => m.ToolReplacementSection)
+);
+const CaseStudiesSection = dynamic(() =>
+  import("@/components/sections/case-studies").then((m) => m.CaseStudiesSection)
+);
+const ROICalculatorSection = dynamic(() =>
+  import("@/components/sections/roi-calculator").then((m) => m.ROICalculatorSection)
+);
+const IntegrationsSection = dynamic(() =>
+  import("@/components/sections/integrations").then((m) => m.IntegrationsSection)
+);
+const ComparisonSection = dynamic(() =>
+  import("@/components/sections/comparison").then((m) => m.ComparisonSection)
+);
+const SecuritySection = dynamic(() =>
+  import("@/components/sections/security").then((m) => m.SecuritySection)
+);
+
 // Lazy loading wrapper
 import { LazySection } from "@/components/sections/lazy-section";
 
@@ -107,6 +133,13 @@ export default async function Home() {
 
       <div className="section-divider" />
 
+      {/* Five Pillars - Core platform pillars with interactive demos */}
+      <LazySection placeholderHeight={600}>
+        <FivePillarsSection />
+      </LazySection>
+
+      <div className="section-divider" />
+
       {/* Features Section - Core product features */}
       <FeaturesSection />
 
@@ -122,8 +155,50 @@ export default async function Home() {
 
       <div className="section-divider" />
 
+      {/* Tool Replacement - Calculator showing consolidated tools */}
+      <LazySection placeholderHeight={400}>
+        <ToolReplacementSection />
+      </LazySection>
+
+      <div className="section-divider" />
+
       {/* Integration Spotlight - Stripe payments feature */}
       <IntegrationSpotlightSection />
+
+      <div className="section-divider" />
+
+      {/* Integrations - All app connections with interactive demo */}
+      <LazySection placeholderHeight={500}>
+        <IntegrationsSection />
+      </LazySection>
+
+      <div className="section-divider" />
+
+      {/* Case Studies - Success stories with metrics */}
+      <LazySection placeholderHeight={500}>
+        <CaseStudiesSection />
+      </LazySection>
+
+      <div className="section-divider" />
+
+      {/* ROI Calculator - Show potential savings */}
+      <LazySection placeholderHeight={400}>
+        <ROICalculatorSection />
+      </LazySection>
+
+      <div className="section-divider" />
+
+      {/* Comparison - Feature comparison with competitors */}
+      <LazySection placeholderHeight={600}>
+        <ComparisonSection />
+      </LazySection>
+
+      <div className="section-divider" />
+
+      {/* Security - Trust and security features */}
+      <LazySection placeholderHeight={500}>
+        <SecuritySection />
+      </LazySection>
 
       <div className="section-divider" />
 

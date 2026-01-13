@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
+import { ComparisonDemo } from "@/components/landing/interactive-demos";
 
 interface ComparisonFeature {
   name: string;
@@ -127,6 +128,20 @@ export function ComparisonSection() {
           >
             One platform that does it all. No more juggling multiple subscriptions.
           </p>
+        </div>
+
+        {/* Interactive Comparison Demo */}
+        <div
+          className="mb-12"
+          style={{
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? "none" : "translateY(30px)",
+            transition: "opacity 700ms ease-out, transform 700ms ease-out",
+            transitionDelay: "220ms",
+          }}
+        >
+          <p className="text-sm font-medium text-foreground-muted mb-4 text-center">Explore the comparison</p>
+          <ComparisonDemo />
         </div>
 
         {/* Category Filter */}

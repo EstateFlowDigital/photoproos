@@ -3,6 +3,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
+import { SecurityScanDemo } from "@/components/landing/interactive-demos";
 
 interface SecurityFeature {
   title: string;
@@ -188,6 +189,20 @@ export function SecuritySection() {
               );
             })}
           </div>
+        </div>
+
+        {/* Interactive Security Scan Demo */}
+        <div
+          className="mt-12"
+          style={{
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? "none" : "translateY(30px)",
+            transition: "opacity 700ms ease-out, transform 700ms ease-out",
+            transitionDelay: "700ms",
+          }}
+        >
+          <p className="text-sm font-medium text-foreground-muted mb-4 text-center">Run a security scan</p>
+          <SecurityScanDemo />
         </div>
 
         {/* Trust Banner */}

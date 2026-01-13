@@ -29,4 +29,8 @@ export {
   FoodDemo,
   PortraitDemo,
   ArchitectureDemo,
+  // Section-level interactive demos
+  IntegrationConnectDemo,
+  SecurityScanDemo,
+  ComparisonDemo,
 } from "./interactive-demos";
