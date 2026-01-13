@@ -614,6 +614,16 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
                   </div>
                 </div>
               </div>
+              <div className="border-t border-[var(--card-border)] p-2">
+                <Link
+                  href="/sign-out"
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-[var(--error)] hover:bg-[var(--error)]/10 transition-colors"
+                  onClick={() => setWorkspaceOpen(false)}
+                >
+                  <LogOutIcon className="h-4 w-4" />
+                  Sign out
+                </Link>
+              </div>
             </div>
           )}
         </div>
@@ -716,24 +726,30 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
           {helpOpen && (
             <div className="fixed inset-x-3 top-[72px] z-50 rounded-lg border border-[var(--card-border)] bg-[var(--card)] shadow-xl sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:mt-2 sm:w-[min(320px,calc(100vw-16px))]">
               <div className="py-1">
-                <a
-                  href="https://docs.example.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href="/help"
                   className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-[var(--background-hover)] transition-colors"
+                  onClick={() => setHelpOpen(false)}
                 >
                   <BookIcon className="h-4 w-4 text-foreground-muted" />
-                  Documentation
-                </a>
-                <a
-                  href="https://support.example.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  Help Center
+                </Link>
+                <Link
+                  href="/help/videos"
                   className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-[var(--background-hover)] transition-colors"
+                  onClick={() => setHelpOpen(false)}
+                >
+                  <VideoIcon className="h-4 w-4 text-foreground-muted" />
+                  Video Tutorials
+                </Link>
+                <Link
+                  href="/support/new"
+                  className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-[var(--background-hover)] transition-colors"
+                  onClick={() => setHelpOpen(false)}
                 >
                   <LifebuoyIcon className="h-4 w-4 text-foreground-muted" />
-                  Support
-                </a>
+                  Contact Support
+                </Link>
                 <button
                   onClick={() => {
                     setHelpOpen(false);
@@ -746,13 +762,14 @@ export function DashboardTopbar({ className, navLinks: _navLinks = [], navMode: 
                   <kbd className="rounded border border-[var(--card-border)] bg-[var(--background)] px-1.5 py-0.5 text-xs text-foreground-muted">?</kbd>
                 </button>
                 <div className="border-t border-[var(--card-border)] my-1" />
-                <a
-                  href="mailto:feedback@example.com"
+                <Link
+                  href="/support/new?type=feedback"
                   className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-[var(--background-hover)] transition-colors"
+                  onClick={() => setHelpOpen(false)}
                 >
                   <FeedbackIcon className="h-4 w-4 text-foreground-muted" />
                   Send feedback
-                </a>
+                </Link>
               </div>
             </div>
           )}
@@ -1088,6 +1105,23 @@ function BoltIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M11.983 1.907a.75.75 0 0 0-1.292-.657l-8.5 9.5A.75.75 0 0 0 2.75 12h6.572l-1.305 6.093a.75.75 0 0 0 1.292.657l8.5-9.5A.75.75 0 0 0 17.25 8h-6.572l1.305-6.093Z" />
+    </svg>
+  );
+}
+
+function LogOutIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M3 4.25A2.25 2.25 0 0 1 5.25 2h5.5A2.25 2.25 0 0 1 13 4.25v2a.75.75 0 0 1-1.5 0v-2a.75.75 0 0 0-.75-.75h-5.5a.75.75 0 0 0-.75.75v11.5c0 .414.336.75.75.75h5.5a.75.75 0 0 0 .75-.75v-2a.75.75 0 0 1 1.5 0v2A2.25 2.25 0 0 1 10.75 18h-5.5A2.25 2.25 0 0 1 3 15.75V4.25Z" clipRule="evenodd" />
+      <path fillRule="evenodd" d="M19 10a.75.75 0 0 0-.75-.75H8.704l1.048-.943a.75.75 0 1 0-1.004-1.114l-2.5 2.25a.75.75 0 0 0 0 1.114l2.5 2.25a.75.75 0 1 0 1.004-1.114l-1.048-.943h9.546A.75.75 0 0 0 19 10Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function VideoIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M3.25 4A2.25 2.25 0 0 0 1 6.25v7.5A2.25 2.25 0 0 0 3.25 16h7.5A2.25 2.25 0 0 0 13 13.75v-7.5A2.25 2.25 0 0 0 10.75 4h-7.5ZM19 4.75a.75.75 0 0 0-1.28-.53l-3 3a.75.75 0 0 0-.22.53v4.5c0 .199.079.39.22.53l3 3a.75.75 0 0 0 1.28-.53V4.75Z" />
     </svg>
   );
 }

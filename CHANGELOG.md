@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Sign Out Button** - Added sign out option to workspace dropdown in topbar with dedicated `/sign-out` page using Clerk authentication
+- **Improved Help Dropdown** - Updated Help dropdown with internal navigation links:
+  - Help Center → `/help`
+  - Video Tutorials → `/help/videos`
+  - Contact Support → `/support/new`
+  - Send feedback → `/support/new?type=feedback`
+- **Functional Dashboard Pages** - Built full functionality for 5 previously placeholder dashboard pages:
+  - `/proposals` - Proposal management with status tracking (draft, sent, viewed, accepted, expired, declined), filtering, search, and actions (send, duplicate, delete)
+  - `/templates` - Central template hub with category cards (email, contract, questionnaire, proposal), template list with usage stats and actions
+  - `/workflows` - Workflow automation management with trigger/action flow visualization, status toggles (active, paused, draft), and workflow stats
+  - `/availability` - Booking availability settings with weekly working hours configuration, blocked dates management, buffer time, lead time, and advance booking limits
+  - `/archive` - Archived items browser with type filtering (project, client, invoice, gallery, booking), search, restore, and permanent delete functionality
 - **Landing Page Redesign** - Complete redesign inspired by analytics-driven SaaS aesthetics:
   - New analytics-focused hero section with dashboard mockup showing photographer metrics
   - Industry Tabs section with horizontal tab navigation for 6 photography verticals
