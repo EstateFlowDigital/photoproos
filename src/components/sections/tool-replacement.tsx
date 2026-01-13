@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
+import { ToolReplacementCalculator } from "@/components/landing/interactive-demos";
 
 /**
  * Tool Replacement Section
@@ -288,6 +289,16 @@ export function ToolReplacementSection() {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Interactive Calculator */}
+        <div
+          className={cn(
+            "mt-12 lg:mt-16 transition-all duration-700 delay-400",
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          )}
+        >
+          <ToolReplacementCalculator />
         </div>
 
         {/* CTA */}

@@ -844,3 +844,912 @@ function ListIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+// ============================================
+// PILLAR DEMOS - Interactive demos for Five Pillars Section
+// ============================================
+
+// OPERATE PILLAR - CRM & Client Management Demo
+export function OperatePillarDemo() {
+  const [selectedClient, setSelectedClient] = React.useState<string | null>(null);
+  const [activeView, setActiveView] = React.useState<"clients" | "calendar" | "projects">("clients");
+
+  const clients = [
+    { id: "c1", name: "Premier Realty", email: "contact@premier.com", status: "active", projects: 12, avatar: "PR" },
+    { id: "c2", name: "Sarah Mitchell", email: "sarah@email.com", status: "active", projects: 3, avatar: "SM" },
+    { id: "c3", name: "Tech Solutions Inc", email: "info@techsol.com", status: "lead", projects: 0, avatar: "TS" },
+    { id: "c4", name: "Bella Cucina", email: "hello@bella.com", status: "active", projects: 5, avatar: "BC" },
+  ];
+
+  return (
+    <div className="h-full flex flex-col text-xs">
+      {/* Mini tabs */}
+      <div className="flex gap-1 p-2 border-b border-[var(--card-border)]">
+        {(["clients", "calendar", "projects"] as const).map((view) => (
+          <button
+            key={view}
+            onClick={() => setActiveView(view)}
+            className={cn(
+              "px-2 py-1 rounded text-[10px] font-medium transition-colors",
+              activeView === view
+                ? "bg-[var(--primary)] text-white"
+                : "bg-[var(--background-secondary)] text-foreground-muted hover:text-foreground"
+            )}
+          >
+            {view.charAt(0).toUpperCase() + view.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {activeView === "clients" && (
+        <div className="flex-1 p-2 space-y-1.5">
+          {clients.map((client) => (
+            <button
+              key={client.id}
+              onClick={() => setSelectedClient(selectedClient === client.id ? null : client.id)}
+              className={cn(
+                "w-full flex items-center gap-2 p-2 rounded-lg text-left transition-all",
+                selectedClient === client.id
+                  ? "bg-[var(--primary)]/10 border border-[var(--primary)]"
+                  : "bg-[var(--card)] border border-[var(--card-border)] hover:border-[var(--border-visible)]"
+              )}
+            >
+              <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--ai)] flex items-center justify-center text-[8px] font-bold text-white shrink-0">
+                {client.avatar}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-foreground truncate">{client.name}</p>
+                <p className="text-foreground-muted truncate">{client.email}</p>
+              </div>
+              <span className={cn(
+                "shrink-0 px-1.5 py-0.5 rounded text-[8px] font-medium",
+                client.status === "active" ? "bg-[var(--success)]/10 text-[var(--success)]" : "bg-[var(--warning)]/10 text-[var(--warning)]"
+              )}>
+                {client.status}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {activeView === "calendar" && (
+        <div className="flex-1 p-2">
+          <div className="grid grid-cols-7 gap-1 mb-2">
+            {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+              <div key={i} className="text-center text-[8px] text-foreground-muted">{d}</div>
+            ))}
+          </div>
+          <div className="grid grid-cols-7 gap-1">
+            {Array.from({ length: 35 }, (_, i) => {
+              const day = i - 3;
+              const hasEvent = [5, 12, 15, 22, 28].includes(day);
+              const isToday = day === 15;
+              return (
+                <div
+                  key={i}
+                  className={cn(
+                    "aspect-square rounded flex items-center justify-center text-[9px] relative",
+                    day < 1 || day > 31 ? "text-foreground/20" : "text-foreground",
+                    isToday && "bg-[var(--primary)] text-white",
+                    hasEvent && !isToday && "font-bold"
+                  )}
+                >
+                  {day > 0 && day <= 31 ? day : ""}
+                  {hasEvent && !isToday && (
+                    <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-[var(--primary)]" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-2 space-y-1">
+            <div className="flex items-center gap-2 p-1.5 rounded bg-[var(--primary)]/10 border-l-2 border-[var(--primary)]">
+              <span className="text-[9px] text-foreground-muted">2:00 PM</span>
+              <span className="text-[9px] font-medium text-foreground">Corporate Headshots</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeView === "projects" && (
+        <div className="flex-1 p-2 space-y-1.5">
+          {[
+            { name: "Wedding - Johnson", status: "In Progress", progress: 75 },
+            { name: "Real Estate Bundle", status: "Delivered", progress: 100 },
+            { name: "Corporate Event", status: "Editing", progress: 40 },
+          ].map((project, i) => (
+            <div key={i} className="p-2 rounded-lg bg-[var(--card)] border border-[var(--card-border)]">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="font-medium text-foreground">{project.name}</span>
+                <span className={cn(
+                  "px-1.5 py-0.5 rounded text-[8px]",
+                  project.progress === 100 ? "bg-[var(--success)]/10 text-[var(--success)]" : "bg-[var(--warning)]/10 text-[var(--warning)]"
+                )}>
+                  {project.status}
+                </span>
+              </div>
+              <div className="h-1.5 rounded-full bg-[var(--background-secondary)] overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-[var(--primary)] transition-all"
+                  style={{ width: `${project.progress}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// DELIVER PILLAR - Gallery Delivery Demo
+export function DeliverPillarDemo() {
+  const [selectedPhoto, setSelectedPhoto] = React.useState<number | null>(null);
+  const [downloadStarted, setDownloadStarted] = React.useState(false);
+
+  const photos = [
+    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=150&h=150&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=150&h=150&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=150&h=150&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=150&h=150&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=150&h=150&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=150&h=150&fit=crop&q=80",
+  ];
+
+  const handleDownload = () => {
+    setDownloadStarted(true);
+    setTimeout(() => setDownloadStarted(false), 2000);
+  };
+
+  return (
+    <div className="h-full flex flex-col">
+      {/* Gallery header */}
+      <div className="flex items-center justify-between p-2 border-b border-[var(--card-border)]">
+        <div>
+          <p className="text-[10px] font-medium text-foreground">Luxury Estate</p>
+          <p className="text-[8px] text-foreground-muted">32 photos • 245 MB</p>
+        </div>
+        <button
+          onClick={handleDownload}
+          disabled={downloadStarted}
+          className={cn(
+            "px-2 py-1 rounded text-[9px] font-medium transition-all",
+            downloadStarted
+              ? "bg-[var(--success)] text-white"
+              : "bg-[var(--ai)] text-white hover:bg-[var(--ai)]/90"
+          )}
+        >
+          {downloadStarted ? "✓ Downloading..." : "Download All"}
+        </button>
+      </div>
+
+      {/* Photo grid */}
+      <div className="flex-1 p-2">
+        <div className="grid grid-cols-3 gap-1.5">
+          {photos.map((photo, i) => (
+            <button
+              key={i}
+              onClick={() => setSelectedPhoto(selectedPhoto === i ? null : i)}
+              className={cn(
+                "relative aspect-square rounded overflow-hidden transition-all",
+                selectedPhoto === i && "ring-2 ring-[var(--ai)] ring-offset-1 ring-offset-[var(--background)]"
+              )}
+            >
+              <img src={photo} alt="" className="h-full w-full object-cover" />
+              {selectedPhoto === i && (
+                <div className="absolute inset-0 bg-[var(--ai)]/20 flex items-center justify-center">
+                  <CheckCircleIcon className="h-4 w-4 text-white drop-shadow" />
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Selection bar */}
+      {selectedPhoto !== null && (
+        <div className="p-2 border-t border-[var(--card-border)] bg-[var(--ai)]/5">
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] text-foreground">1 photo selected</span>
+            <div className="flex gap-1">
+              <button className="px-2 py-1 rounded bg-[var(--card)] border border-[var(--card-border)] text-[8px] hover:bg-[var(--background-hover)]">
+                <HeartIcon className="h-3 w-3 inline mr-0.5" /> Favorite
+              </button>
+              <button className="px-2 py-1 rounded bg-[var(--ai)] text-white text-[8px]">
+                <DownloadIcon className="h-3 w-3 inline mr-0.5" /> Download
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// GET PAID PILLAR - Invoice & Payment Demo
+export function GetPaidPillarDemo() {
+  const [selectedInvoice, setSelectedInvoice] = React.useState<string | null>(null);
+
+  const invoices = [
+    { id: "INV-087", client: "Premier Realty", amount: 625, status: "paid", date: "Dec 15" },
+    { id: "INV-088", client: "Sarah Mitchell", amount: 450, status: "pending", date: "Dec 18" },
+    { id: "INV-089", client: "Tech Solutions", amount: 1250, status: "overdue", date: "Dec 10" },
+  ];
+
+  const totalRevenue = 12450;
+  const pendingAmount = 1700;
+
+  return (
+    <div className="h-full flex flex-col text-xs">
+      {/* Stats row */}
+      <div className="grid grid-cols-2 gap-2 p-2 border-b border-[var(--card-border)]">
+        <div className="p-2 rounded-lg bg-[var(--success)]/10">
+          <p className="text-[8px] text-foreground-muted">This Month</p>
+          <p className="text-base font-bold text-[var(--success)]">${totalRevenue.toLocaleString()}</p>
+        </div>
+        <div className="p-2 rounded-lg bg-[var(--warning)]/10">
+          <p className="text-[8px] text-foreground-muted">Pending</p>
+          <p className="text-base font-bold text-[var(--warning)]">${pendingAmount.toLocaleString()}</p>
+        </div>
+      </div>
+
+      {/* Invoice list */}
+      <div className="flex-1 p-2 space-y-1.5">
+        {invoices.map((inv) => (
+          <button
+            key={inv.id}
+            onClick={() => setSelectedInvoice(selectedInvoice === inv.id ? null : inv.id)}
+            className={cn(
+              "w-full p-2 rounded-lg text-left transition-all",
+              selectedInvoice === inv.id
+                ? "bg-[var(--success)]/10 border border-[var(--success)]"
+                : "bg-[var(--card)] border border-[var(--card-border)] hover:border-[var(--border-visible)]"
+            )}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-medium text-foreground">{inv.id}</span>
+              <span className={cn(
+                "px-1.5 py-0.5 rounded text-[8px] font-medium uppercase",
+                inv.status === "paid" && "bg-[var(--success)]/10 text-[var(--success)]",
+                inv.status === "pending" && "bg-[var(--warning)]/10 text-[var(--warning)]",
+                inv.status === "overdue" && "bg-[var(--error)]/10 text-[var(--error)]"
+              )}>
+                {inv.status}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-foreground-muted">{inv.client}</span>
+              <span className="font-semibold text-foreground">${inv.amount}</span>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* Mini chart */}
+      <div className="p-2 border-t border-[var(--card-border)]">
+        <p className="text-[8px] text-foreground-muted mb-1">Revenue Trend</p>
+        <div className="flex items-end gap-1 h-8">
+          {[40, 55, 45, 70, 65, 80, 90].map((h, i) => (
+            <div
+              key={i}
+              className="flex-1 rounded-t bg-[var(--success)]/30 hover:bg-[var(--success)]/50 transition-colors cursor-pointer"
+              style={{ height: `${h}%` }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// GROW PILLAR - Analytics & Marketing Demo
+export function GrowPillarDemo() {
+  const [activeMetric, setActiveMetric] = React.useState<"clients" | "revenue" | "reviews">("clients");
+
+  const metrics = {
+    clients: { value: 847, change: "+23%", data: [30, 45, 42, 58, 65, 72, 85] },
+    revenue: { value: "$12.4k", change: "+18%", data: [40, 35, 55, 48, 62, 70, 78] },
+    reviews: { value: "4.9", change: "+0.2", data: [4.5, 4.6, 4.7, 4.7, 4.8, 4.8, 4.9] },
+  };
+
+  const current = metrics[activeMetric];
+
+  return (
+    <div className="h-full flex flex-col text-xs">
+      {/* Metric tabs */}
+      <div className="flex gap-1 p-2 border-b border-[var(--card-border)]">
+        {(["clients", "revenue", "reviews"] as const).map((m) => (
+          <button
+            key={m}
+            onClick={() => setActiveMetric(m)}
+            className={cn(
+              "flex-1 px-2 py-1.5 rounded text-[9px] font-medium transition-colors",
+              activeMetric === m
+                ? "bg-[var(--warning)] text-white"
+                : "bg-[var(--background-secondary)] text-foreground-muted hover:text-foreground"
+            )}
+          >
+            {m.charAt(0).toUpperCase() + m.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {/* Main metric */}
+      <div className="p-3 text-center">
+        <p className="text-2xl font-bold text-foreground">{current.value}</p>
+        <p className="text-[var(--success)] text-[10px] font-medium">{current.change} vs last month</p>
+      </div>
+
+      {/* Chart */}
+      <div className="flex-1 px-3">
+        <div className="h-full flex items-end gap-1.5">
+          {current.data.map((value, i) => {
+            const normalizedHeight = activeMetric === "reviews"
+              ? ((value - 4) / 1) * 100
+              : (value / Math.max(...current.data)) * 100;
+            return (
+              <div
+                key={i}
+                className="flex-1 rounded-t bg-[var(--warning)]/30 hover:bg-[var(--warning)]/50 transition-colors cursor-pointer"
+                style={{ height: `${normalizedHeight}%` }}
+              />
+            );
+          })}
+        </div>
+        <div className="flex justify-between mt-1">
+          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+            <span key={day} className="text-[7px] text-foreground-muted">{day}</span>
+          ))}
+        </div>
+      </div>
+
+      {/* Quick stats */}
+      <div className="grid grid-cols-3 gap-1 p-2 border-t border-[var(--card-border)]">
+        <div className="text-center p-1 rounded bg-[var(--background-secondary)]">
+          <p className="text-[10px] font-bold text-foreground">156</p>
+          <p className="text-[7px] text-foreground-muted">New Leads</p>
+        </div>
+        <div className="text-center p-1 rounded bg-[var(--background-secondary)]">
+          <p className="text-[10px] font-bold text-foreground">89%</p>
+          <p className="text-[7px] text-foreground-muted">Retention</p>
+        </div>
+        <div className="text-center p-1 rounded bg-[var(--background-secondary)]">
+          <p className="text-[10px] font-bold text-foreground">32</p>
+          <p className="text-[7px] text-foreground-muted">Referrals</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// AUTOMATE PILLAR - Workflow Builder Demo
+export function AutomatePillarDemo() {
+  const [activeWorkflow, setActiveWorkflow] = React.useState(0);
+  const [isRunning, setIsRunning] = React.useState(false);
+
+  const workflows = [
+    { name: "New Booking", trigger: "Booking Created", actions: ["Send confirmation", "Create project", "Add to calendar"] },
+    { name: "Gallery Ready", trigger: "Gallery Published", actions: ["Email client", "SMS notification", "Create invoice"] },
+    { name: "Payment Received", trigger: "Invoice Paid", actions: ["Send receipt", "Unlock downloads", "Update status"] },
+  ];
+
+  const runWorkflow = () => {
+    setIsRunning(true);
+    setTimeout(() => setIsRunning(false), 2000);
+  };
+
+  return (
+    <div className="h-full flex flex-col text-xs">
+      {/* Workflow selector */}
+      <div className="flex gap-1 p-2 border-b border-[var(--card-border)] overflow-x-auto">
+        {workflows.map((wf, i) => (
+          <button
+            key={i}
+            onClick={() => setActiveWorkflow(i)}
+            className={cn(
+              "px-2 py-1 rounded whitespace-nowrap text-[9px] font-medium transition-colors",
+              activeWorkflow === i
+                ? "bg-[var(--error)] text-white"
+                : "bg-[var(--background-secondary)] text-foreground-muted hover:text-foreground"
+            )}
+          >
+            {wf.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Workflow visualization */}
+      <div className="flex-1 p-3">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="flex-1 p-2 rounded-lg bg-[var(--error)]/10 border border-[var(--error)]/30">
+            <p className="text-[8px] text-foreground-muted">Trigger</p>
+            <p className="text-[10px] font-medium text-foreground">{workflows[activeWorkflow].trigger}</p>
+          </div>
+          <ArrowRightIcon className="h-4 w-4 text-foreground-muted shrink-0" />
+        </div>
+
+        {/* Actions chain */}
+        <div className="space-y-2">
+          {workflows[activeWorkflow].actions.map((action, i) => (
+            <div
+              key={i}
+              className={cn(
+                "flex items-center gap-2 p-2 rounded-lg border transition-all",
+                isRunning && i <= Math.floor(Date.now() / 500) % 3
+                  ? "bg-[var(--success)]/10 border-[var(--success)]"
+                  : "bg-[var(--card)] border-[var(--card-border)]"
+              )}
+            >
+              <div className={cn(
+                "h-5 w-5 rounded-full flex items-center justify-center text-[8px] font-bold shrink-0",
+                isRunning && i <= Math.floor(Date.now() / 500) % 3
+                  ? "bg-[var(--success)] text-white"
+                  : "bg-[var(--error)]/20 text-[var(--error)]"
+              )}>
+                {i + 1}
+              </div>
+              <span className="text-[10px] text-foreground">{action}</span>
+              {isRunning && i <= Math.floor(Date.now() / 500) % 3 && (
+                <CheckCircleIcon className="h-3 w-3 text-[var(--success)] ml-auto" />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Test button */}
+      <div className="p-2 border-t border-[var(--card-border)]">
+        <button
+          onClick={runWorkflow}
+          disabled={isRunning}
+          className={cn(
+            "w-full py-2 rounded-lg text-[10px] font-medium transition-all",
+            isRunning
+              ? "bg-[var(--success)] text-white"
+              : "bg-[var(--error)] text-white hover:bg-[var(--error)]/90"
+          )}
+        >
+          {isRunning ? "Running automation..." : "Test Workflow"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// TOOL REPLACEMENT SECTION - Interactive Calculator
+// ============================================
+
+export function ToolReplacementCalculator() {
+  const [selectedTools, setSelectedTools] = React.useState<Set<string>>(new Set(["gallery", "payments", "crm", "email"]));
+
+  const tools = [
+    { id: "gallery", name: "Gallery Software", cost: 29 },
+    { id: "payments", name: "Payment Processing", cost: 25 },
+    { id: "crm", name: "CRM Tool", cost: 35 },
+    { id: "email", name: "Email Marketing", cost: 20 },
+    { id: "scheduling", name: "Scheduling App", cost: 15 },
+    { id: "contracts", name: "Contract Tool", cost: 25 },
+    { id: "accounting", name: "Accounting", cost: 30 },
+    { id: "storage", name: "Cloud Storage", cost: 15 },
+  ];
+
+  const toggleTool = (id: string) => {
+    setSelectedTools((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const currentCost = tools
+    .filter((t) => selectedTools.has(t.id))
+    .reduce((sum, t) => sum + t.cost, 0);
+
+  const photoProOSCost = 49;
+  const savings = currentCost - photoProOSCost;
+
+  return (
+    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 lg:p-6">
+      <h4 className="text-lg font-semibold text-foreground mb-4">Calculate Your Savings</h4>
+
+      {/* Tool grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
+        {tools.map((tool) => (
+          <button
+            key={tool.id}
+            onClick={() => toggleTool(tool.id)}
+            className={cn(
+              "p-3 rounded-lg border text-left transition-all",
+              selectedTools.has(tool.id)
+                ? "bg-[var(--primary)]/10 border-[var(--primary)]"
+                : "bg-[var(--background)] border-[var(--card-border)] hover:border-[var(--border-visible)]"
+            )}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-medium text-foreground">{tool.name}</span>
+              {selectedTools.has(tool.id) && (
+                <CheckCircleIcon className="h-4 w-4 text-[var(--primary)]" />
+              )}
+            </div>
+            <span className="text-sm font-semibold text-foreground-muted">${tool.cost}/mo</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Comparison */}
+      <div className="grid grid-cols-3 gap-4 p-4 rounded-lg bg-[var(--background-secondary)]">
+        <div className="text-center">
+          <p className="text-xs text-foreground-muted mb-1">Current Tools</p>
+          <p className="text-2xl font-bold text-[var(--error)]">${currentCost}</p>
+          <p className="text-[10px] text-foreground-muted">/month</p>
+        </div>
+        <div className="flex items-center justify-center">
+          <ArrowRightIcon className="h-6 w-6 text-foreground-muted" />
+        </div>
+        <div className="text-center">
+          <p className="text-xs text-foreground-muted mb-1">PhotoProOS</p>
+          <p className="text-2xl font-bold text-[var(--success)]">${photoProOSCost}</p>
+          <p className="text-[10px] text-foreground-muted">/month</p>
+        </div>
+      </div>
+
+      {/* Savings highlight */}
+      {savings > 0 && (
+        <div className="mt-4 p-3 rounded-lg bg-[var(--success)]/10 border border-[var(--success)]/30 text-center">
+          <p className="text-sm text-foreground-muted">You could save</p>
+          <p className="text-3xl font-bold text-[var(--success)]">${savings}/month</p>
+          <p className="text-xs text-foreground-muted">(${savings * 12}/year)</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================
+// CASE STUDY EXPANDED DEMO
+// ============================================
+
+export function CaseStudyMetricsDemo({ photographer }: { photographer: {
+  name: string;
+  business: string;
+  image: string;
+  beforeMetrics: { revenue: string; hours: string; tools: string };
+  afterMetrics: { revenue: string; hours: string; tools: string };
+  quote: string;
+}}) {
+  const [showAfter, setShowAfter] = React.useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setShowAfter(true), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <img
+          src={photographer.image}
+          alt={photographer.name}
+          className="h-12 w-12 rounded-full object-cover"
+        />
+        <div>
+          <p className="font-semibold text-foreground">{photographer.name}</p>
+          <p className="text-sm text-foreground-muted">{photographer.business}</p>
+        </div>
+      </div>
+
+      {/* Metrics comparison */}
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        <MetricCompare
+          label="Revenue"
+          before={photographer.beforeMetrics.revenue}
+          after={photographer.afterMetrics.revenue}
+          showAfter={showAfter}
+        />
+        <MetricCompare
+          label="Admin Hours"
+          before={photographer.beforeMetrics.hours}
+          after={photographer.afterMetrics.hours}
+          showAfter={showAfter}
+          inverted
+        />
+        <MetricCompare
+          label="Tools Used"
+          before={photographer.beforeMetrics.tools}
+          after={photographer.afterMetrics.tools}
+          showAfter={showAfter}
+          inverted
+        />
+      </div>
+
+      {/* Quote */}
+      <blockquote className="text-sm italic text-foreground-muted border-l-2 border-[var(--primary)] pl-3">
+        "{photographer.quote}"
+      </blockquote>
+    </div>
+  );
+}
+
+function MetricCompare({ label, before, after, showAfter, inverted = false }: {
+  label: string;
+  before: string;
+  after: string;
+  showAfter: boolean;
+  inverted?: boolean;
+}) {
+  return (
+    <div className="text-center">
+      <p className="text-[10px] text-foreground-muted mb-1">{label}</p>
+      <div className="relative h-8 overflow-hidden">
+        <p className={cn(
+          "text-lg font-bold transition-all duration-500",
+          showAfter ? "opacity-0 -translate-y-full" : "opacity-100 translate-y-0",
+          "text-foreground-muted"
+        )}>
+          {before}
+        </p>
+        <p className={cn(
+          "absolute inset-0 text-lg font-bold transition-all duration-500",
+          showAfter ? "opacity-100 translate-y-0" : "opacity-0 translate-y-full",
+          inverted ? "text-[var(--success)]" : "text-[var(--primary)]"
+        )}>
+          {after}
+        </p>
+      </div>
+      <p className="text-[8px] text-foreground-muted">
+        {showAfter ? "After PhotoProOS" : "Before"}
+      </p>
+    </div>
+  );
+}
+
+// ============================================
+// CONTRACT SIGNING DEMO
+// ============================================
+
+export function ContractSigningDemo() {
+  const [step, setStep] = React.useState<"review" | "signing" | "signed">("review");
+  const [signatureDrawn, setSignatureDrawn] = React.useState(false);
+
+  const handleSign = () => {
+    setStep("signing");
+    setTimeout(() => {
+      setSignatureDrawn(true);
+      setTimeout(() => setStep("signed"), 500);
+    }, 1000);
+  };
+
+  const handleReset = () => {
+    setStep("review");
+    setSignatureDrawn(false);
+  };
+
+  return (
+    <div className="h-full flex flex-col">
+      {/* Contract header */}
+      <div className="p-3 border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-foreground">Photography Services Agreement</p>
+            <p className="text-xs text-foreground-muted">Premier Realty • Wedding Package</p>
+          </div>
+          <span className={cn(
+            "px-2 py-1 rounded text-[10px] font-medium",
+            step === "signed"
+              ? "bg-[var(--success)]/10 text-[var(--success)]"
+              : "bg-[var(--warning)]/10 text-[var(--warning)]"
+          )}>
+            {step === "signed" ? "Signed" : "Pending"}
+          </span>
+        </div>
+      </div>
+
+      {/* Contract content */}
+      <div className="flex-1 p-3 overflow-y-auto">
+        {step === "review" && (
+          <div className="space-y-3 text-xs">
+            <div className="p-2 rounded bg-[var(--background-secondary)]">
+              <p className="font-medium text-foreground mb-1">Services</p>
+              <p className="text-foreground-muted">Full day wedding photography coverage (8 hours)</p>
+            </div>
+            <div className="p-2 rounded bg-[var(--background-secondary)]">
+              <p className="font-medium text-foreground mb-1">Deliverables</p>
+              <p className="text-foreground-muted">500+ edited photos, online gallery, print rights</p>
+            </div>
+            <div className="p-2 rounded bg-[var(--background-secondary)]">
+              <p className="font-medium text-foreground mb-1">Investment</p>
+              <p className="text-foreground-muted">$2,500 (50% deposit due upon signing)</p>
+            </div>
+          </div>
+        )}
+
+        {step === "signing" && (
+          <div className="h-full flex flex-col items-center justify-center">
+            <div className="w-full max-w-[200px] aspect-[3/1] rounded border-2 border-dashed border-[var(--border-visible)] bg-[var(--background)] relative overflow-hidden">
+              {signatureDrawn && (
+                <svg viewBox="0 0 200 60" className="absolute inset-0 w-full h-full animate-draw-signature">
+                  <path
+                    d="M 20 40 Q 40 20 60 40 T 100 40 T 140 35 T 180 40"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="text-foreground"
+                  />
+                </svg>
+              )}
+            </div>
+            <p className="text-xs text-foreground-muted mt-2">Signing...</p>
+          </div>
+        )}
+
+        {step === "signed" && (
+          <div className="h-full flex flex-col items-center justify-center text-center">
+            <div className="h-12 w-12 rounded-full bg-[var(--success)]/10 flex items-center justify-center mb-3">
+              <CheckCircleIcon className="h-6 w-6 text-[var(--success)]" />
+            </div>
+            <p className="text-sm font-medium text-foreground">Contract Signed!</p>
+            <p className="text-xs text-foreground-muted mt-1">
+              A copy has been sent to your email
+            </p>
+            <button
+              onClick={handleReset}
+              className="mt-3 text-xs text-[var(--primary)] hover:underline"
+            >
+              View another demo
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Sign button */}
+      {step === "review" && (
+        <div className="p-3 border-t border-[var(--card-border)]">
+          <button
+            onClick={handleSign}
+            className="w-full py-2 rounded-lg bg-[var(--primary)] text-white text-sm font-medium hover:bg-[var(--primary)]/90 transition-colors"
+          >
+            Sign Contract
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================
+// BOOKING CALENDAR DEMO
+// ============================================
+
+export function BookingCalendarDemo() {
+  const [selectedDate, setSelectedDate] = React.useState<number | null>(null);
+  const [selectedTime, setSelectedTime] = React.useState<string | null>(null);
+  const [booked, setBooked] = React.useState(false);
+
+  const bookedDates = [8, 15, 22];
+  const availableTimes = ["9:00 AM", "11:00 AM", "2:00 PM", "4:00 PM"];
+
+  const handleBook = () => {
+    setBooked(true);
+    setTimeout(() => {
+      setBooked(false);
+      setSelectedDate(null);
+      setSelectedTime(null);
+    }, 3000);
+  };
+
+  if (booked) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center text-center p-4">
+        <Confetti />
+        <div className="relative z-10">
+          <div className="h-12 w-12 rounded-full bg-[var(--success)]/10 flex items-center justify-center mb-3 mx-auto">
+            <CheckCircleIcon className="h-6 w-6 text-[var(--success)]" />
+          </div>
+          <p className="text-sm font-medium text-foreground">Booking Confirmed!</p>
+          <p className="text-xs text-foreground-muted mt-1">
+            Dec {selectedDate} at {selectedTime}
+          </p>
+          <p className="text-[10px] text-foreground-muted mt-2">
+            Confirmation email sent
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full flex flex-col">
+      {/* Header */}
+      <div className="p-2 border-b border-[var(--card-border)]">
+        <p className="text-sm font-medium text-foreground">Book a Session</p>
+        <p className="text-xs text-foreground-muted">December 2025</p>
+      </div>
+
+      {/* Calendar */}
+      <div className="p-2">
+        <div className="grid grid-cols-7 gap-1 mb-1">
+          {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+            <div key={i} className="text-center text-[8px] text-foreground-muted">{d}</div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {Array.from({ length: 35 }, (_, i) => {
+            const day = i - 1;
+            const isBooked = bookedDates.includes(day);
+            const isSelected = selectedDate === day;
+            const isValid = day >= 1 && day <= 31 && !isBooked;
+            return (
+              <button
+                key={i}
+                onClick={() => isValid && setSelectedDate(day)}
+                disabled={!isValid}
+                className={cn(
+                  "aspect-square rounded text-[9px] flex items-center justify-center transition-all",
+                  day < 1 || day > 31 && "invisible",
+                  isBooked && "bg-[var(--error)]/10 text-[var(--error)] cursor-not-allowed",
+                  isSelected && "bg-[var(--primary)] text-white",
+                  isValid && !isSelected && "hover:bg-[var(--background-hover)] text-foreground"
+                )}
+              >
+                {day > 0 && day <= 31 ? day : ""}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Time slots */}
+      {selectedDate && (
+        <div className="flex-1 p-2 border-t border-[var(--card-border)]">
+          <p className="text-[10px] text-foreground-muted mb-2">Available Times</p>
+          <div className="grid grid-cols-2 gap-1">
+            {availableTimes.map((time) => (
+              <button
+                key={time}
+                onClick={() => setSelectedTime(time)}
+                className={cn(
+                  "py-1.5 rounded text-[10px] font-medium transition-colors",
+                  selectedTime === time
+                    ? "bg-[var(--primary)] text-white"
+                    : "bg-[var(--background-secondary)] text-foreground hover:bg-[var(--background-hover)]"
+                )}
+              >
+                {time}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Book button */}
+      {selectedDate && selectedTime && (
+        <div className="p-2 border-t border-[var(--card-border)]">
+          <button
+            onClick={handleBook}
+            className="w-full py-2 rounded-lg bg-[var(--success)] text-white text-xs font-medium hover:bg-[var(--success)]/90 transition-colors"
+          >
+            Confirm Booking
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================
+// MORE ICONS
+// ============================================
+
+function ArrowRightIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" clipRule="evenodd" />
+    </svg>
+  );
+}

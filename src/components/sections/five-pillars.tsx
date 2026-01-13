@@ -3,6 +3,13 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
+import {
+  OperatePillarDemo,
+  DeliverPillarDemo,
+  GetPaidPillarDemo,
+  GrowPillarDemo,
+  AutomatePillarDemo,
+} from "@/components/landing/interactive-demos";
 
 /**
  * Five Pillars Section
@@ -286,7 +293,7 @@ export function FivePillarsSection() {
                   </ul>
                 </div>
 
-                {/* Visual Mockup */}
+                {/* Interactive Demo */}
                 <div className="relative">
                   <div
                     className="aspect-[4/3] rounded-xl border border-[var(--border)] bg-[var(--background-tertiary)] overflow-hidden"
@@ -294,14 +301,14 @@ export function FivePillarsSection() {
                   >
                     {/* Gradient overlay */}
                     <div
-                      className="absolute inset-0 opacity-10"
+                      className="absolute inset-0 opacity-10 pointer-events-none"
                       style={{
                         background: `linear-gradient(135deg, ${pillar.color} 0%, transparent 60%)`,
                       }}
                     />
-                    {/* Mockup content placeholder */}
-                    <div className="relative h-full w-full p-4 lg:p-6">
-                      <PillarMockup pillar={pillar} />
+                    {/* Interactive demo content */}
+                    <div className="relative h-full w-full">
+                      <InteractivePillarDemo pillarId={pillar.id} />
                     </div>
                   </div>
                 </div>
@@ -337,142 +344,22 @@ export function FivePillarsSection() {
   );
 }
 
-// Pillar Mockup Component - Shows relevant UI for each pillar
-function PillarMockup({ pillar }: { pillar: Pillar }) {
-  const mockupContent = {
-    operate: (
-      <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-lg bg-[var(--primary)]/20" />
-          <div className="flex-1 space-y-1">
-            <div className="h-3 w-24 rounded bg-foreground/20" />
-            <div className="h-2 w-32 rounded bg-foreground/10" />
-          </div>
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="aspect-square rounded-lg border border-[var(--border)] bg-[var(--card)] p-2"
-            >
-              <div className="h-2 w-8 rounded bg-foreground/20 mb-2" />
-              <div className="h-6 w-full rounded bg-[var(--primary)]/10" />
-            </div>
-          ))}
-        </div>
-        <div className="h-24 rounded-lg border border-[var(--border)] bg-[var(--card)] p-3">
-          <div className="h-2 w-20 rounded bg-foreground/20 mb-2" />
-          <div className="space-y-2">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-[var(--primary)]/30" />
-                <div className="h-2 flex-1 rounded bg-foreground/10" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    ),
-    deliver: (
-      <div className="space-y-3">
-        <div className="grid grid-cols-3 gap-2">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="aspect-square rounded-lg bg-gradient-to-br from-[var(--ai)]/20 to-[var(--primary)]/10"
-            />
-          ))}
-        </div>
-        <div className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--card)] p-3">
-          <div className="space-y-1">
-            <div className="h-2 w-16 rounded bg-foreground/20" />
-            <div className="h-3 w-12 rounded bg-[var(--ai)]/30" />
-          </div>
-          <div className="h-8 w-20 rounded-lg bg-[var(--ai)] flex items-center justify-center">
-            <span className="text-[10px] font-medium text-white">Download</span>
-          </div>
-        </div>
-      </div>
-    ),
-    "get-paid": (
-      <div className="space-y-3">
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-3">
-          <div className="flex items-center justify-between mb-3">
-            <div className="h-2 w-16 rounded bg-foreground/20" />
-            <div className="h-4 w-12 rounded bg-[var(--success)]/20 flex items-center justify-center">
-              <span className="text-[8px] text-[var(--success)]">Paid</span>
-            </div>
-          </div>
-          <div className="text-lg font-bold text-foreground">$2,450.00</div>
-        </div>
-        <div className="h-20 rounded-lg border border-[var(--border)] bg-[var(--card)] p-3">
-          <div className="flex h-full items-end gap-1">
-            {[40, 65, 45, 80, 55, 70, 90].map((h, i) => (
-              <div
-                key={i}
-                className="flex-1 rounded-t bg-[var(--success)]/30"
-                style={{ height: `${h}%` }}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    ),
-    grow: (
-      <div className="space-y-3">
-        <div className="flex gap-2">
-          <div className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--card)] p-3">
-            <div className="text-xl font-bold text-foreground">847</div>
-            <div className="h-2 w-16 rounded bg-foreground/10 mt-1" />
-          </div>
-          <div className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--card)] p-3">
-            <div className="text-xl font-bold text-[var(--success)]">+23%</div>
-            <div className="h-2 w-16 rounded bg-foreground/10 mt-1" />
-          </div>
-        </div>
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-3">
-          <div className="h-2 w-24 rounded bg-foreground/20 mb-3" />
-          <div className="space-y-2">
-            {[80, 60, 45].map((w, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <div className="h-2 rounded bg-[var(--warning)]/30" style={{ width: `${w}%` }} />
-                <span className="text-[10px] text-foreground-muted">{w}%</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    ),
-    automate: (
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card)] p-3">
-          <div className="h-6 w-6 rounded-full bg-[var(--error)]/20 flex items-center justify-center">
-            <span className="text-[10px]">1</span>
-          </div>
-          <div className="h-px flex-1 border-t border-dashed border-[var(--border-visible)]" />
-          <div className="h-6 w-6 rounded-full bg-[var(--error)]/20 flex items-center justify-center">
-            <span className="text-[10px]">2</span>
-          </div>
-          <div className="h-px flex-1 border-t border-dashed border-[var(--border-visible)]" />
-          <div className="h-6 w-6 rounded-full bg-[var(--error)]/20 flex items-center justify-center">
-            <span className="text-[10px]">3</span>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          {["Trigger", "Action", "Delay", "Email"].map((label) => (
-            <div
-              key={label}
-              className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-2 text-center"
-            >
-              <span className="text-[10px] text-foreground-muted">{label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
-  };
-
-  return mockupContent[pillar.id as keyof typeof mockupContent] || null;
+// Interactive Pillar Demo Component - Renders the appropriate demo for each pillar
+function InteractivePillarDemo({ pillarId }: { pillarId: string }) {
+  switch (pillarId) {
+    case "operate":
+      return <OperatePillarDemo />;
+    case "deliver":
+      return <DeliverPillarDemo />;
+    case "get-paid":
+      return <GetPaidPillarDemo />;
+    case "grow":
+      return <GrowPillarDemo />;
+    case "automate":
+      return <AutomatePillarDemo />;
+    default:
+      return null;
+  }
 }
 
 // Icons

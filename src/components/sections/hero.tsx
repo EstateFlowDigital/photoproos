@@ -6,7 +6,13 @@ import { Button } from "@/components/ui/button";
 import { PhotoProOSLogo } from "@/components/ui/photoproos-logo";
 import { VideoModal } from "@/components/ui/video-modal";
 import { cn } from "@/lib/utils";
-import { ClientPortalDemo, PaymentDemo, EnhancedGalleryDemo } from "@/components/landing/interactive-demos";
+import {
+  ClientPortalDemo,
+  PaymentDemo,
+  EnhancedGalleryDemo,
+  ContractSigningDemo,
+  BookingCalendarDemo,
+} from "@/components/landing/interactive-demos";
 
 // Animated counter hook
 function useAnimatedCounter(end: number, duration: number = 2000, startOnMount: boolean = true) {
@@ -38,10 +44,10 @@ function useAnimatedCounter(end: number, duration: number = 2000, startOnMount: 
 const demoSections = [
   { id: "dashboard", label: "Dashboard", icon: DashboardIcon },
   { id: "galleries", label: "Galleries", icon: GalleryIcon },
-  { id: "clients", label: "Clients", icon: ClientIcon },
   { id: "client-portal", label: "Client Portal", icon: PortalIcon },
   { id: "payment-flow", label: "Pay & Deliver", icon: PaymentIcon },
-  { id: "scheduling", label: "Scheduling", icon: CalendarIcon },
+  { id: "contracts", label: "Contracts", icon: ContractIcon },
+  { id: "booking", label: "Booking", icon: CalendarIcon },
 ];
 
 // Animated grid background component
@@ -158,10 +164,10 @@ function InteractiveDemo({ activeSection, onSectionChange }: { activeSection: st
             <div className="absolute inset-0 overflow-y-auto p-4 lg:p-6">
               {activeSection === "dashboard" && <DashboardDemo />}
               {activeSection === "galleries" && <EnhancedGalleryDemo />}
-              {activeSection === "clients" && <ClientsDemo />}
               {activeSection === "client-portal" && <ClientPortalDemo />}
               {activeSection === "payment-flow" && <PaymentDemo />}
-              {activeSection === "scheduling" && <SchedulingDemo />}
+              {activeSection === "contracts" && <ContractSigningDemo />}
+              {activeSection === "booking" && <BookingCalendarDemo />}
             </div>
           </div>
         </div>
@@ -854,6 +860,14 @@ function PortalIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path fillRule="evenodd" d="M4.25 2A2.25 2.25 0 0 0 2 4.25v11.5A2.25 2.25 0 0 0 4.25 18h11.5A2.25 2.25 0 0 0 18 15.75V4.25A2.25 2.25 0 0 0 15.75 2H4.25ZM3.5 4.25a.75.75 0 0 1 .75-.75h2.5v5h-3.25V4.25ZM6.75 10h-3.25v5.75c0 .414.336.75.75.75h2.5V10Zm1.5-6.5h7.5a.75.75 0 0 1 .75.75v11.5a.75.75 0 0 1-.75.75h-7.5v-13Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function ContractIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M4.5 2A1.5 1.5 0 0 0 3 3.5v13A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V7.621a1.5 1.5 0 0 0-.44-1.06l-4.12-4.122A1.5 1.5 0 0 0 11.378 2H4.5Zm2.25 8.5a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Zm0 3a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5h-6.5Z" clipRule="evenodd" />
     </svg>
   );
 }
