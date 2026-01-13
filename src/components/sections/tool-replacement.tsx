@@ -160,7 +160,7 @@ export function ToolReplacementSection() {
             </div>
 
             {/* Tool Grid */}
-            <div className="grid grid-cols-5 gap-2" role="list" aria-label="Tools replaced by PhotoProOS">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2" role="list" aria-label="Tools replaced by PhotoProOS">
               {replacedTools.map((tool, index) => (
                 <div
                   key={tool.name}

@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Landing Page Polish (Round 2)** - Additional refinements for responsive layouts and button consistency:
+  - **CTA Section** - Complete redesign with gradient background, scroll animations, responsive button layout, and trust indicators
+  - **Tool Replacement** - Made tool grid responsive (3 columns on mobile, 5 on desktop)
+  - All section buttons now use `flex-col` on mobile and `sm:flex-row` on desktop for proper stacking
+  - Proper `asChild` pattern for all Button + Link combinations
+
 - **Landing Page Polish** - Comprehensive styling and UX improvements across all landing page sections:
   - **Navbar** - Reduced height from 88px to 64px, white CTA button with dark text for better contrast
   - **Hero Section** - White CTA button styling, gradient headline text, improved typography and spacing
