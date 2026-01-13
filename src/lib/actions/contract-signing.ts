@@ -31,6 +31,7 @@ import {
   sendContractSigningEmail,
   sendContractSignedConfirmationEmail,
 } from "@/lib/email/send";
+import { triggerContractSigned } from "@/lib/gamification";
 
 // =============================================================================
 // Types
@@ -644,6 +645,22 @@ export async function signContract(
         },
       },
     });
+
+    // Fire gamification trigger when contract is fully signed
+    if (allSigned) {
+      // Get the organization owner to award XP
+      const owner = await prisma.organizationMember.findFirst({
+        where: {
+          organizationId: signer.contract.organizationId,
+          role: "owner",
+        },
+        select: { userId: true },
+      });
+
+      if (owner) {
+        triggerContractSigned(owner.userId, signer.contract.organizationId);
+      }
+    }
 
     // Send confirmation email to the signer
     // Non-blocking - don't fail the action if email fails

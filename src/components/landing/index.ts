@@ -20,4 +20,13 @@ export {
   // Additional demos
   ContractSigningDemo,
   BookingCalendarDemo,
+  // Interactive client gallery (phone mockup)
+  InteractiveClientGalleryDemo,
+  // Industry-specific demos
+  RealEstateDemo,
+  CommercialDemo,
+  EventsDemo,
+  FoodDemo,
+  PortraitDemo,
+  ArchitectureDemo,
 } from "./interactive-demos";

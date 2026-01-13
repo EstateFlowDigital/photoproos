@@ -16,7 +16,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 
 type GiftCardStatus = "active" | "partially_used" | "fully_used" | "expired";
 

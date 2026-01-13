@@ -17,7 +17,7 @@ import {
   Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 
 type PipelineStage = "inquiry" | "quoted" | "negotiating" | "booked" | "completed";
 

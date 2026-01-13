@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import type { CommunicationType, CommunicationDirection } from "@prisma/client";
 import { requireOrganizationId, requireUserId } from "./auth-helper";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
+import { triggerEmailSent, triggerSmsSent } from "@/lib/gamification";
 
 export interface CreateCommunicationInput {
   clientId: string;
@@ -147,6 +148,15 @@ export async function createCommunication(
       where: { id: input.clientId },
       data: { lastActivityAt: new Date() },
     });
+
+    // Fire gamification triggers for outbound communications
+    if (input.direction === "outbound") {
+      if (input.type === "email") {
+        triggerEmailSent(userId, organizationId);
+      } else if (input.type === "sms") {
+        triggerSmsSent(userId, organizationId);
+      }
+    }
 
     revalidatePath(`/clients/${input.clientId}`);
 

@@ -16,7 +16,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 
 type GearCategory = "camera" | "lens" | "lighting" | "audio" | "accessory" | "computer";
 type GearStatus = "active" | "maintenance" | "retired";

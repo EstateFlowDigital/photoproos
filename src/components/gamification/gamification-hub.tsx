@@ -77,7 +77,7 @@ export const GamificationHub = memo(function GamificationHub({
             </div>
           </div>
           <Link
-            href="/achievements"
+            href="/progress"
             className="flex items-center gap-1 text-sm text-[var(--primary)] hover:underline"
           >
             View All
@@ -119,7 +119,7 @@ export const GamificationHub = memo(function GamificationHub({
           icon={Trophy}
           label="Recent Achievements"
           value={recentAchievementsCount}
-          href="/achievements"
+          href="/progress"
           color="text-[var(--warning)]"
         />
 
@@ -240,7 +240,7 @@ export const GamificationHubCompact = memo(function GamificationHubCompact({
 
         {/* View More */}
         <Link
-          href="/achievements"
+          href="/progress"
           className="rounded-lg p-2 text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] hover:text-[var(--foreground)] transition-colors"
           aria-label="View achievements"
         >

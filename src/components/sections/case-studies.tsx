@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
+import { CaseStudyMetricsDemo } from "@/components/landing/interactive-demos";
 
 /**
  * Case Studies Section
@@ -219,6 +220,26 @@ export function CaseStudiesSection() {
               );
             })}
           </div>
+        </div>
+
+        {/* Featured Case Study with Interactive Metrics */}
+        <div
+          className={cn(
+            "mb-10 transition-all duration-500 delay-350",
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          )}
+        >
+          <p className="text-sm font-medium text-foreground-muted mb-4 text-center">Featured Success Story</p>
+          <CaseStudyMetricsDemo
+            photographer={{
+              name: "Sarah Chen",
+              business: "Chen Real Estate Media",
+              image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&q=80",
+              beforeMetrics: { revenue: "$4.2K", hours: "20/wk", tools: "7 apps" },
+              afterMetrics: { revenue: "$7.1K", hours: "5/wk", tools: "1 app" },
+              quote: "PhotoProOS transformed my entire workflow. I went from juggling 7 different tools to running everything from one dashboard.",
+            }}
+          />
         </div>
 
         {/* Case Studies Grid */}

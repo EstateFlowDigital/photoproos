@@ -1753,3 +1753,688 @@ function ArrowRightIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+// ============================================
+// INTERACTIVE CLIENT GALLERY DEMO (for phone mockup)
+// ============================================
+
+export function InteractiveClientGalleryDemo() {
+  const [favorites, setFavorites] = React.useState<Set<number>>(new Set([0, 3]));
+  const [selectedPhotos, setSelectedPhotos] = React.useState<Set<number>>(new Set());
+  const [showCheckout, setShowCheckout] = React.useState(false);
+  const [paymentComplete, setPaymentComplete] = React.useState(false);
+
+  const photos = [
+    { id: 0, gradient: "from-[var(--primary)]/60 to-[var(--ai)]/60" },
+    { id: 1, gradient: "from-rose-500/60 to-pink-600/60" },
+    { id: 2, gradient: "from-amber-500/60 to-orange-600/60" },
+    { id: 3, gradient: "from-emerald-500/60 to-green-600/60" },
+    { id: 4, gradient: "from-cyan-500/60 to-blue-600/60" },
+    { id: 5, gradient: "from-violet-500/60 to-purple-600/60" },
+    { id: 6, gradient: "from-[var(--primary)]/60 to-cyan-600/60" },
+    { id: 7, gradient: "from-pink-500/60 to-rose-600/60" },
+    { id: 8, gradient: "from-emerald-500/60 to-teal-600/60" },
+  ];
+
+  const toggleFavorite = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelect = (id: number) => {
+    setSelectedPhotos((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleCheckout = () => {
+    setShowCheckout(true);
+    setTimeout(() => {
+      setPaymentComplete(true);
+      setTimeout(() => {
+        setPaymentComplete(false);
+        setShowCheckout(false);
+        setSelectedPhotos(new Set());
+      }, 2500);
+    }, 1500);
+  };
+
+  const pricePerPhoto = 15;
+  const total = selectedPhotos.size * pricePerPhoto;
+
+  if (paymentComplete) {
+    return (
+      <div className="h-full bg-[var(--background)] flex flex-col items-center justify-center relative overflow-hidden">
+        <Confetti />
+        <div className="relative z-10 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--success)]/10">
+            <CheckCircleIcon className="h-6 w-6 text-[var(--success)]" />
+          </div>
+          <p className="text-sm font-semibold text-foreground">Payment Successful!</p>
+          <p className="text-xs text-foreground-muted mt-1">{selectedPhotos.size} photos unlocked</p>
+          <p className="text-[10px] text-foreground-muted mt-2">Downloading now...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (showCheckout) {
+    return (
+      <div className="h-full bg-[var(--background)] flex flex-col items-center justify-center">
+        <div className="h-10 w-10 rounded-full border-4 border-[var(--primary)]/20 border-t-[var(--primary)] animate-spin mb-3" />
+        <p className="text-xs font-medium text-foreground">Processing payment...</p>
+        <p className="text-[10px] text-foreground-muted mt-1">Please wait</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full bg-[var(--background)] text-foreground flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-[var(--card-border)] px-3 py-2.5">
+        <div>
+          <p className="text-[9px] text-foreground-muted uppercase tracking-wider">Gallery</p>
+          <p className="text-xs font-medium">Sunset Wedding</p>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <button className="rounded-md bg-[var(--background-elevated)] p-1">
+            <HeartIcon className="h-3.5 w-3.5 text-foreground-muted" />
+          </button>
+        </div>
+      </div>
+
+      {/* Photo grid */}
+      <div className="flex-1 p-2 overflow-y-auto">
+        <div className="grid grid-cols-3 gap-1">
+          {photos.map((photo, i) => {
+            const isFavorited = favorites.has(photo.id);
+            const isSelected = selectedPhotos.has(photo.id);
+            return (
+              <button
+                key={photo.id}
+                onClick={() => toggleSelect(photo.id)}
+                className={cn(
+                  "aspect-square rounded overflow-hidden relative group transition-all",
+                  i === 0 && "col-span-2 row-span-2",
+                  isSelected && "ring-2 ring-[var(--primary)] ring-offset-1 ring-offset-[var(--background)]"
+                )}
+              >
+                <div className={cn("h-full w-full bg-gradient-to-br", photo.gradient)} />
+                {/* Favorite button */}
+                <button
+                  onClick={(e) => toggleFavorite(photo.id, e)}
+                  className={cn(
+                    "absolute top-1 right-1 rounded-full p-0.5 transition-all",
+                    isFavorited
+                      ? "bg-[var(--error)] text-white"
+                      : "bg-black/50 text-white opacity-0 group-hover:opacity-100"
+                  )}
+                >
+                  <HeartIcon className={cn("h-3 w-3", isFavorited && "fill-current")} />
+                </button>
+                {/* Selection indicator */}
+                {isSelected && (
+                  <div className="absolute bottom-1 left-1 rounded bg-[var(--primary)] p-0.5">
+                    <CheckCircleIcon className="h-3 w-3 text-white" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Bottom bar */}
+      <div className="border-t border-[var(--card-border)] bg-[var(--card)] p-2.5">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <p className="text-[10px] text-foreground-muted">Selected</p>
+            <p className="text-xs font-medium">{selectedPhotos.size} photos</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] text-foreground-muted">Total</p>
+            <p className="text-sm font-bold text-[var(--success)]">${total.toFixed(2)}</p>
+          </div>
+        </div>
+        <button
+          onClick={handleCheckout}
+          disabled={selectedPhotos.size === 0}
+          className={cn(
+            "w-full rounded-lg py-2 text-xs font-medium transition-all",
+            selectedPhotos.size > 0
+              ? "bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90"
+              : "bg-[var(--background-elevated)] text-foreground-muted cursor-not-allowed"
+          )}
+        >
+          {selectedPhotos.size > 0 ? `Pay & Download` : "Select photos to download"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// INDUSTRY-SPECIFIC DEMOS
+// ============================================
+
+// Real Estate Demo - Property gallery with MLS-ready export
+export function RealEstateDemo() {
+  const [selectedView, setSelectedView] = React.useState<"photos" | "virtual" | "floor">("photos");
+  const [exporting, setExporting] = React.useState(false);
+
+  const handleExport = () => {
+    setExporting(true);
+    setTimeout(() => setExporting(false), 1500);
+  };
+
+  return (
+    <div className="h-full flex flex-col text-xs">
+      {/* Property header */}
+      <div className="p-2 border-b border-[var(--card-border)]">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-medium text-foreground">1234 Ocean View Dr</p>
+            <p className="text-[10px] text-foreground-muted">32 photos • Delivered</p>
+          </div>
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className={cn(
+              "px-2 py-1 rounded text-[9px] font-medium transition-all",
+              exporting
+                ? "bg-[var(--success)] text-white"
+                : "bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90"
+            )}
+          >
+            {exporting ? "✓ Exported" : "MLS Export"}
+          </button>
+        </div>
+      </div>
+
+      {/* View tabs */}
+      <div className="flex border-b border-[var(--card-border)]">
+        {(["photos", "virtual", "floor"] as const).map((view) => (
+          <button
+            key={view}
+            onClick={() => setSelectedView(view)}
+            className={cn(
+              "flex-1 py-1.5 text-[9px] font-medium transition-colors",
+              selectedView === view
+                ? "border-b-2 border-[var(--primary)] text-[var(--primary)]"
+                : "text-foreground-muted hover:text-foreground"
+            )}
+          >
+            {view === "photos" ? "Photos" : view === "virtual" ? "360° Tour" : "Floor Plan"}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 p-2">
+        {selectedView === "photos" && (
+          <div className="grid grid-cols-3 gap-1">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className={cn(
+                "aspect-square rounded overflow-hidden bg-gradient-to-br",
+                i === 0 && "col-span-2 row-span-2",
+                i % 3 === 0 ? "from-blue-500/50 to-cyan-500/50" : i % 3 === 1 ? "from-amber-500/50 to-orange-500/50" : "from-emerald-500/50 to-green-500/50"
+              )} />
+            ))}
+          </div>
+        )}
+        {selectedView === "virtual" && (
+          <div className="h-full rounded-lg bg-[var(--background-secondary)] flex items-center justify-center">
+            <div className="text-center">
+              <div className="h-10 w-10 rounded-full bg-[var(--primary)]/10 flex items-center justify-center mx-auto mb-2">
+                <svg className="h-5 w-5 text-[var(--primary)]" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+                </svg>
+              </div>
+              <p className="text-[10px] text-foreground-muted">Virtual Tour</p>
+              <p className="text-[9px] text-foreground-muted">Click to launch</p>
+            </div>
+          </div>
+        )}
+        {selectedView === "floor" && (
+          <div className="h-full rounded-lg bg-[var(--background-secondary)] p-3">
+            <div className="h-full border-2 border-dashed border-[var(--border-visible)] rounded flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-[10px] text-foreground-muted">2,450 sq ft</p>
+                <p className="text-[9px] text-foreground-muted">4 bed • 3 bath</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Agent info */}
+      <div className="p-2 border-t border-[var(--card-border)] bg-[var(--background-secondary)]">
+        <div className="flex items-center gap-2">
+          <div className="h-6 w-6 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-[8px] font-bold text-white">
+            PR
+          </div>
+          <div className="flex-1">
+            <p className="text-[9px] font-medium text-foreground">Premier Realty</p>
+            <p className="text-[8px] text-foreground-muted">Agent branding included</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Commercial Demo - Corporate headshots batch
+export function CommercialDemo() {
+  const [selectedPerson, setSelectedPerson] = React.useState(0);
+  const [downloading, setDownloading] = React.useState(false);
+
+  const team = [
+    { name: "John D.", role: "CEO", initials: "JD" },
+    { name: "Sarah M.", role: "CTO", initials: "SM" },
+    { name: "Mike R.", role: "CFO", initials: "MR" },
+    { name: "Emily C.", role: "COO", initials: "EC" },
+  ];
+
+  return (
+    <div className="h-full flex flex-col text-xs">
+      {/* Header */}
+      <div className="p-2 border-b border-[var(--card-border)]">
+        <p className="font-medium text-foreground">Tech Corp Headshots</p>
+        <p className="text-[10px] text-foreground-muted">Executive Team • 24 photos</p>
+      </div>
+
+      {/* Team grid */}
+      <div className="p-2">
+        <div className="grid grid-cols-4 gap-1.5">
+          {team.map((person, i) => (
+            <button
+              key={i}
+              onClick={() => setSelectedPerson(i)}
+              className={cn(
+                "aspect-square rounded-lg flex flex-col items-center justify-center transition-all",
+                selectedPerson === i
+                  ? "bg-[var(--primary)]/10 ring-2 ring-[var(--primary)]"
+                  : "bg-[var(--background-secondary)] hover:bg-[var(--background-hover)]"
+              )}
+            >
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-bold text-white mb-1">
+                {person.initials}
+              </div>
+              <p className="text-[8px] text-foreground truncate">{person.name}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Selected person preview */}
+      <div className="flex-1 p-2">
+        <div className="h-full rounded-lg bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex flex-col items-center justify-center">
+          <div className="h-16 w-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-lg font-bold text-white mb-2">
+            {team[selectedPerson].initials}
+          </div>
+          <p className="text-sm font-medium text-foreground">{team[selectedPerson].name}</p>
+          <p className="text-[10px] text-foreground-muted">{team[selectedPerson].role}</p>
+        </div>
+      </div>
+
+      {/* Download options */}
+      <div className="p-2 border-t border-[var(--card-border)]">
+        <div className="grid grid-cols-2 gap-1.5">
+          <button className="py-1.5 rounded bg-[var(--background-secondary)] text-[9px] hover:bg-[var(--background-hover)]">
+            LinkedIn Size
+          </button>
+          <button
+            onClick={() => {
+              setDownloading(true);
+              setTimeout(() => setDownloading(false), 1000);
+            }}
+            className="py-1.5 rounded bg-[var(--primary)] text-white text-[9px] hover:bg-[var(--primary)]/90"
+          >
+            {downloading ? "✓ Done" : "All Sizes"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Events Demo - Event gallery with face search
+export function EventsDemo() {
+  const [searchActive, setSearchActive] = React.useState(false);
+  const [foundPhotos, setFoundPhotos] = React.useState(0);
+
+  const handleSearch = () => {
+    setSearchActive(true);
+    setFoundPhotos(0);
+    const interval = setInterval(() => {
+      setFoundPhotos((prev) => {
+        if (prev >= 8) {
+          clearInterval(interval);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, 200);
+    setTimeout(() => setSearchActive(false), 2000);
+  };
+
+  return (
+    <div className="h-full flex flex-col text-xs">
+      {/* Header */}
+      <div className="p-2 border-b border-[var(--card-border)]">
+        <p className="font-medium text-foreground">Tech Conference 2025</p>
+        <p className="text-[10px] text-foreground-muted">1,247 photos • Public gallery</p>
+      </div>
+
+      {/* Search box */}
+      <div className="p-2 border-b border-[var(--card-border)]">
+        <button
+          onClick={handleSearch}
+          className="w-full flex items-center gap-2 p-2 rounded-lg bg-[var(--background-secondary)] hover:bg-[var(--background-hover)] transition-colors"
+        >
+          <svg className="h-4 w-4 text-foreground-muted" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z" clipRule="evenodd" />
+          </svg>
+          <span className="text-[10px] text-foreground-muted">
+            {searchActive ? "Searching for your face..." : "Find your photos"}
+          </span>
+          {searchActive && (
+            <div className="ml-auto h-3 w-3 rounded-full border-2 border-[var(--primary)]/20 border-t-[var(--primary)] animate-spin" />
+          )}
+        </button>
+      </div>
+
+      {/* Results */}
+      <div className="flex-1 p-2">
+        {foundPhotos > 0 ? (
+          <div>
+            <p className="text-[10px] text-foreground-muted mb-2">Found {foundPhotos} photos of you</p>
+            <div className="grid grid-cols-3 gap-1">
+              {Array.from({ length: foundPhotos }, (_, i) => (
+                <div
+                  key={i}
+                  className="aspect-square rounded bg-gradient-to-br from-green-500/50 to-emerald-500/50 animate-in fade-in"
+                  style={{ animationDelay: `${i * 100}ms` }}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="h-full grid grid-cols-3 gap-1">
+            {Array.from({ length: 9 }, (_, i) => (
+              <div key={i} className={cn(
+                "aspect-square rounded bg-gradient-to-br",
+                i % 3 === 0 ? "from-green-500/30 to-emerald-500/30" : i % 3 === 1 ? "from-blue-500/30 to-cyan-500/30" : "from-purple-500/30 to-pink-500/30"
+              )} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Actions */}
+      {foundPhotos > 0 && (
+        <div className="p-2 border-t border-[var(--card-border)]">
+          <button className="w-full py-1.5 rounded bg-[var(--success)] text-white text-[9px] font-medium">
+            Download All ({foundPhotos} photos)
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Food/Hospitality Demo - Menu photography
+export function FoodDemo() {
+  const [selectedCategory, setSelectedCategory] = React.useState("appetizers");
+
+  const categories = [
+    { id: "appetizers", name: "Apps", count: 8 },
+    { id: "mains", name: "Mains", count: 12 },
+    { id: "desserts", name: "Desserts", count: 6 },
+  ];
+
+  const gradients = [
+    "from-amber-500/50 to-orange-500/50",
+    "from-rose-500/50 to-red-500/50",
+    "from-green-500/50 to-emerald-500/50",
+    "from-yellow-500/50 to-amber-500/50",
+  ];
+
+  return (
+    <div className="h-full flex flex-col text-xs">
+      {/* Header */}
+      <div className="p-2 border-b border-[var(--card-border)]">
+        <p className="font-medium text-foreground">Bella Cucina</p>
+        <p className="text-[10px] text-foreground-muted">Menu Photography • Spring 2025</p>
+      </div>
+
+      {/* Categories */}
+      <div className="flex gap-1 p-2 border-b border-[var(--card-border)]">
+        {categories.map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => setSelectedCategory(cat.id)}
+            className={cn(
+              "flex-1 py-1.5 rounded text-[9px] font-medium transition-colors",
+              selectedCategory === cat.id
+                ? "bg-[var(--warning)] text-white"
+                : "bg-[var(--background-secondary)] text-foreground-muted hover:text-foreground"
+            )}
+          >
+            {cat.name} ({cat.count})
+          </button>
+        ))}
+      </div>
+
+      {/* Photo grid */}
+      <div className="flex-1 p-2">
+        <div className="grid grid-cols-2 gap-1.5">
+          {Array.from({ length: 4 }, (_, i) => (
+            <div
+              key={i}
+              className={cn(
+                "aspect-square rounded-lg overflow-hidden bg-gradient-to-br",
+                gradients[i]
+              )}
+            >
+              <div className="h-full w-full flex items-end p-1.5">
+                <div className="rounded bg-black/50 px-1.5 py-0.5">
+                  <p className="text-[8px] text-white font-medium">
+                    {selectedCategory === "appetizers" ? "Bruschetta" : selectedCategory === "mains" ? "Pasta" : "Tiramisu"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Export options */}
+      <div className="p-2 border-t border-[var(--card-border)]">
+        <p className="text-[9px] text-foreground-muted mb-1.5">Export for:</p>
+        <div className="grid grid-cols-3 gap-1">
+          <button className="py-1 rounded bg-[var(--background-secondary)] text-[8px] hover:bg-[var(--background-hover)]">
+            Menu
+          </button>
+          <button className="py-1 rounded bg-[var(--background-secondary)] text-[8px] hover:bg-[var(--background-hover)]">
+            Instagram
+          </button>
+          <button className="py-1 rounded bg-[var(--warning)] text-white text-[8px]">
+            All Sizes
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Portrait Demo - Family favorites selection
+export function PortraitDemo() {
+  const [favorites, setFavorites] = React.useState<Set<number>>(new Set([0, 2]));
+  const [showPrintOptions, setShowPrintOptions] = React.useState(false);
+
+  const toggleFavorite = (id: number) => {
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  return (
+    <div className="h-full flex flex-col text-xs">
+      {/* Header */}
+      <div className="p-2 border-b border-[var(--card-border)]">
+        <p className="font-medium text-foreground">Johnson Family Session</p>
+        <p className="text-[10px] text-foreground-muted">Pick your favorites • 48 photos</p>
+      </div>
+
+      {/* Photo grid */}
+      <div className="flex-1 p-2 overflow-y-auto">
+        <div className="grid grid-cols-3 gap-1">
+          {Array.from({ length: 9 }, (_, i) => {
+            const isFav = favorites.has(i);
+            return (
+              <button
+                key={i}
+                onClick={() => toggleFavorite(i)}
+                className={cn(
+                  "aspect-square rounded overflow-hidden relative group",
+                  isFav && "ring-2 ring-[var(--error)]"
+                )}
+              >
+                <div className={cn(
+                  "h-full w-full bg-gradient-to-br",
+                  i % 3 === 0 ? "from-rose-500/50 to-pink-500/50" : i % 3 === 1 ? "from-amber-500/50 to-orange-500/50" : "from-cyan-500/50 to-blue-500/50"
+                )} />
+                <div className={cn(
+                  "absolute top-1 right-1 p-0.5 rounded-full transition-all",
+                  isFav ? "bg-[var(--error)]" : "bg-black/50 opacity-0 group-hover:opacity-100"
+                )}>
+                  <HeartIcon className="h-2.5 w-2.5 text-white" />
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Favorites summary */}
+      <div className="p-2 border-t border-[var(--card-border)]">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-foreground-muted">{favorites.size} favorites selected</span>
+          <button
+            onClick={() => setShowPrintOptions(!showPrintOptions)}
+            className="text-[var(--primary)] text-[10px] hover:underline"
+          >
+            {showPrintOptions ? "Hide prints" : "View print options"}
+          </button>
+        </div>
+        {showPrintOptions && (
+          <div className="grid grid-cols-2 gap-1 mb-2">
+            <div className="p-1.5 rounded bg-[var(--background-secondary)] text-center">
+              <p className="text-[10px] font-medium text-foreground">8×10</p>
+              <p className="text-[8px] text-foreground-muted">$25</p>
+            </div>
+            <div className="p-1.5 rounded bg-[var(--background-secondary)] text-center">
+              <p className="text-[10px] font-medium text-foreground">Canvas</p>
+              <p className="text-[8px] text-foreground-muted">$89</p>
+            </div>
+          </div>
+        )}
+        <button className="w-full py-1.5 rounded bg-[var(--primary)] text-white text-[9px] font-medium">
+          Continue to checkout
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Architecture Demo - Portfolio presentation
+export function ArchitectureDemo() {
+  const [currentProject, setCurrentProject] = React.useState(0);
+
+  const projects = [
+    { name: "Modern Residence", type: "Residential", photos: 24 },
+    { name: "Tech Campus", type: "Commercial", photos: 48 },
+    { name: "Boutique Hotel", type: "Hospitality", photos: 36 },
+  ];
+
+  return (
+    <div className="h-full flex flex-col text-xs">
+      {/* Header */}
+      <div className="p-2 border-b border-[var(--card-border)]">
+        <p className="font-medium text-foreground">Studio Portfolio</p>
+        <p className="text-[10px] text-foreground-muted">Architecture Photography</p>
+      </div>
+
+      {/* Project carousel */}
+      <div className="flex-1 p-2">
+        <div className="h-full flex flex-col">
+          {/* Main image */}
+          <div className="flex-1 rounded-lg bg-gradient-to-br from-amber-500/40 to-orange-500/40 mb-2 relative overflow-hidden">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-sm font-medium text-white drop-shadow">{projects[currentProject].name}</p>
+                <p className="text-[10px] text-white/80 drop-shadow">{projects[currentProject].type}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Thumbnails */}
+          <div className="flex gap-1">
+            {projects.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentProject(i)}
+                className={cn(
+                  "flex-1 aspect-video rounded overflow-hidden bg-gradient-to-br from-amber-500/30 to-orange-500/30",
+                  currentProject === i && "ring-2 ring-[var(--primary)]"
+                )}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Project info */}
+      <div className="p-2 border-t border-[var(--card-border)]">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <p className="font-medium text-foreground">{projects[currentProject].name}</p>
+            <p className="text-[9px] text-foreground-muted">{projects[currentProject].photos} photos</p>
+          </div>
+          <span className="px-2 py-0.5 rounded text-[8px] bg-[var(--primary)]/10 text-[var(--primary)]">
+            {projects[currentProject].type}
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-1">
+          <button className="py-1.5 rounded bg-[var(--background-secondary)] text-[9px] hover:bg-[var(--background-hover)]">
+            View Gallery
+          </button>
+          <button className="py-1.5 rounded bg-[var(--primary)] text-white text-[9px]">
+            Download
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -6,6 +6,14 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 import { Sparkline } from "@/components/landing/revenue-chart";
+import {
+  RealEstateDemo,
+  CommercialDemo,
+  EventsDemo,
+  FoodDemo,
+  PortraitDemo,
+  ArchitectureDemo,
+} from "@/components/landing/interactive-demos";
 
 // ============================================
 // TYPES
@@ -303,8 +311,12 @@ export function IndustryTabsSection() {
               </div>
             </div>
 
-            {/* Right: Case Study Card */}
-            <div className="order-1 lg:order-2">
+            {/* Right: Interactive Demo + Case Study Card */}
+            <div className="order-1 lg:order-2 space-y-4">
+              {/* Interactive Demo */}
+              <IndustryDemo industryId={currentIndustry.id} />
+
+              {/* Case Study Card */}
               <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6 lg:p-8">
                 {/* Case study header */}
                 <div className="mb-6">
@@ -394,6 +406,30 @@ export function IndustryTabsSection() {
         </div>
       </div>
     </section>
+  );
+}
+
+// ============================================
+// INDUSTRY DEMO COMPONENT
+// ============================================
+
+function IndustryDemo({ industryId }: { industryId: string }) {
+  const demoComponents: Record<string, React.FC> = {
+    "real-estate": RealEstateDemo,
+    "commercial": CommercialDemo,
+    "architecture": ArchitectureDemo,
+    "events": EventsDemo,
+    "portraits": PortraitDemo,
+    "food": FoodDemo,
+  };
+
+  const DemoComponent = demoComponents[industryId];
+  if (!DemoComponent) return null;
+
+  return (
+    <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-hidden h-[320px]">
+      <DemoComponent />
+    </div>
   );
 }
 

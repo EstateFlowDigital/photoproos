@@ -162,6 +162,12 @@ export {
   type GamificationHubCompactProps,
 } from "./gamification-hub";
 
+// Simplified Progress Widget
+export {
+  ProgressWidget,
+  type ProgressWidgetProps,
+} from "./progress-widget";
+
 // Achievement Categories Browser
 export {
   AchievementCategories,

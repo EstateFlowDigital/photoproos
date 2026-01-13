@@ -119,10 +119,10 @@ export const MODULES: Record<string, ModuleDefinition> = {
   },
   achievements: {
     id: "achievements",
-    name: "Achievements",
-    description: "Gamification, XP, levels, quests, and skill trees",
+    name: "My Progress",
+    description: "Track your level, streaks, and milestones",
     icon: Trophy,
-    href: "/achievements",
+    href: "/progress",
     isCore: true,
     industries: ["*"],
     category: "core",

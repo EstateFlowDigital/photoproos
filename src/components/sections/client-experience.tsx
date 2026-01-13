@@ -4,6 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 import { PhoneMockup } from "@/components/landing/device-mockup";
+import { InteractiveClientGalleryDemo } from "@/components/landing/interactive-demos";
 
 // ============================================
 // CLIENT EXPERIENCE SECTION
@@ -39,7 +40,7 @@ export function ClientExperienceSection() {
             }}
           >
             <PhoneMockup>
-              <ClientGalleryDemo />
+              <InteractiveClientGalleryDemo />
             </PhoneMockup>
 
             {/* Floating badges */}
@@ -175,88 +176,6 @@ export function ClientExperienceSection() {
   );
 }
 
-// ============================================
-// CLIENT GALLERY DEMO (Phone Screen Content)
-// ============================================
-
-function ClientGalleryDemo() {
-  return (
-    <div className="h-full bg-[var(--background)] text-foreground">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-[var(--card-border)] px-4 py-3">
-        <div>
-          <p className="text-[10px] text-foreground-muted uppercase tracking-wider">Gallery</p>
-          <p className="text-sm font-medium">Sunset Wedding</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button className="rounded-md bg-[var(--background-elevated)] p-1.5">
-            <HeartIcon className="h-4 w-4 text-foreground-muted" />
-          </button>
-          <button className="rounded-md bg-[var(--background-elevated)] p-1.5">
-            <ShareIcon className="h-4 w-4 text-foreground-muted" />
-          </button>
-        </div>
-      </div>
-
-      {/* Photo grid */}
-      <div className="p-2">
-        <div className="grid grid-cols-3 gap-1">
-          {[...Array(9)].map((_, i) => (
-            <div
-              key={i}
-              className={cn(
-                "aspect-square rounded-md overflow-hidden relative",
-                i === 0 && "col-span-2 row-span-2"
-              )}
-            >
-              <div
-                className="h-full w-full bg-gradient-to-br"
-                style={{
-                  backgroundImage: `linear-gradient(135deg, ${getGradientColor(i)} 0%, ${getGradientColor(i + 3)} 100%)`,
-                }}
-              />
-              {/* Favorite indicator on some */}
-              {[0, 3, 5].includes(i) && (
-                <div className="absolute bottom-1 right-1 rounded bg-black/50 p-0.5">
-                  <HeartIcon className="h-3 w-3 text-[var(--error)]" />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Bottom bar */}
-      <div className="absolute bottom-0 left-0 right-0 border-t border-[var(--card-border)] bg-[var(--card)] p-3">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <p className="text-xs text-foreground-muted">Selected</p>
-            <p className="text-sm font-medium">3 photos</p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-foreground-muted">Total</p>
-            <p className="text-sm font-bold text-[var(--success)]">$45.00</p>
-          </div>
-        </div>
-        <button className="w-full rounded-lg bg-[var(--primary)] py-2.5 text-sm font-medium text-white">
-          Download Selected
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function getGradientColor(index: number): string {
-  const colors = [
-    "rgba(139, 92, 246, 0.6)",
-    "rgba(59, 130, 246, 0.6)",
-    "rgba(236, 72, 153, 0.6)",
-    "rgba(34, 197, 94, 0.6)",
-    "rgba(249, 115, 22, 0.6)",
-    "rgba(6, 182, 212, 0.6)",
-  ];
-  return colors[index % colors.length];
-}
 
 // ============================================
 // JOURNEY STEPS DATA
@@ -301,13 +220,6 @@ function HeartIcon({ className }: { className?: string }) {
   );
 }
 
-function ShareIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path d="M13 4.5a2.5 2.5 0 1 1 .702 1.737L6.97 9.604a2.518 2.518 0 0 1 0 .792l6.733 3.367a2.5 2.5 0 1 1-.671 1.341l-6.733-3.367a2.5 2.5 0 1 1 0-3.474l6.733-3.367A2.52 2.52 0 0 1 13 4.5Z" />
-    </svg>
-  );
-}
 
 function MailIcon({ className }: { className?: string }) {
   return (

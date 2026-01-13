@@ -18,7 +18,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 
 type ProofingStatus = "pending" | "in_review" | "approved" | "revision_requested";
 

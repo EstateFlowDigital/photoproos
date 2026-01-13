@@ -8,6 +8,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Gamification Triggers Connected** - Previously disconnected achievement triggers now properly fire:
+  - **Contract Signing** - `triggerContractSigned` now fires when a contract is fully signed by all parties, awarding XP for contract completion milestones
+  - **Email Communications** - `triggerEmailSent` fires when outbound emails are sent to clients
+  - **SMS Communications** - `triggerSmsSent` fires when SMS messages are sent via both template and custom SMS functions
+  - All triggers properly look up organization owner for XP attribution
+
+- **Enhanced Progress Page** - Added "Your Journey" business stats section showing:
+  - Total galleries created
+  - Total deliveries completed
+  - Total clients added
+  - Total bookings confirmed
+  - Total payments received
+  - Total revenue earned
+  - Stats displayed in a clean 6-column grid with icons and color coding
+
+- **Extended Interactive Demos** - Added interactive demos to more landing page sections:
+
+  **Client Experience Section:**
+  - **Interactive Client Gallery** - Full photo selection/deselection with per-photo pricing, favorites, and complete payment simulation with confetti on success
+
+  **Industry Tabs Section:**
+  - **Real Estate Demo** - Property gallery with MLS export, 360° tour tab, and floor plan view
+  - **Commercial Demo** - Corporate headshot batch delivery with team member selection and LinkedIn/All Sizes export
+  - **Events Demo** - AI-powered face search simulation that finds and highlights photos matching your face
+  - **Food Demo** - Menu photography with category tabs (Apps, Mains, Desserts) and multi-format export
+  - **Portrait Demo** - Family session favorites selection with print options and canvas pricing
+  - **Architecture Demo** - Portfolio presentation with project carousel and type-based filtering
+
+  **Case Studies Section:**
+  - **Featured Case Study Demo** - Animated before/after metrics comparison showing revenue increase, time saved, and tool consolidation
+
+### Changed
 - **Comprehensive Interactive Landing Page Demos** - Created semi-functional, realistic mockups throughout the landing page that reflect real application features:
 
   **Hero Section Interactive Demos:**

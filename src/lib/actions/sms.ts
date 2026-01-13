@@ -11,6 +11,7 @@ import {
 } from "@/lib/sms/send";
 import type { SMSTemplateType, SMSDeliveryStatus } from "@prisma/client";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
+import { triggerSmsSent } from "@/lib/gamification";
 
 // ============================================================================
 // SMS SETTINGS
@@ -518,8 +519,8 @@ export async function sendSMSToClientAction(data: {
   customContent?: string;
 }): Promise<ActionResult<{ smsLogId: string }>> {
   try {
-    await requireAuth();
-    const organizationId = await requireOrganizationId();
+    const auth = await requireAuth();
+    const organizationId = auth.organizationId;
 
     const result = await sendSMSToClient({
       organizationId,
@@ -533,6 +534,9 @@ export async function sendSMSToClientAction(data: {
     if (!result.success) {
       return fail(result.error || "Failed to send SMS");
     }
+
+    // Fire gamification trigger for SMS sent
+    triggerSmsSent(auth.userId, organizationId);
 
     revalidatePath("/settings/sms");
     return success({ smsLogId: result.smsLogId! });
@@ -552,8 +556,8 @@ export async function sendCustomSMS(data: {
   bookingId?: string;
 }): Promise<ActionResult<{ smsLogId: string }>> {
   try {
-    await requireAuth();
-    const organizationId = await requireOrganizationId();
+    const auth = await requireAuth();
+    const organizationId = auth.organizationId;
 
     const result = await sendSMSDirect({
       organizationId,
@@ -566,6 +570,9 @@ export async function sendCustomSMS(data: {
     if (!result.success) {
       return fail(result.error || "Failed to send SMS");
     }
+
+    // Fire gamification trigger for SMS sent
+    triggerSmsSent(auth.userId, organizationId);
 
     revalidatePath("/settings/sms");
     return success({ smsLogId: result.smsLogId! });

@@ -16,7 +16,7 @@ import {
   Truck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 
 type PrintStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
 

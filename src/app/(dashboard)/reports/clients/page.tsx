@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
-import { ComingSoonPage } from "@/components/dashboard";
+import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+import { ClientsReportClient } from "./clients-report-client";
 
 export default async function ClientsReportPage() {
   const auth = await getAuthContext();
@@ -10,26 +11,13 @@ export default async function ClientsReportPage() {
   }
 
   return (
-    <div data-element="reports-clients-page">
-      <ComingSoonPage
+    <div className="space-y-6" data-element="reports-clients-page">
+      <PageHeader
         title="Client Analytics"
         subtitle="Client acquisition and retention metrics"
-        icon="👥"
-        description="Client lifetime value, repeat booking rates, and referral tracking."
-        features={[
-          "Client lifetime value tracking",
-          "Repeat booking rates and patterns",
-          "Referral source tracking",
-          "Client acquisition costs",
-          "Client retention analysis",
-          "Geographic distribution insights",
-        ]}
-        relatedLinks={[
-          { label: "All Reports", href: "/reports" },
-          { label: "Clients", href: "/clients" },
-          { label: "Referrals", href: "/referrals" },
-        ]}
       />
+
+      <ClientsReportClient />
     </div>
   );
 }

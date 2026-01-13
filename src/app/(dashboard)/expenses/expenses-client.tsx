@@ -17,7 +17,7 @@ import {
   Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 
 type ExpenseCategory = "equipment" | "software" | "travel" | "marketing" | "office" | "insurance" | "other";
 

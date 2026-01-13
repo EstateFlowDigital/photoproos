@@ -18,7 +18,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 
 type CampaignType = "email" | "sms" | "social";
 type CampaignStatus = "draft" | "scheduled" | "active" | "completed" | "paused";
