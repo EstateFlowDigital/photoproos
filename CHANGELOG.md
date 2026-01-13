@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Landing Page Polish** - Comprehensive styling and UX improvements across all landing page sections:
+  - **Navbar** - Reduced height from 88px to 64px, white CTA button with dark text for better contrast
+  - **Hero Section** - White CTA button styling, gradient headline text, improved typography and spacing
+  - **Logos Section** - Enhanced stats display, added icons to photography specialty pills, consistent animations
+  - **Five Pillars** - Added scroll animations, white active tab styling, smooth tab transitions
+  - **Tool Replacement** - Consistent section header animations, white CTA button styling
+  - **Case Studies** - White active filter styling, scroll animations on section header and content
+  - **Footer** - White subscribe button, consistent max-width with other sections, improved accessibility
+  - All sections now use consistent `max-w-7xl` container width for proper content alignment
+  - All CTA buttons use white background with dark text (`bg-white text-[#0A0A0A]`) for consistency
+
 ### Added
 - **Landing Page Improvements** - Major landing page enhancements for Variant C (Business OS):
   - **Five Pillars Section** - Interactive tabbed section showcasing 5 platform pillars: Operate, Deliver, Get Paid, Grow, Automate with full keyboard navigation and ARIA accessibility
@@ -60,6 +72,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `/albums` - Photo album design with templates, cover types, client review workflow, print ordering
   - `/automations` - Workflow automation builder with triggers and action chains
   - `/abandoned-carts` - Cart recovery dashboard with value tracking and automated email recovery
+  - `/reports/revenue` - Revenue analytics with monthly trends, service breakdown, top clients by revenue
+  - `/reports/clients` - Client analytics with lifetime value, acquisition sources, geographic distribution
 - **Landing Page A/B Test Variant Components** - Fixed hero, metrics, and CTA variant components for `/lp/[variant]` pages
 
 - **Expanded Public Roadmap to 7 Phases** - Major roadmap expansion with 40 features across all phases:

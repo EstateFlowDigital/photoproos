@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 
 /**
  * Five Pillars Section
@@ -92,8 +93,20 @@ const pillars: Pillar[] = [
 
 export function FivePillarsSection() {
   const [activeIndex, setActiveIndex] = React.useState(0);
+  const [isTransitioning, setIsTransitioning] = React.useState(false);
   const tabListRef = React.useRef<HTMLDivElement>(null);
   const tabRefs = React.useRef<(HTMLButtonElement | null)[]>([]);
+  const { ref, isVisible } = useScrollAnimation();
+
+  // Handle tab change with transition
+  const handleTabChange = (newIndex: number) => {
+    if (newIndex === activeIndex) return;
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setActiveIndex(newIndex);
+      setTimeout(() => setIsTransitioning(false), 50);
+    }, 150);
+  };
 
   // Handle keyboard navigation
   const handleKeyDown = (event: React.KeyboardEvent, index: number) => {
@@ -120,7 +133,7 @@ export function FivePillarsSection() {
         return;
     }
 
-    setActiveIndex(newIndex);
+    handleTabChange(newIndex);
     tabRefs.current[newIndex]?.focus();
   };
 
@@ -128,25 +141,39 @@ export function FivePillarsSection() {
 
   return (
     <section
+      ref={ref}
       className="relative z-10 py-20 lg:py-28 bg-[var(--background)]"
       aria-labelledby="five-pillars-heading"
     >
-      <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-12 lg:mb-16">
-          <div className="mb-4 inline-flex items-center rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2">
+          <div
+            className={cn(
+              "mb-4 inline-flex items-center rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 transition-all duration-500",
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            )}
+          >
             <span className="text-sm font-medium text-foreground-secondary">
               Complete Platform
             </span>
           </div>
           <h2
             id="five-pillars-heading"
-            className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl"
+            className={cn(
+              "text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl transition-all duration-500 delay-100",
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            )}
           >
-            <span className="text-foreground-muted">One platform.</span>{" "}
+            <span className="text-foreground/60">One platform.</span>{" "}
             <span className="text-foreground">Five pillars.</span>
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-foreground-secondary">
+          <p
+            className={cn(
+              "mx-auto mt-4 max-w-2xl text-lg text-foreground-secondary transition-all duration-500 delay-200",
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            )}
+          >
             Everything you need to run a successful photography business, organized
             into five integrated pillars.
           </p>
@@ -157,9 +184,12 @@ export function FivePillarsSection() {
           ref={tabListRef}
           role="tablist"
           aria-label="Platform pillars"
-          className="mb-8 lg:mb-12 flex justify-start lg:justify-center overflow-x-auto scrollbar-hide -mx-6 px-6 lg:mx-0 lg:px-0"
+          className={cn(
+            "mb-8 lg:mb-12 flex justify-start lg:justify-center overflow-x-auto scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0 transition-all duration-500 delay-300",
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          )}
         >
-          <div className="flex gap-2 lg:gap-3">
+          <div className="flex gap-2">
             {pillars.map((pillar, index) => (
               <button
                 key={pillar.id}
@@ -169,22 +199,19 @@ export function FivePillarsSection() {
                 aria-selected={activeIndex === index}
                 aria-controls={`pillar-panel-${pillar.id}`}
                 tabIndex={activeIndex === index ? 0 : -1}
-                onClick={() => setActiveIndex(index)}
+                onClick={() => handleTabChange(index)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
                 className={cn(
                   "flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium transition-all duration-200",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                   activeIndex === index
-                    ? "bg-[var(--primary)] text-white shadow-lg shadow-[var(--primary)]/25"
-                    : "bg-[var(--card)] text-foreground-secondary hover:bg-[var(--background-elevated)] border border-[var(--card-border)]"
+                    ? "bg-white text-[#0A0A0A] shadow-lg"
+                    : "bg-[var(--card)] text-foreground-secondary hover:bg-[var(--background-elevated)] border border-[var(--card-border)] hover:border-[var(--border-visible)]"
                 )}
               >
                 <span
-                  className={cn(
-                    "flex h-5 w-5 items-center justify-center",
-                    activeIndex === index ? "text-white" : ""
-                  )}
-                  style={{ color: activeIndex === index ? "white" : pillar.color }}
+                  className="flex h-5 w-5 items-center justify-center"
+                  style={{ color: activeIndex === index ? pillar.color : pillar.color }}
                   aria-hidden="true"
                 >
                   {pillar.icon}
@@ -196,7 +223,12 @@ export function FivePillarsSection() {
         </div>
 
         {/* Tab Panels */}
-        <div className="relative">
+        <div
+          className={cn(
+            "relative transition-all duration-500 delay-400",
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          )}
+        >
           {pillars.map((pillar, index) => (
             <div
               key={pillar.id}
@@ -206,8 +238,9 @@ export function FivePillarsSection() {
               hidden={activeIndex !== index}
               tabIndex={0}
               className={cn(
-                "rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6 lg:p-10",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                "rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6 lg:p-10 transition-all duration-200",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                isTransitioning ? "opacity-0 scale-[0.99]" : "opacity-100 scale-100"
               )}
             >
               <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
@@ -278,16 +311,22 @@ export function FivePillarsSection() {
         </div>
 
         {/* Progress Indicator */}
-        <div className="mt-8 flex justify-center gap-2" role="presentation">
+        <div
+          className={cn(
+            "mt-8 flex justify-center gap-2 transition-all duration-500 delay-500",
+            isVisible ? "opacity-100" : "opacity-0"
+          )}
+          role="presentation"
+        >
           {pillars.map((pillar, index) => (
             <button
               key={pillar.id}
-              onClick={() => setActiveIndex(index)}
+              onClick={() => handleTabChange(index)}
               aria-label={`Go to ${pillar.title}`}
               className={cn(
                 "h-2 rounded-full transition-all duration-300",
                 activeIndex === index
-                  ? "w-8 bg-[var(--primary)]"
+                  ? "w-8 bg-white"
                   : "w-2 bg-[var(--border-visible)] hover:bg-foreground-muted"
               )}
             />

@@ -1463,10 +1463,21 @@ html[data-scroll-theme="light"] {
 
 /* Navbar Scroll Effect */
 .nav-scrolled {
-  background: rgba(10, 10, 10, 0.85);
+  background: rgba(10, 10, 10, 0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: var(--border-width) solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+[data-theme="light"] .nav-scrolled {
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Navbar CTA Button - Light Mode Override */
+[data-theme="light"] .nav-cta-button {
+  background: var(--primary) !important;
+  color: white !important;
 }
 
 /* Skip to Main Content Link */

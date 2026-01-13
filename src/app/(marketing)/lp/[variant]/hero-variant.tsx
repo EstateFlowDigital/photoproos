@@ -52,7 +52,7 @@ export function HeroVariant({ content }: HeroVariantProps) {
   const [isVideoModalOpen, setIsVideoModalOpen] = React.useState(false);
 
   return (
-    <section className="relative z-10 overflow-hidden bg-background pb-8 lg:pb-16">
+    <section className="relative z-10 overflow-hidden bg-background pb-12 lg:pb-20">
       <GridBackground />
 
       {/* Gradient accent - top */}
@@ -69,11 +69,11 @@ export function HeroVariant({ content }: HeroVariantProps) {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 mx-auto max-w-[1600px] px-4 pt-24 lg:px-8 lg:pt-28 xl:px-12">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 pt-24 sm:px-6 lg:px-8 lg:pt-32">
         {/* Text content */}
         <div className="mx-auto max-w-3xl text-center">
           {/* Badge */}
-          <div className="hero-animate hero-animate-1 mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2">
+          <div className="hero-animate hero-animate-1 mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)]/80 backdrop-blur-sm px-4 py-2 shadow-sm">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--success)] opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--success)]" />
@@ -87,32 +87,34 @@ export function HeroVariant({ content }: HeroVariantProps) {
           </div>
 
           {/* Main Headline */}
-          <h1 className="hero-animate hero-animate-2 text-[40px] font-medium leading-[1.1] tracking-[-0.02em] md:text-[56px] lg:text-[64px]">
-            <span className="text-foreground-muted">{content.headline.muted}</span>
+          <h1 className="hero-animate hero-animate-2 text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl md:text-6xl lg:text-[64px]">
+            <span className="text-foreground/60">{content.headline.muted}</span>
             <br />
-            <span className="text-foreground">{content.headline.emphasis}</span>
+            <span className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+              {content.headline.emphasis}
+            </span>
           </h1>
 
           {/* Subheadline */}
-          <p className="hero-animate hero-animate-3 mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-foreground-secondary lg:text-xl">
+          <p className="hero-animate hero-animate-3 mx-auto mt-6 max-w-2xl text-base leading-relaxed text-foreground-secondary sm:text-lg lg:text-xl">
             {content.subheadline}
           </p>
 
           {/* CTA Buttons */}
-          <div className="hero-animate hero-animate-4 mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+          <div className="hero-animate hero-animate-4 mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
             <Button
               variant="default"
               size="lg"
               asChild
-              className="h-12 w-full px-8 text-base shadow-lg shadow-[var(--primary)]/25 transition-shadow hover:shadow-xl hover:shadow-[var(--primary)]/30 sm:w-auto"
+              className="h-12 w-full bg-white text-[#0A0A0A] hover:bg-white/90 px-8 text-base font-medium shadow-lg shadow-white/10 sm:w-auto"
             >
-              <Link href="/signup">{content.primaryCta}</Link>
+              <Link href="/sign-up">{content.primaryCta}</Link>
             </Button>
             <Button
               variant="outline"
               size="lg"
               onClick={() => setIsVideoModalOpen(true)}
-              className="flex h-12 w-full items-center justify-center gap-2 px-8 text-base sm:w-auto"
+              className="flex h-12 w-full items-center justify-center gap-2 border-[var(--border-visible)] px-8 text-base sm:w-auto"
             >
               <PlayIcon className="h-4 w-4" />
               {content.secondaryCta}
@@ -120,7 +122,7 @@ export function HeroVariant({ content }: HeroVariantProps) {
           </div>
 
           {/* Social proof */}
-          <div className="hero-animate hero-animate-5 mt-6 flex flex-col items-center justify-center gap-3 text-sm text-foreground-muted sm:flex-row sm:gap-6">
+          <div className="hero-animate hero-animate-5 mt-8 flex flex-col items-center justify-center gap-4 text-sm text-foreground-muted sm:flex-row sm:gap-6">
             {content.socialProof.map((item, index) => (
               <React.Fragment key={index}>
                 <div className="flex items-center gap-2">
@@ -128,7 +130,7 @@ export function HeroVariant({ content }: HeroVariantProps) {
                   <span>{item}</span>
                 </div>
                 {index < content.socialProof.length - 1 && (
-                  <div className="hidden h-4 w-px bg-[var(--border)] sm:block" />
+                  <div className="hidden h-1 w-1 rounded-full bg-foreground-muted/40 sm:block" />
                 )}
               </React.Fragment>
             ))}
@@ -136,7 +138,7 @@ export function HeroVariant({ content }: HeroVariantProps) {
         </div>
 
         {/* Dashboard mockup */}
-        <div className="hero-animate hero-animate-6 mt-10 lg:mt-14">
+        <div className="hero-animate hero-animate-6 mt-12 lg:mt-16">
           <AnalyticsDashboardMockup animate />
         </div>
       </div>

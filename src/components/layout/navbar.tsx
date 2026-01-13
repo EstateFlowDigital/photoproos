@@ -272,16 +272,18 @@ export function Navbar({ className }: NavbarProps) {
   return (
     <nav
       className={cn(
-        "fixed left-0 right-0 top-0 z-50 flex h-[88px] items-center justify-between px-6 transition-all duration-300",
-        isScrolled && "nav-scrolled",
+        "fixed left-0 right-0 top-0 z-50 flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8 transition-all duration-300",
+        isScrolled
+          ? "nav-scrolled shadow-sm"
+          : "bg-background/80 backdrop-blur-md border-b border-transparent",
         className
       )}
     >
       {/* Logo */}
-      <div className="mr-2">
+      <div className="shrink-0">
         <Link
           href={homeHref}
-          className="flex items-center"
+          className="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
           aria-label="PhotoProOS home"
         >
           <PhotoProOSLogo size="sm" />
@@ -408,14 +410,19 @@ export function Navbar({ className }: NavbarProps) {
       </div>
 
       {/* Right Side Actions */}
-      <div className="hidden items-center gap-4 lg:flex">
+      <div className="hidden items-center gap-3 lg:flex">
         <Link
           href="/sign-in"
-          className="text-sm font-medium text-foreground-secondary transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-[var(--button-radius)] px-3 py-2"
+          className="rounded-[var(--button-radius)] px-4 py-2 text-sm font-medium text-foreground/80 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           Log in
         </Link>
-        <Button variant="default" asChild>
+        <Button
+          variant="default"
+          size="sm"
+          asChild
+          className="bg-white text-[#0A0A0A] hover:bg-white/90 shadow-md"
+        >
           <Link href="/sign-up">Get Started Free</Link>
         </Button>
       </div>
@@ -423,7 +430,7 @@ export function Navbar({ className }: NavbarProps) {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="flex min-h-[var(--touch-target-min)] min-w-[var(--touch-target-min)] items-center justify-center rounded-[var(--button-radius)] bg-[var(--background-elevated)] p-[10px] transition-colors duration-[var(--duration-fast)] hover:bg-[var(--background-hover)] lg:hidden"
+        className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--card)] transition-colors duration-[var(--duration-fast)] hover:bg-[var(--background-elevated)] lg:hidden"
         aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
         aria-expanded={isMobileMenuOpen}
         aria-controls="mobile-menu"
@@ -439,14 +446,14 @@ export function Navbar({ className }: NavbarProps) {
       {isMobileMenuOpen && (
         <div
           id="mobile-menu"
-          className="fixed inset-0 top-[88px] z-40 bg-background/95 backdrop-blur-sm lg:hidden animate-fade-in"
+          className="fixed inset-0 top-16 z-40 bg-background/98 backdrop-blur-lg lg:hidden animate-fade-in"
           onClick={() => setIsMobileMenuOpen(false)}
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation menu"
         >
           <div
-            className="flex h-full flex-col overflow-y-auto bg-background px-6 pb-6"
+            className="flex h-full flex-col overflow-y-auto bg-background px-4 pb-6 pt-2"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Features Section */}
@@ -559,13 +566,18 @@ export function Navbar({ className }: NavbarProps) {
             </div>
 
             {/* CTA Buttons */}
-            <div className="mt-auto space-y-3 pt-6">
-              <Button variant="default" size="lg" className="w-full" asChild>
+            <div className="mt-auto space-y-3 pt-6 border-t border-[var(--border)]">
+              <Button
+                variant="default"
+                size="lg"
+                className="w-full bg-white text-[#0A0A0A] hover:bg-white/90 shadow-md"
+                asChild
+              >
                 <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)}>
                   Get Started Free
                 </Link>
               </Button>
-              <Button variant="ghost" size="lg" className="w-full" asChild>
+              <Button variant="outline" size="lg" className="w-full" asChild>
                 <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)}>
                   Log in
                 </Link>

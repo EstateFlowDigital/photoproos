@@ -51,7 +51,7 @@ function FooterColumn({ title, children }: FooterColumnProps) {
 export function Footer() {
   return (
     <footer className="relative z-10 border-t border-[var(--card-border)] bg-[var(--background)]">
-      <div className="mx-auto max-w-[1512px] px-6 py-16 lg:px-[124px]">
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         {/* Main Footer Grid */}
         <div className="grid gap-12 lg:grid-cols-6 lg:gap-8">
           {/* Brand Column */}
@@ -68,11 +68,12 @@ export function Footer() {
                 <input
                   type="email"
                   placeholder="Enter your email"
-                  className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                  aria-label="Email address for newsletter"
+                  className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--border-visible)] focus:outline-none focus:ring-1 focus:ring-[var(--border-visible)] transition-colors"
                 />
                 <button
                   type="submit"
-                  className="rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
+                  className="rounded-lg bg-white text-[#0A0A0A] px-5 py-2.5 text-sm font-medium transition-colors hover:bg-white/90"
                 >
                   Subscribe
                 </button>

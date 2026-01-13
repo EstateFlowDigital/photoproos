@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 
 /**
  * Tool Replacement Section
@@ -91,52 +92,46 @@ const totalMonthlyCost = replacedTools
   .reduce((sum, tool) => sum + parseInt(tool.monthlyPrice.replace("$", "")), 0);
 
 export function ToolReplacementSection() {
-  const [isVisible, setIsVisible] = React.useState(false);
-  const sectionRef = React.useRef<HTMLDivElement>(null);
-
-  // Intersection Observer for animation trigger
-  React.useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
-      { threshold: 0.2 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
+  const { ref, isVisible } = useScrollAnimation();
 
   return (
     <section
-      ref={sectionRef}
+      ref={ref}
       className="relative z-10 py-20 lg:py-28 bg-[var(--background-tertiary)]"
       aria-labelledby="tool-replacement-heading"
     >
-      <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-12 lg:mb-16">
-          <div className="mb-4 inline-flex items-center rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2">
+          <div
+            className={cn(
+              "mb-4 inline-flex items-center rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 transition-all duration-500",
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            )}
+          >
             <span className="text-sm font-medium text-foreground-secondary">
               Simplify Your Stack
             </span>
           </div>
           <h2
             id="tool-replacement-heading"
-            className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl"
+            className={cn(
+              "text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl transition-all duration-500 delay-100",
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            )}
           >
-            <span className="text-foreground-muted">Replace</span>{" "}
+            <span className="text-foreground/60">Replace</span>{" "}
             <span className="bg-gradient-to-r from-[var(--primary)] to-[var(--ai)] bg-clip-text text-transparent">
               10+ tools
             </span>{" "}
-            <span className="text-foreground-muted">with one.</span>
+            <span className="text-foreground/60">with one.</span>
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-foreground-secondary">
+          <p
+            className={cn(
+              "mx-auto mt-4 max-w-2xl text-lg text-foreground-secondary transition-all duration-500 delay-200",
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            )}
+          >
             Stop paying for scattered tools that don&apos;t talk to each other.
             PhotoProOS unifies everything in one photography-specific platform.
           </p>
@@ -302,7 +297,11 @@ export function ToolReplacementSection() {
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           )}
         >
-          <Button asChild size="lg" className="shadow-lg shadow-[var(--primary)]/25">
+          <Button
+            asChild
+            size="lg"
+            className="bg-white text-[#0A0A0A] hover:bg-white/90 shadow-lg"
+          >
             <Link href="/sign-up">
               Replace Your Stack
               <ArrowRightIcon className="ml-2 h-4 w-4" />

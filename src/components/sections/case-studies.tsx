@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 
 /**
  * Case Studies Section
@@ -91,6 +92,7 @@ export function CaseStudiesSection() {
   const [activeFilter, setActiveFilter] = React.useState("all");
   const [focusedIndex, setFocusedIndex] = React.useState(-1);
   const filterRefs = React.useRef<(HTMLButtonElement | null)[]>([]);
+  const { ref, isVisible } = useScrollAnimation();
 
   const filteredStudies =
     activeFilter === "all"
@@ -128,25 +130,39 @@ export function CaseStudiesSection() {
 
   return (
     <section
+      ref={ref}
       className="relative z-10 py-20 lg:py-28 bg-[var(--background)]"
       aria-labelledby="case-studies-heading"
     >
-      <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-12 lg:mb-16">
-          <div className="mb-4 inline-flex items-center rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2">
+          <div
+            className={cn(
+              "mb-4 inline-flex items-center rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2 transition-all duration-500",
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            )}
+          >
             <span className="text-sm font-medium text-foreground-secondary">
               Success Stories
             </span>
           </div>
           <h2
             id="case-studies-heading"
-            className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl"
+            className={cn(
+              "text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl transition-all duration-500 delay-100",
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            )}
           >
-            <span className="text-foreground-muted">Real results from</span>{" "}
+            <span className="text-foreground/60">Real results from</span>{" "}
             <span className="text-foreground">real photographers.</span>
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-foreground-secondary">
+          <p
+            className={cn(
+              "mx-auto mt-4 max-w-2xl text-lg text-foreground-secondary transition-all duration-500 delay-200",
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            )}
+          >
             See how photographers across every vertical are growing their business
             with PhotoProOS.
           </p>
@@ -156,7 +172,10 @@ export function CaseStudiesSection() {
         <div
           role="tablist"
           aria-label="Filter case studies by industry"
-          className="mb-10 flex justify-center overflow-x-auto scrollbar-hide -mx-6 px-6 lg:mx-0 lg:px-0"
+          className={cn(
+            "mb-10 flex justify-center overflow-x-auto scrollbar-hide -mx-4 px-4 lg:mx-0 lg:px-0 transition-all duration-500 delay-300",
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          )}
         >
           <div className="flex gap-2">
             {industries.map((industry, index) => {
@@ -179,8 +198,8 @@ export function CaseStudiesSection() {
                     "flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                     activeFilter === industry.slug
-                      ? "bg-[var(--primary)] text-white"
-                      : "bg-[var(--card)] text-foreground-secondary hover:bg-[var(--background-elevated)] border border-[var(--card-border)]"
+                      ? "bg-white text-[#0A0A0A] shadow-md"
+                      : "bg-[var(--card)] text-foreground-secondary hover:bg-[var(--background-elevated)] border border-[var(--card-border)] hover:border-[var(--border-visible)]"
                   )}
                 >
                   {industry.label}
@@ -189,7 +208,7 @@ export function CaseStudiesSection() {
                       className={cn(
                         "flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs",
                         activeFilter === industry.slug
-                          ? "bg-white/20 text-white"
+                          ? "bg-[#0A0A0A]/10 text-[#0A0A0A]"
                           : "bg-foreground/10 text-foreground-muted"
                       )}
                     >
