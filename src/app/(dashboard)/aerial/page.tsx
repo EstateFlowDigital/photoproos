@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { PageHeader } from "@/components/dashboard";
+import { ComingSoonPage } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 
@@ -10,55 +10,24 @@ export default async function AerialPage() {
   }
 
   return (
-    <div data-element="aerial-page" className="space-y-6">
-      <PageHeader
-        title="Aerial & Drone"
-        subtitle="Manage drone photography and video projects"
-      />
-
-      <div className="card p-12 text-center">
-        <div className="text-4xl mb-4">🚁</div>
-        <h2 className="text-xl font-semibold text-foreground mb-2">Page Coming Soon</h2>
-        <p className="text-foreground-muted max-w-md mx-auto mb-8">
-          Track drone flights, manage FAA compliance, and organize aerial media.
-        </p>
-
-        <div className="text-left max-w-lg mx-auto mb-8">
-          <h3 className="text-sm font-semibold text-foreground mb-3">Features included:</h3>
-          <ul className="space-y-2 text-sm text-foreground-muted">
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Drone flight logging and tracking</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>FAA Part 107 compliance management</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Airspace authorization tracking (LAANC)</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Weather conditions logging</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Equipment maintenance records</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Aerial media organization</span>
-            </li>
-          </ul>
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-3">
-          <a href="/projects" className="btn btn-secondary text-sm">Projects</a>
-          <a href="/tours" className="btn btn-secondary text-sm">Virtual Tours</a>
-          <a href="/gear" className="btn btn-secondary text-sm">Gear</a>
-        </div>
-      </div>
-    </div>
+    <ComingSoonPage
+      title="Aerial & Drone"
+      subtitle="Manage drone photography and video projects"
+      icon="🚁"
+      description="Track drone flights, manage FAA compliance, and organize aerial media."
+      features={[
+        "Drone flight logging and tracking",
+        "FAA Part 107 compliance management",
+        "Airspace authorization tracking (LAANC)",
+        "Weather conditions logging",
+        "Equipment maintenance records",
+        "Aerial media organization",
+      ]}
+      relatedLinks={[
+        { label: "Projects", href: "/projects" },
+        { label: "Virtual Tours", href: "/tours" },
+        { label: "Gear", href: "/gear" },
+      ]}
+    />
   );
 }

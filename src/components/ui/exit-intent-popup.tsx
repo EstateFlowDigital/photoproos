@@ -18,6 +18,8 @@ export function ExitIntentPopup({
   const [isLoading, setIsLoading] = React.useState(false);
   const [canShow, setCanShow] = React.useState(false);
   const hasShownRef = React.useRef(false);
+  const modalRef = React.useRef<HTMLDivElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
   // Enable popup after delay
   React.useEffect(() => {
@@ -81,6 +83,37 @@ export function ExitIntentPopup({
     };
   }, [isOpen]);
 
+  // Focus trap - keep focus within modal
+  React.useEffect(() => {
+    if (!isOpen || !modalRef.current) return;
+
+    // Auto-focus the email input when modal opens
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== "Tab" || !modalRef.current) return;
+
+      const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (e.shiftKey && document.activeElement === firstElement) {
+        e.preventDefault();
+        lastElement?.focus();
+      } else if (!e.shiftKey && document.activeElement === lastElement) {
+        e.preventDefault();
+        firstElement?.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleTabKey);
+    return () => document.removeEventListener("keydown", handleTabKey);
+  }, [isOpen]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || isLoading) return;
@@ -110,16 +143,17 @@ export function ExitIntentPopup({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm motion-safe:animate-fade-in"
         onClick={() => setIsOpen(false)}
         aria-hidden="true"
       />
 
       {/* Modal */}
       <div
+        ref={modalRef}
         className={cn(
           "relative w-full max-w-md rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-8 shadow-2xl",
-          "animate-scale-in"
+          "motion-safe:animate-scale-in"
         )}
       >
         {/* Close button */}
@@ -151,22 +185,27 @@ export function ExitIntentPopup({
             {/* Email form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="relative">
+                <label htmlFor="exit-intent-email" className="sr-only">Email address</label>
                 <input
+                  ref={inputRef}
+                  id="exit-intent-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
                   required
-                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-4 py-3 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20"
+                  aria-describedby="exit-intent-desc"
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-4 py-3 pr-12 text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50"
                 />
-                <MailIcon className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-foreground-muted" />
+                <MailIcon className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-foreground-muted" aria-hidden="true" />
+                <span id="exit-intent-desc" className="sr-only">We'll send your free guide and notify you when PhotoProOS launches</span>
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading}
                 className={cn(
-                  "group relative w-full rounded-lg bg-white py-3 text-sm font-medium text-[#0A0A0A] transition-all",
+                  "group relative w-full rounded-lg bg-white py-3 text-sm font-medium text-[#0A0A0A] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)]",
                   isLoading ? "opacity-70 cursor-not-allowed" : "hover:bg-white/90"
                 )}
               >

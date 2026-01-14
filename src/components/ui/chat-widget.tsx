@@ -8,14 +8,26 @@ interface ChatWidgetProps {
   delay?: number; // Delay before showing the widget
 }
 
+interface Message {
+  id: string;
+  type: "user" | "system";
+  content: string;
+  timestamp: Date;
+}
+
 export function ChatWidget({ delay = 3000 }: ChatWidgetProps) {
   const [isVisible, setIsVisible] = React.useState(false);
   const [isOpen, setIsOpen] = React.useState(false);
   const [message, setMessage] = React.useState("");
   const [email, setEmail] = React.useState("");
-  const [isSubmitted, setIsSubmitted] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [showEmailField, setShowEmailField] = React.useState(false);
+  const [messages, setMessages] = React.useState<Message[]>([]);
+  const [error, setError] = React.useState<string | null>(null);
+  const [showTypingIndicator, setShowTypingIndicator] = React.useState(false);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
   // Show widget after delay
   React.useEffect(() => {
@@ -23,52 +35,110 @@ export function ChatWidget({ delay = 3000 }: ChatWidgetProps) {
     return () => clearTimeout(timer);
   }, [delay]);
 
-  // Handle ESC key
+  // Handle ESC key and focus trap
   React.useEffect(() => {
     if (!isOpen) return;
 
-    const handleEsc = (e: KeyboardEvent) => {
+    // Auto-focus input when panel opens
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setIsOpen(false);
+        return;
+      }
+
+      // Focus trap
+      if (e.key === "Tab" && panelRef.current) {
+        const focusableElements = panelRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey && document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement?.focus();
+        } else if (!e.shiftKey && document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement?.focus();
+        }
       }
     };
 
-    document.addEventListener("keydown", handleEsc);
-    return () => document.removeEventListener("keydown", handleEsc);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen]);
+
+  // Scroll to bottom when new messages arrive
+  React.useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, showTypingIndicator]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim() || isSubmitting) return;
 
+    // Clear any previous error
+    setError(null);
+
+    // Add user message to conversation
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      type: "user",
+      content: message.trim(),
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setMessage("");
     setIsSubmitting(true);
 
     try {
       const result = await submitChatInquiry({
         email: email || undefined,
-        message,
+        message: userMessage.content,
         pageUrl: typeof window !== "undefined" ? window.location.href : undefined,
       });
 
       if (result.success) {
-        setIsSubmitted(true);
-        setMessage("");
-        setEmail("");
-        setShowEmailField(false);
+        // Show typing indicator
+        setShowTypingIndicator(true);
 
-        // Reset after 3 seconds
-        setTimeout(() => {
-          setIsSubmitted(false);
-          setIsOpen(false);
-        }, 3000);
+        // Simulate response delay for natural feel
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        setShowTypingIndicator(false);
+
+        // Add system response
+        const systemMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          type: "system",
+          content: "Thanks for your message! Our team will get back to you shortly. We typically respond within a few minutes during business hours.",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, systemMessage]);
+
+        // Clear email field after successful submission
+        if (email) {
+          setEmail("");
+          setShowEmailField(false);
+        }
       } else {
+        setError("Failed to send message. Please try again.");
         console.error("[Chat Widget] Error:", result.error);
       }
-    } catch (error) {
-      console.error("[Chat Widget] Error:", error);
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+      console.error("[Chat Widget] Error:", err);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleQuickQuestion = (question: string) => {
+    setMessage(`Tell me about ${question.toLowerCase()}`);
+    inputRef.current?.focus();
   };
 
   if (!isVisible) return null;
@@ -92,125 +162,192 @@ export function ChatWidget({ delay = 3000 }: ChatWidgetProps) {
           <>
             <ChatIcon className="h-6 w-6" />
             {/* Pulse animation */}
-            <span className="absolute inset-0 animate-ping rounded-full bg-[var(--primary)] opacity-20" />
+            <span className="absolute inset-0 motion-safe:animate-ping rounded-full bg-[var(--primary)] opacity-20" />
           </>
         )}
       </button>
 
       {/* Chat panel */}
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="chat-widget-title"
         className={cn(
-          "fixed bottom-24 right-6 z-50 w-80 transition-all duration-300",
+          "fixed bottom-24 right-6 z-50 w-80 sm:w-96 transition-all duration-300",
           isOpen
             ? "translate-y-0 opacity-100"
             : "translate-y-4 opacity-0 pointer-events-none"
         )}
       >
-        <div className="overflow-x-auto rounded-2xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
+        <div className="flex max-h-[70vh] flex-col overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
           {/* Header */}
-          <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--ai)] p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20">
-                <SupportIcon className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <p className="font-medium text-white">PhotoProOS Support</p>
-                <div className="flex items-center gap-1.5 text-xs text-white/80">
-                  <span className="h-2 w-2 rounded-full bg-green-400" />
-                  <span>We typically reply in a few minutes</span>
+          <div className="shrink-0 bg-gradient-to-r from-[var(--primary)] to-[var(--ai)] p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20">
+                  <SupportIcon className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p id="chat-widget-title" className="font-medium text-white">PhotoProOS Support</p>
+                  <div className="flex items-center gap-1.5 text-xs text-white/80">
+                    <span className="h-2 w-2 rounded-full bg-green-400" aria-hidden="true" />
+                    <span>We typically reply in a few minutes</span>
+                  </div>
                 </div>
               </div>
+              {/* Close button in header */}
+              <button
+                onClick={() => setIsOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-white/80 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                aria-label="Close chat"
+              >
+                <CloseIcon className="h-5 w-5" />
+              </button>
             </div>
           </div>
 
-          {/* Body */}
-          <div className="p-4">
-            {!isSubmitted ? (
-              <>
-                {/* Welcome message */}
-                <div className="mb-4 rounded-lg bg-[var(--background-elevated)] p-3">
-                  <p className="text-sm text-foreground">
-                    Hi there! Have a question about PhotoProOS? We're here to help.
-                  </p>
-                </div>
+          {/* Body - scrollable */}
+          <div className="flex-1 overflow-y-auto p-4">
+            {/* Welcome message - always shown */}
+            <div className="mb-4 rounded-lg bg-[var(--background-elevated)] p-3">
+              <p className="text-sm text-foreground">
+                Hi there! Have a question about PhotoProOS? We're here to help.
+              </p>
+            </div>
 
-                {/* Quick questions */}
-                <div className="mb-4 space-y-2">
-                  <p className="text-xs font-medium uppercase tracking-wider text-foreground-muted">
-                    Quick questions
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {["Pricing", "Features", "Free trial"].map((q) => (
-                      <button
-                        key={q}
-                        onClick={() => setMessage(`Tell me about ${q.toLowerCase()}`)}
-                        className="rounded-full border border-[var(--card-border)] bg-[var(--background-secondary)] px-3 py-1 text-xs text-foreground-secondary transition-colors hover:border-[var(--primary)] hover:text-foreground"
-                      >
-                        {q}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Message input */}
-                <form onSubmit={handleSubmit} className="space-y-3">
-                  {showEmailField && (
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Your email (optional)"
-                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20"
-                    />
-                  )}
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Type your message..."
-                      disabled={isSubmitting}
-                      className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-4 py-3 pr-12 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 disabled:opacity-50"
-                    />
-                    <button
-                      type="submit"
-                      disabled={!message.trim() || isSubmitting}
-                      className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md bg-[var(--primary)] text-white transition-opacity disabled:opacity-50"
-                    >
-                      {isSubmitting ? (
-                        <LoadingIcon className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <SendIcon className="h-4 w-4" />
+            {/* Conversation history */}
+            {messages.length > 0 && (
+              <div className="mb-4 space-y-3">
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={cn(
+                      "flex",
+                      msg.type === "user" ? "justify-end" : "justify-start"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "max-w-[85%] rounded-2xl px-4 py-2 text-sm",
+                        msg.type === "user"
+                          ? "bg-[var(--primary)] text-white rounded-br-md"
+                          : "bg-[var(--background-elevated)] text-foreground rounded-bl-md"
                       )}
-                    </button>
-                  </div>
-                  {!showEmailField && (
-                    <button
-                      type="button"
-                      onClick={() => setShowEmailField(true)}
-                      className="text-xs text-foreground-muted hover:text-foreground transition-colors"
                     >
-                      + Add email for a reply
-                    </button>
-                  )}
-                </form>
-              </>
-            ) : (
-              /* Success state */
-              <div className="py-4 text-center">
-                <div className="mx-auto mb-3 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--success)]/10">
-                  <CheckIcon className="h-6 w-6 text-[var(--success)]" />
-                </div>
-                <p className="font-medium text-foreground">Message sent!</p>
-                <p className="mt-1 text-sm text-foreground-muted">
-                  We'll get back to you shortly.
+                      {msg.content}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Typing indicator */}
+                {showTypingIndicator && (
+                  <div className="flex justify-start">
+                    <div className="rounded-2xl rounded-bl-md bg-[var(--background-elevated)] px-4 py-3">
+                      <div className="flex items-center gap-1">
+                        <span className="h-2 w-2 rounded-full bg-foreground-muted motion-safe:animate-bounce [animation-delay:0ms]" />
+                        <span className="h-2 w-2 rounded-full bg-foreground-muted motion-safe:animate-bounce [animation-delay:150ms]" />
+                        <span className="h-2 w-2 rounded-full bg-foreground-muted motion-safe:animate-bounce [animation-delay:300ms]" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div ref={messagesEndRef} />
+              </div>
+            )}
+
+            {/* Quick questions - only show when no conversation yet */}
+            {messages.length === 0 && (
+              <div className="mb-4 space-y-2">
+                <p className="text-xs font-medium uppercase tracking-wider text-foreground-muted">
+                  Quick questions
                 </p>
+                <div className="flex flex-wrap gap-2">
+                  {["Pricing", "Features", "Free trial", "Demo"].map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => handleQuickQuestion(q)}
+                      className="rounded-full border border-[var(--card-border)] bg-[var(--background-secondary)] px-3 py-1.5 text-xs text-foreground-secondary transition-colors hover:border-[var(--primary)] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)]"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Error message */}
+            {error && (
+              <div className="mb-4 flex items-center gap-2 rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 p-3 text-sm text-[var(--error)]" role="alert">
+                <ErrorIcon className="h-4 w-4 shrink-0" />
+                <span>{error}</span>
+                <button
+                  onClick={() => setError(null)}
+                  className="ml-auto shrink-0 text-[var(--error)]/70 hover:text-[var(--error)]"
+                  aria-label="Dismiss error"
+                >
+                  <CloseIcon className="h-4 w-4" />
+                </button>
               </div>
             )}
           </div>
 
+          {/* Input area - fixed at bottom */}
+          <div className="shrink-0 border-t border-[var(--card-border)] p-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
+              {showEmailField && (
+                <div>
+                  <label htmlFor="chat-email" className="sr-only">Your email (optional)</label>
+                  <input
+                    id="chat-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Your email (optional)"
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50"
+                  />
+                </div>
+              )}
+              <div className="relative">
+                <label htmlFor="chat-message" className="sr-only">Type your message</label>
+                <input
+                  ref={inputRef}
+                  id="chat-message"
+                  type="text"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Type your message..."
+                  disabled={isSubmitting}
+                  className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--background-elevated)] px-4 py-3 pr-12 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50 disabled:opacity-50"
+                />
+                <button
+                  type="submit"
+                  disabled={!message.trim() || isSubmitting}
+                  className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md bg-[var(--primary)] text-white transition-all hover:bg-[var(--primary)]/90 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2"
+                  aria-label="Send message"
+                >
+                  {isSubmitting ? (
+                    <LoadingIcon className="h-4 w-4 motion-safe:animate-spin" />
+                  ) : (
+                    <SendIcon className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+              {!showEmailField && (
+                <button
+                  type="button"
+                  onClick={() => setShowEmailField(true)}
+                  className="text-xs text-foreground-muted hover:text-foreground transition-colors focus-visible:outline-none focus-visible:underline"
+                >
+                  + Add email for a reply
+                </button>
+              )}
+            </form>
+          </div>
+
           {/* Footer */}
-          <div className="border-t border-[var(--card-border)] px-4 py-2 text-center text-xs text-foreground-muted">
+          <div className="shrink-0 border-t border-[var(--card-border)] px-4 py-2 text-center text-xs text-foreground-muted">
             Powered by PhotoProOS
           </div>
         </div>
@@ -265,6 +402,14 @@ function LoadingIcon({ className }: { className?: string }) {
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true">
       <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
       <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function ErrorIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className} aria-hidden="true">
+      <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
     </svg>
   );
 }

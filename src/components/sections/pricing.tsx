@@ -301,11 +301,11 @@ export function PricingSection() {
                     transitionDelay: "950ms",
                   }}
                 >
-                  <th className="py-4 pr-4 text-left text-sm font-medium text-foreground-muted">Feature</th>
-                  <th className="px-4 py-4 text-center text-sm font-medium text-foreground">Free</th>
-                  <th className="px-4 py-4 text-center text-sm font-medium text-foreground">Pro</th>
-                  <th className="px-4 py-4 text-center text-sm font-medium text-foreground">Studio</th>
-                  <th className="px-4 py-4 text-center text-sm font-medium text-foreground">Enterprise</th>
+                  <th scope="col" className="py-4 pr-4 text-left text-sm font-medium text-foreground-muted">Feature</th>
+                  <th scope="col" className="px-4 py-4 text-center text-sm font-medium text-foreground">Free</th>
+                  <th scope="col" className="px-4 py-4 text-center text-sm font-medium text-foreground">Pro</th>
+                  <th scope="col" className="px-4 py-4 text-center text-sm font-medium text-foreground">Studio</th>
+                  <th scope="col" className="px-4 py-4 text-center text-sm font-medium text-foreground">Enterprise</th>
                 </tr>
               </thead>
               <tbody>
@@ -365,9 +365,15 @@ const comparisonFeatures = [
 function FeatureValue({ value }: { value: boolean | string }) {
   if (typeof value === "boolean") {
     return value ? (
-      <CheckIcon className="mx-auto h-5 w-5 text-[var(--success)]" />
+      <>
+        <CheckIcon className="mx-auto h-5 w-5 text-[var(--success)]" aria-hidden="true" />
+        <span className="sr-only">Included</span>
+      </>
     ) : (
-      <XIcon className="mx-auto h-5 w-5 text-foreground-muted" />
+      <>
+        <XIcon className="mx-auto h-5 w-5 text-foreground-muted" aria-hidden="true" />
+        <span className="sr-only">Not included</span>
+      </>
     );
   }
   return <span className="text-sm text-foreground-secondary">{value}</span>;

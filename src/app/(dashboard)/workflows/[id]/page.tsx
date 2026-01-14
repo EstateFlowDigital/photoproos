@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-import { PageHeader } from "@/components/dashboard";
+import { ComingSoonPage } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 
@@ -8,63 +8,31 @@ interface PageProps {
 }
 
 export default async function WorkflowDetailPage({ params }: PageProps) {
-  const { id } = await params;
+  await params;
   const auth = await getAuthContext();
   if (!auth) {
     redirect("/sign-in");
   }
 
   return (
-    <div className="space-y-6" data-element="workflow-detail-page">
-      <PageHeader
-        title="Workflow Editor"
-        subtitle={`Editing workflow ${id}`}
-        backHref="/workflows"
-      />
-
-      <div className="card p-12 text-center">
-        <div className="text-4xl mb-4">🔧</div>
-        <h2 className="text-xl font-semibold text-foreground mb-2">Page Coming Soon</h2>
-        <p className="text-foreground-muted max-w-md mx-auto mb-8">
-          Visual workflow editor with drag-and-drop step configuration.
-        </p>
-
-        <div className="text-left max-w-lg mx-auto mb-8">
-          <h3 className="text-sm font-semibold text-foreground mb-3">Features included:</h3>
-          <ul className="space-y-2 text-sm text-foreground-muted">
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Visual drag-and-drop workflow builder</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Step configuration and conditions</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Email and SMS action triggers</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Time-based delay settings</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Workflow testing and preview</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Run history and analytics</span>
-            </li>
-          </ul>
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-3">
-          <a href="/workflows" className="btn btn-secondary text-sm">All Workflows</a>
-          <a href="/automations" className="btn btn-secondary text-sm">Automations</a>
-          <a href="/templates" className="btn btn-secondary text-sm">Templates</a>
-        </div>
-      </div>
-    </div>
+    <ComingSoonPage
+      title="Workflow Editor"
+      subtitle="Edit workflow steps"
+      icon="🔧"
+      description="Visual workflow editor with drag-and-drop step configuration."
+      features={[
+        "Visual drag-and-drop workflow builder",
+        "Step configuration and conditions",
+        "Email and SMS action triggers",
+        "Time-based delay settings",
+        "Workflow testing and preview",
+        "Run history and analytics",
+      ]}
+      relatedLinks={[
+        { label: "All Workflows", href: "/workflows" },
+        { label: "Automations", href: "/automations" },
+        { label: "Templates", href: "/templates" },
+      ]}
+    />
   );
 }

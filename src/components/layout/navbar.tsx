@@ -642,7 +642,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   return (
     <Link
       href={href}
-      className="rounded-[var(--button-radius)] px-4 py-[10px] text-sm font-medium text-foreground transition-colors duration-[var(--duration-fast)] hover:bg-[var(--background-elevated)]"
+      className="rounded-[var(--button-radius)] px-4 py-[10px] text-sm font-medium text-foreground transition-colors duration-[var(--duration-fast)] hover:bg-[var(--background-elevated)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       {children}
     </Link>

@@ -51,7 +51,7 @@ export function CTASection() {
             }}
           >
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75"></span>
+              <span className="absolute inline-flex h-full w-full motion-safe:animate-ping rounded-full bg-[var(--primary)] opacity-75"></span>
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]"></span>
             </span>
             <span className="text-sm text-foreground-secondary">
@@ -107,7 +107,7 @@ export function CTASection() {
               gradient="linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899, #3b82f6)"
               className="px-8 py-4 text-base"
             >
-              <Link href="/demo">Schedule a Demo</Link>
+              <Link href="/contact">Schedule a Demo</Link>
             </GradientButton>
           </div>
 

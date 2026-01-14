@@ -63,17 +63,21 @@ export function Footer() {
             </p>
             {/* Newsletter Signup */}
             <div className="mb-6">
-              <p className="mb-3 text-sm font-medium text-foreground">Stay in the loop</p>
               <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  aria-label="Email address for newsletter"
-                  className="flex-1 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--border-visible)] focus:outline-none focus:ring-1 focus:ring-[var(--border-visible)] transition-colors"
-                />
+                <div className="flex-1">
+                  <label htmlFor="footer-email" className="mb-2 block text-sm font-medium text-foreground">
+                    Stay in the loop
+                  </label>
+                  <input
+                    id="footer-email"
+                    type="email"
+                    placeholder="Enter your email"
+                    className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--border-visible)] focus:outline-none focus:ring-1 focus:ring-[var(--border-visible)] transition-colors"
+                  />
+                </div>
                 <button
                   type="submit"
-                  className="rounded-lg bg-white text-[#0A0A0A] px-5 py-2.5 text-sm font-medium transition-colors hover:bg-white/90"
+                  className="self-end rounded-lg bg-white text-[#0A0A0A] px-5 py-2.5 text-sm font-medium transition-colors hover:bg-white/90"
                 >
                   Subscribe
                 </button>

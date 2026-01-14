@@ -9,9 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Fixed public /help links** - Updated public pages (404, contact, guides, FAQ, integrations, client portal) to link to `/support` instead of `/help` (which was protected). This ensures unauthenticated users can access the help center.
+- **Updated sitemap.ts** - Fixed `/help` to `/support` in sitemap, added missing pages: `/integrations`, `/features/social-media`, `/features/email-marketing`.
 
 ### Changed
-- **Converted mentoring page to use ComingSoonPage component** - Migrated inline "Coming Soon" placeholder to use the shared ComingSoonPage component with consistent styling and Beta badge.
+- **Converted all 74 placeholder pages to use ComingSoonPage component** - Migrated all inline "Coming Soon" placeholders to use the shared ComingSoonPage component with consistent styling, Beta badge, feature lists, notify-me form, and related links. Pages include:
+  - List pages: import, export, webhooks, custom-fields, waivers, surveys, booking-rules, aerial, floor-plans, client-journey, shipping, landing-pages, content, fulfillment, mood-boards, prep-guides, resources, licenses, shot-list, booking-page, opportunities, assignments, releases, style-guides, locations, tags, trash, mentoring, workshops, courses, timeline, associates, team, backups, storage, sms, email-inbox, communications, assets, files
+  - Detail pages: mentoring/[id], proposals/[id], segments/[id], associates/[id], albums/[id], collections/[id], surveys/[id], memberships/[id], videos/[id], courses/[id], coupons/[id], digital-products/[id], sneak-peeks/[id], mood-boards/[id], workflows/[id], gear/[id], prep-guides/[id], reveal/[id], expenses/[id], proofing/[id], email-campaigns/[id], shot-list/[id], opportunities/[id], gift-cards/[id], releases/[id], slideshows/[id], workshops/[id], session-recaps/[id], timesheets/[id]
+  - New pages: proposals/new, surveys/new, workflows/new, expenses/new, releases/new
+  - Settings/templates: settings/data, settings/booking, blog/new, products/new, templates/proposals, templates/emails, integrations/quickbooks, integrations/google, integrations/zapier, gear/maintenance, help/getting-started
 
 - **Rebranded from ListingLens to PhotoProOS** - Updated all references throughout the codebase:
   - Updated Stripe metadata keys from `listinglens_*` to `photoproos_*` in product sync

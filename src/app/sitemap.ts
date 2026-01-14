@@ -10,7 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/about",
     "/contact",
     "/blog",
-    "/help",
+    "/support",
     "/changelog",
     "/roadmap",
     "/press",
@@ -19,6 +19,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/affiliates",
     "/guides",
     "/webinars",
+    "/integrations",
   ];
 
   // Feature pages
@@ -29,6 +30,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/features/automation",
     "/features/analytics",
     "/features/contracts",
+    "/features/social-media",
+    "/features/email-marketing",
   ];
 
   // Industry pages
