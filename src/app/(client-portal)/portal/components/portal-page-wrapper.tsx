@@ -224,7 +224,7 @@ export function PortalPageWrapper({
               {organizationName || "PhotoProOS"} Client Portal
             </p>
             <div className="flex items-center gap-4 text-sm text-[var(--foreground-muted)]">
-              <Link href="/help" className="hover:text-[var(--foreground)]">
+              <Link href="/support" className="hover:text-[var(--foreground)]">
                 Help
               </Link>
               <Link href="/contact" className="hover:text-[var(--foreground)]">

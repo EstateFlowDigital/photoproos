@@ -163,7 +163,7 @@ export function FAQSection() {
               </a>{" "}
               or check out our{" "}
               <a
-                href="/help"
+                href="/support"
                 className="text-[var(--primary)] underline decoration-[var(--primary)]/30 underline-offset-4 transition-colors hover:decoration-[var(--primary)]"
               >
                 help center

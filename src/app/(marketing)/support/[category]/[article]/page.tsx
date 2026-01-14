@@ -56,11 +56,11 @@ export default async function HelpArticlePage({ params }: PageProps) {
         <div className="mx-auto max-w-[1512px] px-6 py-8 lg:px-[124px]">
           {/* Breadcrumb */}
           <nav className="mb-4 flex items-center gap-2 text-sm text-foreground-muted">
-            <Link href="/help" className="hover:text-foreground">
+            <Link href="/support" className="hover:text-foreground">
               Help Center
             </Link>
             <ChevronRightIcon className="h-4 w-4" />
-            <Link href={`/help#${category}`} className="hover:text-foreground">
+            <Link href={`/support#${category}`} className="hover:text-foreground">
               {categoryInfo.title}
             </Link>
             <ChevronRightIcon className="h-4 w-4" />

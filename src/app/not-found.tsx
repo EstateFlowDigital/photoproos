@@ -36,7 +36,7 @@ export default function NotFound() {
             Back to Home
           </Link>
           <Link
-            href="/help"
+            href="/support"
             className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
           >
             <HelpIcon className="h-4 w-4" />

@@ -222,7 +222,7 @@ export function IntegrationsSection() {
               <ArrowIcon className="h-4 w-4" />
             </a>
             <a
-              href="/help"
+              href="/support"
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-foreground-secondary transition-colors hover:border-[var(--border-hover)] hover:text-foreground"
             >
               <CodeIcon className="h-4 w-4" />

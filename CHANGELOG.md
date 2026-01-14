@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Fixed public /help links** - Updated public pages (404, contact, guides, FAQ, integrations, client portal) to link to `/support` instead of `/help` (which was protected). This ensures unauthenticated users can access the help center.
+
 ### Changed
+- **Converted mentoring page to use ComingSoonPage component** - Migrated inline "Coming Soon" placeholder to use the shared ComingSoonPage component with consistent styling and Beta badge.
+
 - **Rebranded from ListingLens to PhotoProOS** - Updated all references throughout the codebase:
   - Updated Stripe metadata keys from `listinglens_*` to `photoproos_*` in product sync
   - Updated subscription plan metadata keys

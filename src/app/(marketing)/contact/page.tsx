@@ -68,7 +68,7 @@ export default function ContactPage() {
                 <ul className="space-y-3" data-element="contact-quick-links-list">
                   <li>
                     <Link
-                      href="/help"
+                      href="/support"
                       className="text-foreground-secondary transition-colors hover:text-[var(--primary)]"
                     >
                       Help Center
@@ -132,7 +132,7 @@ export default function ContactPage() {
               Find quick answers to common questions in our Help Center.
             </p>
             <Link
-              href="/help"
+              href="/support"
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
               data-element="contact-faq-btn"
             >
