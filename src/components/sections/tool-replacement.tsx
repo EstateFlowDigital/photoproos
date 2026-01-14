@@ -139,7 +139,7 @@ export function ToolReplacementSection() {
         </div>
 
         {/* Comparison Grid */}
-        <div className="grid gap-8 lg:grid-cols-[1fr,auto,1fr] lg:gap-12 items-center">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr,auto,1fr] lg:gap-12 items-center">
           {/* Before - Scattered Tools */}
           <div
             className={cn(
@@ -168,6 +168,7 @@ export function ToolReplacementSection() {
                   className={cn(
                     "group relative flex flex-col items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--background)] p-2 transition-all",
                     "hover:border-[var(--border-visible)] hover:shadow-sm",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)]",
                     isVisible ? "opacity-100" : "opacity-0"
                   )}
                   style={{
@@ -175,15 +176,16 @@ export function ToolReplacementSection() {
                     transitionDuration: "500ms",
                   }}
                   role="listitem"
+                  tabIndex={0}
                 >
                   <div className="flex h-8 w-8 items-center justify-center text-foreground-muted" aria-hidden="true">
                     {tool.icon}
                   </div>
-                  <span className="mt-1 text-[10px] font-medium text-foreground-muted text-center leading-tight">
+                  <span className="mt-1 text-[11px] sm:text-xs font-medium text-foreground-muted text-center leading-tight">
                     {tool.name}
                   </span>
-                  {/* Tooltip on hover */}
-                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 hidden group-hover:block z-10">
+                  {/* Tooltip on hover/focus */}
+                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 hidden group-hover:block group-focus-within:block z-10">
                     <div className="whitespace-nowrap rounded-lg bg-[var(--background-elevated)] px-3 py-2 text-xs shadow-lg border border-[var(--border)]">
                       <span className="font-medium text-foreground">{tool.category}</span>
                       <span className="ml-2 text-foreground-muted">{tool.monthlyPrice}/mo</span>
@@ -253,7 +255,7 @@ export function ToolReplacementSection() {
               </div>
 
               {/* Features Grid */}
-              <div className="grid grid-cols-2 gap-2">
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2" role="list">
                 {[
                   "Galleries",
                   "Payments",
@@ -264,15 +266,15 @@ export function ToolReplacementSection() {
                   "Analytics",
                   "Automation",
                 ].map((feature) => (
-                  <div
+                  <li
                     key={feature}
                     className="flex items-center gap-2 rounded-lg bg-[var(--primary)]/5 px-3 py-2"
                   >
-                    <CheckIcon className="h-3.5 w-3.5 text-[var(--primary)]" />
+                    <CheckIcon className="h-3.5 w-3.5 text-[var(--primary)]" aria-hidden="true" />
                     <span className="text-xs font-medium text-foreground">{feature}</span>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
 
             {/* Cost Summary */}
@@ -311,7 +313,7 @@ export function ToolReplacementSection() {
           <Button
             asChild
             size="lg"
-            className="bg-white text-[#0A0A0A] hover:bg-white/90 shadow-lg"
+            className="bg-foreground text-background hover:bg-foreground/90 shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2"
           >
             <Link href="/sign-up">
               Replace Your Stack

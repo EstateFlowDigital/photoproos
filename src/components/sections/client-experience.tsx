@@ -115,7 +115,7 @@ export function ClientExperienceSection() {
             </p>
 
             {/* Steps */}
-            <div
+            <ul
               className="mt-8 space-y-4"
               style={{
                 opacity: isVisible ? 1 : 0,
@@ -123,9 +123,10 @@ export function ClientExperienceSection() {
                 transition: "opacity 700ms ease-out, transform 700ms ease-out",
                 transitionDelay: "400ms",
               }}
+              role="list"
             >
               {journeySteps.map((step, index) => (
-                <div
+                <li
                   key={index}
                   className="flex items-start gap-4 rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-4 transition-all duration-200 hover:border-[var(--border-hover)]"
                 >
@@ -139,12 +140,12 @@ export function ClientExperienceSection() {
                     <h4 className="font-medium text-foreground">{step.title}</h4>
                     <p className="mt-0.5 text-sm text-foreground-secondary">{step.description}</p>
                   </div>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
 
             {/* Stats */}
-            <div
+            <dl
               className="mt-8 flex flex-wrap items-center gap-6 sm:gap-8"
               style={{
                 opacity: isVisible ? 1 : 0,
@@ -154,20 +155,20 @@ export function ClientExperienceSection() {
               }}
             >
               <div>
-                <p className="text-3xl font-bold text-foreground">4.9</p>
-                <p className="text-sm text-foreground-muted">Average client rating</p>
+                <dd className="text-2xl sm:text-3xl font-bold text-foreground">4.9</dd>
+                <dt className="text-sm text-foreground-muted">Average client rating</dt>
               </div>
-              <div className="h-12 w-px bg-[var(--border)]" />
+              <div className="h-12 w-px bg-[var(--border)]" aria-hidden="true" />
               <div>
-                <p className="text-3xl font-bold text-foreground">&lt;2min</p>
-                <p className="text-sm text-foreground-muted">Checkout time</p>
+                <dd className="text-2xl sm:text-3xl font-bold text-foreground">&lt;2min</dd>
+                <dt className="text-sm text-foreground-muted">Checkout time</dt>
               </div>
-              <div className="h-12 w-px bg-[var(--border)] hidden sm:block" />
+              <div className="h-12 w-px bg-[var(--border)] hidden sm:block" aria-hidden="true" />
               <div className="hidden sm:block">
-                <p className="text-3xl font-bold text-foreground">100%</p>
-                <p className="text-sm text-foreground-muted">White-label branded</p>
+                <dd className="text-2xl sm:text-3xl font-bold text-foreground">100%</dd>
+                <dt className="text-sm text-foreground-muted">White-label branded</dt>
               </div>
-            </div>
+            </dl>
           </div>
         </div>
       </div>

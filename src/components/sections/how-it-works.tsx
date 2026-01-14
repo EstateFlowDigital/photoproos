@@ -84,7 +84,7 @@ export function HowItWorksSection() {
             }}
           >
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75" />
+              <span className="absolute inline-flex h-full w-full motion-safe:animate-ping rounded-full bg-[var(--primary)] opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
             </span>
             <span className="text-sm text-foreground-secondary">
@@ -128,8 +128,12 @@ export function HowItWorksSection() {
                 <button
                   key={step.number}
                   onClick={() => setActiveStep(index)}
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-controls={`step-panel-${index}`}
+                  tabIndex={isActive ? 0 : -1}
                   className={cn(
-                    "group relative w-full rounded-xl border p-6 text-left transition-all duration-300",
+                    "group relative w-full rounded-xl border p-6 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                     isActive
                       ? "border-[var(--primary)] bg-[var(--primary)]/5 shadow-lg shadow-[var(--primary)]/10"
                       : "border-[var(--card-border)] bg-[var(--card)] hover:border-[var(--border-hover)] hover:bg-[var(--background-secondary)]"
@@ -187,10 +191,12 @@ export function HowItWorksSection() {
 
                     {/* Progress indicator */}
                     {isActive && (
-                      <div className="absolute bottom-0 left-0 h-1 w-full overflow-x-auto rounded-b-xl bg-[var(--background-elevated)]">
+                      <div className="absolute bottom-0 left-0 h-1 w-full overflow-hidden rounded-b-xl bg-[var(--background-elevated)]">
                         <div
-                          className="h-full bg-[var(--primary)] animate-progress-bar"
+                          className="h-full bg-[var(--primary)] motion-safe:animate-progress-bar motion-reduce:w-full"
                           style={{ animationDuration: "5s" }}
+                          role="progressbar"
+                          aria-label="Step auto-advance progress"
                         />
                       </div>
                     )}
@@ -212,7 +218,7 @@ export function HowItWorksSection() {
           >
             <div className="sticky top-24 overflow-x-auto rounded-2xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl shadow-black/20">
               {/* Browser Chrome */}
-              <div className="flex items-center gap-2 border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-4 py-3">
+              <div className="flex items-center gap-2 border-b border-[var(--card-border)] bg-[var(--background-secondary)] px-4 py-3" aria-hidden="true">
                 <div className="flex gap-1.5">
                   <div className="h-3 w-3 rounded-full bg-[#ff5f57]" />
                   <div className="h-3 w-3 rounded-full bg-[#febc2e]" />

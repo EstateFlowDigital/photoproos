@@ -136,6 +136,10 @@ export function TestimonialsSection() {
       className="relative z-10 py-20 lg:py-32"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
+      onFocus={() => setIsPaused(true)}
+      onBlur={() => setIsPaused(false)}
+      role="region"
+      aria-label="Customer testimonials carousel"
     >
       {/* Grid background - uses CSS variables for theme-aware colors */}
       <div className="pointer-events-none absolute inset-0">
@@ -162,8 +166,8 @@ export function TestimonialsSection() {
               transition: "opacity 600ms ease-out, transform 600ms ease-out",
             }}
           >
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75" />
+            <span className="relative flex h-2 w-2" aria-hidden="true">
+              <span className="absolute inline-flex h-full w-full motion-safe:animate-ping rounded-full bg-[var(--primary)] opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
             </span>
             <span className="text-sm text-foreground-secondary">
@@ -198,7 +202,7 @@ export function TestimonialsSection() {
           <div className="shrink-0 flex flex-col items-center lg:items-start gap-4">
             {/* Avatar with animated gradient */}
             <div
-              className={`h-24 w-24 overflow-x-auto rounded-full bg-gradient-to-br ${avatarGradients[activeIndex]} lg:h-32 lg:w-32`}
+              className={`h-24 w-24 overflow-hidden rounded-full bg-gradient-to-br ${avatarGradients[activeIndex]} lg:h-32 lg:w-32`}
               style={{
                 transition: "all 500ms cubic-bezier(0.4, 0, 0.2, 1)",
                 transform: isAnimating ? "scale(0.9)" : "scale(1)",
@@ -242,7 +246,7 @@ export function TestimonialsSection() {
               }}
             >
               {/* Quote icon */}
-              <div className="mb-4 text-[var(--primary)]/20">
+              <div className="mb-4 text-[var(--primary)]/20" aria-hidden="true">
                 <svg className="h-12 w-12" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
                 </svg>
@@ -281,10 +285,11 @@ export function TestimonialsSection() {
             <button
               key={index}
               onClick={() => handleSelect(index)}
-              className={`group relative flex flex-col items-center gap-2 transition-all ${
-                index === activeIndex ? 'text-foreground' : 'text-[var(--border-visible)] hover:text-foreground-muted'
+              className={`group relative flex flex-col items-center gap-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)] rounded-full ${
+                index === activeIndex ? 'text-foreground' : 'text-foreground-muted hover:text-foreground-secondary'
               }`}
               aria-label={`View testimonial from ${testimonial.author}`}
+              aria-current={index === activeIndex ? "true" : undefined}
             >
               {/* Mini avatar */}
               <div
@@ -297,7 +302,7 @@ export function TestimonialsSection() {
 
               {/* Progress bar for active */}
               {index === activeIndex && (
-                <div className="relative h-1 w-10 overflow-x-auto rounded-full bg-[var(--border-visible)]">
+                <div className="relative h-1 w-10 overflow-hidden rounded-full bg-[var(--border-visible)]">
                   <div
                     className="absolute left-0 top-0 h-full rounded-full bg-[var(--primary)] transition-all duration-75 ease-linear"
                     style={{ width: `${progress}%` }}
@@ -327,7 +332,7 @@ export function TestimonialsSection() {
             <span>No credit card required</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-foreground-secondary">
-            <ShieldIcon className="h-5 w-5 text-green-400" />
+            <ShieldIcon className="h-5 w-5 text-[var(--success)]" />
             <span>Bank-level security</span>
           </div>
         </div>

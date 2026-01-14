@@ -189,8 +189,40 @@ const industries: Industry[] = [
 export function IndustryTabsSection() {
   const [activeIndustry, setActiveIndustry] = React.useState("real-estate");
   const { ref, isVisible } = useScrollAnimation();
+  const tabRefs = React.useRef<(HTMLButtonElement | null)[]>([]);
 
   const currentIndustry = industries.find((i) => i.id === activeIndustry) || industries[0];
+
+  // Handle keyboard navigation
+  const handleKeyDown = (event: React.KeyboardEvent, index: number) => {
+    let newIndex = index;
+
+    switch (event.key) {
+      case "ArrowRight":
+      case "ArrowDown":
+        event.preventDefault();
+        newIndex = (index + 1) % industries.length;
+        break;
+      case "ArrowLeft":
+      case "ArrowUp":
+        event.preventDefault();
+        newIndex = (index - 1 + industries.length) % industries.length;
+        break;
+      case "Home":
+        event.preventDefault();
+        newIndex = 0;
+        break;
+      case "End":
+        event.preventDefault();
+        newIndex = industries.length - 1;
+        break;
+      default:
+        return;
+    }
+
+    setActiveIndustry(industries[newIndex].id);
+    tabRefs.current[newIndex]?.focus();
+  };
 
   return (
     <section id="industries" ref={ref} className="relative z-10 py-20 lg:py-32 bg-background">
@@ -244,19 +276,31 @@ export function IndustryTabsSection() {
             transitionDelay: "300ms",
           }}
         >
-          <div className="flex lg:flex-wrap lg:justify-center gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide">
-            {industries.map((industry) => (
+          <div
+            className="flex lg:flex-wrap lg:justify-center gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-hide"
+            role="tablist"
+            aria-label="Industry specializations"
+          >
+            {industries.map((industry, index) => (
               <button
                 key={industry.id}
+                ref={(el) => { tabRefs.current[index] = el; }}
+                role="tab"
+                id={`industry-tab-${industry.id}`}
+                aria-selected={activeIndustry === industry.id}
+                aria-controls={`industry-panel-${industry.id}`}
+                tabIndex={activeIndustry === industry.id ? 0 : -1}
                 onClick={() => setActiveIndustry(industry.id)}
+                onKeyDown={(e) => handleKeyDown(e, index)}
                 className={cn(
                   "flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all duration-200 whitespace-nowrap shrink-0",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                   activeIndustry === industry.id
                     ? "bg-[var(--primary)] text-white shadow-lg shadow-[var(--primary)]/20"
                     : "bg-[var(--background-elevated)] text-foreground-secondary hover:bg-[var(--background-hover)] hover:text-foreground border border-[var(--card-border)]"
                 )}
               >
-                <industry.icon className="h-4 w-4" />
+                <industry.icon className="h-4 w-4" aria-hidden="true" />
                 <span>{industry.name}</span>
               </button>
             ))}
@@ -265,6 +309,9 @@ export function IndustryTabsSection() {
 
         {/* Tab Content */}
         <div
+          id={`industry-panel-${currentIndustry.id}`}
+          role="tabpanel"
+          aria-labelledby={`industry-tab-${currentIndustry.id}`}
           className="relative"
           style={{
             opacity: isVisible ? 1 : 0,

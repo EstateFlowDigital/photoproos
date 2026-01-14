@@ -197,9 +197,9 @@ export function CaseStudiesSection() {
                   onKeyDown={(e) => handleFilterKeyDown(e, index)}
                   className={cn(
                     "flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                     activeFilter === industry.slug
-                      ? "bg-white text-[#0A0A0A] shadow-md"
+                      ? "bg-foreground text-background shadow-md"
                       : "bg-[var(--card)] text-foreground-secondary hover:bg-[var(--background-elevated)] border border-[var(--card-border)] hover:border-[var(--border-visible)]"
                   )}
                 >
@@ -209,7 +209,7 @@ export function CaseStudiesSection() {
                       className={cn(
                         "flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs",
                         activeFilter === industry.slug
-                          ? "bg-[#0A0A0A]/10 text-[#0A0A0A]"
+                          ? "bg-background/10 text-background"
                           : "bg-foreground/10 text-foreground-muted"
                       )}
                     >
@@ -273,7 +273,7 @@ export function CaseStudiesSection() {
         <div className="mt-12 text-center">
           <Link
             href="/case-studies"
-            className="inline-flex items-center gap-2 text-sm font-medium text-[var(--primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
+            className="inline-flex items-center gap-2 text-sm font-medium text-[var(--primary)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
           >
             View all case studies
             <ArrowRightIcon className="h-4 w-4" />
@@ -295,7 +295,7 @@ function CaseStudyCard({ study, index }: CaseStudyCardProps) {
       className={cn(
         "group relative flex flex-col rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6",
         "transition-all duration-300 hover:border-[var(--border-visible)] hover:shadow-lg",
-        "focus-within:ring-2 focus-within:ring-ring"
+        "focus-within:ring-2 focus-within:ring-[var(--ring)]"
       )}
       style={{
         animationDelay: `${index * 100}ms`,

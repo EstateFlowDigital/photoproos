@@ -15,10 +15,19 @@ function useAnimatedCounter(
 ) {
   const [count, setCount] = React.useState(0);
   const [hasStarted, setHasStarted] = React.useState(false);
+  const prefersReducedMotion = React.useMemo(() =>
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  []);
 
   React.useEffect(() => {
     if (!start || hasStarted) return;
     setHasStarted(true);
+
+    // Skip animation if user prefers reduced motion
+    if (prefersReducedMotion) {
+      setCount(end);
+      return;
+    }
 
     let startTime: number | null = null;
     const animate = (timestamp: number) => {
@@ -31,7 +40,7 @@ function useAnimatedCounter(
       }
     };
     requestAnimationFrame(animate);
-  }, [end, duration, start, hasStarted]);
+  }, [end, duration, start, hasStarted, prefersReducedMotion]);
 
   return count;
 }
@@ -77,7 +86,7 @@ export function MetricsShowcaseSection() {
             Trusted by professionals across every vertical
           </p>
           <div className="relative inline-block">
-            <span className="text-[56px] sm:text-[80px] lg:text-[120px] font-bold leading-none tracking-tight">
+            <span className="text-[48px] sm:text-[64px] md:text-[96px] lg:text-[120px] font-bold leading-none tracking-tight">
               <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent">
                 {photographerCount.toLocaleString()}+
               </span>
@@ -97,7 +106,7 @@ export function MetricsShowcaseSection() {
 
         {/* Supporting stats */}
         <div
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8"
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 lg:gap-8"
           style={{
             opacity: isVisible ? 1 : 0,
             transform: isVisible ? "none" : "translateY(30px)",
@@ -152,7 +161,7 @@ function MetricCard({ value, label, description, icon, color }: MetricCardProps)
   };
 
   return (
-    <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6 lg:p-8 text-center transition-all duration-200 hover:border-[var(--border-hover)]">
+    <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-4 sm:p-6 lg:p-8 text-center transition-all duration-200 hover:border-[var(--border-hover)]">
       <div className={cn(
         "mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl",
         colorClasses[color]

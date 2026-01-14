@@ -98,7 +98,7 @@ function PricingCard({ tier, isAnnual }: { tier: PricingTier; isAnnual: boolean 
     <div
       className={cn(
         "group relative flex flex-col rounded-xl border bg-[var(--card)] p-6 transition-all duration-300 lg:p-8",
-        "hover:-translate-y-1",
+        "hover:-translate-y-1 motion-reduce:hover:translate-y-0",
         tier.popular
           ? "border-[var(--primary)] shadow-lg shadow-[var(--primary)]/20 hover:shadow-xl hover:shadow-[var(--primary)]/30"
           : "border-[var(--card-border)] hover:border-[var(--border-hover)] hover:shadow-lg hover:shadow-black/20"
@@ -111,7 +111,11 @@ function PricingCard({ tier, isAnnual }: { tier: PricingTier; isAnnual: boolean 
 
       {/* Popular badge */}
       {tier.popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[var(--primary)] px-4 py-1 text-xs font-medium text-white shadow-lg shadow-[var(--primary)]/30">
+        <div
+          className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[var(--primary)] px-4 py-1 text-xs font-medium text-white shadow-lg shadow-[var(--primary)]/30"
+          role="status"
+          aria-label="Most popular plan"
+        >
           Most Popular
         </div>
       )}
@@ -143,10 +147,10 @@ function PricingCard({ tier, isAnnual }: { tier: PricingTier; isAnnual: boolean 
       <Link
         href={tier.ctaHref}
         className={cn(
-          "block w-full rounded-lg py-3 text-center text-sm font-medium transition-all duration-300",
+          "block w-full rounded-lg py-3 text-center text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)]",
           tier.popular || tier.enterprise
             ? "bg-foreground text-[var(--background)] hover:opacity-90"
-            : "border border-[var(--card-border)] bg-transparent text-foreground hover:bg-[var(--background-elevated)]"
+            : "border border-[var(--card-border)] bg-transparent text-foreground hover:bg-[var(--background-elevated)] hover:border-[var(--border-emphasis)]"
         )}
       >
         {tier.cta}
@@ -172,8 +176,8 @@ export function PricingSection() {
               transition: "opacity 600ms ease-out, transform 600ms ease-out",
             }}
           >
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75" />
+            <span className="relative flex h-2 w-2" aria-hidden="true">
+              <span className="absolute inline-flex h-full w-full motion-safe:animate-ping rounded-full bg-[var(--primary)] opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
             </span>
             <span className="text-sm text-foreground-secondary">
@@ -217,22 +221,24 @@ export function PricingSection() {
             <button
               onClick={() => setIsAnnual(false)}
               className={cn(
-                "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                "rounded-full px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)]",
                 !isAnnual
                   ? "bg-foreground text-[var(--background)]"
                   : "text-foreground-muted hover:text-foreground"
               )}
+              aria-pressed={!isAnnual}
             >
               Monthly
             </button>
             <button
               onClick={() => setIsAnnual(true)}
               className={cn(
-                "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                "rounded-full px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)]",
                 isAnnual
                   ? "bg-foreground text-[var(--background)]"
                   : "text-foreground-muted hover:text-foreground"
               )}
+              aria-pressed={isAnnual}
             >
               Annual
               <span className="ml-1.5 text-xs text-[var(--success)]">-20%</span>

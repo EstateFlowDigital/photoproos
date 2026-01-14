@@ -164,7 +164,7 @@ export function IntegrationSpotlightSection() {
             >
               {integrationFeatures.map((feature, index) => (
                 <li key={index} className="flex items-start gap-3">
-                  <CheckCircleIcon className="h-5 w-5 shrink-0 text-white/80 mt-0.5" />
+                  <CheckCircleIcon className="h-5 w-5 shrink-0 text-white/80 mt-0.5" aria-hidden="true" />
                   <span className="text-white/80">{feature}</span>
                 </li>
               ))}
@@ -180,10 +180,10 @@ export function IntegrationSpotlightSection() {
                 transitionDelay: "400ms",
               }}
             >
-              <Button asChild size="lg" className="bg-white text-[var(--ai)] hover:bg-white/90 shrink-0">
+              <Button asChild size="lg" className="bg-white text-[var(--ai)] hover:bg-white/90 shrink-0 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ai)]">
                 <Link href="/features/payments">Learn about Payments</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 shrink-0">
+              <Button asChild size="lg" variant="outline" className="border-white/60 text-white hover:bg-white/10 hover:border-white/80 shrink-0 focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ai)]">
                 <Link href="/integrations">View All Integrations</Link>
               </Button>
             </div>
@@ -198,17 +198,17 @@ export function IntegrationSpotlightSection() {
                 transitionDelay: "500ms",
               }}
             >
-              <p className="text-xs text-white/60 mb-4 uppercase tracking-wider">
+              <p className="text-xs text-white/60 mb-4 uppercase tracking-wider" id="integrations-label">
                 Also integrates with
               </p>
-              <div className="flex flex-wrap items-center gap-6">
+              <ul className="flex flex-wrap items-center gap-6" aria-labelledby="integrations-label" role="list">
                 {integrationPartners.map((partner, index) => (
-                  <div key={index} className="flex items-center gap-2 text-white/70">
-                    <partner.icon className="h-5 w-5" />
+                  <li key={index} className="flex items-center gap-2 text-white/70">
+                    <partner.icon className="h-5 w-5" aria-hidden="true" />
                     <span className="text-sm font-medium">{partner.name}</span>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           </div>
         </div>

@@ -210,15 +210,15 @@ export function FivePillarsSection() {
                 onKeyDown={(e) => handleKeyDown(e, index)}
                 className={cn(
                   "flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium transition-all duration-200",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                   activeIndex === index
-                    ? "bg-white text-[#0A0A0A] shadow-lg"
+                    ? "bg-foreground text-background shadow-lg"
                     : "bg-[var(--card)] text-foreground-secondary hover:bg-[var(--background-elevated)] border border-[var(--card-border)] hover:border-[var(--border-visible)]"
                 )}
               >
                 <span
                   className="flex h-5 w-5 items-center justify-center"
-                  style={{ color: activeIndex === index ? pillar.color : pillar.color }}
+                  style={{ color: pillar.color }}
                   aria-hidden="true"
                 >
                   {pillar.icon}
@@ -243,10 +243,10 @@ export function FivePillarsSection() {
               role="tabpanel"
               aria-labelledby={`pillar-tab-${pillar.id}`}
               hidden={activeIndex !== index}
-              tabIndex={0}
+              tabIndex={activeIndex === index ? 0 : -1}
               className={cn(
                 "rounded-2xl border border-[var(--card-border)] bg-[var(--card)] p-6 lg:p-10 transition-all duration-200",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
                 isTransitioning ? "opacity-0 scale-[0.99]" : "opacity-100 scale-100"
               )}
             >
@@ -333,7 +333,7 @@ export function FivePillarsSection() {
               className={cn(
                 "h-2 rounded-full transition-all duration-300",
                 activeIndex === index
-                  ? "w-8 bg-white"
+                  ? "w-8 bg-foreground"
                   : "w-2 bg-[var(--border-visible)] hover:bg-foreground-muted"
               )}
             />

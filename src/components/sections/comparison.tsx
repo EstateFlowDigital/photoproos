@@ -159,7 +159,7 @@ export function ComparisonSection() {
               key={category}
               onClick={() => setSelectedCategory(category)}
               className={cn(
-                "rounded-full px-4 py-2 text-sm font-medium transition-all duration-200",
+                "rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 selectedCategory === category
                   ? "bg-[var(--primary)] text-white"
                   : "bg-[var(--card)] text-foreground-secondary hover:bg-[var(--background-hover)] border border-[var(--card-border)]"

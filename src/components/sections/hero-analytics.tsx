@@ -73,8 +73,8 @@ export function HeroAnalyticsSection() {
         <div className="mx-auto max-w-3xl text-center">
           {/* Badge */}
           <div className="hero-animate hero-animate-1 mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--primary)] opacity-75" />
+            <span className="relative flex h-2 w-2" aria-hidden="true">
+              <span className="absolute inline-flex h-full w-full motion-safe:animate-ping rounded-full bg-[var(--primary)] opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
             </span>
             <span className="text-sm text-foreground-secondary">
@@ -83,7 +83,7 @@ export function HeroAnalyticsSection() {
           </div>
 
           {/* Main Headline */}
-          <h1 className="hero-animate hero-animate-2 text-[40px] font-medium leading-[1.1] tracking-[-0.02em] md:text-[56px] lg:text-[64px]">
+          <h1 className="hero-animate hero-animate-2 text-[36px] font-medium leading-[1.1] tracking-[-0.02em] sm:text-[44px] md:text-[56px] lg:text-[64px]">
             <span className="text-foreground-muted">The Business OS for</span>
             <br />
             <span className="text-foreground">Professional Photographers</span>
@@ -105,7 +105,7 @@ export function HeroAnalyticsSection() {
               onClick={() => setIsVideoModalOpen(true)}
               className="h-12 px-8 text-base w-full sm:w-auto flex items-center justify-center gap-2"
             >
-              <PlayIcon className="h-4 w-4" />
+              <PlayIcon className="h-4 w-4" aria-hidden="true" />
               Take the Tour
             </Button>
           </div>
