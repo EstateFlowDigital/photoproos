@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Rebranded from ListingLens to PhotoProOS** - Updated all references throughout the codebase:
+  - Updated Stripe metadata keys from `listinglens_*` to `photoproos_*` in product sync
+  - Updated subscription plan metadata keys
+  - Updated roadmap page title
+  - Updated support email address
+  - Updated achievement share text
+  - Updated documentation files (STRIPE_PRODUCT_SYNC.md, APPLICATION_FEATURES_OVERVIEW.md)
+
 - **Integrated Landing Page Variant Content** - Updated main landing page sections with refined messaging from A/B test variants:
 
   **Hero Section:**

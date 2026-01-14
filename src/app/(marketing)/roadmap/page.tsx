@@ -9,7 +9,7 @@ import { prisma } from "@/lib/db";
 import { RoadmapPageClient } from "./roadmap-client";
 
 export const metadata: Metadata = {
-  title: "Product Roadmap | ListingLens",
+  title: "Product Roadmap | PhotoProOS",
   description:
     "See what we're building next and vote for the features you want most",
 };

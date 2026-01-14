@@ -58,7 +58,7 @@ interface ShareOption {
 
 function generateShareText(achievement: ShareableAchievement, userName?: string): string {
   const name = userName ? `${userName} just` : "I just";
-  return `${name} unlocked the "${achievement.name}" achievement on ListingLens! ${getRarityEmoji(achievement.rarity)}`;
+  return `${name} unlocked the "${achievement.name}" achievement on PhotoProOS! ${getRarityEmoji(achievement.rarity)}`;
 }
 
 function getRarityEmoji(rarity: AchievementRarity): string {

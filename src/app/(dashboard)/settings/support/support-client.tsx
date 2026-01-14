@@ -164,10 +164,10 @@ export function SupportPageClient({ initialTickets }: SupportPageClientProps) {
         </p>
         <div className="flex flex-wrap gap-4 text-sm">
           <a
-            href="mailto:support@listinglens.com"
+            href="mailto:support@photoproos.com"
             className="text-[var(--primary)] hover:underline"
           >
-            support@listinglens.com
+            support@photoproos.com
           </a>
           <span className="text-[var(--foreground-muted)]">•</span>
           <a

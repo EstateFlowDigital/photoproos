@@ -67,8 +67,8 @@ export async function syncServiceToStripe(
         name: service.name,
         description: service.description || undefined,
         metadata: {
-          listinglens_service_id: service.id,
-          listinglens_organization_id: organizationId,
+          photoproos_service_id: service.id,
+          photoproos_organization_id: organizationId,
           category: service.category,
         },
       });
@@ -95,8 +95,8 @@ export async function syncServiceToStripe(
           unit_amount: service.priceCents,
         },
         metadata: {
-          listinglens_service_id: service.id,
-          listinglens_organization_id: organizationId,
+          photoproos_service_id: service.id,
+          photoproos_organization_id: organizationId,
           category: service.category,
           type: "service",
         },
@@ -176,8 +176,8 @@ export async function syncBundleToStripe(
         name: bundle.name,
         description: bundle.description || undefined,
         metadata: {
-          listinglens_bundle_id: bundle.id,
-          listinglens_organization_id: organizationId,
+          photoproos_bundle_id: bundle.id,
+          photoproos_organization_id: organizationId,
           bundle_type: bundle.bundleType,
         },
       });
@@ -204,8 +204,8 @@ export async function syncBundleToStripe(
           unit_amount: bundle.priceCents,
         },
         metadata: {
-          listinglens_bundle_id: bundle.id,
-          listinglens_organization_id: organizationId,
+          photoproos_bundle_id: bundle.id,
+          photoproos_organization_id: organizationId,
           bundle_type: bundle.bundleType,
           type: "bundle",
         },

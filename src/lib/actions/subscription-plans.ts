@@ -334,7 +334,7 @@ export async function syncPlanToStripe(
         name: plan.name,
         description: plan.description || undefined,
         metadata: {
-          listinglens_plan_id: plan.id,
+          photoproos_plan_id: plan.id,
           plan_type: plan.plan,
         },
       });
@@ -344,7 +344,7 @@ export async function syncPlanToStripe(
         name: plan.name,
         description: plan.description || undefined,
         metadata: {
-          listinglens_plan_id: plan.id,
+          photoproos_plan_id: plan.id,
           plan_type: plan.plan,
           type: "subscription_plan",
         },
@@ -372,7 +372,7 @@ export async function syncPlanToStripe(
           unit_amount: plan.monthlyPriceCents,
           recurring: { interval: "month" },
           metadata: {
-            listinglens_plan_id: plan.id,
+            photoproos_plan_id: plan.id,
             billing_interval: "monthly",
           },
         });
@@ -398,7 +398,7 @@ export async function syncPlanToStripe(
           unit_amount: plan.yearlyPriceCents,
           recurring: { interval: "year" },
           metadata: {
-            listinglens_plan_id: plan.id,
+            photoproos_plan_id: plan.id,
             billing_interval: "yearly",
           },
         });
@@ -605,8 +605,8 @@ export async function syncVariantToStripe(
         unit_amount: monthlyPrice,
         recurring: { interval: "month" },
         metadata: {
-          listinglens_plan_id: variant.planId,
-          listinglens_variant_id: variant.id,
+          photoproos_plan_id: variant.planId,
+          photoproos_variant_id: variant.id,
           billing_interval: "monthly",
           is_variant: "true",
         },
@@ -622,8 +622,8 @@ export async function syncVariantToStripe(
         unit_amount: yearlyPrice,
         recurring: { interval: "year" },
         metadata: {
-          listinglens_plan_id: variant.planId,
-          listinglens_variant_id: variant.id,
+          photoproos_plan_id: variant.planId,
+          photoproos_variant_id: variant.id,
           billing_interval: "yearly",
           is_variant: "true",
         },

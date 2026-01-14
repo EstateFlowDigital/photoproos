@@ -39553,8 +39553,8 @@ After syncing, you'll see your products in the Stripe Dashboard:
 
 1. Go to **Products** in your Stripe Dashboard
 2. Products are labeled with metadata:
-   - `listinglens_service_id` or `listinglens_bundle_id`
-   - `listinglens_organization_id`
+   - `photoproos_service_id` or `photoproos_bundle_id`
+   - `photoproos_organization_id`
    - `type`: "service" or "bundle"
    - `category` (for services)
    - `bundle_type` (for bundles)
@@ -39602,7 +39602,7 @@ if (service.stripePriceId) {
 - Sync operations are **non-blocking** - they run in the background after the local database operation completes
 - If Stripe sync fails, the local operation still succeeds (logged as an error)
 - Archived Stripe products can be viewed in the Stripe Dashboard under "Archived"
-- Each organization's products are tagged with `listinglens_organization_id` for filtering
+- Each organization's products are tagged with `photoproos_organization_id` for filtering
 
 ## Services Implementation Plan (From docs/SERVICES_IMPLEMENTATION_PLAN.md)
 # Services Implementation Plan
