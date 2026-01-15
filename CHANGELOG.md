@@ -8,6 +8,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Social Media Marketing Studio - Phase 3: Brand Kit & Templates** - Complete brand management and template system:
+  - Brand Kit page (`/super-admin/marketing-studio/brand-kit`) with:
+    - Business identity management (name, tagline)
+    - Color palette picker with preset colors and custom hex input
+    - Logo uploader supporting 4 variants (full, icon, light, dark)
+    - Social handles manager for all platforms
+    - Default hashtags configuration
+  - Template Library page (`/super-admin/marketing-studio/templates`) with:
+    - Category-based navigation (Portfolio, Testimonial, Before/After, etc.)
+    - Search functionality across template names and descriptions
+    - Template cards with live gradient previews
+    - Direct links to composer with template pre-loaded
+  - 28 pre-designed templates across 8 categories:
+    - Portfolio Showcase (5 templates)
+    - Testimonials (4 templates)
+    - Before/After (3 templates)
+    - Announcements (4 templates)
+    - Behind the Scenes (3 templates)
+    - Pricing/Promos (4 templates)
+    - Educational Tips (3 templates)
+    - Milestones (2 templates)
+
+### Fixed
+- **Marketing Studio Composer - Template Loading** - Templates now properly load when accessed via URL params (`?template=template-id`):
+  - Platform, format, and caption apply from template configuration
+  - Template colors apply to canvas background
+  - Template indicator shows in sidebar when template is active
+  - Quick links added to Templates and Brand Kit pages in composer settings
+
 - **Static Metadata Exports for Dashboard Pages (Batch 17 - Services & Settings)** - Added SEO metadata to 9 dashboard pages:
   - `/services/addons` - "Service Add-ons | PhotoProOS" - Manage add-on services for photography packages
   - `/services/bundles` - "Service Bundles | PhotoProOS" - Create bundled service packages for clients
