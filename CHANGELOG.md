@@ -8,6 +8,77 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Marketing Studio Phase 5: Advanced Composition System** - Layer-based composition for social media graphics:
+  - **Layer Types** - Full support for text, image, shape, mockup, and logo layers:
+    - Text layers with font family, size, weight, color, alignment, and line height
+    - Image layers with src, object-fit options (cover, contain, fill)
+    - Shape layers with fill, stroke, stroke width, and border radius
+    - Mockup layers with industry, theme, and primary color settings
+  - **LayersPanel Component** (`layers-panel.tsx`):
+    - Add/delete layers with type selection menu
+    - Visibility toggle (eye icon) to show/hide layers
+    - Lock toggle to prevent accidental edits
+    - Drag-and-drop reordering with visual feedback
+    - Duplicate layer functionality
+    - Keyboard navigation (Delete, Arrow Up/Down)
+    - Layer count display and selection highlighting
+    - Full accessibility with ARIA labels and roles
+  - **PropertiesPanel Component** (`properties-panel.tsx`):
+    - Collapsible sections: Transform, Appearance, Text
+    - Transform controls: X/Y position, width/height, rotation
+    - Appearance controls: opacity slider, type-specific options
+    - Text controls: font family, size, weight, color, alignment, line height
+    - Shape controls: fill color, stroke color, stroke width
+    - Image controls: object-fit selector
+    - NumberInput helper with increment/decrement buttons
+    - ColorInput helper with color picker and hex input
+  - **Post Composer Integration**:
+    - Layers toggle button in header with layer count
+    - Right panel tabs: Settings and Properties
+    - Canvas rendering of all layer types
+    - Click-to-select layers with visual selection ring
+    - Auto-switch to Properties tab on layer selection
+    - Layer z-index ordering for proper stacking
+  - **Type Definitions** (`types.ts`):
+    - LayerType union: image, mockup, text, shape, logo
+    - LayerBase interface with common properties
+    - Type-specific interfaces (TextLayer, ImageLayer, ShapeLayer, etc.)
+    - CompositionState interface for canvas management
+
+- **Marketing Studio Accessibility & Responsiveness Audit** - Comprehensive WCAG 2.1 AA compliance across all Marketing Studio components:
+  - **Post Composer** (`post-composer.tsx`):
+    - ARIA labels on all buttons (Copy, Export, platform selector, format selector)
+    - Role attributes for tab lists (platform tabs, format tabs)
+    - Focus-visible states for keyboard navigation
+    - Mobile-responsive sidebar with toggle button and overlay
+    - Hidden file input with screen reader label
+    - useCallback memoization for performance optimization
+  - **Content Calendar** (`content-calendar.tsx`):
+    - Semantic HTML structure (header, main, nav, section, article, time)
+    - ARIA attributes on all interactive elements
+    - Responsive grid layouts with mobile breakpoints
+    - Mobile-first day abbreviations and post indicators
+    - Focus-visible states throughout
+    - useCallback memoization for event handlers
+  - **Template Library** (`template-library.tsx`):
+    - Role="tablist" for category filter buttons
+    - Screen reader announcements for search results
+    - Accessible template cards with full ARIA labels
+    - Responsive grid (2-column on mobile, up to 5 on desktop)
+    - Focus-visible states on all interactive elements
+  - **Brand Kit Editor** (`brand-kit-editor.tsx`):
+    - Proper htmlFor/id label associations on all form fields
+    - ARIA labels on color picker buttons and presets
+    - Accessible lists for handles and hashtags
+    - Responsive layouts with mobile breakpoints
+    - Enter key support for adding handles/hashtags
+    - useCallback memoization for all handlers
+  - **Marketing Studio Hub** (`marketing-studio-hub.tsx`):
+    - Section headings with proper aria-labelledby
+    - Navigation with aria-label
+    - Focus-visible states on all links
+    - Responsive spacing and sizing
+
 - **Social Media Marketing Studio - Phase 4: Content Calendar** - Complete content planning system:
   - Content Calendar page (`/super-admin/marketing-studio/calendar`) with 4 views:
     - **Month View** - Traditional calendar grid with post thumbnails

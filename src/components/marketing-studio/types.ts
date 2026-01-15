@@ -225,3 +225,73 @@ export interface CalendarPost {
 }
 
 export type CalendarView = "month" | "week" | "board" | "grid";
+
+// Layer composition types
+export type LayerType = "image" | "mockup" | "text" | "shape" | "logo";
+
+export interface LayerBase {
+  id: string;
+  type: LayerType;
+  name: string;
+  visible: boolean;
+  locked: boolean;
+  opacity: number;
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  rotation: number;
+  zIndex: number;
+}
+
+export interface ImageLayer extends LayerBase {
+  type: "image";
+  src: string;
+  objectFit: "cover" | "contain" | "fill";
+}
+
+export interface MockupLayer extends LayerBase {
+  type: "mockup";
+  mockupId: string;
+  industry: string;
+  theme: "light" | "dark";
+  primaryColor: string;
+  scale: number;
+}
+
+export interface TextLayer extends LayerBase {
+  type: "text";
+  content: string;
+  fontFamily: string;
+  fontSize: number;
+  fontWeight: 400 | 500 | 600 | 700 | 800;
+  color: string;
+  textAlign: "left" | "center" | "right";
+  lineHeight: number;
+}
+
+export interface ShapeLayer extends LayerBase {
+  type: "shape";
+  shapeType: "rectangle" | "circle" | "line";
+  fill: string;
+  stroke: string;
+  strokeWidth: number;
+  borderRadius?: number;
+}
+
+export interface LogoLayer extends LayerBase {
+  type: "logo";
+  variant: "full" | "icon" | "text";
+}
+
+export type Layer = ImageLayer | MockupLayer | TextLayer | ShapeLayer | LogoLayer;
+
+export interface CompositionState {
+  layers: Layer[];
+  selectedLayerId: string | null;
+  canvasSize: { width: number; height: number };
+  backgroundColor: string;
+  backgroundGradient?: {
+    from: string;
+    to: string;
+    angle: number;
+  };
+}
