@@ -24,7 +24,9 @@ import {
   Plus,
   X,
   Sparkles,
+  History,
 } from "lucide-react";
+import { VersionHistory } from "@/components/cms";
 import type { MarketingPage } from "@prisma/client";
 import { updateMarketingPage, publishMarketingPage, deleteMarketingPage } from "@/lib/actions/marketing-cms";
 
@@ -843,7 +845,7 @@ function DeleteConfirmDialog({
 export function PageEditorClient({ page }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [activeTab, setActiveTab] = useState<"content" | "seo" | "settings">("content");
+  const [activeTab, setActiveTab] = useState<"content" | "seo" | "settings" | "history">("content");
   const [editorMode, setEditorMode] = useState<"visual" | "json">("visual");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
@@ -1173,6 +1175,12 @@ export function PageEditorClient({ page }: Props) {
           icon={Settings}
           label="Settings"
         />
+        <TabButton
+          active={activeTab === "history"}
+          onClick={() => setActiveTab("history")}
+          icon={History}
+          label="History"
+        />
       </div>
 
       {/* Tab Content */}
@@ -1396,6 +1404,20 @@ export function PageEditorClient({ page }: Props) {
                 Delete Page
               </button>
             </div>
+          </div>
+        )}
+
+        {activeTab === "history" && (
+          <div className="min-h-[500px]">
+            <VersionHistory
+              slug={page.slug}
+              currentContent={parsedContent}
+              onRestore={() => {
+                router.refresh();
+                setActiveTab("content");
+              }}
+              asPanel={false}
+            />
           </div>
         )}
       </div>

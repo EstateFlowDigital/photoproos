@@ -7,6 +7,7 @@ import { isSuperAdmin } from "@/lib/auth/super-admin";
 import { currentUser } from "@clerk/nextjs/server";
 import type {
   MarketingPage,
+  MarketingPageVersion,
   MarketingNavigation,
   BlogPost,
   TeamMember,
@@ -132,7 +133,47 @@ export async function createMarketingPage(data: {
 }
 
 /**
- * Update a marketing page
+ * Create a version snapshot of a marketing page
+ * Called automatically before updates to preserve history
+ */
+async function createVersionSnapshot(
+  pageId: string,
+  slug: string,
+  content: unknown,
+  metaTitle: string | null,
+  metaDescription: string | null,
+  ogImage: string | null,
+  userId: string,
+  userName: string | null,
+  changesSummary?: string
+): Promise<void> {
+  // Get the latest version number for this page
+  const latestVersion = await prisma.marketingPageVersion.findFirst({
+    where: { pageId },
+    orderBy: { version: "desc" },
+    select: { version: true },
+  });
+
+  const nextVersion = (latestVersion?.version ?? 0) + 1;
+
+  await prisma.marketingPageVersion.create({
+    data: {
+      pageId,
+      slug,
+      version: nextVersion,
+      content: content as object,
+      metaTitle,
+      metaDescription,
+      ogImage,
+      createdBy: userId,
+      createdByName: userName,
+      changesSummary,
+    },
+  });
+}
+
+/**
+ * Update a marketing page (with automatic version tracking)
  */
 export async function updateMarketingPage(
   input: UpdateMarketingPageInput
@@ -149,6 +190,36 @@ export async function updateMarketingPage(
 
     const validated = updateMarketingPageSchema.parse(input);
 
+    // Get current page state to create version snapshot
+    const currentPage = await prisma.marketingPage.findUnique({
+      where: { slug: validated.slug },
+      select: {
+        id: true,
+        content: true,
+        metaTitle: true,
+        metaDescription: true,
+        ogImage: true,
+      },
+    });
+
+    if (!currentPage) {
+      return fail("Page not found");
+    }
+
+    // Create version snapshot of current state before updating
+    await createVersionSnapshot(
+      currentPage.id,
+      validated.slug,
+      currentPage.content,
+      currentPage.metaTitle,
+      currentPage.metaDescription,
+      currentPage.ogImage,
+      user.id,
+      user.fullName || user.firstName || null,
+      `Content updated`
+    );
+
+    // Now perform the update
     const page = await prisma.marketingPage.update({
       where: { slug: validated.slug },
       data: {
@@ -399,6 +470,243 @@ export async function cancelScheduledPublish(slug: string): Promise<ActionResult
   } catch (error) {
     console.error("Error canceling scheduled publish:", error);
     return fail("Failed to cancel scheduled publish");
+  }
+}
+
+// ============================================================================
+// VERSION HISTORY
+// ============================================================================
+
+/**
+ * Get all versions for a marketing page
+ */
+export async function getPageVersions(
+  slug: string,
+  options?: { limit?: number; offset?: number }
+): Promise<ActionResult<{ versions: MarketingPageVersion[]; total: number }>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    // First get the page ID from the slug
+    const page = await prisma.marketingPage.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+
+    if (!page) {
+      return fail("Page not found");
+    }
+
+    // Get total count
+    const total = await prisma.marketingPageVersion.count({
+      where: { pageId: page.id },
+    });
+
+    // Get versions with pagination
+    const versions = await prisma.marketingPageVersion.findMany({
+      where: { pageId: page.id },
+      orderBy: { version: "desc" },
+      take: options?.limit ?? 20,
+      skip: options?.offset ?? 0,
+    });
+
+    return ok({ versions, total });
+  } catch (error) {
+    console.error("Error fetching page versions:", error);
+    return fail("Failed to fetch page versions");
+  }
+}
+
+/**
+ * Get a specific version by ID
+ */
+export async function getPageVersion(
+  versionId: string
+): Promise<ActionResult<MarketingPageVersion | null>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const version = await prisma.marketingPageVersion.findUnique({
+      where: { id: versionId },
+    });
+
+    return ok(version);
+  } catch (error) {
+    console.error("Error fetching page version:", error);
+    return fail("Failed to fetch page version");
+  }
+}
+
+/**
+ * Restore a marketing page to a previous version
+ * This creates a new version snapshot of the current state before restoring
+ */
+export async function restoreVersion(
+  versionId: string
+): Promise<ActionResult<MarketingPage>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+    if (!user) {
+      return fail("Not authenticated");
+    }
+
+    // Get the version to restore
+    const versionToRestore = await prisma.marketingPageVersion.findUnique({
+      where: { id: versionId },
+    });
+
+    if (!versionToRestore) {
+      return fail("Version not found");
+    }
+
+    // Get current page state to create a backup version
+    const currentPage = await prisma.marketingPage.findUnique({
+      where: { id: versionToRestore.pageId },
+      select: {
+        id: true,
+        slug: true,
+        content: true,
+        metaTitle: true,
+        metaDescription: true,
+        ogImage: true,
+      },
+    });
+
+    if (!currentPage) {
+      return fail("Page not found");
+    }
+
+    // Create version snapshot of current state before restoring
+    await createVersionSnapshot(
+      currentPage.id,
+      currentPage.slug,
+      currentPage.content,
+      currentPage.metaTitle,
+      currentPage.metaDescription,
+      currentPage.ogImage,
+      user.id,
+      user.fullName || user.firstName || null,
+      `Backup before restoring to version ${versionToRestore.version}`
+    );
+
+    // Restore the page to the selected version
+    const restoredPage = await prisma.marketingPage.update({
+      where: { id: versionToRestore.pageId },
+      data: {
+        content: versionToRestore.content,
+        metaTitle: versionToRestore.metaTitle,
+        metaDescription: versionToRestore.metaDescription,
+        ogImage: versionToRestore.ogImage,
+        lastEditedBy: user.id,
+        lastEditedAt: new Date(),
+        updatedByUserId: user.id,
+      },
+    });
+
+    // Create a new version showing the restore
+    await createVersionSnapshot(
+      restoredPage.id,
+      restoredPage.slug,
+      restoredPage.content,
+      restoredPage.metaTitle,
+      restoredPage.metaDescription,
+      restoredPage.ogImage,
+      user.id,
+      user.fullName || user.firstName || null,
+      `Restored from version ${versionToRestore.version}`
+    );
+
+    revalidateMarketing();
+    return ok(restoredPage);
+  } catch (error) {
+    console.error("Error restoring version:", error);
+    return fail("Failed to restore version");
+  }
+}
+
+/**
+ * Compare two versions and return differences
+ */
+export async function compareVersions(
+  versionId1: string,
+  versionId2: string
+): Promise<ActionResult<{
+  version1: MarketingPageVersion;
+  version2: MarketingPageVersion;
+}>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const [version1, version2] = await Promise.all([
+      prisma.marketingPageVersion.findUnique({ where: { id: versionId1 } }),
+      prisma.marketingPageVersion.findUnique({ where: { id: versionId2 } }),
+    ]);
+
+    if (!version1 || !version2) {
+      return fail("One or both versions not found");
+    }
+
+    return ok({ version1, version2 });
+  } catch (error) {
+    console.error("Error comparing versions:", error);
+    return fail("Failed to compare versions");
+  }
+}
+
+/**
+ * Delete old versions (cleanup utility)
+ * Keeps the most recent N versions per page
+ */
+export async function cleanupOldVersions(
+  slug: string,
+  keepCount: number = 50
+): Promise<ActionResult<{ deleted: number }>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const page = await prisma.marketingPage.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+
+    if (!page) {
+      return fail("Page not found");
+    }
+
+    // Get versions to keep (newest N)
+    const versionsToKeep = await prisma.marketingPageVersion.findMany({
+      where: { pageId: page.id },
+      orderBy: { version: "desc" },
+      take: keepCount,
+      select: { id: true },
+    });
+
+    const keepIds = versionsToKeep.map((v) => v.id);
+
+    // Delete all versions not in the keep list
+    const result = await prisma.marketingPageVersion.deleteMany({
+      where: {
+        pageId: page.id,
+        id: { notIn: keepIds },
+      },
+    });
+
+    return ok({ deleted: result.count });
+  } catch (error) {
+    console.error("Error cleaning up old versions:", error);
+    return fail("Failed to cleanup old versions");
   }
 }
 

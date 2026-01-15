@@ -8,6 +8,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Marketing CMS Phase 4: Version History & Inline Editing** - Track changes and edit content directly on pages:
+  - **Schema: MarketingPageVersion Table**:
+    - `pageId`, `slug`, `version` (auto-incrementing per page)
+    - `content`, `metaTitle`, `metaDescription`, `ogImage` snapshots
+    - `createdBy`, `createdByName` for attribution
+    - `changesSummary` for human-readable change notes
+    - Unique constraint on `[pageId, version]`
+    - Indexes on `pageId`, `slug`, `createdAt` for fast queries
+  - **Version History Actions** (`marketing-cms.ts`):
+    - `createVersionSnapshot()` - Internal helper, creates versioned snapshots
+    - `getPageVersions()` - Paginated version list with total count
+    - `getPageVersion()` - Fetch specific version by ID
+    - `restoreVersion()` - Restore page to previous version (creates backup first)
+    - `compareVersions()` - Fetch two versions for comparison
+    - `cleanupOldVersions()` - Delete old versions, keep most recent N
+    - Automatic version snapshots on `updateMarketingPage()` calls
+  - **VersionHistory Component** (`version-history.tsx`):
+    - Paginated version list with dates, authors, and change summaries
+    - Preview version content in modal
+    - Restore version with confirmation dialog
+    - Success/error notifications
+    - Empty state for pages without history
+    - Full accessibility with ARIA roles and keyboard navigation
+  - **ContentDiff Component** (`content-diff.tsx`):
+    - Side-by-side JSON comparison
+    - Visual diff highlighting: green (added), red (removed), yellow (changed)
+    - Filter by change type (added/removed/modified)
+    - Show/hide unchanged fields toggle
+    - Count badges for each change type
+    - Path-based flattening for nested object comparison
+    - Modal wrapper for standalone use
+  - **InlineEditable Component** (`inline-editor.tsx`):
+    - Click-to-edit content directly on marketing pages
+    - Floating toolbar with save/cancel/undo controls
+    - Text and textarea input modes
+    - Keyboard shortcuts: Escape (cancel), Cmd+Enter/Cmd+S (save)
+    - Visual edit indicator on hover when enabled
+    - Saves as draft content via `saveDraft()` action
+    - Provider and hook for enabling inline editing
+  - **Page Editor Integration**:
+    - New "History" tab in page editor
+    - Version list with preview and restore actions
+    - Automatic refresh after restore
+    - Navigation to content tab after restore
+
 - **Marketing Studio Phase 6: AI Caption Generator** - AI-powered caption generation for social media:
   - **AI Captions Utility** (`ai-captions.ts`):
     - Six tone options: professional, casual, inspirational, educational, promotional, storytelling

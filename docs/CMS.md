@@ -1235,12 +1235,19 @@ model CMSWebhookLog {
 - [x] Add draft operations: `saveDraft()`, `publishDraft()`, `discardDraft()`
 - [x] Add scheduling operations: `schedulePublish()`, `cancelScheduledPublish()`
 
-### Phase 4: Version History
-- [ ] Create *Version tables in schema
-- [ ] Update actions to create versions on save
-- [ ] Build version history UI
-- [ ] Add restore functionality
-- [ ] Add content diff view
+### Phase 4: Version History ✅ COMPLETE
+- [x] Create MarketingPageVersion table in schema (pageId, slug, version, content, meta fields, createdBy)
+- [x] Add automatic version snapshots in `updateMarketingPage()` before updates
+- [x] Add `getPageVersions()` with pagination and total count
+- [x] Add `getPageVersion()` for fetching specific versions
+- [x] Add `restoreVersion()` with backup creation before restore
+- [x] Add `compareVersions()` for fetching two versions to compare
+- [x] Add `cleanupOldVersions()` utility to manage version count
+- [x] Build VersionHistory component with paginated list, preview, restore
+- [x] Build ContentDiff component with visual highlighting (added/removed/changed)
+- [x] Add History tab to page editor with version list and restore
+- [x] Add InlineEditable component for direct on-page content editing
+- [x] Add InlineEditProvider and useInlineEdit hook
 
 ### Phase 5: Scheduled Publishing & Calendar
 - [ ] Add scheduledPublishAt field

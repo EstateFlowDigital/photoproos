@@ -387,6 +387,14 @@ export function PostComposer() {
   const [layerStart, setLayerStart] = React.useState({ x: 0, y: 0 });
   const canvasRef = React.useRef<HTMLDivElement>(null);
 
+  // Resize state
+  type ResizeHandle = "nw" | "n" | "ne" | "w" | "e" | "sw" | "s" | "se";
+  const [isResizing, setIsResizing] = React.useState(false);
+  const [resizeHandle, setResizeHandle] = React.useState<ResizeHandle | null>(null);
+  const [resizeLayerId, setResizeLayerId] = React.useState<string | null>(null);
+  const [resizeStart, setResizeStart] = React.useState({ x: 0, y: 0 });
+  const [initialLayerBounds, setInitialLayerBounds] = React.useState({ x: 0, y: 0, width: 0, height: 0 });
+
   // Handle layer drag start
   const handleLayerMouseDown = React.useCallback((e: React.MouseEvent, layerId: string) => {
     const layer = layers.find((l) => l.id === layerId);
@@ -433,6 +441,338 @@ export function PostComposer() {
     };
   }, [isDragging, dragLayerId, dragStart, layerStart, handleUpdateLayer]);
 
+  // Handle resize start
+  const handleResizeMouseDown = React.useCallback(
+    (e: React.MouseEvent, layerId: string, handle: ResizeHandle) => {
+      const layer = layers.find((l) => l.id === layerId);
+      if (!layer || layer.locked) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      setIsResizing(true);
+      setResizeHandle(handle);
+      setResizeLayerId(layerId);
+      setResizeStart({ x: e.clientX, y: e.clientY });
+      setInitialLayerBounds({
+        x: layer.position.x,
+        y: layer.position.y,
+        width: layer.size.width,
+        height: layer.size.height,
+      });
+    },
+    [layers]
+  );
+
+  // Handle resize drag
+  React.useEffect(() => {
+    if (!isResizing || !resizeLayerId || !resizeHandle) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - resizeStart.x;
+      const deltaY = e.clientY - resizeStart.y;
+
+      let newX = initialLayerBounds.x;
+      let newY = initialLayerBounds.y;
+      let newWidth = initialLayerBounds.width;
+      let newHeight = initialLayerBounds.height;
+
+      const minSize = 20; // Minimum layer size
+
+      // Calculate new dimensions based on handle
+      switch (resizeHandle) {
+        case "se":
+          newWidth = Math.max(minSize, initialLayerBounds.width + deltaX);
+          newHeight = Math.max(minSize, initialLayerBounds.height + deltaY);
+          break;
+        case "sw":
+          newWidth = Math.max(minSize, initialLayerBounds.width - deltaX);
+          newHeight = Math.max(minSize, initialLayerBounds.height + deltaY);
+          newX = initialLayerBounds.x + initialLayerBounds.width - newWidth;
+          break;
+        case "ne":
+          newWidth = Math.max(minSize, initialLayerBounds.width + deltaX);
+          newHeight = Math.max(minSize, initialLayerBounds.height - deltaY);
+          newY = initialLayerBounds.y + initialLayerBounds.height - newHeight;
+          break;
+        case "nw":
+          newWidth = Math.max(minSize, initialLayerBounds.width - deltaX);
+          newHeight = Math.max(minSize, initialLayerBounds.height - deltaY);
+          newX = initialLayerBounds.x + initialLayerBounds.width - newWidth;
+          newY = initialLayerBounds.y + initialLayerBounds.height - newHeight;
+          break;
+        case "e":
+          newWidth = Math.max(minSize, initialLayerBounds.width + deltaX);
+          break;
+        case "w":
+          newWidth = Math.max(minSize, initialLayerBounds.width - deltaX);
+          newX = initialLayerBounds.x + initialLayerBounds.width - newWidth;
+          break;
+        case "s":
+          newHeight = Math.max(minSize, initialLayerBounds.height + deltaY);
+          break;
+        case "n":
+          newHeight = Math.max(minSize, initialLayerBounds.height - deltaY);
+          newY = initialLayerBounds.y + initialLayerBounds.height - newHeight;
+          break;
+      }
+
+      // Hold shift for aspect ratio lock (corner handles only)
+      if (e.shiftKey && ["nw", "ne", "sw", "se"].includes(resizeHandle)) {
+        const aspectRatio = initialLayerBounds.width / initialLayerBounds.height;
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+          newHeight = newWidth / aspectRatio;
+          if (resizeHandle === "nw" || resizeHandle === "ne") {
+            newY = initialLayerBounds.y + initialLayerBounds.height - newHeight;
+          }
+        } else {
+          newWidth = newHeight * aspectRatio;
+          if (resizeHandle === "nw" || resizeHandle === "sw") {
+            newX = initialLayerBounds.x + initialLayerBounds.width - newWidth;
+          }
+        }
+      }
+
+      handleUpdateLayer(resizeLayerId, {
+        position: { x: Math.max(0, newX), y: Math.max(0, newY) },
+        size: { width: newWidth, height: newHeight },
+      });
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      setResizeHandle(null);
+      setResizeLayerId(null);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isResizing, resizeLayerId, resizeHandle, resizeStart, initialLayerBounds, handleUpdateLayer]);
+
+  // Undo/Redo history
+  const [layerHistory, setLayerHistory] = React.useState<Layer[][]>([]);
+  const [historyIndex, setHistoryIndex] = React.useState(-1);
+  const isUndoRedoRef = React.useRef(false);
+
+  // Save to history when layers change (but not during undo/redo)
+  React.useEffect(() => {
+    if (isUndoRedoRef.current) {
+      isUndoRedoRef.current = false;
+      return;
+    }
+    if (layers.length === 0 && layerHistory.length === 0) return;
+
+    // Don't save during drag or resize operations
+    if (isDragging || isResizing) return;
+
+    setLayerHistory((prev) => {
+      // Remove any future history if we're not at the end
+      const newHistory = prev.slice(0, historyIndex + 1);
+      // Add current state
+      newHistory.push([...layers]);
+      // Keep max 50 history entries
+      if (newHistory.length > 50) {
+        newHistory.shift();
+        return newHistory;
+      }
+      return newHistory;
+    });
+    setHistoryIndex((prev) => Math.min(prev + 1, 49));
+  }, [layers, isDragging, isResizing]);
+
+  // Undo handler
+  const handleUndo = React.useCallback(() => {
+    if (historyIndex <= 0) return;
+    isUndoRedoRef.current = true;
+    const newIndex = historyIndex - 1;
+    setHistoryIndex(newIndex);
+    setLayers(layerHistory[newIndex] || []);
+    toast.success("Undo");
+  }, [historyIndex, layerHistory]);
+
+  // Redo handler
+  const handleRedo = React.useCallback(() => {
+    if (historyIndex >= layerHistory.length - 1) return;
+    isUndoRedoRef.current = true;
+    const newIndex = historyIndex + 1;
+    setHistoryIndex(newIndex);
+    setLayers(layerHistory[newIndex] || []);
+    toast.success("Redo");
+  }, [historyIndex, layerHistory]);
+
+  // Keyboard shortcuts
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't handle shortcuts when typing in inputs
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+        return;
+      }
+
+      const isMod = e.metaKey || e.ctrlKey;
+
+      // Delete selected layer (Delete or Backspace)
+      if ((e.key === "Delete" || e.key === "Backspace") && selectedLayerId) {
+        e.preventDefault();
+        handleDeleteLayer(selectedLayerId);
+        return;
+      }
+
+      // Escape - Deselect layer
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setSelectedLayerId(null);
+        return;
+      }
+
+      // Undo (Cmd/Ctrl + Z)
+      if (isMod && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+        return;
+      }
+
+      // Redo (Cmd/Ctrl + Shift + Z or Cmd/Ctrl + Y)
+      if (isMod && ((e.key === "z" && e.shiftKey) || e.key === "y")) {
+        e.preventDefault();
+        handleRedo();
+        return;
+      }
+
+      // Duplicate layer (Cmd/Ctrl + D)
+      if (isMod && e.key === "d" && selectedLayerId) {
+        e.preventDefault();
+        handleDuplicateLayer(selectedLayerId);
+        return;
+      }
+
+      // Copy/Export (Cmd/Ctrl + C) - only when no text is selected
+      if (isMod && e.key === "c" && !window.getSelection()?.toString()) {
+        e.preventDefault();
+        handleCopy();
+        return;
+      }
+
+      // Export (Cmd/Ctrl + E)
+      if (isMod && e.key === "e") {
+        e.preventDefault();
+        handleExport();
+        return;
+      }
+
+      // Add text layer (T)
+      if (e.key === "t" && !isMod) {
+        e.preventDefault();
+        handleAddLayer("text");
+        return;
+      }
+
+      // Add image layer (I)
+      if (e.key === "i" && !isMod) {
+        e.preventDefault();
+        handleAddLayer("image");
+        return;
+      }
+
+      // Add shape layer (S)
+      if (e.key === "s" && !isMod) {
+        e.preventDefault();
+        handleAddLayer("shape");
+        return;
+      }
+
+      // Move layer with arrow keys
+      if (selectedLayerId && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+        e.preventDefault();
+        const layer = layers.find((l) => l.id === selectedLayerId);
+        if (!layer || layer.locked) return;
+
+        const step = e.shiftKey ? 10 : 1;
+        let newX = layer.position.x;
+        let newY = layer.position.y;
+
+        switch (e.key) {
+          case "ArrowUp":
+            newY = Math.max(0, newY - step);
+            break;
+          case "ArrowDown":
+            newY += step;
+            break;
+          case "ArrowLeft":
+            newX = Math.max(0, newX - step);
+            break;
+          case "ArrowRight":
+            newX += step;
+            break;
+        }
+
+        handleUpdateLayer(selectedLayerId, { position: { x: newX, y: newY } });
+        return;
+      }
+
+      // Toggle layers panel (L)
+      if (e.key === "l" && !isMod) {
+        e.preventDefault();
+        setShowLayersPanel((prev) => !prev);
+        return;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [
+    selectedLayerId,
+    layers,
+    handleDeleteLayer,
+    handleDuplicateLayer,
+    handleUpdateLayer,
+    handleUndo,
+    handleRedo,
+    handleCopy,
+    handleExport,
+    handleAddLayer,
+  ]);
+
+  // Resize handles component for selected layers
+  const renderResizeHandles = React.useCallback(
+    (layerId: string, locked: boolean) => {
+      if (selectedLayerId !== layerId || locked) return null;
+
+      const handles: { position: ResizeHandle; cursor: string; style: React.CSSProperties }[] = [
+        { position: "nw", cursor: "nwse-resize", style: { top: -4, left: -4 } },
+        { position: "n", cursor: "ns-resize", style: { top: -4, left: "50%", transform: "translateX(-50%)" } },
+        { position: "ne", cursor: "nesw-resize", style: { top: -4, right: -4 } },
+        { position: "w", cursor: "ew-resize", style: { top: "50%", left: -4, transform: "translateY(-50%)" } },
+        { position: "e", cursor: "ew-resize", style: { top: "50%", right: -4, transform: "translateY(-50%)" } },
+        { position: "sw", cursor: "nesw-resize", style: { bottom: -4, left: -4 } },
+        { position: "s", cursor: "ns-resize", style: { bottom: -4, left: "50%", transform: "translateX(-50%)" } },
+        { position: "se", cursor: "nwse-resize", style: { bottom: -4, right: -4 } },
+      ];
+
+      return (
+        <>
+          {handles.map((handle) => (
+            <div
+              key={handle.position}
+              className="absolute w-2 h-2 bg-white border border-[var(--primary)] rounded-sm z-50"
+              style={{
+                ...handle.style,
+                cursor: handle.cursor,
+              }}
+              onMouseDown={(e) => handleResizeMouseDown(e, layerId, handle.position)}
+            />
+          ))}
+        </>
+      );
+    },
+    [selectedLayerId, handleResizeMouseDown]
+  );
+
   // Render a single layer
   const renderLayer = React.useCallback((layer: Layer) => {
     if (!layer.visible) return null;
@@ -476,6 +816,7 @@ export function PostComposer() {
             onMouseDown={(e) => handleLayerMouseDown(e, layer.id)}
           >
             {textLayer.content}
+            {renderResizeHandles(layer.id, layer.locked)}
           </div>
         );
       }
@@ -497,7 +838,9 @@ export function PostComposer() {
               isDragging && dragLayerId === layer.id && "opacity-90 shadow-lg"
             )}
             onMouseDown={(e) => handleLayerMouseDown(e, layer.id)}
-          />
+          >
+            {renderResizeHandles(layer.id, layer.locked)}
+          </div>
         );
       }
       case "image": {
@@ -529,6 +872,7 @@ export function PostComposer() {
                 <ImageIcon className="h-8 w-8 text-[var(--foreground-muted)]" aria-hidden="true" />
               </div>
             )}
+            {renderResizeHandles(layer.id, layer.locked)}
           </div>
         );
       }
@@ -563,13 +907,14 @@ export function PostComposer() {
                 industry={mockupLayer.industry as IndustryId}
               />
             </div>
+            {renderResizeHandles(layer.id, layer.locked)}
           </div>
         );
       }
       default:
         return null;
     }
-  }, [selectedLayerId, isDragging, dragLayerId, handleLayerMouseDown]);
+  }, [selectedLayerId, isDragging, dragLayerId, handleLayerMouseDown, renderResizeHandles]);
 
   // Compute canvas background style
   const canvasBgStyle = React.useMemo((): React.CSSProperties => {

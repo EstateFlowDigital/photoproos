@@ -10343,6 +10343,38 @@ model MarketingPage {
   @@index([scheduledPublishAt])
 }
 
+// Marketing Page Version - Tracks content history for rollback
+model MarketingPageVersion {
+  id String @id @default(cuid())
+
+  // Reference to the page
+  pageId String
+  slug   String // Denormalized for easier queries
+
+  // Version number (incremented each save)
+  version Int
+
+  // Content snapshot at this version
+  content         Json
+  metaTitle       String?
+  metaDescription String? @db.Text
+  ogImage         String?
+
+  // Who made this version
+  createdBy     String  // Clerk user ID
+  createdByName String? // Display name for UI
+
+  // Summary of changes (optional, can be auto-generated or user-provided)
+  changesSummary String? @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@unique([pageId, version])
+  @@index([pageId])
+  @@index([slug])
+  @@index([createdAt])
+}
+
 // Marketing Navigation - Navbar and Footer content
 model MarketingNavigation {
   id String @id @default(cuid())
