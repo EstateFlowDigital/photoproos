@@ -4,9 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import {
   getPageVersions,
-  getPageVersion,
   restoreVersion as restoreVersionAction,
-  compareVersions,
 } from "@/lib/actions/marketing-cms";
 import type { MarketingPageVersion } from "@prisma/client";
 import {
@@ -22,7 +20,6 @@ import {
   AlertTriangle,
   Check,
   Loader2,
-  GitCompare,
 } from "lucide-react";
 
 interface VersionHistoryProps {
@@ -412,7 +409,7 @@ function RestoreConfirmDialog({
  */
 export function VersionHistory({
   slug,
-  currentContent,
+  currentContent: _currentContent,
   onRestore,
   asPanel = true,
 }: VersionHistoryProps) {

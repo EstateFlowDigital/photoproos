@@ -30,6 +30,13 @@ The main composition interface for creating social media posts with:
 - Batch delete for selected layers
 - Visual indicators (purple ring for multi-selected layers)
 
+#### Layer Grouping
+- **Cmd/Ctrl + G** - Group selected layers (2+ required)
+- **Cmd/Ctrl + Shift + G** - Ungroup a group layer
+- Groups behave as single units for move/resize
+- Group badge shows child count
+- Dashed border indicates group boundaries
+
 #### Canvas Controls
 - **Zoom** - 25% to 200% with keyboard shortcuts (Cmd/Ctrl +/-)
 - **Grid overlay** - Toggleable with adjustable size
@@ -118,6 +125,8 @@ src/components/marketing-studio/
 | `Cmd/Ctrl + E` | Export PNG |
 | `Cmd/Ctrl + Shift + C` | Copy layer style |
 | `Cmd/Ctrl + Shift + V` | Paste layer style |
+| `Cmd/Ctrl + G` | Group selected layers |
+| `Cmd/Ctrl + Shift + G` | Ungroup layer |
 | `Cmd/Ctrl + +` | Zoom in |
 | `Cmd/Ctrl + -` | Zoom out |
 | `Cmd/Ctrl + 0` | Reset zoom to 100% |
@@ -132,7 +141,7 @@ src/components/marketing-studio/
 ### Layer Types
 
 ```typescript
-type LayerType = "image" | "mockup" | "text" | "shape" | "logo";
+type LayerType = "image" | "mockup" | "text" | "shape" | "logo" | "group";
 
 interface LayerBase {
   id: string;
@@ -173,6 +182,12 @@ interface ImageLayer extends LayerBase {
   type: "image";
   src: string;
   objectFit: "cover" | "contain" | "fill";
+}
+
+interface GroupLayer extends LayerBase {
+  type: "group";
+  children: Layer[];
+  expanded: boolean;
 }
 ```
 

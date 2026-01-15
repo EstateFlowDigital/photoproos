@@ -10481,6 +10481,103 @@ enum ApprovalStatus {
   cancelled
 }
 
+// CMS Webhooks - External notifications for content changes
+model CMSWebhook {
+  id String @id @default(cuid())
+
+  name        String
+  description String?
+  url         String   // Endpoint to call
+  secret      String   // For HMAC signature verification
+
+  // What events trigger this webhook
+  events CMSWebhookEvent[]
+
+  // Optional filters
+  entityTypes String[] // Only trigger for specific types ["MarketingPage", "BlogPost"]
+
+  // Headers to include
+  headers Json? // { "X-Custom-Header": "value" }
+
+  // Status
+  isActive Boolean @default(true)
+
+  // Stats
+  lastTriggeredAt DateTime?
+  successCount    Int       @default(0)
+  failureCount    Int       @default(0)
+
+  // Audit
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  logs CMSWebhookLog[]
+
+  @@index([isActive])
+}
+
+model CMSWebhookLog {
+  id String @id @default(cuid())
+
+  webhookId String
+  webhook   CMSWebhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  // Event details
+  event      CMSWebhookEvent
+  entityType String?
+  entityId   String?
+  entityName String?
+
+  // Request details
+  requestUrl     String
+  requestHeaders Json?
+  requestBody    Json?
+
+  // Response details
+  responseStatus Int?
+  responseBody   String? @db.Text
+  duration       Int? // milliseconds
+
+  // Status
+  status     WebhookLogStatus @default(pending)
+  error      String?          @db.Text
+  retryCount Int              @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([webhookId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([event])
+}
+
+enum CMSWebhookEvent {
+  page_created
+  page_updated
+  page_published
+  page_unpublished
+  page_deleted
+  page_scheduled
+  draft_saved
+  version_restored
+  faq_created
+  faq_updated
+  faq_deleted
+  blog_published
+  blog_unpublished
+  content_approved
+  content_rejected
+}
+
+enum WebhookLogStatus {
+  pending
+  success
+  failed
+  retrying
+}
+
 // Marketing Navigation - Navbar and Footer content
 model MarketingNavigation {
   id String @id @default(cuid())

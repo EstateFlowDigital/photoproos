@@ -180,7 +180,7 @@ export function PreviewToolbar({ isPreview, hasDraft, pageSlug }: PreviewToolbar
 /**
  * Server component wrapper that checks preview mode
  */
-export async function PreviewToolbarWrapper({ pageSlug }: { pageSlug?: string }) {
+export async function PreviewToolbarWrapper({ pageSlug: _pageSlug }: { pageSlug?: string }) {
   // This is meant to be used with the isPreviewMode check
   // For now, it's a placeholder that needs to be integrated with the page
   return null;

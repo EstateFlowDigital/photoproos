@@ -4,7 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import type { PlatformId, PostFormat, Layer, LayerType, TextLayer, ImageLayer, ShapeLayer, MockupLayer } from "@/components/marketing-studio/types";
+import type { PlatformId, PostFormat, Layer, LayerType, TextLayer, ImageLayer, ShapeLayer, MockupLayer, GroupLayer } from "@/components/marketing-studio/types";
 import type { IndustryId } from "@/components/mockups/types";
 import { PLATFORMS, PLATFORM_LIST } from "@/lib/marketing-studio/platforms";
 import { getMockupById } from "@/components/mockups/mockup-registry";
@@ -61,6 +61,8 @@ import {
   ClipboardPaste,
   Save,
   FolderOpen,
+  Group,
+  Ungroup,
 } from "lucide-react";
 
 // Content type for the preview
@@ -976,6 +978,97 @@ export function PostComposer() {
     toast.success(`Loaded "${composition.name}"`);
   }, []);
 
+  // Group selected layers
+  const handleGroupLayers = React.useCallback(() => {
+    if (selectedLayerIds.size < 2) {
+      toast.error("Select at least 2 layers to group");
+      return;
+    }
+
+    // Get all selected layers
+    const selectedLayers = layers.filter((l) => selectedLayerIds.has(l.id) && !l.locked);
+    if (selectedLayers.length < 2) {
+      toast.error("Select at least 2 unlocked layers to group");
+      return;
+    }
+
+    // Calculate bounding box for the group
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    selectedLayers.forEach((layer) => {
+      minX = Math.min(minX, layer.position.x);
+      minY = Math.min(minY, layer.position.y);
+      maxX = Math.max(maxX, layer.position.x + layer.size.width);
+      maxY = Math.max(maxY, layer.position.y + layer.size.height);
+    });
+
+    // Adjust child positions to be relative to group position
+    const childLayers = selectedLayers.map((layer) => ({
+      ...layer,
+      position: {
+        x: layer.position.x - minX,
+        y: layer.position.y - minY,
+      },
+    }));
+
+    // Create the group layer
+    const groupLayer: GroupLayer = {
+      id: generateLayerId(),
+      type: "group",
+      name: `Group ${layers.filter((l) => l.type === "group").length + 1}`,
+      visible: true,
+      locked: false,
+      opacity: 100,
+      position: { x: minX, y: minY },
+      size: { width: maxX - minX, height: maxY - minY },
+      rotation: 0,
+      flipX: false,
+      flipY: false,
+      zIndex: Math.max(...selectedLayers.map((l) => l.zIndex)),
+      children: childLayers as Layer[],
+      expanded: false,
+    };
+
+    // Remove selected layers and add the group
+    setLayers((prev) => [
+      ...prev.filter((l) => !selectedLayerIds.has(l.id)),
+      groupLayer,
+    ]);
+    setSelectedLayerId(groupLayer.id);
+    setSelectedLayerIds(new Set([groupLayer.id]));
+    toast.success(`Grouped ${selectedLayers.length} layers`);
+  }, [selectedLayerIds, layers]);
+
+  // Ungroup a group layer
+  const handleUngroupLayers = React.useCallback(() => {
+    if (!selectedLayerId) return;
+    const layer = layers.find((l) => l.id === selectedLayerId);
+    if (!layer || layer.type !== "group") {
+      toast.error("Select a group to ungroup");
+      return;
+    }
+
+    const groupLayer = layer as GroupLayer;
+
+    // Restore child layers with absolute positions
+    const restoredLayers = groupLayer.children.map((child, idx) => ({
+      ...child,
+      position: {
+        x: child.position.x + groupLayer.position.x,
+        y: child.position.y + groupLayer.position.y,
+      },
+      zIndex: groupLayer.zIndex + idx,
+    }));
+
+    // Remove the group and add the child layers
+    setLayers((prev) => [
+      ...prev.filter((l) => l.id !== selectedLayerId),
+      ...restoredLayers as Layer[],
+    ]);
+    setSelectedLayerId(null);
+    setSelectedLayerIds(new Set());
+    toast.success(`Ungrouped ${restoredLayers.length} layers`);
+  }, [selectedLayerId, layers]);
+
   // Keyboard shortcuts
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1053,6 +1146,20 @@ export function PostComposer() {
       if (isMod && e.shiftKey && e.key === "v" && selectedLayerId && copiedStyle) {
         e.preventDefault();
         handlePasteStyle();
+        return;
+      }
+
+      // Group layers (Cmd/Ctrl + G)
+      if (isMod && e.key === "g" && !e.shiftKey && selectedLayerIds.size >= 2) {
+        e.preventDefault();
+        handleGroupLayers();
+        return;
+      }
+
+      // Ungroup layers (Cmd/Ctrl + Shift + G)
+      if (isMod && e.shiftKey && e.key === "g" && selectedLayerId) {
+        e.preventDefault();
+        handleUngroupLayers();
         return;
       }
 
@@ -1173,6 +1280,8 @@ export function PostComposer() {
     handleAddLayer,
     handleCopyStyle,
     handlePasteStyle,
+    handleGroupLayers,
+    handleUngroupLayers,
     copiedStyle,
   ]);
 
@@ -1379,6 +1488,123 @@ export function PostComposer() {
                 primaryColor={mockupLayer.primaryColor}
                 industry={mockupLayer.industry as IndustryId}
               />
+            </div>
+            {renderResizeHandles(layer.id, layer.locked)}
+            {renderLockBadge(layer.locked)}
+          </div>
+        );
+      }
+      case "group": {
+        const groupLayer = layer as GroupLayer;
+        return (
+          <div
+            key={layer.id}
+            style={{
+              ...baseStyle,
+              cursor: layer.locked ? "not-allowed" : isDragging && dragLayerId === layer.id ? "grabbing" : "grab",
+            }}
+            className={cn(
+              "overflow-visible transition-shadow",
+              isSelected && "ring-2 ring-[var(--primary)] ring-offset-1 ring-dashed",
+              isMultiSelected && !isSelected && "ring-2 ring-[var(--ai)] ring-offset-1 ring-dashed",
+              isPrimarySelection && "ring-2 ring-[var(--primary)] ring-offset-2 ring-dashed",
+              isDragging && dragLayerId === layer.id && "opacity-90 shadow-lg"
+            )}
+            onMouseDown={(e) => handleLayerMouseDown(e, layer.id)}
+          >
+            {/* Render child layers with relative positioning */}
+            {groupLayer.children.map((child) => {
+              if (!child.visible) return null;
+
+              // Build transform for child
+              const childTransforms: string[] = [];
+              if (child.rotation !== 0) childTransforms.push(`rotate(${child.rotation}deg)`);
+              if (child.flipX) childTransforms.push("scaleX(-1)");
+              if (child.flipY) childTransforms.push("scaleY(-1)");
+
+              const childStyle: React.CSSProperties = {
+                position: "absolute",
+                left: `${child.position.x}px`,
+                top: `${child.position.y}px`,
+                width: `${child.size.width}px`,
+                height: `${child.size.height}px`,
+                opacity: child.opacity / 100,
+                transform: childTransforms.length > 0 ? childTransforms.join(" ") : undefined,
+                zIndex: child.zIndex,
+                pointerEvents: "none",
+              };
+
+              if (child.type === "text") {
+                const textChild = child as TextLayer;
+                return (
+                  <div
+                    key={child.id}
+                    style={{
+                      ...childStyle,
+                      fontFamily: textChild.fontFamily,
+                      fontSize: `${textChild.fontSize}px`,
+                      fontWeight: textChild.fontWeight,
+                      color: textChild.color,
+                      textAlign: textChild.textAlign,
+                      lineHeight: textChild.lineHeight,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: textChild.textAlign === "center" ? "center" : textChild.textAlign === "right" ? "flex-end" : "flex-start",
+                    }}
+                    className="select-none whitespace-pre-wrap"
+                  >
+                    {textChild.content}
+                  </div>
+                );
+              }
+
+              if (child.type === "shape") {
+                const shapeChild = child as ShapeLayer;
+                return (
+                  <div
+                    key={child.id}
+                    style={{
+                      ...childStyle,
+                      backgroundColor: shapeChild.fill,
+                      border: shapeChild.strokeWidth > 0 ? `${shapeChild.strokeWidth}px solid ${shapeChild.stroke}` : undefined,
+                      borderRadius: shapeChild.shapeType === "circle" ? "50%" : shapeChild.borderRadius ? `${shapeChild.borderRadius}px` : undefined,
+                    }}
+                  />
+                );
+              }
+
+              if (child.type === "image") {
+                const imgChild = child as ImageLayer;
+                return (
+                  <div key={child.id} style={childStyle} className="overflow-hidden">
+                    {imgChild.src ? (
+                      <img
+                        src={imgChild.src}
+                        alt={child.name}
+                        style={{ objectFit: imgChild.objectFit }}
+                        className="w-full h-full pointer-events-none"
+                        draggable={false}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-[var(--background-hover)] flex items-center justify-center">
+                        <ImageIcon className="h-8 w-8 text-[var(--foreground-muted)]" aria-hidden="true" />
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              return null;
+            })}
+            {/* Group border indicator */}
+            <div className="absolute inset-0 border border-dashed border-[var(--primary)]/30 rounded pointer-events-none" />
+            {/* Group badge */}
+            <div
+              className="absolute -top-2 -left-2 z-50 flex items-center justify-center px-1.5 py-0.5 rounded bg-[var(--primary)] text-white text-[10px] font-medium shadow-md"
+              aria-label="Group layer"
+            >
+              <Group className="h-2.5 w-2.5 mr-0.5" aria-hidden="true" />
+              {groupLayer.children.length}
             </div>
             {renderResizeHandles(layer.id, layer.locked)}
             {renderLockBadge(layer.locked)}
@@ -2092,7 +2318,7 @@ export function PostComposer() {
                       <span className="text-xs text-[var(--success)]">Style copied</span>
                     )}
 
-                    {/* Multi-select indicator */}
+                    {/* Multi-select indicator and group buttons */}
                     {selectedLayerIds.size > 1 && (
                       <>
                         <div className="w-px h-4 bg-[var(--border)]" />
@@ -2111,6 +2337,29 @@ export function PostComposer() {
                             ×
                           </button>
                         </div>
+                        <button
+                          onClick={handleGroupLayers}
+                          className="p-1.5 rounded hover:bg-[var(--background-hover)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                          aria-label="Group layers (Cmd+G)"
+                          title="Group layers (Cmd+G)"
+                        >
+                          <Group className="h-3.5 w-3.5" aria-hidden="true" />
+                        </button>
+                      </>
+                    )}
+
+                    {/* Ungroup button for group layers */}
+                    {selectedLayer?.type === "group" && (
+                      <>
+                        <div className="w-px h-4 bg-[var(--border)]" />
+                        <button
+                          onClick={handleUngroupLayers}
+                          className="p-1.5 rounded hover:bg-[var(--background-hover)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                          aria-label="Ungroup (Cmd+Shift+G)"
+                          title="Ungroup (Cmd+Shift+G)"
+                        >
+                          <Ungroup className="h-3.5 w-3.5" aria-hidden="true" />
+                        </button>
                       </>
                     )}
                   </div>

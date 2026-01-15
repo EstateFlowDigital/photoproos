@@ -2,17 +2,12 @@
 
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { compareVersions } from "@/lib/actions/marketing-cms";
 import type { MarketingPageVersion } from "@prisma/client";
 import {
-  GitCompare,
-  ChevronDown,
-  ChevronRight,
   Plus,
   Minus,
   RefreshCw,
   X,
-  Loader2,
   AlertTriangle,
 } from "lucide-react";
 
@@ -174,7 +169,7 @@ function DiffLineItem({
   line: DiffLine;
   showUnchanged: boolean;
 }) {
-  const [isExpanded, setIsExpanded] = useState(line.type !== "unchanged");
+  const [_isExpanded, _setIsExpanded] = useState(line.type !== "unchanged");
 
   // Don't render unchanged lines when hidden
   if (line.type === "unchanged" && !showUnchanged) {

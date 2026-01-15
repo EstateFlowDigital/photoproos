@@ -36,6 +36,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Prompt for composition name
     - Load dropdown for saved compositions
     - Persists layers, background settings, caption
+  - **Layer Grouping**:
+    - Group multiple layers with Cmd/Ctrl+G
+    - Ungroup with Cmd/Ctrl+Shift+G
+    - GroupLayer type for combining layers
+    - Groups move/resize as single unit
+    - Group badge shows child count
+    - Dashed border for group boundaries
+    - Toolbar buttons for group/ungroup
   - **Marketing Studio README**:
     - Comprehensive documentation for all components
     - Keyboard shortcuts reference

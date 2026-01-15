@@ -227,7 +227,7 @@ export interface CalendarPost {
 export type CalendarView = "month" | "week" | "board" | "grid";
 
 // Layer composition types
-export type LayerType = "image" | "mockup" | "text" | "shape" | "logo";
+export type LayerType = "image" | "mockup" | "text" | "shape" | "logo" | "group";
 
 export interface LayerBase {
   id: string;
@@ -284,7 +284,13 @@ export interface LogoLayer extends LayerBase {
   variant: "full" | "icon" | "text";
 }
 
-export type Layer = ImageLayer | MockupLayer | TextLayer | ShapeLayer | LogoLayer;
+export interface GroupLayer extends LayerBase {
+  type: "group";
+  children: Layer[];
+  expanded: boolean; // Whether the group is expanded in the layers panel
+}
+
+export type Layer = ImageLayer | MockupLayer | TextLayer | ShapeLayer | LogoLayer | GroupLayer;
 
 export interface CompositionState {
   layers: Layer[];

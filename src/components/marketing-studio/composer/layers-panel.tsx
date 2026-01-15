@@ -19,6 +19,7 @@ import {
   Minus,
   Layers,
   GripVertical,
+  Group,
 } from "lucide-react";
 
 interface LayersPanelProps {
@@ -40,6 +41,7 @@ const LAYER_TYPE_ICONS: Record<LayerType, React.ComponentType<{ className?: stri
   text: Type,
   shape: Square,
   logo: Layers,
+  group: Group,
 };
 
 const LAYER_TYPE_NAMES: Record<LayerType, string> = {
@@ -48,6 +50,7 @@ const LAYER_TYPE_NAMES: Record<LayerType, string> = {
   text: "Text",
   shape: "Shape",
   logo: "Logo",
+  group: "Group",
 };
 
 const ADD_LAYER_OPTIONS: { type: LayerType; icon: React.ComponentType<{ className?: string }>; label: string }[] = [
