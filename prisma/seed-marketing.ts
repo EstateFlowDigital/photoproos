@@ -188,7 +188,7 @@ const marketingPages = [
   {
     slug: "blog",
     title: "Blog",
-    pageType: "blog",
+    pageType: "blog_index",
     status: "published",
     content: {
       hero: {

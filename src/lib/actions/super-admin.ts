@@ -215,7 +215,7 @@ export async function getSuperAdminDashboardStats(): Promise<
       galleriesDeliveredThisMonth,
       revenueThisMonth: revenueThisMonthResult._sum.amountCents || 0,
       averageRating: feedbackStats._avg.rating || 0,
-      feedbackCount: feedbackStats._count,
+      feedbackCount: feedbackStats._count._all || 0,
       pendingFeedback,
       userGrowth,
       revenueGrowth,
@@ -296,23 +296,26 @@ export async function getAllUsers(options?: {
       .map((u) => u.memberships[0]?.organization?.id)
       .filter(Boolean) as string[];
 
-    const [galleryCounts, clientCounts, revenueSums] = await Promise.all([
-      prisma.gallery.groupBy({
-        by: ["organizationId"],
-        where: { organizationId: { in: orgIds } },
-        _count: true,
-      }),
-      prisma.client.groupBy({
-        by: ["organizationId"],
-        where: { organizationId: { in: orgIds } },
-        _count: true,
-      }),
-      prisma.payment.groupBy({
-        by: ["organizationId"],
-        where: { organizationId: { in: orgIds }, status: "succeeded" },
-        _sum: { amountCents: true },
-      }),
-    ]);
+    // Only run groupBy queries if there are organizations to query
+    const [galleryCounts, clientCounts, revenueSums] = orgIds.length > 0
+      ? await Promise.all([
+          prisma.gallery.groupBy({
+            by: ["organizationId"],
+            where: { organizationId: { in: orgIds } },
+            _count: true,
+          }),
+          prisma.client.groupBy({
+            by: ["organizationId"],
+            where: { organizationId: { in: orgIds } },
+            _count: true,
+          }),
+          prisma.payment.groupBy({
+            by: ["organizationId"],
+            where: { organizationId: { in: orgIds }, status: "succeeded" },
+            _sum: { amountCents: true },
+          }),
+        ])
+      : [[], [], []];
 
     const galleryMap = new Map(galleryCounts.map((g) => [g.organizationId, g._count]));
     const clientMap = new Map(clientCounts.map((c) => [c.organizationId, c._count]));
@@ -2670,35 +2673,35 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
     ] = await Promise.all([
       // Total revenue
       prisma.payment.aggregate({
-        where: { status: "completed" },
+        where: { status: "paid" },
         _sum: { amountCents: true, tipAmountCents: true },
       }),
       // Revenue today
       prisma.payment.aggregate({
-        where: { status: "completed", paidAt: { gte: startOfToday } },
+        where: { status: "paid", paidAt: { gte: startOfToday } },
         _sum: { amountCents: true, tipAmountCents: true },
       }),
       // Revenue this week
       prisma.payment.aggregate({
-        where: { status: "completed", paidAt: { gte: startOfWeek } },
+        where: { status: "paid", paidAt: { gte: startOfWeek } },
         _sum: { amountCents: true, tipAmountCents: true },
       }),
       // Revenue this month
       prisma.payment.aggregate({
-        where: { status: "completed", paidAt: { gte: startOfMonth } },
+        where: { status: "paid", paidAt: { gte: startOfMonth } },
         _sum: { amountCents: true, tipAmountCents: true },
       }),
       // Revenue last month (for growth calculation)
       prisma.payment.aggregate({
         where: {
-          status: "completed",
+          status: "paid",
           paidAt: { gte: startOfLastMonth, lte: endOfLastMonth },
         },
         _sum: { amountCents: true, tipAmountCents: true },
       }),
       // Revenue this year
       prisma.payment.aggregate({
-        where: { status: "completed", paidAt: { gte: startOfYear } },
+        where: { status: "paid", paidAt: { gte: startOfYear } },
         _sum: { amountCents: true, tipAmountCents: true },
       }),
       // Payment counts by status
@@ -2722,7 +2725,7 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
       // Top customers by revenue
       prisma.payment.groupBy({
         by: ["organizationId"],
-        where: { status: "completed", organizationId: { not: null } },
+        where: { status: "paid", organizationId: { not: null } },
         _sum: { amountCents: true },
         _count: true,
         orderBy: { _sum: { amountCents: "desc" } },
@@ -2731,7 +2734,7 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
       // Last 30 days for daily chart
       prisma.payment.findMany({
         where: {
-          status: "completed",
+          status: "paid",
           paidAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
         },
         select: { paidAt: true, amountCents: true, tipAmountCents: true },
@@ -2739,7 +2742,7 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
       // Last 12 months for monthly chart
       prisma.payment.findMany({
         where: {
-          status: "completed",
+          status: "paid",
           paidAt: { gte: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) },
         },
         select: { paidAt: true, amountCents: true, tipAmountCents: true },
@@ -2961,7 +2964,7 @@ export async function getRecentInvoices(options: {
           select: { id: true, name: true },
         },
         client: {
-          select: { name: true, email: true },
+          select: { fullName: true, email: true },
         },
       },
     });
@@ -3300,7 +3303,7 @@ export async function getAtRiskUsers(options: {
       by: ["organizationId"],
       where: {
         organizationId: { in: orgIds },
-        status: "completed",
+        status: "paid",
       },
       _sum: { amountCents: true },
     });

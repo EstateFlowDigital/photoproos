@@ -10,6 +10,7 @@ import { PLATFORMS, PLATFORM_LIST } from "@/lib/marketing-studio/platforms";
 import { getMockupById } from "@/components/mockups/mockup-registry";
 import { getIndustriesArray } from "@/lib/constants/industries";
 import { exportToPng, copyToClipboard } from "@/lib/mockups/export";
+import { getTemplateById, type Template } from "@/lib/marketing-studio/templates";
 import { InstagramPreview } from "@/components/marketing-studio/previews/instagram-preview";
 import { LinkedInPreview } from "@/components/marketing-studio/previews/linkedin-preview";
 import { TwitterPreview } from "@/components/marketing-studio/previews/twitter-preview";
@@ -35,6 +36,7 @@ import {
   Sun,
   Moon,
   Palette,
+  LayoutTemplate,
 } from "lucide-react";
 
 // Custom TikTok icon (not in lucide-react)
@@ -71,6 +73,7 @@ export function PostComposer() {
   const [selectedPlatform, setSelectedPlatform] = React.useState<PlatformId>("instagram");
   const [selectedFormat, setSelectedFormat] = React.useState<PostFormat>("feed");
   const [selectedMockupId, setSelectedMockupId] = React.useState<string | undefined>();
+  const [selectedTemplate, setSelectedTemplate] = React.useState<Template | undefined>();
   const [industry, setIndustry] = React.useState<IndustryId>("real_estate");
   const [theme, setTheme] = React.useState<"light" | "dark">("dark");
   const [primaryColor, setPrimaryColor] = React.useState("#3b82f6");
@@ -100,8 +103,37 @@ export function PostComposer() {
   React.useEffect(() => {
     const source = searchParams.get("source");
     const mockupId = searchParams.get("mockup");
+    const templateId = searchParams.get("template");
+
+    // Load mockup if specified
     if (source === "mockup" && mockupId) {
       setSelectedMockupId(mockupId);
+    }
+
+    // Load template if specified
+    if (templateId) {
+      const template = getTemplateById(templateId);
+      if (template) {
+        setSelectedTemplate(template);
+        // Apply template settings
+        if (template.platforms.length > 0) {
+          setSelectedPlatform(template.platforms[0]);
+        }
+        setSelectedFormat(template.format);
+        if (template.captionTemplate) {
+          setCaption(template.captionTemplate);
+        }
+        // Apply template colors if it has a gradient background
+        if (template.layout.background === "gradient" && template.layout.gradientFrom) {
+          setPrimaryColor(template.layout.gradientFrom);
+        } else if (template.layout.background === "solid" && template.layout.backgroundColor) {
+          // For solid backgrounds, we might want to detect if it's dark or light
+          const bgColor = template.layout.backgroundColor;
+          if (bgColor && bgColor !== "#0a0a0a" && bgColor !== "#ffffff") {
+            setPrimaryColor(bgColor);
+          }
+        }
+      }
     }
   }, [searchParams]);
 
@@ -483,6 +515,24 @@ export function PostComposer() {
                   Show Mockups
                 </button>
               )}
+
+              {/* Quick links */}
+              <div className="flex gap-2 pt-2">
+                <Link
+                  href="/super-admin/marketing-studio/templates"
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--background)] px-2 py-1.5 text-xs text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] hover:text-[var(--foreground)]"
+                >
+                  <LayoutTemplate className="h-3.5 w-3.5" />
+                  Templates
+                </Link>
+                <Link
+                  href="/super-admin/marketing-studio/brand-kit"
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--background)] px-2 py-1.5 text-xs text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] hover:text-[var(--foreground)]"
+                >
+                  <Palette className="h-3.5 w-3.5" />
+                  Brand Kit
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -501,6 +551,33 @@ export function PostComposer() {
               />
             </div>
           </div>
+
+          {/* Selected Template Info */}
+          {selectedTemplate && (
+            <div className="flex-shrink-0 p-4 border-t border-[var(--card-border)]">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="h-8 w-8 rounded bg-[var(--ai)]/10 flex items-center justify-center flex-shrink-0">
+                    <LayoutTemplate className="h-4 w-4 text-[var(--ai)]" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-[var(--foreground)] truncate">
+                      {selectedTemplate.name}
+                    </p>
+                    <p className="text-xs text-[var(--foreground-muted)]">
+                      Template applied
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedTemplate(undefined)}
+                  className="text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Selected Mockup Info */}
           {selectedMockup && (
