@@ -46,6 +46,8 @@ import {
   PanelRightClose,
   Type,
   Square,
+  Grid3X3,
+  Magnet,
 } from "lucide-react";
 
 // Content type for the preview
@@ -121,6 +123,12 @@ export function PostComposer() {
   const [canvasGradientFrom, setCanvasGradientFrom] = React.useState("#3b82f6");
   const [canvasGradientTo, setCanvasGradientTo] = React.useState("#8b5cf6");
   const [canvasGradientAngle, setCanvasGradientAngle] = React.useState(135);
+
+  // Grid and snap state
+  const [showGrid, setShowGrid] = React.useState(false);
+  const [snapToGrid, setSnapToGrid] = React.useState(true);
+  const [gridSize, setGridSize] = React.useState(20);
+  const [alignmentGuides, setAlignmentGuides] = React.useState<{ type: "h" | "v"; position: number }[]>([]);
 
   // Preview engagement data (editable in future)
   const [engagement] = React.useState({
@@ -411,6 +419,104 @@ export function PostComposer() {
     setRightPanelTab("properties");
   }, [layers]);
 
+  // Snap value to grid
+  const snapToGridValue = React.useCallback(
+    (value: number): number => {
+      if (!snapToGrid) return value;
+      return Math.round(value / gridSize) * gridSize;
+    },
+    [snapToGrid, gridSize]
+  );
+
+  // Get snap guides for layer alignment
+  const getSnapGuides = React.useCallback(
+    (layerId: string, x: number, y: number, width: number, height: number) => {
+      if (!snapToGrid) return { x, y, guides: [] as { type: "h" | "v"; position: number }[] };
+
+      const SNAP_THRESHOLD = 8;
+      const guides: { type: "h" | "v"; position: number }[] = [];
+      let snappedX = x;
+      let snappedY = y;
+
+      // Get canvas dimensions (approximate based on platform config)
+      const canvasWidth = platformConfig?.previewSize?.width || 540;
+      const canvasHeight = platformConfig?.previewSize?.height || 540;
+
+      // Center lines
+      const centerX = canvasWidth / 2;
+      const centerY = canvasHeight / 2;
+
+      // Check layer center against canvas center
+      const layerCenterX = x + width / 2;
+      const layerCenterY = y + height / 2;
+
+      // Snap to canvas center X
+      if (Math.abs(layerCenterX - centerX) < SNAP_THRESHOLD) {
+        snappedX = centerX - width / 2;
+        guides.push({ type: "v", position: centerX });
+      }
+
+      // Snap to canvas center Y
+      if (Math.abs(layerCenterY - centerY) < SNAP_THRESHOLD) {
+        snappedY = centerY - height / 2;
+        guides.push({ type: "h", position: centerY });
+      }
+
+      // Check alignment with other layers
+      for (const layer of layers) {
+        if (layer.id === layerId) continue;
+
+        const otherX = layer.position.x;
+        const otherY = layer.position.y;
+        const otherWidth = layer.size.width;
+        const otherHeight = layer.size.height;
+        const otherCenterX = otherX + otherWidth / 2;
+        const otherCenterY = otherY + otherHeight / 2;
+
+        // Snap to left edge of other layer
+        if (Math.abs(x - otherX) < SNAP_THRESHOLD) {
+          snappedX = otherX;
+          guides.push({ type: "v", position: otherX });
+        }
+        // Snap to right edge of other layer
+        if (Math.abs(x + width - (otherX + otherWidth)) < SNAP_THRESHOLD) {
+          snappedX = otherX + otherWidth - width;
+          guides.push({ type: "v", position: otherX + otherWidth });
+        }
+        // Snap to center X of other layer
+        if (Math.abs(layerCenterX - otherCenterX) < SNAP_THRESHOLD) {
+          snappedX = otherCenterX - width / 2;
+          guides.push({ type: "v", position: otherCenterX });
+        }
+
+        // Snap to top edge of other layer
+        if (Math.abs(y - otherY) < SNAP_THRESHOLD) {
+          snappedY = otherY;
+          guides.push({ type: "h", position: otherY });
+        }
+        // Snap to bottom edge of other layer
+        if (Math.abs(y + height - (otherY + otherHeight)) < SNAP_THRESHOLD) {
+          snappedY = otherY + otherHeight - height;
+          guides.push({ type: "h", position: otherY + otherHeight });
+        }
+        // Snap to center Y of other layer
+        if (Math.abs(layerCenterY - otherCenterY) < SNAP_THRESHOLD) {
+          snappedY = otherCenterY - height / 2;
+          guides.push({ type: "h", position: otherCenterY });
+        }
+      }
+
+      // Grid snapping (only if no alignment guides are active)
+      if (guides.length === 0) {
+        snappedX = snapToGridValue(x);
+        snappedY = snapToGridValue(y);
+      }
+
+      return { x: snappedX, y: snappedY, guides };
+    },
+    [snapToGrid, gridSize, layers, platformConfig, snapToGridValue]
+  );
+
   // Handle layer drag
   React.useEffect(() => {
     if (!isDragging || !dragLayerId) return;
@@ -419,8 +525,18 @@ export function PostComposer() {
       const deltaX = e.clientX - dragStart.x;
       const deltaY = e.clientY - dragStart.y;
 
-      const newX = Math.max(0, layerStart.x + deltaX);
-      const newY = Math.max(0, layerStart.y + deltaY);
+      let newX = Math.max(0, layerStart.x + deltaX);
+      let newY = Math.max(0, layerStart.y + deltaY);
+
+      // Get the layer being dragged
+      const layer = layers.find((l) => l.id === dragLayerId);
+      if (layer) {
+        // Apply snapping
+        const snapResult = getSnapGuides(dragLayerId, newX, newY, layer.size.width, layer.size.height);
+        newX = snapResult.x;
+        newY = snapResult.y;
+        setAlignmentGuides(snapResult.guides);
+      }
 
       handleUpdateLayer(dragLayerId, {
         position: { x: newX, y: newY },
@@ -430,6 +546,7 @@ export function PostComposer() {
     const handleMouseUp = () => {
       setIsDragging(false);
       setDragLayerId(null);
+      setAlignmentGuides([]);
     };
 
     document.addEventListener("mousemove", handleMouseMove);
@@ -439,7 +556,7 @@ export function PostComposer() {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isDragging, dragLayerId, dragStart, layerStart, handleUpdateLayer]);
+  }, [isDragging, dragLayerId, dragStart, layerStart, handleUpdateLayer, layers, getSnapGuides]);
 
   // Handle resize start
   const handleResizeMouseDown = React.useCallback(
@@ -974,6 +1091,61 @@ export function PostComposer() {
               }}
             />
           )}
+
+          {/* Grid overlay */}
+          {showGrid && (
+            <div
+              className="absolute inset-0 pointer-events-none z-40"
+              style={{
+                backgroundImage: `
+                  linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
+                  linear-gradient(to bottom, rgba(255,255,255,0.1) 1px, transparent 1px)
+                `,
+                backgroundSize: `${gridSize}px ${gridSize}px`,
+              }}
+            />
+          )}
+
+          {/* Center guides (always visible when dragging) */}
+          {(isDragging || isResizing) && snapToGrid && (
+            <>
+              {/* Vertical center line */}
+              <div
+                className="absolute top-0 bottom-0 w-px bg-[var(--primary)]/20 pointer-events-none z-40"
+                style={{ left: "50%" }}
+              />
+              {/* Horizontal center line */}
+              <div
+                className="absolute left-0 right-0 h-px bg-[var(--primary)]/20 pointer-events-none z-40"
+                style={{ top: "50%" }}
+              />
+            </>
+          )}
+
+          {/* Alignment guides */}
+          {alignmentGuides.map((guide, idx) => (
+            <div
+              key={`${guide.type}-${guide.position}-${idx}`}
+              className="absolute pointer-events-none z-50"
+              style={{
+                ...(guide.type === "v"
+                  ? {
+                      left: `${guide.position}px`,
+                      top: 0,
+                      bottom: 0,
+                      width: "1px",
+                      background: "var(--primary)",
+                    }
+                  : {
+                      top: `${guide.position}px`,
+                      left: 0,
+                      right: 0,
+                      height: "1px",
+                      background: "var(--primary)",
+                    }),
+              }}
+            />
+          ))}
 
           {/* Render layers */}
           {[...layers].sort((a, b) => a.zIndex - b.zIndex).map(renderLayer)}
@@ -1848,6 +2020,74 @@ export function PostComposer() {
                     </div>
                   </>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Grid & Alignment Settings (only when layers exist) */}
+          {layers.length > 0 && (
+            <div className="flex-shrink-0 p-3 border-b border-[var(--card-border)]">
+              <div className="flex items-center gap-2 mb-3">
+                <Grid3X3 className="h-3.5 w-3.5 text-[var(--foreground-muted)]" aria-hidden="true" />
+                <span className="text-xs font-medium text-[var(--foreground)]">Grid & Alignment</span>
+              </div>
+
+              <div className="space-y-2.5">
+                {/* Grid and Snap Toggles */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowGrid(!showGrid)}
+                    aria-pressed={showGrid}
+                    className={cn(
+                      "flex-1 flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
+                      showGrid
+                        ? "bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/30"
+                        : "bg-[var(--background)] border border-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+                    )}
+                  >
+                    <Grid3X3 className="h-3 w-3" aria-hidden="true" />
+                    Show Grid
+                  </button>
+                  <button
+                    onClick={() => setSnapToGrid(!snapToGrid)}
+                    aria-pressed={snapToGrid}
+                    className={cn(
+                      "flex-1 flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
+                      snapToGrid
+                        ? "bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/30"
+                        : "bg-[var(--background)] border border-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+                    )}
+                  >
+                    <Magnet className="h-3 w-3" aria-hidden="true" />
+                    Snap
+                  </button>
+                </div>
+
+                {/* Grid Size Slider */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label htmlFor="grid-size" className="text-xs text-[var(--foreground-muted)]">
+                      Grid Size
+                    </label>
+                    <span className="text-xs text-[var(--foreground-muted)]">{gridSize}px</span>
+                  </div>
+                  <input
+                    id="grid-size"
+                    type="range"
+                    min="10"
+                    max="50"
+                    step="5"
+                    value={gridSize}
+                    onChange={(e) => setGridSize(Number(e.target.value))}
+                    className="w-full h-1.5 rounded-full appearance-none bg-[var(--background-hover)] cursor-pointer accent-[var(--primary)]"
+                    aria-label="Grid size in pixels"
+                  />
+                </div>
+
+                {/* Keyboard Shortcuts Hint */}
+                <div className="text-[10px] text-[var(--foreground-muted)] leading-relaxed">
+                  <span className="font-medium">Tip:</span> Hold Shift while resizing to maintain aspect ratio
+                </div>
               </div>
             </div>
           )}

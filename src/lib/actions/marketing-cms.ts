@@ -1397,3 +1397,262 @@ export async function seedMarketingContent(): Promise<ActionResult<void>> {
     return fail("Failed to seed marketing content");
   }
 }
+
+// ============================================================================
+// SCHEDULED PUBLISHING (Cron Jobs)
+// ============================================================================
+
+/**
+ * Process all scheduled publishes that are due
+ * Called by the cron endpoint - does NOT require super admin auth
+ *
+ * This function:
+ * 1. Finds all pages with scheduledPublishAt <= now
+ * 2. For pages with draft content, publishes the draft
+ * 3. For pages without draft, just updates status to published
+ * 4. Clears the scheduling fields
+ * 5. Invalidates the cache
+ */
+export async function processScheduledPublishes(): Promise<
+  ActionResult<{ processed: number; errors: number; details: string[] }>
+> {
+  try {
+    const now = new Date();
+    const details: string[] = [];
+    let processed = 0;
+    let errors = 0;
+
+    // Find all pages scheduled to publish now or in the past
+    const scheduledPages = await prisma.marketingPage.findMany({
+      where: {
+        scheduledPublishAt: {
+          lte: now,
+        },
+      },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        content: true,
+        draftContent: true,
+        hasDraft: true,
+        scheduledPublishAt: true,
+        scheduledBy: true,
+      },
+    });
+
+    if (scheduledPages.length === 0) {
+      return ok({ processed: 0, errors: 0, details: ["No scheduled pages to publish"] });
+    }
+
+    details.push(`Found ${scheduledPages.length} pages scheduled for publishing`);
+
+    // Process each scheduled page
+    for (const page of scheduledPages) {
+      try {
+        // Determine what content to publish
+        const contentToPublish = page.hasDraft && page.draftContent
+          ? page.draftContent
+          : page.content;
+
+        // Update the page: publish and clear scheduling
+        await prisma.marketingPage.update({
+          where: { id: page.id },
+          data: {
+            content: contentToPublish,
+            draftContent: null,
+            hasDraft: false,
+            status: "published",
+            publishedAt: now,
+            scheduledPublishAt: null,
+            scheduledBy: null,
+          },
+        });
+
+        processed++;
+        details.push(
+          `✓ Published "${page.title}" (${page.slug}) - ` +
+          `scheduled for ${page.scheduledPublishAt?.toISOString()}`
+        );
+      } catch (pageError) {
+        errors++;
+        details.push(
+          `✗ Failed to publish "${page.title}" (${page.slug}): ` +
+          `${pageError instanceof Error ? pageError.message : "Unknown error"}`
+        );
+        console.error(`Error publishing scheduled page ${page.slug}:`, pageError);
+      }
+    }
+
+    // Invalidate cache if any pages were published
+    if (processed > 0) {
+      revalidateMarketing();
+    }
+
+    return ok({ processed, errors, details });
+  } catch (error) {
+    console.error("Error processing scheduled publishes:", error);
+    return fail("Failed to process scheduled publishes");
+  }
+}
+
+/**
+ * Get all pages with scheduled publish dates (for calendar view)
+ */
+export async function getScheduledPages(options?: {
+  startDate?: Date;
+  endDate?: Date;
+}): Promise<ActionResult<MarketingPage[]>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const where: Record<string, unknown> = {
+      scheduledPublishAt: {
+        not: null,
+      },
+    };
+
+    // Add date range filter if provided
+    if (options?.startDate || options?.endDate) {
+      where.scheduledPublishAt = {
+        ...(options.startDate && { gte: options.startDate }),
+        ...(options.endDate && { lte: options.endDate }),
+      };
+    }
+
+    const pages = await prisma.marketingPage.findMany({
+      where,
+      orderBy: { scheduledPublishAt: "asc" },
+    });
+
+    return ok(pages);
+  } catch (error) {
+    console.error("Error fetching scheduled pages:", error);
+    return fail("Failed to fetch scheduled pages");
+  }
+}
+
+/**
+ * Get pages with draft content (for calendar/dashboard views)
+ */
+export async function getDraftPages(): Promise<ActionResult<MarketingPage[]>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const pages = await prisma.marketingPage.findMany({
+      where: { hasDraft: true },
+      orderBy: { lastEditedAt: "desc" },
+    });
+
+    return ok(pages);
+  } catch (error) {
+    console.error("Error fetching draft pages:", error);
+    return fail("Failed to fetch draft pages");
+  }
+}
+
+/**
+ * Get content calendar summary (counts by date)
+ */
+export async function getContentCalendarSummary(
+  startDate: Date,
+  endDate: Date
+): Promise<ActionResult<{
+  scheduled: { date: string; count: number; pages: { slug: string; title: string }[] }[];
+  drafts: { slug: string; title: string; lastEditedAt: Date | null }[];
+  published: { date: string; count: number }[];
+}>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    // Get scheduled pages in range
+    const scheduledPages = await prisma.marketingPage.findMany({
+      where: {
+        scheduledPublishAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      select: {
+        slug: true,
+        title: true,
+        scheduledPublishAt: true,
+      },
+      orderBy: { scheduledPublishAt: "asc" },
+    });
+
+    // Group scheduled pages by date
+    const scheduledByDate = new Map<string, { slug: string; title: string }[]>();
+    for (const page of scheduledPages) {
+      if (page.scheduledPublishAt) {
+        const dateKey = page.scheduledPublishAt.toISOString().split("T")[0];
+        if (!scheduledByDate.has(dateKey)) {
+          scheduledByDate.set(dateKey, []);
+        }
+        scheduledByDate.get(dateKey)!.push({ slug: page.slug, title: page.title });
+      }
+    }
+
+    const scheduled = Array.from(scheduledByDate.entries()).map(([date, pages]) => ({
+      date,
+      count: pages.length,
+      pages,
+    }));
+
+    // Get draft pages
+    const draftPages = await prisma.marketingPage.findMany({
+      where: { hasDraft: true },
+      select: {
+        slug: true,
+        title: true,
+        lastEditedAt: true,
+      },
+      orderBy: { lastEditedAt: "desc" },
+    });
+
+    const drafts = draftPages.map((p) => ({
+      slug: p.slug,
+      title: p.title,
+      lastEditedAt: p.lastEditedAt,
+    }));
+
+    // Get recently published pages in range
+    const publishedPages = await prisma.marketingPage.findMany({
+      where: {
+        status: "published",
+        publishedAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      select: {
+        publishedAt: true,
+      },
+    });
+
+    // Group published by date
+    const publishedByDate = new Map<string, number>();
+    for (const page of publishedPages) {
+      if (page.publishedAt) {
+        const dateKey = page.publishedAt.toISOString().split("T")[0];
+        publishedByDate.set(dateKey, (publishedByDate.get(dateKey) || 0) + 1);
+      }
+    }
+
+    const published = Array.from(publishedByDate.entries()).map(([date, count]) => ({
+      date,
+      count,
+    }));
+
+    return ok({ scheduled, drafts, published });
+  } catch (error) {
+    console.error("Error fetching content calendar summary:", error);
+    return fail("Failed to fetch content calendar summary");
+  }
+}

@@ -8,6 +8,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Marketing Studio Polish: Advanced Composition Tools** - Professional-grade editing features for the post composer:
+  - **Keyboard Shortcuts**:
+    - Delete/Backspace: Delete selected layer
+    - Escape: Deselect layer
+    - Cmd/Ctrl+Z: Undo layer changes
+    - Cmd/Ctrl+Shift+Z or Cmd/Ctrl+Y: Redo layer changes
+    - Cmd/Ctrl+D: Duplicate selected layer
+    - Cmd/Ctrl+C: Copy preview to clipboard
+    - Cmd/Ctrl+E: Export as PNG
+    - T: Add new text layer
+    - I: Add new image layer
+    - S: Add new shape layer
+    - Arrow keys: Move layer by 1px (10px with Shift)
+    - L: Toggle layers panel
+  - **Undo/Redo History**:
+    - Tracks up to 50 layer state changes
+    - Excludes intermediate drag/resize positions
+    - Toast notifications for undo/redo actions
+    - Ref-based flag prevents history effect re-triggering during undo/redo
+  - **Resize Handles**:
+    - 8 resize handles (corners + edges) on selected layers
+    - Corner handles: nw, ne, sw, se with diagonal cursors
+    - Edge handles: n, s, e, w with directional cursors
+    - Minimum size enforcement (20px)
+    - Shift key for aspect ratio lock on corner resizes
+  - **Snap-to-Grid & Alignment Guides**:
+    - Visual grid overlay (toggleable)
+    - Adjustable grid size (10-50px slider)
+    - Smart snap to canvas center
+    - Smart snap to other layer edges and centers
+    - Real-time alignment guide lines during drag
+    - Center guides visible during drag/resize operations
+    - Grid & Alignment settings panel in composer sidebar
+    - Snap threshold of 8px for smooth alignment
+
 - **Marketing CMS Phase 4: Version History & Inline Editing** - Track changes and edit content directly on pages:
   - **Schema: MarketingPageVersion Table**:
     - `pageId`, `slug`, `version` (auto-incrementing per page)
