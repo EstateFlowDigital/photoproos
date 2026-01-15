@@ -202,6 +202,33 @@ export async function publishMarketingPage(slug: string): Promise<ActionResult<M
   }
 }
 
+/**
+ * Delete a marketing page
+ */
+export async function deleteMarketingPage(slug: string): Promise<ActionResult<void>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    // Prevent deletion of critical pages
+    const protectedSlugs = ["homepage", "pricing", "about"];
+    if (protectedSlugs.includes(slug)) {
+      return fail("Cannot delete protected pages");
+    }
+
+    await prisma.marketingPage.delete({
+      where: { slug },
+    });
+
+    revalidateMarketing();
+    return success();
+  } catch (error) {
+    console.error("Error deleting marketing page:", error);
+    return fail("Failed to delete marketing page");
+  }
+}
+
 // ============================================================================
 // NAVIGATION
 // ============================================================================

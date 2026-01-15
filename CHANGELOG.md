@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Marketing CMS Page Editor Enhancements** - Comprehensive improvements to the CMS page editor:
+  - Visual field editor for structured content (hero sections, features, benefits, etc.)
+  - Toggle between Visual Editor and JSON Editor modes
+  - Unsaved changes detection with warning dialog before navigation
+  - Browser beforeunload protection for unsaved changes
+  - Keyboard shortcut (Cmd/Ctrl+S) for quick save
+  - Delete page functionality with type-to-confirm protection
+  - Protected pages (homepage, pricing, about) cannot be deleted
+  - Danger Zone section in Settings tab with clear warnings
+  - Collapsible sections for organized content editing
+  - Quick actions: View Live Page, Copy URL, Refresh
+  - Page information display with formatted dates
+- **Marketing CMS Navigation Editor** - New navigation management page:
+  - Edit navbar links with visual link editor
+  - Configure CTA button text and link
+  - Edit footer content structure via JSON editor
+  - Footer structure preview with example schema
+
 - **Social Media Marketing Studio - Phase 3: Brand Kit & Templates** - Complete brand management and template system:
   - Brand Kit page (`/super-admin/marketing-studio/brand-kit`) with:
     - Business identity management (name, tagline)
