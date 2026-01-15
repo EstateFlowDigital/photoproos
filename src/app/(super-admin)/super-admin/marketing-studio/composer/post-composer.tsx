@@ -214,7 +214,7 @@ export function PostComposer() {
       const template = getTemplateById(templateId);
       if (template) {
         setSelectedTemplate(template);
-        setContentType("template");
+
         // Apply template settings
         if (template.platforms.length > 0) {
           setSelectedPlatform(template.platforms[0]);
@@ -223,15 +223,127 @@ export function PostComposer() {
         if (template.captionTemplate) {
           setCaption(template.captionTemplate);
         }
-        // Apply template colors if it has a gradient background
-        if (template.layout.background === "gradient" && template.layout.gradientFrom) {
+
+        // Apply template background to canvas
+        if (template.layout.background === "gradient" && template.layout.gradientFrom && template.layout.gradientTo) {
+          setCanvasBgType("gradient");
+          setCanvasGradientFrom(template.layout.gradientFrom);
+          setCanvasGradientTo(template.layout.gradientTo);
+          setCanvasGradientAngle(template.layout.gradientAngle || 135);
           setPrimaryColor(template.layout.gradientFrom);
         } else if (template.layout.background === "solid" && template.layout.backgroundColor) {
+          setCanvasBgType("solid");
+          setCanvasBgColor(template.layout.backgroundColor);
           const bgColor = template.layout.backgroundColor;
           if (bgColor && bgColor !== "#0a0a0a" && bgColor !== "#ffffff") {
             setPrimaryColor(bgColor);
           }
         }
+
+        // Convert template elements to editable layers
+        const platformConfig = PLATFORMS[template.platforms[0] || "instagram"];
+        const formatDimensions = platformConfig?.dimensions?.[template.format];
+        const canvasWidth = formatDimensions?.width || 540;
+        const canvasHeight = formatDimensions?.height || 540;
+
+        const templateLayers: Layer[] = template.layout.elements.map((element, idx) => {
+          const baseLayer = {
+            id: `template-${idx}-${Date.now()}`,
+            visible: true,
+            locked: false,
+            opacity: 100,
+            // Convert percentage positions to pixels
+            position: {
+              x: (element.position.x / 100) * canvasWidth,
+              y: (element.position.y / 100) * canvasHeight
+            },
+            // Convert percentage sizes to pixels
+            size: {
+              width: (element.size.width / 100) * canvasWidth,
+              height: (element.size.height / 100) * canvasHeight
+            },
+            rotation: 0,
+            flipX: false,
+            flipY: false,
+            zIndex: idx,
+          };
+
+          if (element.type === "text") {
+            const textLayer: TextLayer = {
+              ...baseLayer,
+              type: "text",
+              name: element.content || `Text ${idx + 1}`,
+              content: element.content || "Your text here",
+              fontFamily: "Inter",
+              fontSize: element.size.height > 15 ? 32 : element.size.height > 10 ? 24 : 16,
+              fontWeight: element.size.height > 12 ? 700 : 500,
+              color: "#ffffff",
+              textAlign: "center",
+              lineHeight: 1.4,
+            };
+            return textLayer;
+          }
+
+          if (element.type === "image") {
+            const imageLayer: ImageLayer = {
+              ...baseLayer,
+              type: "image",
+              name: `Image ${idx + 1}`,
+              src: "",
+              objectFit: "cover",
+            };
+            return imageLayer;
+          }
+
+          if (element.type === "shape") {
+            const shapeLayer: ShapeLayer = {
+              ...baseLayer,
+              type: "shape",
+              name: `Shape ${idx + 1}`,
+              shapeType: "rectangle",
+              fill: "#ffffff",
+              stroke: "transparent",
+              strokeWidth: 0,
+              borderRadius: 0,
+            };
+            return shapeLayer;
+          }
+
+          if (element.type === "logo") {
+            const logoTextLayer: TextLayer = {
+              ...baseLayer,
+              type: "text",
+              name: "Logo",
+              content: "PhotoProOS",
+              fontFamily: "Inter",
+              fontSize: 16,
+              fontWeight: 600,
+              color: "rgba(255,255,255,0.8)",
+              textAlign: "center",
+              lineHeight: 1.2,
+            };
+            return logoTextLayer;
+          }
+
+          // Default to shape for unknown types
+          const defaultLayer: ShapeLayer = {
+            ...baseLayer,
+            type: "shape",
+            name: `Element ${idx + 1}`,
+            shapeType: "rectangle",
+            fill: "#3b82f6",
+            stroke: "transparent",
+            strokeWidth: 0,
+            borderRadius: 0,
+          };
+          return defaultLayer;
+        });
+
+        // Set layers and switch to layers content type for editing
+        setLayers(templateLayers);
+        setContentType("layers");
+        setShowLayersPanel(true);
+        toast.success(`Loaded "${template.name}" template with ${templateLayers.length} editable layers`);
       }
     }
   }, [searchParams]);

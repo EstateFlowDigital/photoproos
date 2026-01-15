@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Marketing Studio: Template to Editable Layers** - Templates now convert to fully editable layers:
+  - Clicking a template in the Template Library creates editable layer objects
+  - Template elements (text, images, shapes, logos) become draggable/resizable layers
+  - Template background applied to canvas (solid or gradient)
+  - Caption template pre-filled in editor
+  - Platform and format automatically selected
+  - Layers panel opens automatically for editing
+  - Toast notification confirms template loaded with layer count
+
+- **Marketing Studio: AI Caption Generator with OpenAI** - Real AI-powered captions:
+  - OpenAI GPT-4o-mini integration for intelligent caption generation
+  - Platform-specific prompts (Instagram, LinkedIn, Twitter, Facebook, TikTok, Pinterest)
+  - Tone-aware generation (professional, casual, inspirational, educational, promotional, storytelling)
+  - Length customization (short, medium, long)
+  - Industry-specific context for photography businesses
+  - Automatic hashtag extraction from AI responses
+  - Graceful fallback to template-based captions when API unavailable
+  - `OPENAI_API_KEY` environment variable configuration
+  - `generatedBy` field indicates "ai" or "template" source
+  - `isAIAvailable()` function to check API configuration
+
 - **Marketing Studio Polish: Advanced Features** - Layer composition enhancements:
   - **Layer Locking UI**:
     - Visual lock badge on locked layers in the canvas
@@ -50,6 +71,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - TypeScript interfaces documentation
     - Usage examples and code snippets
     - Accessibility and browser support notes
+
+- **Marketing CMS Phase 10: Webhooks** - External integrations via webhooks:
+  - **CMSWebhook & CMSWebhookLog Tables** (Prisma schema):
+    - `CMSWebhook` model for webhook configuration (name, URL, secret, events, headers)
+    - `CMSWebhookLog` model for delivery tracking (request/response data, status, duration)
+    - `CMSWebhookEvent` enum with 16 event types (page, FAQ, blog, approval events)
+    - `WebhookLogStatus` enum (pending, success, failed, retrying)
+    - HMAC-SHA256 signature verification for security
+    - Cascade delete for logs when webhook is removed
+  - **Webhook Dispatcher Utility** (`src/lib/cms/webhooks.ts`):
+    - `dispatchWebhooks()` - Send webhooks to all matching subscribers
+    - `retryWebhook()` - Retry failed deliveries (max 3 retries)
+    - `testWebhook()` - Test webhook endpoint with sample payload
+    - `verifyWebhookSignature()` - Validate incoming webhook signatures
+    - `getWebhookStats()` - Get delivery statistics (success/failure counts, recent logs)
+    - `cleanupWebhookLogs()` - Remove logs older than 30 days
+    - 30-second timeout for HTTP requests
+    - Automatic logging of all delivery attempts
+  - **Webhook Server Actions** (`src/lib/actions/cms-webhooks.ts`):
+    - Full CRUD operations for webhooks (create, read, update, delete)
+    - `regenerateWebhookSecret()` - Generate new signing secret
+    - `toggleWebhookActive()` - Enable/disable webhooks
+    - `getWebhookLogs()` - Paginated log retrieval with filters
+    - `retryWebhookDelivery()` - Manual retry from UI
+    - `testWebhookDelivery()` - Trigger test delivery
+    - `getWebhookStatistics()` - Dashboard statistics
+    - `WEBHOOK_EVENTS` constant with event metadata
+  - **Webhook Management UI** (`src/components/cms/webhook-manager.tsx`):
+    - `WebhookManager` - Main management interface
+    - `WebhookCard` - Individual webhook display with actions
+    - `WebhookForm` - Create/edit form with event selection
+    - `WebhookBadge` - Compact webhook count indicator
+    - Secret visibility toggle with copy button
+    - Test webhook button with result feedback
+    - Enable/disable toggle
+    - Event category grouping (Pages, FAQs, Blog, Workflow)
+  - **Webhook Logs Viewer** (`src/components/cms/webhook-logs-viewer.tsx`):
+    - `WebhookLogsViewer` - Full log viewer with filtering
+    - `WebhookLogsCompact` - Compact recent logs for cards
+    - `LogDetailModal` - Full delivery details with JSON viewer
+    - Status/event filtering
+    - Pagination with page navigation
+    - Retry button for failed deliveries
+    - Copy buttons for request/response data
+    - Response status badges with color coding
+  - **CMS Action Integration**:
+    - `createMarketingPage()` → `page_created` webhook
+    - `updateMarketingPage()` → `page_updated` or `page_published` webhook
+    - `publishMarketingPage()` → `page_published` webhook
+    - `deleteMarketingPage()` → `page_deleted` webhook
+    - `saveDraft()` → `draft_saved` webhook
+    - `publishDraft()` → `page_published` webhook
+    - `schedulePublish()` → `page_scheduled` webhook
+    - `restoreVersion()` → `version_restored` webhook
+    - `createFAQ()` → `faq_created` webhook
+    - `updateFAQ()` → `faq_updated` webhook
+    - `deleteFAQ()` → `faq_deleted` webhook
+    - `respondToApproval()` → `content_approved` or `content_rejected` webhook
 
 - **Marketing CMS Phase 9: AI Content Generation** - AI-powered content suggestions:
   - **AI Generation API** (`/api/cms/ai/generate/route.ts`):
@@ -565,6 +644,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Milestones (2 templates)
 
 ### Fixed
+- **CMS Webhooks Build Errors** - Fixed module resolution and server action issues:
+  - Changed import path from `@/lib/actions/result` to `@/lib/types/action-result` in `cms-webhooks.ts`
+  - Made `verifyWebhookSignature` function async to comply with server action requirements
+  - Fixed "Server Actions must be async functions" error in `webhooks.ts`
+
 - **Marketing Studio Composer - Template Loading** - Templates now properly load when accessed via URL params (`?template=template-id`):
   - Platform, format, and caption apply from template configuration
   - Template colors apply to canvas background

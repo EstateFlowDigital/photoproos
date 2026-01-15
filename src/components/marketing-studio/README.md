@@ -74,7 +74,13 @@ Full-featured caption editing with:
 - Hashtag counter and suggestions
 - Emoji picker
 - @mention formatting
-- AI caption generator (tone, length, hashtags)
+- **AI Caption Generator**:
+  - OpenAI GPT-4o-mini integration (requires `OPENAI_API_KEY`)
+  - Platform-specific prompts for each social network
+  - 6 tone options: professional, casual, inspirational, educational, promotional, storytelling
+  - 3 length options: short, medium, long
+  - Automatic hashtag extraction and industry-specific hashtag suggestions
+  - Falls back to template-based generation when API unavailable
 
 ### Templates
 

@@ -3,9 +3,8 @@
 /**
  * AI Caption Generator for Marketing Studio
  *
- * Generates social media captions with customizable tone and style.
- * This implementation uses pre-built templates and can be extended
- * to use OpenAI or other AI providers in the future.
+ * Generates social media captions using OpenAI API with customizable tone and style.
+ * Falls back to pre-built templates when API is unavailable.
  */
 
 import type { PlatformId } from "@/components/marketing-studio/types";
@@ -39,10 +38,139 @@ export interface GeneratedCaption {
   text: string;
   hashtags: string[];
   tone: CaptionTone;
+  generatedBy: "ai" | "template";
 }
 
 // ============================================================================
-// CAPTION TEMPLATES BY TONE AND INDUSTRY
+// OPENAI INTEGRATION
+// ============================================================================
+
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
+interface OpenAIMessage {
+  role: "system" | "user" | "assistant";
+  content: string;
+}
+
+interface OpenAIResponse {
+  id: string;
+  object: string;
+  created: number;
+  model: string;
+  choices: {
+    index: number;
+    message: {
+      role: string;
+      content: string;
+    };
+    finish_reason: string;
+  }[];
+  usage?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+}
+
+async function callOpenAI(messages: OpenAIMessage[]): Promise<string | null> {
+  if (!OPENAI_API_KEY) {
+    console.log("OpenAI API key not configured, using template fallback");
+    return null;
+  }
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages,
+        max_tokens: 500,
+        temperature: 0.8,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("OpenAI API error:", response.status, response.statusText);
+      return null;
+    }
+
+    const data: OpenAIResponse = await response.json();
+    return data.choices[0]?.message?.content || null;
+  } catch (error) {
+    console.error("OpenAI API call failed:", error);
+    return null;
+  }
+}
+
+function buildPrompt(options: CaptionGeneratorOptions): OpenAIMessage[] {
+  const {
+    platform,
+    industry,
+    tone,
+    length,
+    topic,
+    includeHashtags,
+    includeEmoji,
+    includeCallToAction,
+  } = options;
+
+  const lengthGuide =
+    length === "short"
+      ? "Keep it under 100 characters."
+      : length === "long"
+        ? "Write a detailed caption of 200-300 characters."
+        : "Write a medium-length caption of 100-200 characters.";
+
+  const platformGuide = {
+    instagram: "This is for Instagram. Make it engaging and visually descriptive.",
+    linkedin: "This is for LinkedIn. Keep it professional and business-focused.",
+    twitter: "This is for Twitter/X. Be concise and punchy (under 280 characters).",
+    facebook: "This is for Facebook. Be conversational and community-focused.",
+    tiktok: "This is for TikTok. Be trendy, fun, and use current lingo.",
+    pinterest: "This is for Pinterest. Focus on inspiration and actionable ideas.",
+  };
+
+  const toneGuide = {
+    professional:
+      "Use a professional, polished tone. Focus on expertise and credibility.",
+    casual:
+      "Use a casual, friendly tone. Be approachable and relatable.",
+    inspirational:
+      "Use an inspirational, uplifting tone. Motivate and encourage.",
+    educational:
+      "Use an educational, informative tone. Share knowledge and tips.",
+    promotional:
+      "Use a promotional, persuasive tone. Include a clear value proposition.",
+    storytelling:
+      "Use a storytelling tone. Create an emotional narrative that connects.",
+  };
+
+  const systemPrompt = `You are a social media caption writer for a professional photography business.
+Your job is to write engaging captions for ${industry.replace("_", " ")} photography content.
+${platformGuide[platform] || ""}
+${toneGuide[tone]}
+${lengthGuide}
+${includeEmoji ? "Include relevant emojis naturally in the text." : "Do not use emojis."}
+${includeHashtags ? "End with 5-8 relevant hashtags on a new line." : "Do not include hashtags."}
+${includeCallToAction ? "Include a clear call-to-action at the end." : ""}
+Write only the caption, nothing else.`;
+
+  const userPrompt = topic
+    ? `Write a caption about: ${topic}`
+    : `Write a caption for a new ${industry.replace("_", " ")} photography post.`;
+
+  return [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userPrompt },
+  ];
+}
+
+// ============================================================================
+// CAPTION TEMPLATES BY TONE AND INDUSTRY (FALLBACK)
 // ============================================================================
 
 const CAPTION_TEMPLATES: Record<CaptionTone, Record<string, string[]>> = {
@@ -80,7 +208,7 @@ const CAPTION_TEMPLATES: Record<CaptionTone, Record<string, string[]>> = {
   },
   casual: {
     real_estate: [
-      "Just wrapped up this beautiful listing and had to share! Can you imagine waking up to these views every day? 🏡",
+      "Just wrapped up this beautiful listing and had to share! Can you imagine waking up to these views every day?",
       "This home has all the vibes! From the kitchen to the backyard, every corner is just *chef's kiss*. Who else is dreaming of a space like this?",
       "Behind the scenes of today's shoot! Love when a property has so much natural light to work with. The photos practically take themselves!",
     ],
@@ -100,7 +228,7 @@ const CAPTION_TEMPLATES: Record<CaptionTone, Record<string, string[]>> = {
       "That moment when you nail the shot and see the excitement in your client's eyes... priceless! Here's a sneak peek!",
     ],
     food: [
-      "Making food look as good as it tastes! This dish was almost too pretty to eat... almost. 🍽️",
+      "Making food look as good as it tastes! This dish was almost too pretty to eat... almost.",
       "Food photography day = best day! Got to smell amazing food all day AND take cool photos. Win-win!",
       "When the food is this photogenic, my job becomes so easy! Just look at those colors!",
     ],
@@ -320,42 +448,15 @@ const INDUSTRY_HASHTAGS: Record<string, string[]> = {
 };
 
 // ============================================================================
-// CALL TO ACTION TEMPLATES
+// HELPER FUNCTIONS
 // ============================================================================
 
-const CALL_TO_ACTIONS = [
-  "Link in bio to learn more!",
-  "DM us to book your session!",
-  "What do you think? Let us know in the comments!",
-  "Double tap if you agree!",
-  "Save this for later!",
-  "Share with someone who needs to see this!",
-  "Book your session today—link in bio!",
-  "Follow for more content like this!",
-  "Tag someone who would love this!",
-  "Drop a comment below!",
-];
+function extractHashtags(text: string): string[] {
+  const hashtagRegex = /#[\w]+/g;
+  return text.match(hashtagRegex) || [];
+}
 
-// ============================================================================
-// EMOJI SETS BY TONE
-// ============================================================================
-
-const TONE_EMOJIS: Record<CaptionTone, string[]> = {
-  professional: ["📸", "✨", "🎯", "💼", "🏆"],
-  casual: ["📷", "✨", "😍", "🔥", "💕", "🙌", "⭐"],
-  inspirational: ["✨", "🌟", "💫", "🙏", "❤️", "🌅"],
-  educational: ["📚", "💡", "🎓", "📝", "👆", "🔍"],
-  promotional: ["🎉", "⭐", "🔥", "📣", "💥", "🎁"],
-  storytelling: ["📖", "✨", "💭", "🌟", "❤️", "🎬"],
-};
-
-// ============================================================================
-// CAPTION GENERATION FUNCTION
-// ============================================================================
-
-export async function generateCaption(
-  options: CaptionGeneratorOptions
-): Promise<GeneratedCaption> {
+function generateFallbackCaption(options: CaptionGeneratorOptions): GeneratedCaption {
   const {
     tone,
     industry,
@@ -365,24 +466,21 @@ export async function generateCaption(
     includeCallToAction = false,
   } = options;
 
-  // Simulate API delay for realistic UX
-  await new Promise((resolve) => setTimeout(resolve, 800 + Math.random() * 700));
-
   // Get templates for the selected tone and industry
   const industryKey = industry.toLowerCase().replace(/\s+/g, "_");
   const templates =
-    CAPTION_TEMPLATES[tone]?.[industryKey] || CAPTION_TEMPLATES[tone]?.commercial || [];
+    CAPTION_TEMPLATES[tone]?.[industryKey] ||
+    CAPTION_TEMPLATES[tone]?.commercial ||
+    [];
 
   // Select a random template
   let caption = templates[Math.floor(Math.random() * templates.length)] || "";
 
   // Adjust length
   if (length === "short" && caption.length > 150) {
-    // Truncate to first sentence
     const firstSentence = caption.split(/[.!?]/)[0];
     caption = firstSentence ? firstSentence + "." : caption.substring(0, 140) + "...";
   } else if (length === "long") {
-    // Add more context
     const additionalContext = templates[Math.floor(Math.random() * templates.length)];
     if (additionalContext && additionalContext !== caption) {
       caption = caption + "\n\n" + additionalContext;
@@ -390,6 +488,15 @@ export async function generateCaption(
   }
 
   // Add emoji if enabled
+  const TONE_EMOJIS: Record<CaptionTone, string[]> = {
+    professional: ["📸", "✨", "🎯", "💼", "🏆"],
+    casual: ["📷", "✨", "😍", "🔥", "💕", "🙌", "⭐"],
+    inspirational: ["✨", "🌟", "💫", "🙏", "❤️", "🌅"],
+    educational: ["📚", "💡", "🎓", "📝", "👆", "🔍"],
+    promotional: ["🎉", "⭐", "🔥", "📣", "💥", "🎁"],
+    storytelling: ["📖", "✨", "💭", "🌟", "❤️", "🎬"],
+  };
+
   if (includeEmoji) {
     const emojis = TONE_EMOJIS[tone] || TONE_EMOJIS.casual;
     const selectedEmoji = emojis[Math.floor(Math.random() * emojis.length)];
@@ -397,6 +504,19 @@ export async function generateCaption(
   }
 
   // Add call to action if enabled
+  const CALL_TO_ACTIONS = [
+    "Link in bio to learn more!",
+    "DM us to book your session!",
+    "What do you think? Let us know in the comments!",
+    "Double tap if you agree!",
+    "Save this for later!",
+    "Share with someone who needs to see this!",
+    "Book your session today—link in bio!",
+    "Follow for more content like this!",
+    "Tag someone who would love this!",
+    "Drop a comment below!",
+  ];
+
   if (includeCallToAction) {
     const cta = CALL_TO_ACTIONS[Math.floor(Math.random() * CALL_TO_ACTIONS.length)];
     caption = caption + "\n\n" + cta;
@@ -406,11 +526,8 @@ export async function generateCaption(
   let hashtags: string[] = [];
   if (includeHashtags) {
     const industryTags = INDUSTRY_HASHTAGS[industryKey] || INDUSTRY_HASHTAGS.commercial;
-    // Select 5-8 random hashtags
     const shuffled = [...industryTags].sort(() => Math.random() - 0.5);
     hashtags = shuffled.slice(0, 5 + Math.floor(Math.random() * 4));
-
-    // Add hashtags to caption
     caption = caption + "\n\n" + hashtags.join(" ");
   }
 
@@ -418,7 +535,37 @@ export async function generateCaption(
     text: caption,
     hashtags,
     tone,
+    generatedBy: "template",
   };
+}
+
+// ============================================================================
+// MAIN CAPTION GENERATION FUNCTION
+// ============================================================================
+
+export async function generateCaption(
+  options: CaptionGeneratorOptions
+): Promise<GeneratedCaption> {
+  const { tone, includeHashtags = true } = options;
+
+  // Try OpenAI first
+  const messages = buildPrompt(options);
+  const aiResponse = await callOpenAI(messages);
+
+  if (aiResponse) {
+    // Parse hashtags from AI response
+    const hashtags = includeHashtags ? extractHashtags(aiResponse) : [];
+
+    return {
+      text: aiResponse,
+      hashtags,
+      tone,
+      generatedBy: "ai",
+    };
+  }
+
+  // Fallback to template-based generation
+  return generateFallbackCaption(options);
 }
 
 // ============================================================================
@@ -437,4 +584,12 @@ export async function generateCaptionVariations(
   }
 
   return variations;
+}
+
+// ============================================================================
+// CHECK AI AVAILABILITY
+// ============================================================================
+
+export async function isAIAvailable(): Promise<boolean> {
+  return !!OPENAI_API_KEY;
 }

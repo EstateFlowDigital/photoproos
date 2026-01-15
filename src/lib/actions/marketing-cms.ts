@@ -5,6 +5,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import { isSuperAdmin } from "@/lib/auth/super-admin";
 import { currentUser } from "@clerk/nextjs/server";
+import { dispatchWebhooks } from "@/lib/cms/webhooks";
 import type {
   MarketingPage,
   MarketingPageVersion,
@@ -127,6 +128,16 @@ export async function createMarketingPage(data: {
       },
     });
 
+    // Dispatch webhook
+    await dispatchWebhooks({
+      event: "page_created",
+      entityType: "MarketingPage",
+      entityId: page.id,
+      entityName: page.title,
+      actorId: user.id,
+      actorName: user.firstName || user.emailAddresses?.[0]?.emailAddress,
+    });
+
     revalidateMarketing();
     return ok(page);
   } catch (error) {
@@ -237,6 +248,16 @@ export async function updateMarketingPage(
       },
     });
 
+    // Dispatch webhook
+    await dispatchWebhooks({
+      event: validated.status === "published" ? "page_published" : "page_updated",
+      entityType: "MarketingPage",
+      entityId: page.id,
+      entityName: page.title,
+      actorId: user.id,
+      actorName: user.firstName || user.emailAddresses?.[0]?.emailAddress,
+    });
+
     revalidateMarketing();
     return ok(page);
   } catch (error) {
@@ -268,6 +289,16 @@ export async function publishMarketingPage(slug: string): Promise<ActionResult<M
       },
     });
 
+    // Dispatch webhook
+    await dispatchWebhooks({
+      event: "page_published",
+      entityType: "MarketingPage",
+      entityId: page.id,
+      entityName: page.title,
+      actorId: user.id,
+      actorName: user.firstName || user.emailAddresses?.[0]?.emailAddress,
+    });
+
     revalidateMarketing();
     return ok(page);
   } catch (error) {
@@ -285,15 +316,35 @@ export async function deleteMarketingPage(slug: string): Promise<ActionResult<vo
       return fail("Unauthorized");
     }
 
+    const user = await currentUser();
+
     // Prevent deletion of critical pages
     const protectedSlugs = ["homepage", "pricing", "about"];
     if (protectedSlugs.includes(slug)) {
       return fail("Cannot delete protected pages");
     }
 
+    // Get page info before deletion for webhook
+    const page = await prisma.marketingPage.findUnique({
+      where: { slug },
+      select: { id: true, title: true },
+    });
+
     await prisma.marketingPage.delete({
       where: { slug },
     });
+
+    // Dispatch webhook
+    if (page) {
+      await dispatchWebhooks({
+        event: "page_deleted",
+        entityType: "MarketingPage",
+        entityId: page.id,
+        entityName: page.title,
+        actorId: user?.id,
+        actorName: user?.firstName || user?.emailAddresses?.[0]?.emailAddress,
+      });
+    }
 
     revalidateMarketing();
     return success();
@@ -334,6 +385,16 @@ export async function saveDraft(
         lastEditedAt: new Date(),
         updatedByUserId: user.id,
       },
+    });
+
+    // Dispatch webhook
+    await dispatchWebhooks({
+      event: "draft_saved",
+      entityType: "MarketingPage",
+      entityId: page.id,
+      entityName: page.title,
+      actorId: user.id,
+      actorName: user.firstName || user.emailAddresses?.[0]?.emailAddress,
     });
 
     // Don't invalidate cache - draft changes shouldn't affect live site
@@ -381,6 +442,16 @@ export async function publishDraft(slug: string): Promise<ActionResult<Marketing
         lastEditedAt: new Date(),
         updatedByUserId: user.id,
       },
+    });
+
+    // Dispatch webhook
+    await dispatchWebhooks({
+      event: "page_published",
+      entityType: "MarketingPage",
+      entityId: page.id,
+      entityName: page.title,
+      actorId: user.id,
+      actorName: user.firstName || user.emailAddresses?.[0]?.emailAddress,
     });
 
     revalidateMarketing();
@@ -443,6 +514,17 @@ export async function schedulePublish(
         scheduledPublishAt,
         scheduledBy: user.id,
       },
+    });
+
+    // Dispatch webhook
+    await dispatchWebhooks({
+      event: "page_scheduled",
+      entityType: "MarketingPage",
+      entityId: page.id,
+      entityName: page.title,
+      changes: { scheduledPublishAt: scheduledPublishAt.toISOString() },
+      actorId: user.id,
+      actorName: user.firstName || user.emailAddresses?.[0]?.emailAddress,
     });
 
     return ok(page);
@@ -626,6 +708,17 @@ export async function restoreVersion(
       user.fullName || user.firstName || null,
       `Restored from version ${versionToRestore.version}`
     );
+
+    // Dispatch webhook
+    await dispatchWebhooks({
+      event: "version_restored",
+      entityType: "MarketingPage",
+      entityId: restoredPage.id,
+      entityName: restoredPage.title,
+      changes: { restoredFromVersion: versionToRestore.version },
+      actorId: user.id,
+      actorName: user.firstName || user.emailAddresses?.[0]?.emailAddress,
+    });
 
     revalidateMarketing();
     return ok(restoredPage);
@@ -1280,6 +1373,7 @@ export async function createFAQ(input: CreateFAQInput): Promise<ActionResult<FAQ
       return fail("Unauthorized");
     }
 
+    const user = await currentUser();
     const validated = createFAQSchema.parse(input);
 
     // Get max sort order in category
@@ -1293,6 +1387,16 @@ export async function createFAQ(input: CreateFAQInput): Promise<ActionResult<FAQ
         ...validated,
         sortOrder: validated.sortOrder ?? (maxOrder._max.sortOrder ?? 0) + 1,
       },
+    });
+
+    // Dispatch webhook
+    await dispatchWebhooks({
+      event: "faq_created",
+      entityType: "FAQ",
+      entityId: faq.id,
+      entityName: faq.question.substring(0, 50),
+      actorId: user?.id,
+      actorName: user?.firstName || user?.emailAddresses?.[0]?.emailAddress,
     });
 
     revalidateMarketing();
@@ -1312,12 +1416,23 @@ export async function updateFAQ(input: UpdateFAQInput): Promise<ActionResult<FAQ
       return fail("Unauthorized");
     }
 
+    const user = await currentUser();
     const validated = updateFAQSchema.parse(input);
     const { id, ...data } = validated;
 
     const faq = await prisma.fAQ.update({
       where: { id },
       data,
+    });
+
+    // Dispatch webhook
+    await dispatchWebhooks({
+      event: "faq_updated",
+      entityType: "FAQ",
+      entityId: faq.id,
+      entityName: faq.question.substring(0, 50),
+      actorId: user?.id,
+      actorName: user?.firstName || user?.emailAddresses?.[0]?.emailAddress,
     });
 
     revalidateMarketing();
@@ -1337,9 +1452,29 @@ export async function deleteFAQ(id: string): Promise<ActionResult<void>> {
       return fail("Unauthorized");
     }
 
+    const user = await currentUser();
+
+    // Get FAQ info before deletion for webhook
+    const faq = await prisma.fAQ.findUnique({
+      where: { id },
+      select: { id: true, question: true },
+    });
+
     await prisma.fAQ.delete({
       where: { id },
     });
+
+    // Dispatch webhook
+    if (faq) {
+      await dispatchWebhooks({
+        event: "faq_deleted",
+        entityType: "FAQ",
+        entityId: faq.id,
+        entityName: faq.question.substring(0, 50),
+        actorId: user?.id,
+        actorName: user?.firstName || user?.emailAddresses?.[0]?.emailAddress,
+      });
+    }
 
     revalidateMarketing();
     return success();
@@ -2106,6 +2241,19 @@ export async function respondToApproval(params: {
         resolutionNote: params.comment,
       },
     });
+
+    // Dispatch webhook when workflow is complete (approved or rejected)
+    if (newStatus === "approved" || newStatus === "rejected") {
+      await dispatchWebhooks({
+        event: newStatus === "approved" ? "content_approved" : "content_rejected",
+        entityType: approval.entityType,
+        entityId: approval.entityId,
+        entityName: approval.entityTitle || undefined,
+        changes: { comment: params.comment },
+        actorId: user.id,
+        actorName: userName,
+      });
+    }
 
     return ok(updated);
   } catch (error) {
