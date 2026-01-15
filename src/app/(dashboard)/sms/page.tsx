@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "SMS Messages | PhotoProOS",
+  description: "View and send SMS messages to clients.",
+};
+
 export const dynamic = "force-dynamic";
 import { ComingSoonPage } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";

@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Templates | PhotoProOS",
+  description: "Manage email and document templates.",
+};
+
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";

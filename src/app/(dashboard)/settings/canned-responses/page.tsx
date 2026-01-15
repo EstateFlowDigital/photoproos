@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Canned Responses | PhotoProOS",
+  description: "Create quick response templates for messages.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { PageHeader, Breadcrumb } from "@/components/dashboard";

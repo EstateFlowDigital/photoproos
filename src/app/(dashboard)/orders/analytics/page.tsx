@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Order Analytics | PhotoProOS",
+  description: "View order trends and product performance.",
+};
+
 export const dynamic = "force-dynamic";
 import { PageHeader, PageContextNav } from "@/components/dashboard";
 import { getSqftAnalytics, getOrderStats } from "@/lib/actions/orders";

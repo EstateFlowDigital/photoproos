@@ -1,8 +1,14 @@
+import { Metadata } from "next";
 import { getBookingForms } from "@/lib/actions/booking-forms";
 import { getServices } from "@/lib/actions/services";
 import { requireOrganizationId } from "@/lib/actions/auth-helper";
 import { prisma } from "@/lib/db";
 import { BookingFormsPageClient } from "./booking-forms-page-client";
+
+export const metadata: Metadata = {
+  title: "Booking Forms | PhotoProOS",
+  description: "Manage custom booking forms for clients.",
+};
 
 export const dynamic = "force-dynamic";
 

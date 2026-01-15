@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Service Bundles | PhotoProOS",
+  description: "Create bundled service packages for clients.",
+};
+
 export const dynamic = "force-dynamic";
 import { PageHeader, PageContextNav } from "@/components/dashboard";
 import Link from "next/link";

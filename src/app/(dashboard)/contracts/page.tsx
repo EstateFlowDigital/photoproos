@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Contracts | PhotoProOS",
+  description: "Create, send, and manage photography contracts with e-signature support.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";

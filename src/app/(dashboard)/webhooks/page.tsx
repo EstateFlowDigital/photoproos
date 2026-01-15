@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Webhooks | PhotoProOS",
+  description: "Configure webhook endpoints for custom integrations.",
+};
+
 export const dynamic = "force-dynamic";
 import { ComingSoonPage } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";

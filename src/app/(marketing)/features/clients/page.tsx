@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getFeaturesContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Client Management | PhotoProOS Features",
-  description: "Keep all your client information organized in one place. Track leads, manage bookings, and nurture relationships.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getFeaturesContent("clients");
+  return {
+    title: meta.title || "Client Management | PhotoProOS Features",
+    description: meta.description || "Keep all your client information organized in one place. Track leads, manage bookings, and nurture relationships.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const features = [
   {
@@ -39,7 +45,23 @@ const features = [
   },
 ];
 
-export default function ClientsFeaturePage() {
+// Type for CMS hero content
+interface HeroContent {
+  badge?: string;
+  headline?: string;
+  subheadline?: string;
+}
+
+export default async function ClientsFeaturePage() {
+  // Fetch CMS content
+  const { content } = await getFeaturesContent("clients");
+
+  // Extract hero content from CMS with fallbacks
+  const heroContent: HeroContent = (content as { hero?: HeroContent })?.hero || {};
+  const heroBadge = heroContent.badge || "Built-in CRM";
+  const heroHeadline = heroContent.headline || "Client Management";
+  const heroSubheadline = heroContent.subheadline || "Keep all your client information organized in one place. Track leads, manage bookings, and nurture relationships.";
+
   return (
     <main className="relative min-h-screen bg-background" data-element="features-clients-page">
       {/* Hero */}
@@ -55,13 +77,13 @@ export default function ClientsFeaturePage() {
         <div className="relative z-10 mx-auto max-w-[1512px] px-6 py-20 lg:px-[124px] lg:py-28">
           <div className="mx-auto max-w-3xl text-center">
             <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--ai)]/20 bg-[var(--ai)]/5 px-4 py-1.5 text-sm font-medium text-[var(--ai)]">
-              Built-in CRM
+              {heroBadge}
             </span>
             <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-              Client Management
+              {heroHeadline}
             </h1>
             <p className="mb-8 text-lg text-foreground-secondary">
-              Keep all your client information organized in one place. Track leads, manage bookings, and nurture relationships.
+              {heroSubheadline}
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link

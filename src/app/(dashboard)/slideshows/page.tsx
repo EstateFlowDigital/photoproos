@@ -1,8 +1,15 @@
-export const dynamic = "force-dynamic";
+import { Metadata } from "next";
 import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import { SlideshowsClient } from "./slideshows-client";
+
+export const metadata: Metadata = {
+  title: "Slideshows | PhotoProOS",
+  description: "Create beautiful photo slideshows for clients.",
+};
+
+export const dynamic = "force-dynamic";
 
 export default async function SlideshowsPage() {
   const auth = await getAuthContext();

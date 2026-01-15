@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Media Settings | PhotoProOS",
+  description: "Configure media upload and processing preferences.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { PageHeader } from "@/components/dashboard";

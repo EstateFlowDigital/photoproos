@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Branding Settings | PhotoProOS",
+  description: "Customize your brand colors, logos, and visual identity.",
+};
+
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";

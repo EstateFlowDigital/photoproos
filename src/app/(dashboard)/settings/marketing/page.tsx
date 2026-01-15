@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Marketing Settings | PhotoProOS",
+  description: "Configure marketing automation and campaign settings.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { PageHeader } from "@/components/dashboard";

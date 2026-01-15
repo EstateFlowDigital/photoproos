@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getFeaturesContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Social Media Manager | Coming Soon | PhotoProOS",
-  description: "Schedule, publish, and analyze your social media content. Build your photography brand across Instagram, Facebook, Pinterest, and more.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getFeaturesContent("social-media");
+  return {
+    title: meta.title || "Social Media Manager | Coming Soon | PhotoProOS",
+    description: meta.description || "Schedule, publish, and analyze your social media content. Build your photography brand across Instagram, Facebook, Pinterest, and more.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const plannedFeatures = [
   {
@@ -136,7 +142,23 @@ const faqs = [
   },
 ];
 
-export default function SocialMediaFeaturePage() {
+// Type for CMS hero content
+interface HeroContent {
+  badge?: string;
+  headline?: string;
+  subheadline?: string;
+}
+
+export default async function SocialMediaFeaturePage() {
+  // Fetch CMS content
+  const { content } = await getFeaturesContent("social-media");
+
+  // Extract hero content from CMS with fallbacks
+  const heroContent: HeroContent = (content as { hero?: HeroContent })?.hero || {};
+  const heroBadge = heroContent.badge || "Coming Q3 2026";
+  const heroHeadline = heroContent.headline || "Social Media Manager";
+  const heroSubheadline = heroContent.subheadline || "Schedule, publish, and analyze your social media content. Build your photography brand across Instagram, Facebook, Pinterest, and more.";
+
   return (
     <main className="relative min-h-screen bg-background" data-element="features-social-media-page">
       {/* Hero */}
@@ -153,13 +175,13 @@ export default function SocialMediaFeaturePage() {
           <div className="mx-auto max-w-3xl text-center">
             <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-pink-500/20 bg-pink-500/5 px-4 py-1.5 text-sm font-medium text-pink-400">
               <ClockIcon className="h-4 w-4" />
-              Coming Q3 2026
+              {heroBadge}
             </span>
             <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-              Social Media Manager
+              {heroHeadline}
             </h1>
             <p className="mb-8 text-lg text-foreground-secondary">
-              Schedule, publish, and analyze your social media content. Build your photography brand across Instagram, Facebook, Pinterest, and more.
+              {heroSubheadline}
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link

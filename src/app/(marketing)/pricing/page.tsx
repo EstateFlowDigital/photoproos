@@ -1,113 +1,113 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { PLAN_PRICING, BETA_SETTINGS, LIFETIME_DEAL_INCLUDES } from "@/lib/plan-limits";
+import { PricingPageClient } from "./pricing-client";
+import { getPricingContent, getFAQsForPage } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Pricing | PhotoProOS",
-  description: "Simple, transparent pricing for photographers of all sizes. Start free, upgrade when you're ready. No hidden fees.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getPricingContent();
+  return {
+    title: meta.title || "Pricing | PhotoProOS",
+    description: meta.description || "Simple, transparent pricing for photographers of all sizes. Start free, upgrade when you're ready. No hidden fees. Lifetime deals available during beta.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const plans = [
   {
     name: "Free",
+    planKey: "free" as const,
     description: "Perfect for getting started and trying out PhotoProOS.",
-    monthlyPrice: "$0",
-    annualPrice: "$0",
-    period: "/forever",
     features: [
+      "25 GB storage",
       "Up to 5 active galleries",
+      "25 clients",
       "Basic gallery themes",
       "Client portal access",
       "Email support",
-      "PhotoProOS branding",
     ],
     cta: "Get started free",
     href: "/sign-up",
-    highlighted: false,
   },
   {
     name: "Pro",
-    description: "For professional photographers ready to grow their business.",
-    monthlyPrice: "$29",
-    annualPrice: "$23",
-    period: "/per month",
-    annualNote: "Save 20% with annual billing",
+    planKey: "pro" as const,
+    description: "For growing photographers who need more space.",
     features: [
-      "Unlimited galleries",
+      "500 GB storage",
+      "50 active galleries",
+      "100 clients",
       "Custom branding",
       "Payment processing",
-      "Automated workflows",
       "Priority email support",
-      "Client management CRM",
-      "Analytics dashboard",
+      "3 team members",
     ],
     cta: "Start free trial",
     href: "/sign-up?plan=pro",
-    highlighted: true,
-    badge: "Most Popular",
+    popular: true,
   },
   {
     name: "Studio",
-    description: "For busy studios and photography teams.",
-    monthlyPrice: "$79",
-    annualPrice: "$63",
-    period: "/per month",
-    annualNote: "Save 20% with annual billing",
+    planKey: "studio" as const,
+    description: "For busy studios with unlimited usage needs.",
     features: [
-      "Everything in Pro",
-      "Team collaboration (up to 5)",
+      "1 TB storage",
+      "Unlimited galleries",
+      "Unlimited clients",
+      "White-label portal",
+      "API & webhooks access",
       "Advanced analytics",
-      "Custom contracts",
-      "Priority phone support",
-      "White-label client portal",
-      "API access",
-      "Dedicated account manager",
+      "10 team members",
     ],
     cta: "Start free trial",
     href: "/sign-up?plan=studio",
-    highlighted: false,
   },
   {
     name: "Enterprise",
-    description: "For large organizations with custom requirements.",
-    monthlyPrice: "Custom",
-    annualPrice: "Custom",
-    period: "/pricing",
+    planKey: "enterprise" as const,
+    description: "For agencies with custom requirements.",
     features: [
-      "Everything in Studio",
+      "Unlimited storage",
+      "Unlimited everything",
       "Unlimited team members",
-      "Custom integrations",
+      "SSO/SAML",
       "SLA guarantee",
-      "Dedicated infrastructure",
-      "Onboarding & training",
-      "Custom feature development",
+      "Dedicated support",
+      "Custom integrations",
     ],
     cta: "Contact sales",
     href: "/contact?subject=enterprise",
-    highlighted: false,
   },
 ];
 
+// Feature comparison data - aligned with plan-limits.ts
 const featureComparison = [
-  { feature: "Active galleries", free: "5", pro: "Unlimited", studio: "Unlimited", enterprise: "Unlimited" },
-  { feature: "Storage", free: "2 GB", pro: "100 GB", studio: "500 GB", enterprise: "Unlimited" },
-  { feature: "Custom branding", free: false, pro: true, studio: true, enterprise: true },
-  { feature: "Remove PhotoProOS branding", free: false, pro: true, studio: true, enterprise: true },
+  { feature: "Storage", free: "25 GB", pro: "500 GB", studio: "1 TB", enterprise: "Unlimited" },
+  { feature: "Active galleries", free: "5", pro: "50", studio: "Unlimited", enterprise: "Unlimited" },
+  { feature: "Clients", free: "25", pro: "100", studio: "Unlimited", enterprise: "Unlimited" },
+  { feature: "Team members", free: "1", pro: "3", studio: "10", enterprise: "Unlimited" },
+  { feature: "Custom branding", free: true, pro: true, studio: true, enterprise: true },
+  { feature: "White-label (remove branding)", free: false, pro: false, studio: true, enterprise: true },
   { feature: "Payment processing", free: false, pro: true, studio: true, enterprise: true },
   { feature: "Transaction fee", free: "N/A", pro: "2.9% + 30¢", studio: "2.5% + 30¢", enterprise: "Custom" },
-  { feature: "Client management CRM", free: false, pro: true, studio: true, enterprise: true },
-  { feature: "Automated workflows", free: false, pro: true, studio: true, enterprise: true },
+  { feature: "Invoices per month", free: "10", pro: "50", studio: "Unlimited", enterprise: "Unlimited" },
+  { feature: "API & webhooks", free: false, pro: false, studio: true, enterprise: true },
   { feature: "Analytics dashboard", free: "Basic", pro: "Standard", studio: "Advanced", enterprise: "Custom" },
-  { feature: "Team members", free: "1", pro: "1", studio: "5", enterprise: "Unlimited" },
-  { feature: "API access", free: false, pro: false, studio: true, enterprise: true },
   { feature: "Custom domain", free: false, pro: true, studio: true, enterprise: true },
+  { feature: "AI credits/month", free: "10", pro: "100", studio: "1,000", enterprise: "Unlimited" },
+  { feature: "SSO/SAML", free: false, pro: false, studio: false, enterprise: true },
   { feature: "Priority support", free: false, pro: "Email", studio: "Phone + Email", enterprise: "Dedicated" },
   { feature: "SLA guarantee", free: false, pro: false, studio: false, enterprise: true },
+  { feature: "Additional storage", free: "Upgrade required", pro: "$199/10 TB", studio: "$199/10 TB", enterprise: "$199/10 TB" },
+  { feature: "Gallery sleep mode", free: false, pro: true, studio: true, enterprise: true },
 ];
 
-const faqs = [
+// Fallback FAQs if CMS is empty (prices should come from plan-limits.ts)
+const fallbackFaqs = [
   {
     question: "Can I try PhotoProOS before committing?",
-    answer: "Yes! Our Free plan is available forever, and Pro comes with a 14-day free trial. No credit card required.",
+    answer: "Yes! Our Free plan is available forever, and all paid plans come with a 14-day free trial. No credit card required.",
   },
   {
     question: "What payment methods do you accept?",
@@ -126,12 +126,46 @@ const faqs = [
     answer: "Yes! Annual plans save you 20% compared to monthly billing.",
   },
   {
-    question: "Is there a limit on file storage?",
-    answer: "Storage limits vary by plan: Free includes 2GB, Pro includes 100GB, Studio includes 500GB, and Enterprise includes unlimited storage.",
+    question: "How does storage work across plans?",
+    answer: "All plans include unified storage for galleries, client uploads, and documents. Free includes 25GB, Pro includes 500GB, Studio includes 1TB, and Enterprise includes unlimited storage (10TB soft cap). Need more? Paid plans can add 10TB for $199/month. Paid plans also get Gallery Sleep Mode to archive galleries without counting against your quota.",
+  },
+  {
+    question: "What's the difference between Pro and Studio?",
+    answer: "Pro is ideal for growing photographers with 500GB storage and 50 active galleries. Studio is designed for busy studios that need 1TB storage, unlimited galleries, clients, and invoices, plus advanced features like API access and white-label branding.",
+  },
+  {
+    question: "What's included in the Lifetime Deal?",
+    answer: "Lifetime deals are one-time payments that give you permanent access to your plan tier. This includes all current and future features, all updates forever, your plan's storage allocation, and a 10% discount on all in-app purchases like custom domains and additional storage.",
   },
 ];
 
-export default function PricingPage() {
+// Type for CMS hero content
+interface PricingHeroContent {
+  badge?: string;
+  headline?: string;
+  subheadline?: string;
+}
+
+export default async function PricingPage() {
+  const isBeta = BETA_SETTINGS.isBetaActive;
+
+  // Fetch CMS content
+  const [pricingContent, cmsFaqs] = await Promise.all([
+    getPricingContent(),
+    getFAQsForPage("pricing"),
+  ]);
+
+  // Extract hero content from CMS with fallbacks
+  const heroContent: PricingHeroContent = (pricingContent.content as { hero?: PricingHeroContent })?.hero || {};
+  const heroHeadline = heroContent.headline || "Start free, upgrade anytime";
+  const heroSubheadline = heroContent.subheadline || "No hidden fees, no surprises. Start free, upgrade when you're ready.";
+  const heroBadge = heroContent.badge || (isBeta ? "Beta Exclusive Pricing — Lock in before prices increase" : "Simple, transparent pricing");
+
+  // Use CMS FAQs if available, otherwise fallback
+  const faqs = cmsFaqs.length > 0
+    ? cmsFaqs.map(faq => ({ question: faq.question, answer: faq.answer }))
+    : fallbackFaqs;
+
   return (
     <main className="relative min-h-screen bg-background" data-element="pricing-page">
       {/* Hero */}
@@ -146,195 +180,37 @@ export default function PricingPage() {
         </div>
         <div className="relative z-10 mx-auto max-w-[1512px] px-6 py-20 lg:px-[124px] lg:py-28">
           <div className="mx-auto max-w-3xl text-center">
-            <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--success)]/20 bg-[var(--success)]/5 px-4 py-1.5 text-sm font-medium text-[var(--success)]">
-              Simple, transparent pricing
-            </span>
+            {/* Badge from CMS */}
+            {isBeta ? (
+              <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--success)]/30 bg-[var(--success)]/10 px-4 py-1.5 text-sm font-medium text-[var(--success)]">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--success)] opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--success)]" />
+                </span>
+                {heroBadge}
+              </span>
+            ) : (
+              <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--success)]/20 bg-[var(--success)]/5 px-4 py-1.5 text-sm font-medium text-[var(--success)]">
+                {heroBadge}
+              </span>
+            )}
             <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-              Start free, upgrade anytime
+              {heroHeadline}
             </h1>
             <p className="text-lg text-foreground-secondary">
-              No hidden fees, no surprises. Start free, upgrade when you&apos;re ready.
+              {heroSubheadline}
             </p>
           </div>
         </div>
       </section>
 
-      {/* Billing Toggle Note */}
-      <section className="py-8" data-element="pricing-trial-note">
-        <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <p className="text-center text-sm text-foreground-secondary">
-            All paid plans include a <strong className="text-foreground">14-day free trial</strong>. No credit card required to start.
-          </p>
-        </div>
-      </section>
-
-      {/* Pricing Cards */}
-      <section className="pb-16 lg:pb-24" data-element="pricing-plans-section">
-        <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4" data-element="pricing-plans-grid">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={`relative rounded-2xl border p-8 ${
-                  plan.highlighted
-                    ? "border-[var(--primary)] bg-gradient-to-b from-[var(--primary)]/5 to-transparent"
-                    : "border-[var(--card-border)] bg-[var(--card)]"
-                }`}
-                data-element={`pricing-plan-${plan.name.toLowerCase()}`}
-              >
-                {plan.badge && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[var(--primary)] px-4 py-1 text-xs font-medium text-white">
-                    {plan.badge}
-                  </span>
-                )}
-                <div className="mb-6">
-                  <h3 className="mb-2 text-xl font-bold text-foreground">{plan.name}</h3>
-                  <p className="text-sm text-foreground-secondary">{plan.description}</p>
-                </div>
-                <div className="mb-2">
-                  <span className="text-4xl font-bold text-foreground">{plan.annualPrice}</span>
-                  <span className="text-foreground-secondary">{plan.period}</span>
-                </div>
-                {plan.annualNote && (
-                  <p className="mb-6 text-xs text-[var(--success)]">{plan.annualNote}</p>
-                )}
-                {!plan.annualNote && <div className="mb-6" />}
-                <ul className="mb-8 space-y-3">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3 text-sm text-foreground-secondary">
-                      <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-[var(--success)]" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href={plan.href}
-                  className={`block w-full rounded-lg py-3 text-center text-sm font-medium transition-colors ${
-                    plan.highlighted
-                      ? "bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90"
-                      : "border border-[var(--card-border)] bg-[var(--background)] text-foreground hover:bg-[var(--background-hover)]"
-                  }`}
-                >
-                  {plan.cta}
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Feature Comparison */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="pricing-comparison-section">
-        <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="pricing-comparison-heading">
-            Compare all features
-          </h2>
-          <div className="overflow-x-auto" data-element="pricing-comparison-wrapper">
-            <table className="w-full min-w-[800px]" data-element="pricing-comparison-table">
-              <thead>
-                <tr className="border-b border-[var(--card-border)]">
-                  <th className="pb-4 text-left font-medium text-foreground">Feature</th>
-                  <th className="pb-4 text-center font-medium text-foreground">Free</th>
-                  <th className="pb-4 text-center font-medium text-[var(--primary)]">Pro</th>
-                  <th className="pb-4 text-center font-medium text-foreground">Studio</th>
-                  <th className="pb-4 text-center font-medium text-foreground">Enterprise</th>
-                </tr>
-              </thead>
-              <tbody>
-                {featureComparison.map((row) => (
-                  <tr key={row.feature} className="border-b border-[var(--card-border)]">
-                    <td className="py-4 text-sm text-foreground">{row.feature}</td>
-                    <td className="py-4 text-center">
-                      <FeatureValue value={row.free} />
-                    </td>
-                    <td className="py-4 text-center">
-                      <FeatureValue value={row.pro} />
-                    </td>
-                    <td className="py-4 text-center">
-                      <FeatureValue value={row.studio} />
-                    </td>
-                    <td className="py-4 text-center">
-                      <FeatureValue value={row.enterprise} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="pricing-faq-section">
-        <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground" data-element="pricing-faq-heading">
-            Frequently Asked Questions
-          </h2>
-          <div className="mx-auto max-w-3xl space-y-6" data-element="pricing-faq-list">
-            {faqs.map((faq, index) => (
-              <div key={faq.question} className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6" data-element={`pricing-faq-item-${index}`}>
-                <h3 className="mb-2 font-semibold text-foreground">{faq.question}</h3>
-                <p className="text-sm text-foreground-secondary">{faq.answer}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="border-t border-[var(--card-border)] py-16 lg:py-24" data-element="pricing-cta-section">
-        <div className="mx-auto max-w-[1512px] px-6 text-center lg:px-[124px]">
-          <h2 className="mb-4 text-2xl font-bold text-foreground md:text-3xl" data-element="pricing-cta-heading">
-            Ready to streamline your photography business?
-          </h2>
-          <p className="mb-8 text-foreground-secondary" data-element="pricing-cta-description">
-            Start free today. No credit card required.
-          </p>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row" data-element="pricing-cta-buttons">
-            <Link
-              href="/sign-up"
-              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-              data-element="pricing-cta-trial-btn"
-            >
-              Start free trial
-            </Link>
-            <Link
-              href="/contact?subject=sales"
-              className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--card)] px-8 py-3 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
-              data-element="pricing-cta-sales-btn"
-            >
-              Contact sales
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Client Component for Interactive Pricing */}
+      <PricingPageClient
+        plans={plans}
+        featureComparison={featureComparison}
+        faqs={faqs}
+        isBeta={isBeta}
+      />
     </main>
-  );
-}
-
-function FeatureValue({ value }: { value: boolean | string }) {
-  if (typeof value === "boolean") {
-    return value ? (
-      <CheckIcon className="mx-auto h-5 w-5 text-[var(--success)]" />
-    ) : (
-      <XIcon className="mx-auto h-5 w-5 text-foreground-secondary/30" />
-    );
-  }
-  return <span className="text-sm text-foreground-secondary">{value}</span>;
-}
-
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
-    </svg>
-  );
-}
-
-function XIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
-    </svg>
   );
 }

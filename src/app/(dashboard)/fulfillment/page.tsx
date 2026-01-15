@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Fulfillment | PhotoProOS",
+  description: "Manage order fulfillment and shipping.",
+};
+
 export const dynamic = "force-dynamic";
 import { ComingSoonPage } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";

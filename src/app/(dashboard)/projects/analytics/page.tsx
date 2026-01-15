@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Project Analytics | PhotoProOS",
+  description: "Track project metrics and completion rates.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { PageHeader, PageContextNav } from "@/components/dashboard";

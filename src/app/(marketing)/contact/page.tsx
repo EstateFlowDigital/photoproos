@@ -1,7 +1,21 @@
+import { Metadata } from "next";
 import Link from "next/link";
 import { ContactForm } from "./contact-form";
+import { getMarketingPageContent } from "@/lib/marketing/content";
 
-export default function ContactPage() {
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getMarketingPageContent("contact");
+  return {
+    title: meta.title || "Contact Us | PhotoProOS",
+    description: meta.description || "Have a question, feedback, or want to learn more? We'd love to hear from you.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
+
+export default async function ContactPage() {
+  // Fetch CMS content
+  const { content } = await getMarketingPageContent("contact");
   return (
     <main className="relative min-h-screen bg-background" data-element="contact-page">
       {/* Hero Section */}

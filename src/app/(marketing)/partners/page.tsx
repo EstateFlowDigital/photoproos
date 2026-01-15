@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getMarketingPageContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Partner Program | PhotoProOS",
-  description: "Partner with PhotoProOS to grow your business. Integration partners, referral partners, and technology partners welcome.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getMarketingPageContent("partners");
+  return {
+    title: meta.title || "Partner Program | PhotoProOS",
+    description: meta.description || "Partner with PhotoProOS to grow your business. Integration partners, referral partners, and technology partners welcome.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const partnerTypes = [
   {
@@ -52,7 +58,10 @@ const existingPartners = [
   { name: "Resend", category: "Email" },
 ];
 
-export default function PartnersPage() {
+export default async function PartnersPage() {
+  // Fetch CMS content
+  const { content } = await getMarketingPageContent("partners");
+
   return (
     <main className="relative min-h-screen bg-background" data-element="partners-page">
       {/* Hero */}

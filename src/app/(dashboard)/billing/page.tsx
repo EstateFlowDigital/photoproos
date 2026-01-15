@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Billing | PhotoProOS",
+  description: "Manage billing, invoicing, and financial overview for your photography business.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { PageHeader } from "@/components/dashboard";

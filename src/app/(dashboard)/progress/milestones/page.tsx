@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Milestones | PhotoProOS",
+  description: "Track business milestones and achievements.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";

@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getIndustryContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Food & Hospitality Photography | PhotoProOS",
-  description: "Restaurant, hotel, and culinary photography with menu integration and marketing deliverables.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getIndustryContent("food");
+  return {
+    title: meta.title || "Food & Hospitality Photography | PhotoProOS",
+    description: meta.description || "Restaurant, hotel, and culinary photography with menu integration and marketing deliverables.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const features = [
   { title: "Menu Integration", description: "Organize photos by menu item for easy restaurant use." },

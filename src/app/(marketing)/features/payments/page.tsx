@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getFeaturesContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Payment Processing | PhotoProOS Features",
-  description: "Get paid faster with integrated payment processing. Collect deposits, final payments, and tips seamlessly.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getFeaturesContent("payments");
+  return {
+    title: meta.title || "Payment Processing | PhotoProOS Features",
+    description: meta.description || "Get paid faster with integrated payment processing. Collect deposits, final payments, and tips seamlessly.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const features = [
   {
@@ -46,7 +52,23 @@ const stats = [
   { value: "99.9%", label: "Uptime" },
 ];
 
-export default function PaymentsFeaturePage() {
+// Type for CMS hero content
+interface HeroContent {
+  badge?: string;
+  headline?: string;
+  subheadline?: string;
+}
+
+export default async function PaymentsFeaturePage() {
+  // Fetch CMS content
+  const { content } = await getFeaturesContent("payments");
+
+  // Extract hero content from CMS with fallbacks
+  const heroContent: HeroContent = (content as { hero?: HeroContent })?.hero || {};
+  const heroBadge = heroContent.badge || "Powered by Stripe";
+  const heroHeadline = heroContent.headline || "Payment Processing";
+  const heroSubheadline = heroContent.subheadline || "Get paid faster with integrated payment processing. Collect deposits, final payments, and tips seamlessly.";
+
   return (
     <main className="relative min-h-screen bg-background" data-element="features-payments-page">
       {/* Hero */}
@@ -62,13 +84,13 @@ export default function PaymentsFeaturePage() {
         <div className="relative z-10 mx-auto max-w-[1512px] px-6 py-20 lg:px-[124px] lg:py-28">
           <div className="mx-auto max-w-3xl text-center">
             <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--success)]/20 bg-[var(--success)]/5 px-4 py-1.5 text-sm font-medium text-[var(--success)]">
-              Powered by Stripe
+              {heroBadge}
             </span>
             <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-              Payment Processing
+              {heroHeadline}
             </h1>
             <p className="mb-8 text-lg text-foreground-secondary">
-              Get paid faster with integrated payment processing. Collect deposits, final payments, and tips seamlessly.
+              {heroSubheadline}
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link

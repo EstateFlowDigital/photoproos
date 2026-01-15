@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Payroll | PhotoProOS",
+  description: "Manage team payroll and compensation.",
+};
+
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";

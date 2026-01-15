@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Data Settings | PhotoProOS",
+  description: "Manage data export, import, and storage settings.",
+};
+
 export const dynamic = "force-dynamic";
 import { ComingSoonPage } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";

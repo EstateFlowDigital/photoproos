@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Dashboard | PhotoProOS",
+  description: "Your photography business overview with key metrics, upcoming bookings, recent activity, and quick actions.",
+};
+
 export const dynamic = "force-dynamic";
 import { Suspense } from "react";
 import { getOverdueInvoicesForDashboard } from "@/lib/actions/invoices";

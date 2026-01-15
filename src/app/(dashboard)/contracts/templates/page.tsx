@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Contract Templates | PhotoProOS",
+  description: "Create reusable contract templates.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { PageHeader, PageContextNav, DocumentIcon } from "@/components/dashboard";

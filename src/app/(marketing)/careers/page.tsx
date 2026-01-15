@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getMarketingPageContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Careers | PhotoProOS",
-  description: "Join our team and help build the future of photography business management.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getMarketingPageContent("careers");
+  return {
+    title: meta.title || "Careers | PhotoProOS",
+    description: meta.description || "Join our team and help build the future of photography business management.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const values = [
   {
@@ -71,7 +77,10 @@ const openings = [
   },
 ];
 
-export default function CareersPage() {
+export default async function CareersPage() {
+  // Fetch CMS content
+  const { content } = await getMarketingPageContent("careers");
+
   return (
     <main className="relative min-h-screen bg-background" data-element="careers-page">
       {/* Hero */}

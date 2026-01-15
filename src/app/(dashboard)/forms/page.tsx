@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Forms | PhotoProOS",
+  description: "Create and manage custom forms for client inquiries.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { getForms } from "@/lib/actions/custom-forms";

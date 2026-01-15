@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Brokerages | PhotoProOS",
+  description: "Manage real estate brokerage partnerships.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { PageHeader } from "@/components/dashboard";

@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Client Reports | PhotoProOS",
+  description: "Generate reports on client activity and value.",
+};
+
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";

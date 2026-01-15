@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Retainers | PhotoProOS",
+  description: "Manage client retainer agreements.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { PageHeader, PageContextNav, DocumentIcon, CurrencyIcon } from "@/components/dashboard";

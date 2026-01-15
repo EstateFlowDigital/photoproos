@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Team | PhotoProOS",
+  description: "Manage team members, roles, and permissions for your photography business.",
+};
+
 export const dynamic = "force-dynamic";
 import { ComingSoonPage } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";

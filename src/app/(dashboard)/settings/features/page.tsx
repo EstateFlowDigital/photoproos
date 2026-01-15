@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Feature Settings | PhotoProOS",
+  description: "Enable or disable optional features for your account.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { PageHeader } from "@/components/dashboard";

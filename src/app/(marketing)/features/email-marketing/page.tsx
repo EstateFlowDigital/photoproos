@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getFeaturesContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Email Marketing | Coming Soon | PhotoProOS",
-  description: "Powerful email marketing built for photographers. Nurture leads, engage clients, and grow your business with beautiful, automated email campaigns.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getFeaturesContent("email-marketing");
+  return {
+    title: meta.title || "Email Marketing | Coming Soon | PhotoProOS",
+    description: meta.description || "Powerful email marketing built for photographers. Nurture leads, engage clients, and grow your business with beautiful, automated email campaigns.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const plannedFeatures = [
   {
@@ -111,7 +117,23 @@ const faqs = [
   },
 ];
 
-export default function EmailMarketingFeaturePage() {
+// Type for CMS hero content
+interface HeroContent {
+  badge?: string;
+  headline?: string;
+  subheadline?: string;
+}
+
+export default async function EmailMarketingFeaturePage() {
+  // Fetch CMS content
+  const { content } = await getFeaturesContent("email-marketing");
+
+  // Extract hero content from CMS with fallbacks
+  const heroContent: HeroContent = (content as { hero?: HeroContent })?.hero || {};
+  const heroBadge = heroContent.badge || "Coming Q2 2026";
+  const heroHeadline = heroContent.headline || "Email Marketing";
+  const heroSubheadline = heroContent.subheadline || "Powerful email marketing built for photographers. Nurture leads, engage clients, and grow your business with beautiful, automated email campaigns.";
+
   return (
     <main className="relative min-h-screen bg-background" data-element="features-email-marketing-page">
       {/* Hero */}
@@ -128,13 +150,13 @@ export default function EmailMarketingFeaturePage() {
           <div className="mx-auto max-w-3xl text-center">
             <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--ai)]/20 bg-[var(--ai)]/5 px-4 py-1.5 text-sm font-medium text-[var(--ai)]">
               <ClockIcon className="h-4 w-4" />
-              Coming Q2 2026
+              {heroBadge}
             </span>
             <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-              Email Marketing
+              {heroHeadline}
             </h1>
             <p className="mb-8 text-lg text-foreground-secondary">
-              Powerful email marketing built for photographers. Nurture leads, engage clients, and grow your business with beautiful, automated email campaigns.
+              {heroSubheadline}
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link

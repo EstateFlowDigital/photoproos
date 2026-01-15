@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Upgrade Plan | PhotoProOS",
+  description: "Upgrade your PhotoProOS subscription plan.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { PageHeader } from "@/components/dashboard";
@@ -15,12 +22,12 @@ const plans = [
     price: 4900,
     priceId: process.env.STRIPE_PRO_PRICE_ID || "",
     features: [
-      "50 GB storage",
-      "Unlimited galleries",
-      "Unlimited clients",
+      "500 GB storage",
+      "50 active galleries",
+      "100 clients",
       "3 team members",
       "Custom branding",
-      "Contracts & e-signatures",
+      "Gallery Sleep Mode",
       "Priority support",
     ],
     popular: true,
@@ -31,16 +38,32 @@ const plans = [
     price: 9900,
     priceId: process.env.STRIPE_STUDIO_PRICE_ID || "",
     features: [
-      "500 GB storage",
+      "1 TB storage",
+      "Unlimited galleries",
+      "Unlimited clients",
+      "10 team members",
+      "White-label branding",
+      "Gallery Sleep Mode",
+      "Advanced analytics",
+      "API & webhooks access",
+      "Phone + email support",
+    ],
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    price: 34900,
+    priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID || "",
+    features: [
+      "Unlimited storage (10 TB included)",
       "Unlimited galleries",
       "Unlimited clients",
       "Unlimited team members",
-      "Custom branding",
-      "Contracts & e-signatures",
-      "Advanced analytics",
-      "API access",
-      "White-label options",
+      "Gallery Sleep Mode",
+      "SSO/SAML",
+      "SLA guarantee",
       "Dedicated support",
+      "Custom integrations",
     ],
   },
 ];
@@ -178,6 +201,18 @@ export default async function UpgradePage() {
             <h4 className="font-medium text-foreground">Is there a free trial?</h4>
             <p className="mt-1 text-sm text-foreground-muted">
               New accounts start with a 14-day free trial on the Pro plan. No credit card required.
+            </p>
+          </div>
+          <div>
+            <h4 className="font-medium text-foreground">What if I need more storage?</h4>
+            <p className="mt-1 text-sm text-foreground-muted">
+              All paid plans can purchase additional storage at $199/month per 10 TB. You can also use Gallery Sleep Mode to archive old galleries without counting against your quota.
+            </p>
+          </div>
+          <div>
+            <h4 className="font-medium text-foreground">What is Gallery Sleep Mode?</h4>
+            <p className="mt-1 text-sm text-foreground-muted">
+              Gallery Sleep Mode lets you archive galleries you&apos;re not actively using. Sleeping galleries don&apos;t count against your storage quota but can be woken up anytime.
             </p>
           </div>
         </div>

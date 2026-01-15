@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getMarketingPageContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Affiliate Program | PhotoProOS",
-  description: "Earn 20% recurring commission by referring photographers to PhotoProOS.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getMarketingPageContent("affiliates");
+  return {
+    title: meta.title || "Affiliate Program | PhotoProOS",
+    description: meta.description || "Earn 20% recurring commission by referring photographers to PhotoProOS.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const benefits = [
   {
@@ -69,7 +75,7 @@ const faqs = [
   },
   {
     question: "How much can I earn?",
-    answer: "You earn 20% of every payment from customers you refer. For example, if you refer a customer on the Pro plan ($23/month), you'd earn $4.60/month for as long as they stay subscribed.",
+    answer: "You earn 20% of every payment from customers you refer. For example, if you refer a customer on the Pro plan ($39/month annual), you'd earn $7.80/month for as long as they stay subscribed.",
   },
   {
     question: "When do I get paid?",
@@ -81,7 +87,10 @@ const faqs = [
   },
 ];
 
-export default function AffiliatesPage() {
+export default async function AffiliatesPage() {
+  // Fetch CMS content
+  const { content } = await getMarketingPageContent("affiliates");
+
   return (
     <main className="relative min-h-screen bg-background" data-element="affiliates-page">
       {/* Hero */}
@@ -183,21 +192,21 @@ export default function AffiliatesPage() {
             <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-8">
               <div className="mb-8 text-center">
                 <div className="text-sm text-foreground-muted">If you refer 10 Pro subscribers</div>
-                <div className="mt-2 text-4xl font-bold text-[var(--primary)]">$46/month</div>
-                <div className="text-sm text-foreground-secondary">$552/year in recurring income</div>
+                <div className="mt-2 text-4xl font-bold text-[var(--primary)]">$78/month</div>
+                <div className="text-sm text-foreground-secondary">$936/year in recurring income</div>
               </div>
               <div className="grid gap-4 text-sm md:grid-cols-3">
                 <div className="rounded-lg bg-[var(--background-tertiary)] p-4 text-center">
                   <div className="text-foreground-muted">5 Pro referrals</div>
-                  <div className="mt-1 font-semibold text-foreground">$23/mo</div>
+                  <div className="mt-1 font-semibold text-foreground">$39/mo</div>
                 </div>
                 <div className="rounded-lg bg-[var(--background-tertiary)] p-4 text-center">
                   <div className="text-foreground-muted">10 Pro referrals</div>
-                  <div className="mt-1 font-semibold text-foreground">$46/mo</div>
+                  <div className="mt-1 font-semibold text-foreground">$78/mo</div>
                 </div>
                 <div className="rounded-lg bg-[var(--background-tertiary)] p-4 text-center">
                   <div className="text-foreground-muted">25 Pro referrals</div>
-                  <div className="mt-1 font-semibold text-foreground">$115/mo</div>
+                  <div className="mt-1 font-semibold text-foreground">$195/mo</div>
                 </div>
               </div>
             </div>

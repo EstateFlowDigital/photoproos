@@ -1,8 +1,15 @@
-export const dynamic = "force-dynamic";
+import { Metadata } from "next";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getOrderPages } from "@/lib/actions/order-pages";
+
+export const metadata: Metadata = {
+  title: "Order Pages | PhotoProOS",
+  description: "Create custom order pages for clients.",
+};
+
+export const dynamic = "force-dynamic";
 
 export default async function OrderPagesPage() {
   const orderPages = await getOrderPages();

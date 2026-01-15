@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Clients | PhotoProOS",
+  description: "Manage your photography clients, track projects, and organize contacts with tags and filters.",
+};
+
 export const dynamic = "force-dynamic";
 import { PageHeader, PageContextNav, UsersIcon, TagIcon } from "@/components/dashboard";
 import { prisma } from "@/lib/db";

@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Notifications | PhotoProOS",
+  description: "View and manage your account notifications and alerts.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { getNotifications } from "@/lib/actions/notifications";

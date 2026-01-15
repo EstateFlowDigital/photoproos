@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getFeaturesContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Workflow Automation | PhotoProOS Features",
-  description: "Save hours every week by automating repetitive tasks. Focus on what you do best - taking amazing photos.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getFeaturesContent("automation");
+  return {
+    title: meta.title || "Workflow Automation | PhotoProOS Features",
+    description: meta.description || "Save hours every week by automating repetitive tasks. Focus on what you do best - taking amazing photos.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const workflows = [
   {
@@ -62,7 +68,23 @@ const features = [
   },
 ];
 
-export default function AutomationFeaturePage() {
+// Type for CMS hero content
+interface HeroContent {
+  badge?: string;
+  headline?: string;
+  subheadline?: string;
+}
+
+export default async function AutomationFeaturePage() {
+  // Fetch CMS content
+  const { content } = await getFeaturesContent("automation");
+
+  // Extract hero content from CMS with fallbacks
+  const heroContent: HeroContent = (content as { hero?: HeroContent })?.hero || {};
+  const heroBadge = heroContent.badge || "Save 10+ hours per week";
+  const heroHeadline = heroContent.headline || "Workflow Automation";
+  const heroSubheadline = heroContent.subheadline || "Save hours every week by automating repetitive tasks. Focus on what you do best - taking amazing photos.";
+
   return (
     <main className="relative min-h-screen bg-background" data-element="features-automation-page">
       {/* Hero */}
@@ -78,13 +100,13 @@ export default function AutomationFeaturePage() {
         <div className="relative z-10 mx-auto max-w-[1512px] px-6 py-20 lg:px-[124px] lg:py-28">
           <div className="mx-auto max-w-3xl text-center">
             <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--warning)]/20 bg-[var(--warning)]/5 px-4 py-1.5 text-sm font-medium text-[var(--warning)]">
-              Save 10+ hours per week
+              {heroBadge}
             </span>
             <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-              Workflow Automation
+              {heroHeadline}
             </h1>
             <p className="mb-8 text-lg text-foreground-secondary">
-              Save hours every week by automating repetitive tasks. Focus on what you do best - taking amazing photos.
+              {heroSubheadline}
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link

@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getFeaturesContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Contracts & E-Sign | PhotoProOS Features",
-  description: "Send and sign contracts digitally. Keep everything organized with legally-binding electronic signatures.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getFeaturesContent("contracts");
+  return {
+    title: meta.title || "Contracts & E-Sign | PhotoProOS Features",
+    description: meta.description || "Send and sign contracts digitally. Keep everything organized with legally-binding electronic signatures.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const features = [
   {
@@ -48,7 +54,23 @@ const templates = [
   "Commercial License Agreement",
 ];
 
-export default function ContractsFeaturePage() {
+// Type for CMS hero content
+interface HeroContent {
+  badge?: string;
+  headline?: string;
+  subheadline?: string;
+}
+
+export default async function ContractsFeaturePage() {
+  // Fetch CMS content
+  const { content } = await getFeaturesContent("contracts");
+
+  // Extract hero content from CMS with fallbacks
+  const heroContent: HeroContent = (content as { hero?: HeroContent })?.hero || {};
+  const heroBadge = heroContent.badge || "Available Now";
+  const heroHeadline = heroContent.headline || "Contracts & E-Sign";
+  const heroSubheadline = heroContent.subheadline || "Send and sign contracts digitally. Keep everything organized with legally-binding electronic signatures.";
+
   return (
     <main className="relative min-h-screen bg-background" data-element="features-contracts-page">
       {/* Hero */}
@@ -64,13 +86,13 @@ export default function ContractsFeaturePage() {
         <div className="relative z-10 mx-auto max-w-[1512px] px-6 py-20 lg:px-[124px] lg:py-28">
           <div className="mx-auto max-w-3xl text-center">
             <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--success)]/20 bg-[var(--success)]/5 px-4 py-1.5 text-sm font-medium text-[var(--success)]">
-              Available Now
+              {heroBadge}
             </span>
             <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-              Contracts & E-Sign
+              {heroHeadline}
             </h1>
             <p className="mb-8 text-lg text-foreground-secondary">
-              Send and sign contracts digitally. Keep everything organized with legally-binding electronic signatures.
+              {heroSubheadline}
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link

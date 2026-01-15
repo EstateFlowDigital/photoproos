@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Service Add-ons | PhotoProOS",
+  description: "Manage add-on services for photography packages.",
+};
+
 export const dynamic = "force-dynamic";
 import { PageHeader, PageContextNav } from "@/components/dashboard";
 import Link from "next/link";

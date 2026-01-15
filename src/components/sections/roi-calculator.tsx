@@ -233,7 +233,7 @@ export function ROICalculatorSection() {
                     ${calculations.totalYearlySavings.toLocaleString()}+
                   </p>
                   <p className="text-sm text-foreground-muted">
-                    Compared to PhotoProOS Pro at $29/month ($348/year)
+                    Compared to PhotoProOS Pro at $49/month ($588/year)
                   </p>
                 </div>
               </div>
@@ -242,7 +242,7 @@ export function ROICalculatorSection() {
               <div className="flex items-center justify-center gap-2 rounded-full border border-[var(--success)]/30 bg-[var(--success)]/10 px-4 py-2">
                 <CheckIcon className="h-4 w-4 text-[var(--success)]" />
                 <span className="text-sm font-medium text-[var(--success)]">
-                  {Math.round(calculations.totalYearlySavings / 348)}x return on investment
+                  {Math.round(calculations.totalYearlySavings / 588)}x return on investment
                 </span>
               </div>
             </div>

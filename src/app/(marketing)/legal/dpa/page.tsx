@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getLegalContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Data Processing Agreement | PhotoProOS",
-  description: "Data Processing Agreement (DPA) for PhotoProOS services.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getLegalContent("dpa");
+  return {
+    title: meta.title || "Data Processing Agreement | PhotoProOS",
+    description: meta.description || "Data Processing Agreement (DPA) for PhotoProOS services.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 export default function DPAPage() {
   const lastUpdated = "January 1, 2025";

@@ -10,7 +10,8 @@ interface FAQItem {
   category?: string;
 }
 
-const faqs: FAQItem[] = [
+// Fallback FAQs used when no CMS data is provided
+const fallbackFaqs: FAQItem[] = [
   {
     question: "How does PhotoProOS handle photo delivery and payments?",
     answer: "When you upload photos to a gallery, you can set it as free or paid. For paid galleries, clients browse a preview with watermarks, select their favorites, and pay securely through our integrated checkout. Once payment is confirmed, high-resolution downloads are automatically unlocked. You get paid instantly to your connected Stripe account.",
@@ -33,7 +34,7 @@ const faqs: FAQItem[] = [
   },
   {
     question: "Is there a limit on storage or number of galleries?",
-    answer: "Free accounts include 2GB of storage and up to 5 active galleries. Pro plans include 100GB with unlimited galleries, and Studio plans get 500GB. Enterprise customers receive unlimited storage. All plans support full-resolution uploads with no compression.",
+    answer: "Free accounts include 25GB of storage and up to 5 galleries. Pro plans include 500GB with up to 50 galleries. Studio plans get 1TB storage with unlimited galleries. Enterprise includes unlimited storage (10TB soft cap) with unlimited everything. All plans share one unified storage pool for galleries, client uploads, and documents. Paid plans can add 10TB for $199/month and use Gallery Sleep Mode to archive galleries without counting against your quota.",
     category: "pricing",
   },
   {
@@ -106,9 +107,22 @@ function FAQItemComponent({ question, answer, isOpen, onToggle, index }: FAQItem
   );
 }
 
-export function FAQSection() {
+// Props interface for FAQSection
+export interface FAQSectionProps {
+  /** FAQs to display - if not provided, uses fallback FAQs */
+  faqs?: FAQItem[];
+  /** Optional custom heading */
+  heading?: string;
+  /** Optional custom subheading */
+  subheading?: string;
+}
+
+export function FAQSection({ faqs, heading, subheading }: FAQSectionProps) {
   const [openIndex, setOpenIndex] = React.useState<number | null>(0);
   const { ref, isVisible } = useScrollAnimation();
+
+  // Use provided FAQs or fall back to default
+  const displayFaqs = faqs && faqs.length > 0 ? faqs : fallbackFaqs;
 
   return (
     <section id="faq" ref={ref} className="relative z-10 py-20 lg:py-32" aria-labelledby="faq-heading">
@@ -142,8 +156,14 @@ export function FAQSection() {
                 transitionDelay: "100ms",
               }}
             >
-              <span className="text-foreground">Questions?</span>{" "}
-              <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">We've got answers.</span>
+              {heading ? (
+                <span className="text-foreground">{heading}</span>
+              ) : (
+                <>
+                  <span className="text-foreground">Questions?</span>{" "}
+                  <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">We've got answers.</span>
+                </>
+              )}
             </h2>
             <p
               className="text-lg leading-relaxed text-foreground-secondary"
@@ -154,21 +174,25 @@ export function FAQSection() {
                 transitionDelay: "200ms",
               }}
             >
-              Still curious?{" "}
-              <a
-                href="/contact"
-                className="text-[var(--primary)] underline decoration-[var(--primary)]/30 underline-offset-4 transition-colors hover:decoration-[var(--primary)]"
-              >
-                Chat with our team
-              </a>{" "}
-              or check out our{" "}
-              <a
-                href="/support"
-                className="text-[var(--primary)] underline decoration-[var(--primary)]/30 underline-offset-4 transition-colors hover:decoration-[var(--primary)]"
-              >
-                help center
-              </a>
-              .
+              {subheading || (
+                <>
+                  Still curious?{" "}
+                  <a
+                    href="/contact"
+                    className="text-[var(--primary)] underline decoration-[var(--primary)]/30 underline-offset-4 transition-colors hover:decoration-[var(--primary)]"
+                  >
+                    Chat with our team
+                  </a>{" "}
+                  or check out our{" "}
+                  <a
+                    href="/support"
+                    className="text-[var(--primary)] underline decoration-[var(--primary)]/30 underline-offset-4 transition-colors hover:decoration-[var(--primary)]"
+                  >
+                    help center
+                  </a>
+                  .
+                </>
+              )}
             </p>
 
             {/* Quick links */}
@@ -198,7 +222,7 @@ export function FAQSection() {
 
           {/* Right Column - FAQ Items */}
           <div className="divide-y divide-[var(--card-border)] border-t border-[var(--card-border)]">
-            {faqs.map((faq, index) => (
+            {displayFaqs.map((faq, index) => (
               <div
                 key={index}
                 style={{

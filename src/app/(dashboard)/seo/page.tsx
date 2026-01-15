@@ -1,5 +1,12 @@
-export const dynamic = "force-dynamic";
+import { Metadata } from "next";
 import { PageHeader } from "@/components/dashboard";
+
+export const metadata: Metadata = {
+  title: "SEO Tools | PhotoProOS",
+  description: "Optimize your online presence for search engines.",
+};
+
+export const dynamic = "force-dynamic";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import { SeoClient } from "./seo-client";

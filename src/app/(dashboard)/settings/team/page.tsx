@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Team Settings | PhotoProOS",
+  description: "Manage team members, roles, and access permissions.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { getTeamMembers, getBillingStats } from "@/lib/actions/settings";

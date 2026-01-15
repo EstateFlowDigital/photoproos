@@ -1,12 +1,33 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getAboutContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "About | PhotoProOS",
-  description: "Learn about PhotoProOS - the business operating system built by photographers, for photographers.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getAboutContent();
+  return {
+    title: meta.title || "About | PhotoProOS",
+    description: meta.description || "Learn about PhotoProOS - the business operating system built by photographers, for photographers.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
-export default function AboutPage() {
+// Type for CMS hero content
+interface AboutHeroContent {
+  badge?: string;
+  headline?: string;
+  subheadline?: string;
+}
+
+export default async function AboutPage() {
+  // Fetch CMS content
+  const { content } = await getAboutContent();
+
+  // Extract hero content from CMS with fallbacks
+  const heroContent: AboutHeroContent = (content as { hero?: AboutHeroContent })?.hero || {};
+  const heroBadge = heroContent.badge || "Our Story";
+  const heroHeadline = heroContent.headline || "Built by photographers, for photographers";
+  const heroSubheadline = heroContent.subheadline || "We know the challenges of running a photography business because we've lived them. PhotoProOS was born from frustration with fragmented tools and a vision for something better.";
   return (
     <main className="relative min-h-screen bg-background" data-element="about-page">
       {/* Hero Section */}
@@ -26,17 +47,20 @@ export default function AboutPage() {
         <div className="relative z-10 mx-auto max-w-[1512px] px-6 py-24 lg:px-[124px] lg:py-32">
           <div className="mx-auto max-w-3xl text-center">
             <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/5 px-4 py-1.5 text-sm font-medium text-[var(--primary)]">
-              Our Story
+              {heroBadge}
             </span>
             <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-5xl lg:text-6xl">
-              Built by photographers,{" "}
-              <span className="bg-gradient-to-r from-[var(--primary)] to-[var(--ai)] bg-clip-text text-transparent">
-                for photographers
-              </span>
+              {heroHeadline.includes("for photographers") ? (
+                <>
+                  Built by photographers,{" "}
+                  <span className="bg-gradient-to-r from-[var(--primary)] to-[var(--ai)] bg-clip-text text-transparent">
+                    for photographers
+                  </span>
+                </>
+              ) : heroHeadline}
             </h1>
             <p className="text-lg text-foreground-secondary md:text-xl">
-              We know the challenges of running a photography business because we've lived them.
-              PhotoProOS was born from frustration with fragmented tools and a vision for something better.
+              {heroSubheadline}
             </p>
           </div>
         </div>

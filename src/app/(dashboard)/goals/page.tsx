@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Goals | PhotoProOS",
+  description: "Set and track your photography business goals.",
+};
+
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";

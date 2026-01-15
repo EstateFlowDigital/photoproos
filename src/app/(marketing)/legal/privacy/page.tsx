@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getLegalContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy | PhotoProOS",
-  description: "Learn how PhotoProOS collects, uses, and protects your personal information.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getLegalContent("privacy");
+  return {
+    title: meta.title || "Privacy Policy | PhotoProOS",
+    description: meta.description || "Learn how PhotoProOS collects, uses, and protects your personal information.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 export default function PrivacyPolicyPage() {
   const lastUpdated = "January 1, 2025";

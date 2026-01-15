@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Watermark Settings | PhotoProOS",
+  description: "Create and manage watermarks for your gallery photos.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { PageHeader, Breadcrumb } from "@/components/dashboard";

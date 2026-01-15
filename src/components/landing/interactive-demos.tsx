@@ -2744,7 +2744,7 @@ export function ComparisonDemo() {
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border-2 border-[var(--primary)] bg-[var(--primary)]/5 p-3 text-center">
               <p className="text-[10px] text-[var(--primary)] font-medium mb-1">PhotoProOS</p>
-              <p className="text-2xl font-bold text-foreground">$29</p>
+              <p className="text-2xl font-bold text-foreground">$49</p>
               <p className="text-[10px] text-foreground-muted">/month</p>
               <p className="text-[9px] text-[var(--success)] mt-2">All features included</p>
             </div>
@@ -2758,7 +2758,7 @@ export function ComparisonDemo() {
 
           <div className="mt-4 text-center">
             <span className="inline-flex items-center gap-1 rounded-full bg-[var(--success)]/10 px-2 py-1 text-[10px] font-medium text-[var(--success)]">
-              Save $120+/month
+              Save $100+/month
             </span>
           </div>
         </div>

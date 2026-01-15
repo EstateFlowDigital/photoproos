@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getLegalContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Security | PhotoProOS",
-  description: "Learn about our security practices. Your photos are protected by enterprise-grade security.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getLegalContent("security");
+  return {
+    title: meta.title || "Security | PhotoProOS",
+    description: meta.description || "Learn about our security practices. Your photos are protected by enterprise-grade security.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const certifications = [
   { name: "SOC 2 Type II", description: "Independently audited security controls" },

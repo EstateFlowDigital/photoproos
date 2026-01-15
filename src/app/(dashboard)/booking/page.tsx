@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Booking Portal | PhotoProOS",
+  description: "Customize your online booking experience.",
+};
+
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";

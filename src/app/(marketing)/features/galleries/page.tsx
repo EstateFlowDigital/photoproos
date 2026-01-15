@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getFeaturesContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Client Galleries | PhotoProOS Features",
-  description: "Create beautiful, branded galleries that impress clients and drive sales with pay-to-unlock photo delivery.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getFeaturesContent("galleries");
+  return {
+    title: meta.title || "Client Galleries | PhotoProOS Features",
+    description: meta.description || "Create beautiful, branded galleries that impress clients and drive sales with pay-to-unlock photo delivery.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const features = [
   {
@@ -49,7 +55,23 @@ const features = [
   },
 ];
 
-export default function GalleriesFeaturePage() {
+// Type for CMS hero content
+interface HeroContent {
+  badge?: string;
+  headline?: string;
+  subheadline?: string;
+}
+
+export default async function GalleriesFeaturePage() {
+  // Fetch CMS content
+  const { content } = await getFeaturesContent("galleries");
+
+  // Extract hero content from CMS with fallbacks
+  const heroContent: HeroContent = (content as { hero?: HeroContent })?.hero || {};
+  const heroBadge = heroContent.badge || "Most Popular Feature";
+  const heroHeadline = heroContent.headline || "Client Galleries";
+  const heroSubheadline = heroContent.subheadline || "Create beautiful, branded galleries that impress clients and drive sales with pay-to-unlock photo delivery.";
+
   return (
     <main className="relative min-h-screen bg-background" data-element="features-galleries-page">
       {/* Hero */}
@@ -65,13 +87,13 @@ export default function GalleriesFeaturePage() {
         <div className="relative z-10 mx-auto max-w-[1512px] px-6 py-20 lg:px-[124px] lg:py-28">
           <div className="mx-auto max-w-3xl text-center">
             <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--primary)]/20 bg-[var(--primary)]/5 px-4 py-1.5 text-sm font-medium text-[var(--primary)]">
-              Most Popular Feature
+              {heroBadge}
             </span>
             <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-              Client Galleries
+              {heroHeadline}
             </h1>
             <p className="mb-8 text-lg text-foreground-secondary">
-              Create beautiful, branded galleries that impress clients and drive sales with pay-to-unlock photo delivery.
+              {heroSubheadline}
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link

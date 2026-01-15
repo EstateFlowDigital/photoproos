@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Feedback | PhotoProOS",
+  description: "Collect and manage client feedback.",
+};
+
 export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";

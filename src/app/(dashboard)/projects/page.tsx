@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { getOrCreateDefaultBoard, getBoard } from "@/lib/actions/projects";
@@ -7,6 +8,11 @@ import { getGalleries } from "@/lib/actions/galleries";
 import { ProjectsClient } from "./projects-client";
 import { WalkthroughWrapper } from "@/components/walkthrough";
 import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
+
+export const metadata: Metadata = {
+  title: "Projects | PhotoProOS",
+  description: "Track and manage photography projects from start to completion.",
+};
 
 export const dynamic = "force-dynamic";
 

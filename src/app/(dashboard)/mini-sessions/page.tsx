@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Mini Sessions | PhotoProOS",
+  description: "Manage mini session events and bookings.",
+};
+
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";

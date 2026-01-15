@@ -1,10 +1,17 @@
-export const dynamic = "force-dynamic";
 import { PageHeader, PageContextNav } from "@/components/dashboard";
 import { getOrders, getOrderStats } from "@/lib/actions/orders";
 import Link from "next/link";
 import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 import { cn } from "@/lib/utils";
 import { OrdersTableClient } from "./orders-table-client";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Orders | PhotoProOS",
+  description: "Track and fulfill product orders from your photography clients.",
+};
+
+export const dynamic = "force-dynamic";
 
 interface PageProps {
   searchParams: Promise<{ status?: string }>;

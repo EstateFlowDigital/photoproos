@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Equipment Settings | PhotoProOS",
+  description: "Manage your photography equipment inventory.",
+};
+
 export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard";

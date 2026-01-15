@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Billing Analytics | PhotoProOS",
+  description: "View billing analytics and revenue insights.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { PageHeader, PageContextNav, DocumentIcon } from "@/components/dashboard";

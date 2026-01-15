@@ -1,6 +1,12 @@
+import { Metadata } from "next";
 import { Suspense } from "react";
 import { getConversations, getAIUsageStats } from "@/lib/actions/ai";
 import { AIPageClient } from "./ai-client";
+
+export const metadata: Metadata = {
+  title: "AI Tools | PhotoProOS",
+  description: "Access AI-powered tools for your photography business.",
+};
 
 // AI page is session-aware and uses headers; force dynamic rendering
 export const dynamic = "force-dynamic";

@@ -1,4 +1,10 @@
+import { Metadata } from "next";
 import { PageHeader } from "@/components/dashboard/page-header";
+
+export const metadata: Metadata = {
+  title: "Leads | PhotoProOS",
+  description: "Track and manage potential client leads and inquiries.",
+};
 import { PageContextNav } from "@/components/dashboard/page-context-nav";
 import { requireOrganizationId } from "@/lib/actions/auth-helper";
 import { getPortfolioInquiries, getPortfolioWebsitesForLeadCreation } from "@/lib/actions/portfolio-websites";

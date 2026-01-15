@@ -21,7 +21,7 @@ import {
   FEATURE_METADATA,
 } from "@/lib/plan-limits";
 import type { PlanName } from "@prisma/client";
-import { fail, ok, type ActionResult } from "@/lib/types/action-result";
+import { fail, ok, success, type ActionResult } from "@/lib/types/action-result";
 
 // =============================================================================
 // TYPES
@@ -85,7 +85,7 @@ export async function getOrganizationPlan(): Promise<ActionResult<{ plan: PlanNa
     // Lifetime license holders get enterprise-level access
     const effectivePlan = org.hasLifetimeLicense ? "enterprise" : org.plan;
 
-    return ok({ plan: effectivePlan as PlanName, hasLifetimeLicense: org.hasLifetimeLicense });
+    return success({ plan: effectivePlan as PlanName, hasLifetimeLicense: org.hasLifetimeLicense });
   } catch (error) {
     console.error("[PlanEnforcement] Error getting plan:", error);
     return fail("Failed to get organization plan");
@@ -122,7 +122,7 @@ export async function checkPlanLimit(limitKey: LimitKey): Promise<ActionResult<L
     const result = checkLimit(effectivePlan, limitKey, currentUsage);
     const actionCheck = canPerformAction(effectivePlan, limitKey, currentUsage, 1);
 
-    return ok({
+    return success({
       ...result,
       message: actionCheck.message,
       upgradeRequired: actionCheck.upgradeRequired,
@@ -157,13 +157,13 @@ export async function checkPlanFeature(featureKey: FeatureKey): Promise<ActionRe
     const metadata = FEATURE_METADATA[featureKey];
 
     if (allowed) {
-      return ok({
+      return success({
         allowed: true,
         feature: metadata.name,
       });
     }
 
-    return ok({
+    return success({
       allowed: false,
       feature: metadata.name,
       message: `${metadata.name} is not available on your current plan. Upgrade to unlock this feature.`,
@@ -475,7 +475,7 @@ export async function getGalleryPhotoCount(galleryId: string): Promise<ActionRes
     const result = checkLimit(effectivePlan, "photos_per_gallery", photoCount);
     const actionCheck = canPerformAction(effectivePlan, "photos_per_gallery", photoCount, 1);
 
-    return ok({
+    return success({
       ...result,
       message: actionCheck.message,
       upgradeRequired: actionCheck.upgradeRequired,
@@ -539,7 +539,7 @@ export async function getUsageStats(): Promise<ActionResult<UsageStats>> {
       };
     }
 
-    return ok({
+    return success({
       plan: effectivePlan,
       hasLifetimeLicense: org.hasLifetimeLicense,
       limits,
@@ -645,7 +645,7 @@ export async function checkPropertyDomainAccess(propertyId: string): Promise<
 
     // Free plan: must purchase each domain
     if (effectivePlan === "free") {
-      return ok({
+      return success({
         canAddDomain: canPurchase,
         requiresPurchase: true,
         includedDomainsRemaining: 0,
@@ -655,7 +655,7 @@ export async function checkPropertyDomainAccess(propertyId: string): Promise<
 
     // Paid plans: use included domains first
     if (includedRemaining > 0 || domainLimit === -1) {
-      return ok({
+      return success({
         canAddDomain: true,
         requiresPurchase: false,
         includedDomainsRemaining: includedRemaining,
@@ -667,7 +667,7 @@ export async function checkPropertyDomainAccess(propertyId: string): Promise<
     }
 
     // Paid plan but used all included domains
-    return ok({
+    return success({
       canAddDomain: true,
       requiresPurchase: true,
       includedDomainsRemaining: 0,

@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getIndustryContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Architecture & Interiors Photography | PhotoProOS",
-  description: "High-end property and design portfolio delivery for architects, interior designers, and design publications.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getIndustryContent("architecture");
+  return {
+    title: meta.title || "Architecture & Interiors Photography | PhotoProOS",
+    description: meta.description || "High-end property and design portfolio delivery for architects, interior designers, and design publications.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const features = [
   { title: "Portfolio Galleries", description: "Showcase projects with stunning full-screen galleries." },

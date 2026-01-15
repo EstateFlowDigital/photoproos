@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Invoices | PhotoProOS",
+  description: "Create, send, and track invoices for your photography services with payment status monitoring.",
+};
+
 export const dynamic = "force-dynamic";
 import { PageHeader, PageContextNav, DocumentIcon, CurrencyIcon, StripeIcon, StatCard } from "@/components/dashboard";
 import { prisma } from "@/lib/db";

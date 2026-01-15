@@ -440,10 +440,10 @@ Assuming average storage of 150GB per customer:
 
 | Plan Tier | Included Storage | Overage Rate |
 |-----------|------------------|--------------|
-| Free | 10GB | Not allowed |
-| Starter ($29/mo) | 100GB | $0.05/GB |
-| Pro ($79/mo) | 1TB | $0.04/GB |
-| Business ($149/mo) | 5TB | $0.03/GB |
+| Free | 2GB | Not allowed |
+| Pro ($49/mo) | 50GB | $0.05/GB |
+| Studio ($99/mo) | 500GB | $0.04/GB |
+| Enterprise ($249/mo) | Unlimited | Custom |
 
 **Why hybrid wins:**
 1. Predictable base cost for customers

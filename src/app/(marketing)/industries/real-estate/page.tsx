@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getIndustryContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Real Estate Photography | PhotoProOS",
-  description: "Deliver property listings to agents and brokerages with seamless integration. MLS-ready delivery, agent branding, and virtual tour integration.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getIndustryContent("real-estate");
+  return {
+    title: meta.title || "Real Estate Photography | PhotoProOS",
+    description: meta.description || "Deliver property listings to agents and brokerages with seamless integration. MLS-ready delivery, agent branding, and virtual tour integration.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const features = [
   {

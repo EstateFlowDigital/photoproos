@@ -1,9 +1,15 @@
-export const dynamic = "force-dynamic";
-
+import { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "@/lib/actions/auth-helper";
 import { PageHeader } from "@/components/dashboard";
+
+export const metadata: Metadata = {
+  title: "Batch Operations | PhotoProOS",
+  description: "Perform bulk operations on galleries and assets.",
+};
+
+export const dynamic = "force-dynamic";
 
 export default async function BatchProcessingPage() {
   const organizationId = await requireOrganizationId();

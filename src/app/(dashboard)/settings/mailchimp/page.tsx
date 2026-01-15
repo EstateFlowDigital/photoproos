@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Mailchimp Integration | PhotoProOS",
+  description: "Sync contacts with your Mailchimp email lists.",
+};
+
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";

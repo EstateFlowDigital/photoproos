@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Help Center | PhotoProOS",
+  description: "Find answers, guides, and support resources.",
+};
+
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";

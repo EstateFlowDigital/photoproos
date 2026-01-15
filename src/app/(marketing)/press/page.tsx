@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getMarketingPageContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Press Kit | PhotoProOS",
-  description: "Download PhotoProOS brand assets, logos, and press materials.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getMarketingPageContent("press");
+  return {
+    title: meta.title || "Press Kit | PhotoProOS",
+    description: meta.description || "Download PhotoProOS brand assets, logos, and press materials.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const pressReleases = [
   {
@@ -32,7 +38,10 @@ const mediaContacts = [
   },
 ];
 
-export default function PressPage() {
+export default async function PressPage() {
+  // Fetch CMS content
+  const { content } = await getMarketingPageContent("press");
+
   return (
     <main className="relative min-h-screen bg-background" data-element="press-page">
       {/* Hero */}

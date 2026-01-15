@@ -1,8 +1,15 @@
-export const dynamic = "force-dynamic";
+import { Metadata } from "next";
 import { PageHeader } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import { SocialClient } from "./social-client";
+
+export const metadata: Metadata = {
+  title: "Social Media | PhotoProOS",
+  description: "Schedule and manage social media posts.",
+};
+
+export const dynamic = "force-dynamic";
 
 export default async function SocialPage() {
   const auth = await getAuthContext();

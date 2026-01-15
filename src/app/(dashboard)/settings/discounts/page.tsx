@@ -1,5 +1,11 @@
+import { Metadata } from "next";
 import { Suspense } from "react";
 import { getOrgDiscounts, getOrgDiscountStats } from "@/lib/actions/organization-discounts";
+
+export const metadata: Metadata = {
+  title: "Discount Settings | PhotoProOS",
+  description: "Create and manage discount codes and promotions.",
+};
 import { DiscountsSettingsClient } from "./discounts-settings-client";
 
 // Uses org headers/session data; ensure dynamic rendering

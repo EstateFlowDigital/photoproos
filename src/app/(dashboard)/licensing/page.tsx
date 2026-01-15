@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Licensing | PhotoProOS",
+  description: "Manage photo licensing and usage rights.",
+};
+
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";

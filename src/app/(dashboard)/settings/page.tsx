@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Settings | PhotoProOS",
+  description: "Configure your PhotoProOS account settings and preferences.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { PageHeader, PageContextNav } from "@/components/dashboard";

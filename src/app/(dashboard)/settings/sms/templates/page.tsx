@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "SMS Templates | PhotoProOS",
+  description: "Create SMS message templates.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { PageHeader, Breadcrumb } from "@/components/dashboard";

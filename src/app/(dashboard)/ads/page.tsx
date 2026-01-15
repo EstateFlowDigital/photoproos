@@ -1,5 +1,12 @@
-export const dynamic = "force-dynamic";
+import { Metadata } from "next";
 import { PageHeader } from "@/components/dashboard";
+
+export const metadata: Metadata = {
+  title: "Advertising | PhotoProOS",
+  description: "Manage advertising campaigns for your business.",
+};
+
+export const dynamic = "force-dynamic";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 import { AdsClient } from "./ads-client";

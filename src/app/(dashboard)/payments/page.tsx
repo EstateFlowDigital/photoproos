@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Payments | PhotoProOS",
+  description: "View and manage payments received from clients with transaction history and status tracking.",
+};
+
 export const dynamic = "force-dynamic";
 import { PageHeader, PageContextNav, StatCard } from "@/components/dashboard";
 import { prisma } from "@/lib/db";

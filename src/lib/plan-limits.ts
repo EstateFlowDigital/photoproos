@@ -103,7 +103,7 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
   free: {
     limits: {
       // Storage & Files
-      storage_gb: 2,
+      storage_gb: 25, // 25GB system storage included
       galleries_active: 5,
       photos_per_gallery: 100,
       // Clients & CRM
@@ -160,37 +160,39 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
 
   // ===========================================================================
   // PRO PLAN - $49/mo - For growing photographers
+  // 500GB system storage included
+  // Limited on operational features to encourage upgrade to Studio
   // ===========================================================================
   pro: {
     limits: {
-      // Storage & Files
-      storage_gb: 50,
-      galleries_active: -1, // Unlimited
+      // Storage & Files - 500GB system storage
+      storage_gb: 500, // 500GB system storage included
+      galleries_active: 50, // Limited galleries (upgrade to Studio for unlimited)
       photos_per_gallery: 500,
-      // Clients & CRM
-      clients_total: -1,
-      leads_total: -1,
-      // Team
+      // Clients & CRM - Limited
+      clients_total: 100,
+      leads_total: 200,
+      // Team - Limited
       team_members: 3,
-      // Billing
-      invoices_per_month: -1,
-      contracts_per_month: -1,
-      estimates_per_month: -1,
-      // Communication
+      // Billing - Limited monthly caps
+      invoices_per_month: 50,
+      contracts_per_month: 25,
+      estimates_per_month: 25,
+      // Communication - Limited
       emails_per_month: 500,
       sms_per_month: 50,
       email_accounts_synced: 2,
-      // AI & Advanced
+      // AI & Advanced - Limited
       ai_credits_per_month: 100,
       marketing_generations_per_month: 25,
-      // Properties & Websites
+      // Properties & Websites - Limited
       properties_active: 25,
       portfolio_websites: 3,
       custom_domains: 1,
-      // Scheduling
-      bookings_per_month: -1,
+      // Scheduling - Limited
+      bookings_per_month: 100,
       booking_types: 10,
-      // Other
+      // Other - Limited
       questionnaire_templates: 10,
       contract_templates: 10,
       canned_responses: 25,
@@ -202,8 +204,8 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
       white_label: false,
       hide_platform_branding: false,
       custom_domain_org: true,
-      api_access: true,
-      webhooks: true,
+      api_access: false, // API access requires Studio
+      webhooks: false, // Webhooks require Studio
       sso_saml: false,
       priority_support: true,
       dedicated_support: false,
@@ -220,38 +222,40 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
   },
 
   // ===========================================================================
-  // STUDIO PLAN - $99/mo - For established studios
+  // STUDIO PLAN - $99/mo - For established studios & teams
+  // Key value: UNLIMITED USAGE - Everything unlimited, 1TB system storage
+  // Higher limits across all operational features for busy studios
   // ===========================================================================
   studio: {
     limits: {
-      // Storage & Files
-      storage_gb: 500,
-      galleries_active: -1,
-      photos_per_gallery: -1,
-      // Clients & CRM
+      // Storage & Files - 1TB system storage included
+      storage_gb: 1000, // 1TB system storage, can purchase overage
+      galleries_active: -1, // Unlimited galleries
+      photos_per_gallery: -1, // Unlimited photos per gallery
+      // Clients & CRM - Unlimited
       clients_total: -1,
       leads_total: -1,
-      // Team
+      // Team - Higher limit
       team_members: 10,
-      // Billing
+      // Billing - Unlimited
       invoices_per_month: -1,
       contracts_per_month: -1,
       estimates_per_month: -1,
-      // Communication
-      emails_per_month: 2000,
-      sms_per_month: 200,
-      email_accounts_synced: 5,
-      // AI & Advanced
-      ai_credits_per_month: 500,
-      marketing_generations_per_month: 100,
-      // Properties & Websites
-      properties_active: 100,
-      portfolio_websites: 10,
-      custom_domains: 5,
-      // Scheduling
+      // Communication - Higher limits
+      emails_per_month: -1, // Unlimited emails
+      sms_per_month: 500, // Higher SMS limit
+      email_accounts_synced: 10,
+      // AI & Advanced - Higher limits
+      ai_credits_per_month: 1000,
+      marketing_generations_per_month: 250,
+      // Properties & Websites - Higher limits
+      properties_active: -1, // Unlimited properties
+      portfolio_websites: -1, // Unlimited portfolios
+      custom_domains: 10,
+      // Scheduling - Unlimited
       bookings_per_month: -1,
       booking_types: -1,
-      // Other
+      // Other - Unlimited
       questionnaire_templates: -1,
       contract_templates: -1,
       canned_responses: -1,
@@ -281,28 +285,31 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
   },
 
   // ===========================================================================
-  // ENTERPRISE PLAN - $249/mo - For agencies & large teams
+  // ENTERPRISE PLAN - $349/mo - For agencies & large teams
+  // Key value: UNLIMITED EVERYTHING + 10TB system storage included (soft cap)
+  // Additional storage can be purchased at $199/10TB
   // ===========================================================================
   enterprise: {
     limits: {
-      // Everything unlimited
-      storage_gb: -1,
+      // Storage - 10TB system storage included (soft cap, marketed as "unlimited")
+      storage_gb: 10000, // 10TB system storage included
+      // Everything else - Truly unlimited
       galleries_active: -1,
       photos_per_gallery: -1,
       clients_total: -1,
       leads_total: -1,
-      team_members: -1,
+      team_members: -1, // Unlimited team members
       invoices_per_month: -1,
       contracts_per_month: -1,
       estimates_per_month: -1,
       emails_per_month: -1,
-      sms_per_month: -1,
+      sms_per_month: -1, // Unlimited SMS
       email_accounts_synced: -1,
-      ai_credits_per_month: -1,
+      ai_credits_per_month: -1, // Unlimited AI
       marketing_generations_per_month: -1,
       properties_active: -1,
       portfolio_websites: -1,
-      custom_domains: -1,
+      custom_domains: -1, // Unlimited custom domains
       bookings_per_month: -1,
       booking_types: -1,
       questionnaire_templates: -1,
@@ -318,9 +325,9 @@ export const PLAN_LIMITS: Record<PlanName, PlanLimits> = {
       custom_domain_org: true,
       api_access: true,
       webhooks: true,
-      sso_saml: true,
+      sso_saml: true, // Enterprise-only SSO/SAML
       priority_support: true,
-      dedicated_support: true,
+      dedicated_support: true, // Enterprise-only dedicated support
       advanced_analytics: true,
       batch_processing: true,
       tax_prep_export: true,
@@ -750,22 +757,22 @@ export function getUpgradeSuggestion(currentPlan: PlanName): {
     case "free":
       return {
         suggestedPlan: "pro",
-        message: "Upgrade to Pro for unlimited galleries, more storage, and priority support.",
+        message: "Upgrade to Pro for 500GB storage, Gallery Sleep Mode, more clients, and priority support.",
       };
     case "pro":
       return {
         suggestedPlan: "studio",
-        message: "Upgrade to Studio for white-label branding, more team members, and advanced analytics.",
+        message: "Upgrade to Studio for 1TB storage, unlimited galleries, clients, invoices, white-label branding, and API access.",
       };
     case "studio":
       return {
         suggestedPlan: "enterprise",
-        message: "Upgrade to Enterprise for unlimited everything, SSO, and dedicated support.",
+        message: "Upgrade to Enterprise for unlimited storage (10TB included), unlimited team members, SSO, and dedicated support.",
       };
     case "enterprise":
       return {
         suggestedPlan: null,
-        message: "You're on our highest plan with unlimited access.",
+        message: "You're on our highest plan with unlimited access. Need more storage? Add 10TB for $199/month.",
       };
     default:
       return {
@@ -815,9 +822,113 @@ export function comparePlans(
 // PLAN PRICING (for reference, actual pricing in Stripe)
 // =============================================================================
 
-export const PLAN_PRICING: Record<PlanName, { monthly: number; yearly: number; name: string }> = {
-  free: { monthly: 0, yearly: 0, name: "Free" },
-  pro: { monthly: 49, yearly: 470, name: "Pro" },
-  studio: { monthly: 99, yearly: 950, name: "Studio" },
-  enterprise: { monthly: 249, yearly: 2390, name: "Enterprise" },
+/**
+ * Pricing structure with beta discounts and lifetime deals
+ * - Beta pricing: Current promotional pricing during beta period
+ * - Regular pricing: Post-beta pricing (shown as strikethrough)
+ * - Lifetime: One-time payment for lifetime access
+ */
+export interface PlanPricing {
+  name: string;
+  // Monthly pricing
+  monthlyBeta: number; // Current beta price
+  monthlyRegular: number; // Post-beta price (for strikethrough display)
+  // Annual pricing (per month equivalent)
+  yearlyBeta: number; // Total annual beta price
+  yearlyRegular: number; // Total annual post-beta price
+  // Lifetime deal
+  lifetime: number | null; // One-time payment, null if not available
+  lifetimeRegular: number | null; // Post-beta lifetime price (for strikethrough)
+}
+
+export const PLAN_PRICING: Record<PlanName, PlanPricing> = {
+  free: {
+    name: "Free",
+    monthlyBeta: 0,
+    monthlyRegular: 0,
+    yearlyBeta: 0,
+    yearlyRegular: 0,
+    lifetime: null, // No lifetime deal for free
+    lifetimeRegular: null,
+  },
+  pro: {
+    name: "Pro",
+    monthlyBeta: 49,
+    monthlyRegular: 79, // Post-beta: $79/mo
+    yearlyBeta: 470, // ~$39/mo
+    yearlyRegular: 790, // Post-beta: ~$66/mo
+    lifetime: 500, // Beta LTD: $500
+    lifetimeRegular: 799, // Post-beta LTD: $799
+  },
+  studio: {
+    name: "Studio",
+    monthlyBeta: 99,
+    monthlyRegular: 149, // Post-beta: $149/mo
+    yearlyBeta: 950, // ~$79/mo
+    yearlyRegular: 1490, // Post-beta: ~$124/mo
+    lifetime: 1000, // Beta LTD: $1,000
+    lifetimeRegular: 1499, // Post-beta LTD: $1,499
+  },
+  enterprise: {
+    name: "Enterprise",
+    monthlyBeta: 349,
+    monthlyRegular: 549, // Post-beta: $549/mo
+    yearlyBeta: 3350, // ~$279/mo
+    yearlyRegular: 5490, // Post-beta: ~$458/mo
+    lifetime: 3500, // Beta LTD: $3,500
+    lifetimeRegular: 5499, // Post-beta LTD: $5,499
+  },
 };
+
+// =============================================================================
+// BETA & LIFETIME DEAL SETTINGS
+// =============================================================================
+
+export const BETA_SETTINGS = {
+  /** Whether beta pricing is currently active */
+  isBetaActive: true,
+  /** Beta period end date (for countdown display) */
+  betaEndsAt: new Date("2025-06-30T23:59:59Z"),
+  /** Maximum LTD slots available (null for unlimited during beta) */
+  ltdSlotsTotal: 500,
+  /** LTD slots remaining (would be fetched from DB in production) */
+  ltdSlotsRemaining: 500,
+  /** Discount percentage for in-app purchases for LTD holders */
+  ltdInAppDiscount: 0.10, // 10% discount
+  /** Storage add-on pricing: $199/month per 10TB (all paid plans) */
+  storageAddonPrice: 199, // $199/month
+  storageAddonAmount: 10000, // 10TB in GB
+  /** Storage overage available per plan */
+  storageOverageAvailable: {
+    free: false, // Cannot purchase overage - must upgrade
+    pro: true, // $199/10TB available
+    studio: true, // $199/10TB available
+    enterprise: true, // $199/10TB available
+  } as Record<PlanName, boolean>,
+};
+
+/**
+ * Lifetime Deal includes:
+ * - All current and future features
+ * - All modules
+ * - Storage allocation per plan tier
+ * - All future updates
+ * - 10% discount on in-app purchases (custom domains, storage, etc.)
+ */
+export const LIFETIME_DEAL_INCLUDES = [
+  "All current and future features",
+  "All modules and updates forever",
+  "Storage included with your plan tier",
+  "10% discount on all in-app purchases",
+  "Priority support",
+  "No recurring payments ever",
+] as const;
+
+// Legacy helper for backward compatibility
+export function getPlanPrice(plan: PlanName, interval: "monthly" | "yearly"): number {
+  const pricing = PLAN_PRICING[plan];
+  if (interval === "monthly") {
+    return BETA_SETTINGS.isBetaActive ? pricing.monthlyBeta : pricing.monthlyRegular;
+  }
+  return BETA_SETTINGS.isBetaActive ? pricing.yearlyBeta : pricing.yearlyRegular;
+}

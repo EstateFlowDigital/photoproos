@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Analytics | PhotoProOS",
+  description: "View detailed analytics and insights about your photography business performance.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { Suspense } from "react";

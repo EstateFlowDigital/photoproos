@@ -1,7 +1,14 @@
-export const dynamic = "force-dynamic";
+import { Metadata } from "next";
 import { ComingSoonPage } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Trash | PhotoProOS",
+  description: "Recover deleted items before permanent removal.",
+};
+
+export const dynamic = "force-dynamic";
 
 export default async function TrashPage() {
   const auth = await getAuthContext();

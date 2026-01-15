@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Properties | PhotoProOS",
+  description: "Manage real estate properties for photography shoots.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { getAuthContext } from "@/lib/auth/clerk";

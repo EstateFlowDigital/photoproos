@@ -1,7 +1,14 @@
-export const dynamic = "force-dynamic";
+import { Metadata } from "next";
 import { ComingSoonPage } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Timeline | PhotoProOS",
+  description: "View project and business timeline.",
+};
+
+export const dynamic = "force-dynamic";
 
 export default async function TimelinePage() {
   const auth = await getAuthContext();

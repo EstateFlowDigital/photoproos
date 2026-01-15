@@ -1,11 +1,17 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { NewsletterForm } from "./newsletter-form";
+import { getMarketingPageContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Blog | PhotoProOS",
-  description: "Tips, guides, and insights for professional photographers. Learn how to grow your photography business.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getMarketingPageContent("blog");
+  return {
+    title: meta.title || "Blog | PhotoProOS",
+    description: meta.description || "Tips, guides, and insights for professional photographers. Learn how to grow your photography business.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const featuredPost = {
   title: "How to Price Your Photography Services for Maximum Profit",
@@ -77,7 +83,10 @@ const categories = [
   { name: "Productivity", count: 3 },
 ];
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  // Fetch CMS content
+  const { content } = await getMarketingPageContent("blog");
+
   return (
     <main className="relative min-h-screen bg-background" data-element="blog-page">
       {/* Hero */}

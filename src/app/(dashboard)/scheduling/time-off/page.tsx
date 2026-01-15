@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Time Off | PhotoProOS",
+  description: "Block off time for vacations and breaks.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";

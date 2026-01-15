@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Session Types | PhotoProOS",
+  description: "Configure different session types and durations.",
+};
+
 export const dynamic = "force-dynamic";
 import { PageHeader, PageContextNav } from "@/components/dashboard";
 import { getBookingTypes, seedDefaultBookingTypes } from "@/lib/actions/booking-types";

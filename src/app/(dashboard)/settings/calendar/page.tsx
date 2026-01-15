@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Calendar Settings | PhotoProOS",
+  description: "Configure calendar sync and scheduling preferences.",
+};
+
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";

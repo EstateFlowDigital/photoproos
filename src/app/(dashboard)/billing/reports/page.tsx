@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Billing Reports | PhotoProOS",
+  description: "Access detailed billing and financial reports.",
+};
+
 import { PageHeader, PageContextNav } from "@/components/dashboard";
 import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "@/lib/actions/auth-helper";

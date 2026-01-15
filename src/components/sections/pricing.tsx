@@ -4,48 +4,53 @@ import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
+import {
+  PLAN_PRICING,
+  BETA_SETTINGS,
+  LIFETIME_DEAL_INCLUDES,
+  type PlanPricing,
+} from "@/lib/plan-limits";
+
+type BillingInterval = "monthly" | "annual" | "lifetime";
 
 interface PricingTier {
   name: string;
-  price: string;
-  period: string;
+  planKey: "free" | "pro" | "studio" | "enterprise";
   description: string;
   features: string[];
   cta: string;
   ctaHref: string;
   popular?: boolean;
-  enterprise?: boolean;
 }
 
 const pricingTiers: PricingTier[] = [
   {
     name: "Free",
-    price: "$0",
-    period: "forever",
+    planKey: "free",
     description: "Perfect for getting started and trying out PhotoProOS.",
     features: [
+      "25 GB storage",
       "Up to 5 active galleries",
+      "25 clients",
       "Basic gallery themes",
       "Client portal access",
       "Email support",
-      "PhotoProOS branding",
     ],
     cta: "Get started free",
     ctaHref: "/dashboard",
   },
   {
     name: "Pro",
-    price: "$29",
-    period: "per month",
-    description: "For professional photographers ready to grow their business.",
+    planKey: "pro",
+    description: "For growing photographers who need more space.",
     features: [
-      "Unlimited galleries",
+      "500 GB storage",
+      "50 active galleries",
+      "100 clients",
       "Custom branding",
       "Payment processing",
-      "Automated workflows",
       "Priority email support",
-      "Client management CRM",
-      "Analytics dashboard",
+      "3 team members",
     ],
     cta: "Start free trial",
     ctaHref: "/dashboard",
@@ -53,46 +58,89 @@ const pricingTiers: PricingTier[] = [
   },
   {
     name: "Studio",
-    price: "$79",
-    period: "per month",
-    description: "For busy studios and photography teams.",
+    planKey: "studio",
+    description: "For busy studios with unlimited usage needs.",
     features: [
-      "Everything in Pro",
-      "Team collaboration (up to 5)",
+      "1 TB storage",
+      "Unlimited galleries",
+      "Unlimited clients",
+      "White-label portal",
+      "API & webhooks access",
       "Advanced analytics",
-      "Custom contracts",
-      "Priority phone support",
-      "White-label client portal",
-      "API access",
-      "Dedicated account manager",
+      "10 team members",
     ],
     cta: "Start free trial",
     ctaHref: "/dashboard",
   },
   {
     name: "Enterprise",
-    price: "Custom",
-    period: "pricing",
-    description: "For large organizations with custom requirements.",
+    planKey: "enterprise",
+    description: "For agencies with custom requirements.",
     features: [
-      "Everything in Studio",
+      "Unlimited storage",
+      "Unlimited everything",
       "Unlimited team members",
-      "Custom integrations",
+      "SSO/SAML",
       "SLA guarantee",
-      "Dedicated infrastructure",
-      "Onboarding & training",
-      "Custom feature development",
+      "Dedicated support",
+      "Custom integrations",
     ],
     cta: "Contact sales",
     ctaHref: "/contact",
-    enterprise: true,
   },
 ];
 
-function PricingCard({ tier, isAnnual }: { tier: PricingTier; isAnnual: boolean }) {
-  const monthlyPrice = parseInt(tier.price.replace("$", "")) || 0;
-  const annualPrice = Math.floor(monthlyPrice * 0.8);
-  const displayPrice = tier.enterprise ? tier.price : (isAnnual && monthlyPrice > 0 ? `$${annualPrice}` : tier.price);
+function getPriceDisplay(
+  pricing: PlanPricing,
+  interval: BillingInterval,
+  isBeta: boolean
+): { price: string; originalPrice?: string; period: string; savings?: string } {
+  if (pricing.monthlyBeta === 0) {
+    return { price: "$0", period: "forever" };
+  }
+
+  switch (interval) {
+    case "monthly":
+      return {
+        price: `$${isBeta ? pricing.monthlyBeta : pricing.monthlyRegular}`,
+        originalPrice: isBeta ? `$${pricing.monthlyRegular}` : undefined,
+        period: "per month",
+      };
+    case "annual":
+      const monthlyEquiv = Math.round(
+        (isBeta ? pricing.yearlyBeta : pricing.yearlyRegular) / 12
+      );
+      const monthlySavings = (isBeta ? pricing.monthlyBeta : pricing.monthlyRegular) - monthlyEquiv;
+      return {
+        price: `$${monthlyEquiv}`,
+        originalPrice: isBeta ? `$${Math.round(pricing.yearlyRegular / 12)}` : undefined,
+        period: "per month",
+        savings: `Save $${monthlySavings * 12}/year`,
+      };
+    case "lifetime":
+      if (!pricing.lifetime) return { price: "N/A", period: "" };
+      return {
+        price: `$${isBeta ? pricing.lifetime : pricing.lifetimeRegular}`,
+        originalPrice: isBeta && pricing.lifetimeRegular ? `$${pricing.lifetimeRegular}` : undefined,
+        period: "one-time",
+        savings: "Pay once, use forever",
+      };
+  }
+}
+
+function PricingCard({
+  tier,
+  interval,
+  onLifetimeClick,
+}: {
+  tier: PricingTier;
+  interval: BillingInterval;
+  onLifetimeClick: () => void;
+}) {
+  const pricing = PLAN_PRICING[tier.planKey];
+  const isBeta = BETA_SETTINGS.isBetaActive;
+  const { price, originalPrice, period, savings } = getPriceDisplay(pricing, interval, isBeta);
+  const hasLifetime = pricing.lifetime !== null && interval !== "lifetime";
 
   return (
     <div
@@ -120,18 +168,41 @@ function PricingCard({ tier, isAnnual }: { tier: PricingTier; isAnnual: boolean 
         </div>
       )}
 
+      {/* Beta badge */}
+      {isBeta && tier.planKey !== "free" && (
+        <div className="absolute -top-3 right-4 rounded-full bg-[var(--success)] px-3 py-1 text-xs font-medium text-white">
+          Beta Pricing
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-6">
         <h3 className="text-xl font-semibold text-foreground">{tier.name}</h3>
-        <div className="mt-4 flex items-baseline gap-1">
-          <span className="text-4xl font-bold text-foreground">{displayPrice}</span>
-          <span className="text-sm text-foreground-muted">/{tier.period}</span>
+        <div className="mt-4 flex items-baseline gap-2">
+          <span className="text-4xl font-bold text-foreground">{price}</span>
+          {originalPrice && (
+            <span className="text-lg text-foreground-muted line-through">{originalPrice}</span>
+          )}
+          <span className="text-sm text-foreground-muted">/{period}</span>
         </div>
-        {isAnnual && monthlyPrice > 0 && !tier.enterprise && (
-          <p className="mt-1 text-sm text-[var(--success)]">Save 20% with annual billing</p>
+        {savings && (
+          <p className="mt-1 text-sm text-[var(--success)]">{savings}</p>
         )}
         <p className="mt-3 text-sm text-foreground-secondary">{tier.description}</p>
       </div>
+
+      {/* Lifetime Deal Link */}
+      {hasLifetime && (
+        <button
+          onClick={onLifetimeClick}
+          className="mb-4 flex items-center gap-2 rounded-lg border border-[var(--ai)]/30 bg-[var(--ai)]/10 px-3 py-2 text-sm text-[var(--ai)] transition-colors hover:bg-[var(--ai)]/20"
+        >
+          <SparklesIcon className="h-4 w-4" />
+          <span>
+            Lifetime deal: <strong>${pricing.lifetime}</strong>
+          </span>
+        </button>
+      )}
 
       {/* Features */}
       <ul className="mb-8 flex-1 space-y-3">
@@ -141,6 +212,18 @@ function PricingCard({ tier, isAnnual }: { tier: PricingTier; isAnnual: boolean 
             <span className="text-sm text-foreground-secondary">{feature}</span>
           </li>
         ))}
+        {interval === "lifetime" && pricing.lifetime && (
+          <>
+            <li className="flex items-start gap-3">
+              <CheckIcon className="mt-0.5 h-5 w-5 shrink-0 text-[var(--ai)]" />
+              <span className="text-sm text-[var(--ai)]">10% off all in-app purchases</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <CheckIcon className="mt-0.5 h-5 w-5 shrink-0 text-[var(--ai)]" />
+              <span className="text-sm text-[var(--ai)]">All future updates included</span>
+            </li>
+          </>
+        )}
       </ul>
 
       {/* CTA */}
@@ -148,24 +231,42 @@ function PricingCard({ tier, isAnnual }: { tier: PricingTier; isAnnual: boolean 
         href={tier.ctaHref}
         className={cn(
           "block w-full rounded-lg py-3 text-center text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)]",
-          tier.popular || tier.enterprise
+          tier.popular || tier.planKey === "enterprise"
             ? "bg-foreground text-[var(--background)] hover:opacity-90"
             : "border border-[var(--card-border)] bg-transparent text-foreground hover:bg-[var(--background-elevated)] hover:border-[var(--border-emphasis)]"
         )}
       >
-        {tier.cta}
+        {interval === "lifetime" && pricing.lifetime ? "Get Lifetime Access" : tier.cta}
       </Link>
     </div>
   );
 }
 
 export function PricingSection() {
-  const [isAnnual, setIsAnnual] = React.useState(true);
+  const [interval, setInterval] = React.useState<BillingInterval>("annual");
   const { ref, isVisible } = useScrollAnimation();
+  const isBeta = BETA_SETTINGS.isBetaActive;
 
   return (
     <section id="pricing" ref={ref} className="relative z-10 py-20 lg:py-32">
       <div className="mx-auto max-w-[1512px] px-6 lg:px-[124px]">
+        {/* Beta Banner */}
+        {isBeta && (
+          <div
+            className="mb-8 rounded-xl border border-[var(--success)]/30 bg-[var(--success)]/10 p-4 text-center"
+            style={{
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? "none" : "translateY(20px)",
+              transition: "opacity 600ms ease-out, transform 600ms ease-out",
+            }}
+          >
+            <p className="text-sm text-foreground">
+              <span className="font-semibold text-[var(--success)]">Beta Exclusive Pricing</span>
+              {" — "}Lock in these prices before they increase. Limited time offer.
+            </p>
+          </div>
+        )}
+
         {/* Section Header */}
         <div className="mb-12 text-center lg:mb-16">
           <div
@@ -194,7 +295,9 @@ export function PricingSection() {
             }}
           >
             <span className="text-foreground">Simple,</span>{" "}
-            <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">transparent pricing</span>
+            <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">
+              transparent pricing
+            </span>
           </h2>
           <p
             className="mx-auto mt-6 max-w-2xl text-lg text-foreground-secondary"
@@ -205,46 +308,93 @@ export function PricingSection() {
               transitionDelay: "200ms",
             }}
           >
-            Start free, upgrade when you're ready. No hidden fees, no surprises.
+            Start free, upgrade when you&apos;re ready. No hidden fees, no surprises.
           </p>
 
-          {/* Billing Toggle */}
+          {/* Billing Toggle - Three Options */}
           <div
-            className="mt-8 inline-flex items-center gap-4 rounded-full border border-[var(--card-border)] bg-[var(--card)] p-1"
+            className="mt-8 inline-flex items-center gap-1 rounded-full border border-[var(--card-border)] bg-[var(--card)] p-1"
             style={{
               opacity: isVisible ? 1 : 0,
               transform: isVisible ? "none" : "translateY(30px)",
               transition: "opacity 700ms ease-out, transform 700ms ease-out",
               transitionDelay: "300ms",
             }}
+            role="tablist"
+            aria-label="Billing interval"
           >
             <button
-              onClick={() => setIsAnnual(false)}
+              onClick={() => setInterval("monthly")}
               className={cn(
                 "rounded-full px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)]",
-                !isAnnual
+                interval === "monthly"
                   ? "bg-foreground text-[var(--background)]"
                   : "text-foreground-muted hover:text-foreground"
               )}
-              aria-pressed={!isAnnual}
+              role="tab"
+              aria-selected={interval === "monthly"}
             >
               Monthly
             </button>
             <button
-              onClick={() => setIsAnnual(true)}
+              onClick={() => setInterval("annual")}
               className={cn(
                 "rounded-full px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)]",
-                isAnnual
+                interval === "annual"
                   ? "bg-foreground text-[var(--background)]"
                   : "text-foreground-muted hover:text-foreground"
               )}
-              aria-pressed={isAnnual}
+              role="tab"
+              aria-selected={interval === "annual"}
             >
               Annual
               <span className="ml-1.5 text-xs text-[var(--success)]">-20%</span>
             </button>
+            <button
+              onClick={() => setInterval("lifetime")}
+              className={cn(
+                "rounded-full px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card)]",
+                interval === "lifetime"
+                  ? "bg-[var(--ai)] text-white"
+                  : "text-foreground-muted hover:text-foreground"
+              )}
+              role="tab"
+              aria-selected={interval === "lifetime"}
+            >
+              <SparklesIcon className="mr-1 inline-block h-3.5 w-3.5" />
+              Lifetime
+            </button>
           </div>
         </div>
+
+        {/* Lifetime Deal Banner */}
+        {interval === "lifetime" && (
+          <div
+            className="mb-8 rounded-xl border border-[var(--ai)]/30 bg-gradient-to-r from-[var(--ai)]/10 to-[var(--primary)]/10 p-6"
+            style={{
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? "none" : "translateY(20px)",
+              transition: "opacity 600ms ease-out, transform 600ms ease-out",
+            }}
+          >
+            <div className="flex flex-col items-center gap-4 text-center md:flex-row md:text-left">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--ai)]/20">
+                <SparklesIcon className="h-6 w-6 text-[var(--ai)]" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-foreground">Lifetime Deal — Beta Exclusive</h3>
+                <p className="mt-1 text-sm text-foreground-secondary">
+                  Pay once, use forever. Includes all current and future features, updates, and 10% off all in-app purchases.
+                  {isBeta && (
+                    <span className="ml-1 text-[var(--ai)]">
+                      Only {BETA_SETTINGS.ltdSlotsRemaining} of {BETA_SETTINGS.ltdSlotsTotal} slots remaining.
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Pricing Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -258,7 +408,11 @@ export function PricingSection() {
                 transitionDelay: `${400 + index * 100}ms`,
               }}
             >
-              <PricingCard tier={tier} isAnnual={isAnnual} />
+              <PricingCard
+                tier={tier}
+                interval={interval}
+                onLifetimeClick={() => setInterval("lifetime")}
+              />
             </div>
           ))}
         </div>
@@ -274,6 +428,7 @@ export function PricingSection() {
           }}
         >
           All plans include a 14-day free trial. No credit card required to start.
+          {isBeta && " Beta pricing ends soon — lock in your rate today."}
         </p>
 
         {/* Feature Comparison Table */}
@@ -301,18 +456,28 @@ export function PricingSection() {
                     transitionDelay: "950ms",
                   }}
                 >
-                  <th scope="col" className="py-4 pr-4 text-left text-sm font-medium text-foreground-muted">Feature</th>
-                  <th scope="col" className="px-4 py-4 text-center text-sm font-medium text-foreground">Free</th>
-                  <th scope="col" className="px-4 py-4 text-center text-sm font-medium text-foreground">Pro</th>
-                  <th scope="col" className="px-4 py-4 text-center text-sm font-medium text-foreground">Studio</th>
-                  <th scope="col" className="px-4 py-4 text-center text-sm font-medium text-foreground">Enterprise</th>
+                  <th scope="col" className="py-4 pr-4 text-left text-sm font-medium text-foreground-muted">
+                    Feature
+                  </th>
+                  <th scope="col" className="px-4 py-4 text-center text-sm font-medium text-foreground">
+                    Free
+                  </th>
+                  <th scope="col" className="px-4 py-4 text-center text-sm font-medium text-foreground">
+                    Pro
+                  </th>
+                  <th scope="col" className="px-4 py-4 text-center text-sm font-medium text-foreground">
+                    Studio
+                  </th>
+                  <th scope="col" className="px-4 py-4 text-center text-sm font-medium text-foreground">
+                    Enterprise
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {comparisonFeatures.map((feature, index) => (
                   <tr
                     key={index}
-                    className="border-b border-[var(--card-border)] hover:bg-[var(--background-secondary)] transition-colors"
+                    className="border-b border-[var(--card-border)] transition-colors hover:bg-[var(--background-secondary)]"
                     style={{
                       opacity: isVisible ? 1 : 0,
                       transform: isVisible ? "none" : "translateY(20px)",
@@ -344,22 +509,26 @@ export function PricingSection() {
   );
 }
 
-// Feature comparison data
+// Feature comparison data - aligned with plan-limits.ts
 const comparisonFeatures = [
-  { name: "Active galleries", free: "5", pro: "Unlimited", studio: "Unlimited", enterprise: "Unlimited" },
-  { name: "Storage", free: "2 GB", pro: "100 GB", studio: "500 GB", enterprise: "Unlimited" },
-  { name: "Custom branding", free: false, pro: true, studio: true, enterprise: true },
-  { name: "Remove PhotoProOS branding", free: false, pro: true, studio: true, enterprise: true },
+  { name: "Storage", free: "25 GB", pro: "500 GB", studio: "1 TB", enterprise: "Unlimited" },
+  { name: "Active galleries", free: "5", pro: "50", studio: "Unlimited", enterprise: "Unlimited" },
+  { name: "Clients", free: "25", pro: "100", studio: "Unlimited", enterprise: "Unlimited" },
+  { name: "Team members", free: "1", pro: "3", studio: "10", enterprise: "Unlimited" },
+  { name: "Custom branding", free: true, pro: true, studio: true, enterprise: true },
+  { name: "White-label (remove branding)", free: false, pro: false, studio: true, enterprise: true },
   { name: "Payment processing", free: false, pro: true, studio: true, enterprise: true },
   { name: "Transaction fee", free: "N/A", pro: "2.9% + 30¢", studio: "2.5% + 30¢", enterprise: "Custom" },
-  { name: "Client management CRM", free: false, pro: true, studio: true, enterprise: true },
-  { name: "Automated workflows", free: false, pro: true, studio: true, enterprise: true },
+  { name: "Invoices per month", free: "10", pro: "50", studio: "Unlimited", enterprise: "Unlimited" },
+  { name: "API & webhooks", free: false, pro: false, studio: true, enterprise: true },
   { name: "Analytics dashboard", free: "Basic", pro: "Standard", studio: "Advanced", enterprise: "Custom" },
-  { name: "Team members", free: "1", pro: "1", studio: "5", enterprise: "Unlimited" },
-  { name: "API access", free: false, pro: false, studio: true, enterprise: true },
   { name: "Custom domain", free: false, pro: true, studio: true, enterprise: true },
+  { name: "AI credits/month", free: "10", pro: "100", studio: "1,000", enterprise: "Unlimited" },
+  { name: "SSO/SAML", free: false, pro: false, studio: false, enterprise: true },
   { name: "Priority support", free: false, pro: "Email", studio: "Phone + Email", enterprise: "Dedicated" },
   { name: "SLA guarantee", free: false, pro: false, studio: false, enterprise: true },
+  { name: "Additional storage", free: "Upgrade required", pro: "$199/10 TB", studio: "$199/10 TB", enterprise: "$199/10 TB" },
+  { name: "Gallery sleep mode", free: false, pro: true, studio: true, enterprise: true },
 ];
 
 function FeatureValue({ value }: { value: boolean | string }) {
@@ -379,6 +548,14 @@ function FeatureValue({ value }: { value: boolean | string }) {
   return <span className="text-sm text-foreground-secondary">{value}</span>;
 }
 
+function SparklesIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+      <path d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" />
+    </svg>
+  );
+}
+
 function XIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
@@ -390,7 +567,11 @@ function XIcon({ className }: { className?: string }) {
 function CheckIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
+      <path
+        fillRule="evenodd"
+        d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z"
+        clipRule="evenodd"
+      />
     </svg>
   );
 }

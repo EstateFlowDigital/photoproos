@@ -38,7 +38,8 @@ const PricingSection = dynamic(() =>
 const TestimonialsSection = dynamic(() =>
   import("@/components/sections/testimonials").then((m) => m.TestimonialsSection)
 );
-const FAQSection = dynamic(() => import("@/components/sections/faq").then((m) => m.FAQSection));
+// FAQWithCMS is a server component wrapper that fetches from CMS
+import { FAQWithCMS } from "@/components/sections/faq-with-cms";
 const CTASection = dynamic(() => import("@/components/sections/cta").then((m) => m.CTASection));
 
 // Additional sections with interactive demos
@@ -197,9 +198,9 @@ export default async function Home() {
 
       <div className="section-divider" />
 
-      {/* FAQ Section */}
+      {/* FAQ Section - CMS-powered with fallback */}
       <LazySection placeholderHeight={280}>
-        <FAQSection />
+        <FAQWithCMS page="homepage" />
       </LazySection>
 
       {/* CTA Section - Final conversion */}

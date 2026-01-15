@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Messages | PhotoProOS",
+  description: "Communicate with clients through integrated messaging.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { MessageSquare, Edit } from "lucide-react";

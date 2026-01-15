@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getIndustryContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Events & Corporate Photography | PhotoProOS",
-  description: "Conferences, galas, and corporate event coverage with easy attendee access and download options.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getIndustryContent("events");
+  return {
+    title: meta.title || "Events & Corporate Photography | PhotoProOS",
+    description: meta.description || "Conferences, galas, and corporate event coverage with easy attendee access and download options.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const features = [
   { title: "Fast Turnaround", description: "Deliver same-day or next-day galleries for urgent events." },

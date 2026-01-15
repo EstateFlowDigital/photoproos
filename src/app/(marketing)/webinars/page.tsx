@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getMarketingPageContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Webinars | PhotoProOS",
-  description: "Live and on-demand webinars to help you grow your photography business with PhotoProOS.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getMarketingPageContent("webinars");
+  return {
+    title: meta.title || "Webinars | PhotoProOS",
+    description: meta.description || "Live and on-demand webinars to help you grow your photography business with PhotoProOS.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const upcomingWebinars = [
   {
@@ -64,7 +70,10 @@ const pastWebinars = [
   },
 ];
 
-export default function WebinarsPage() {
+export default async function WebinarsPage() {
+  // Fetch CMS content
+  const { content } = await getMarketingPageContent("webinars");
+
   return (
     <main className="relative min-h-screen bg-background" data-element="webinars-page">
       {/* Hero */}

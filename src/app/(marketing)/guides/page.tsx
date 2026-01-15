@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getMarketingPageContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Guides & Tutorials | PhotoProOS",
-  description: "Step-by-step guides and tutorials to help you get the most out of PhotoProOS.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getMarketingPageContent("guides");
+  return {
+    title: meta.title || "Guides & Tutorials | PhotoProOS",
+    description: meta.description || "Step-by-step guides and tutorials to help you get the most out of PhotoProOS.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const guides = [
   {
@@ -106,7 +112,10 @@ function getDifficultyColor(difficulty: string) {
   }
 }
 
-export default function GuidesPage() {
+export default async function GuidesPage() {
+  // Fetch CMS content
+  const { content } = await getMarketingPageContent("guides");
+
   const featuredGuides = guides.filter((g) => g.featured);
   const allGuides = guides.filter((g) => !g.featured);
 

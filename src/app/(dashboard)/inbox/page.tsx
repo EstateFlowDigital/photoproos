@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Inbox | PhotoProOS",
+  description: "View all client inquiries and form submissions.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";

@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Year in Review | PhotoProOS",
+  description: "View your annual business summary.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";

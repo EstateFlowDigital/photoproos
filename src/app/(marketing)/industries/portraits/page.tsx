@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getIndustryContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Headshots & Portraits Photography | PhotoProOS",
-  description: "Professional portraits and team photography with individual delivery options and client-friendly galleries.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getIndustryContent("portraits");
+  return {
+    title: meta.title || "Headshots & Portraits Photography | PhotoProOS",
+    description: meta.description || "Professional portraits and team photography with individual delivery options and client-friendly galleries.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const features = [
   { title: "Individual Delivery", description: "Each person gets their own private gallery link." },

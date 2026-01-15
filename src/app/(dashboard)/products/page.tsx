@@ -4,6 +4,12 @@ import { listProductCatalogs } from "@/lib/actions/products";
 import { ProductsClient } from "./products-client";
 import { WalkthroughWrapper } from "@/components/walkthrough";
 import { getWalkthroughPreference } from "@/lib/actions/walkthrough";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Products | PhotoProOS",
+  description: "Manage physical products and prints available for your photography clients.",
+};
 
 export const dynamic = "force-dynamic";
 

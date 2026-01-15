@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Galleries | PhotoProOS",
+  description: "Create, manage, and deliver photo galleries to your clients with customizable delivery options.",
+};
+
 export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";

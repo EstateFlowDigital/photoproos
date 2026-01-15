@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getMarketingPageContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Integrations | PhotoProOS",
-  description: "Connect PhotoProOS to the tools you already use. Payments, editing, storage, and marketing integrations in one place.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getMarketingPageContent("integrations");
+  return {
+    title: meta.title || "Integrations | PhotoProOS",
+    description: meta.description || "Connect PhotoProOS to the tools you already use. Payments, editing, storage, and marketing integrations in one place.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const integrationGroups = [
   {
@@ -49,7 +55,10 @@ const integrationGroups = [
   },
 ];
 
-export default function IntegrationsPage() {
+export default async function IntegrationsPage() {
+  // Fetch CMS content
+  const { content } = await getMarketingPageContent("integrations");
+
   return (
     <main className="relative min-h-screen bg-background" data-element="integrations-page">
       {/* Hero */}

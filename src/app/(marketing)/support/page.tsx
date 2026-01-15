@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getMarketingPageContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Help Center | PhotoProOS",
-  description: "Get help with PhotoProOS. Browse documentation, tutorials, and FAQs to make the most of your photography business platform.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getMarketingPageContent("support");
+  return {
+    title: meta.title || "Help Center | PhotoProOS",
+    description: meta.description || "Get help with PhotoProOS. Browse documentation, tutorials, and FAQs to make the most of your photography business platform.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const categories = [
   {
@@ -84,7 +90,10 @@ const popularArticles = [
   { title: "Exporting your data", category: "Account", href: "/help/account/data-export" },
 ];
 
-export default function HelpPage() {
+export default async function HelpPage() {
+  // Fetch CMS content
+  const { content } = await getMarketingPageContent("support");
+
   return (
     <main className="relative min-h-screen bg-background" data-element="support-page">
       {/* Hero */}

@@ -1,5 +1,12 @@
-export const dynamic = "force-dynamic";
+import { Metadata } from "next";
 import { ComingSoonPage } from "@/components/dashboard";
+
+export const metadata: Metadata = {
+  title: "Mentoring | PhotoProOS",
+  description: "Offer or receive photography mentorship.",
+};
+
+export const dynamic = "force-dynamic";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
 

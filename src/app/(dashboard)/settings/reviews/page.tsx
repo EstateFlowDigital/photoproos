@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Review Settings | PhotoProOS",
+  description: "Configure client review collection and display.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { PageHeader, Breadcrumb } from "@/components/dashboard";

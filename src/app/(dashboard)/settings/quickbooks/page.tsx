@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "QuickBooks Settings | PhotoProOS",
+  description: "Configure QuickBooks integration settings.",
+};
+
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";

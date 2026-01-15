@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Scheduling Availability | PhotoProOS",
+  description: "Set your available times for bookings.",
+};
+
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";

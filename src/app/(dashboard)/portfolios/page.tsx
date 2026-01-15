@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Portfolios | PhotoProOS",
+  description: "Showcase your photography work in online portfolios.",
+};
+
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";

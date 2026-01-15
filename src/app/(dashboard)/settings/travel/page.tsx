@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Travel Settings | PhotoProOS",
+  description: "Configure travel fees and service area boundaries.",
+};
+
 export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard";

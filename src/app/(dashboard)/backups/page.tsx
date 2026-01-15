@@ -1,7 +1,14 @@
-export const dynamic = "force-dynamic";
 import { ComingSoonPage } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Backups | PhotoProOS",
+  description: "Manage backup settings and restore points for your data.",
+};
+
+export const dynamic = "force-dynamic";
 
 export default async function BackupsPage() {
   const auth = await getAuthContext();

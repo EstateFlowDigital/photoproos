@@ -7,11 +7,408 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Static Metadata Exports for Dashboard Pages (Batch 17 - Services & Settings)** - Added SEO metadata to 9 dashboard pages:
+  - `/services/addons` - "Service Add-ons | PhotoProOS" - Manage add-on services for photography packages
+  - `/services/bundles` - "Service Bundles | PhotoProOS" - Create bundled service packages for clients
+  - `/galleries/services` - "Gallery Services | PhotoProOS" - Manage services linked to galleries
+  - `/contracts/templates` - "Contract Templates | PhotoProOS" - Create reusable contract templates
+  - `/settings/gallery-templates` - "Gallery Templates | PhotoProOS" - Customize gallery templates and layouts
+  - `/settings/canned-responses` - "Canned Responses | PhotoProOS" - Create quick response templates for messages
+  - `/settings/mls-presets` - "MLS Presets | PhotoProOS" - Configure MLS photo export presets
+  - `/settings/calendly` - "Calendly Integration | PhotoProOS" - Connect and sync with Calendly
+  - `/settings/quickbooks` - "QuickBooks Settings | PhotoProOS" - Configure QuickBooks integration settings
+  - Note: `/settings/email-logs` is a client component (`"use client"`) and cannot export static metadata
+
+- **Static Metadata Exports for Dashboard Pages (Batch 16 - Settings & Progress)** - Added SEO metadata to 7 dashboard pages:
+  - `/settings/billing/upgrade` - "Upgrade Plan | PhotoProOS" - Upgrade your PhotoProOS subscription plan
+  - `/settings/sms/templates` - "SMS Templates | PhotoProOS" - Create SMS message templates
+  - `/settings/photographer-pay` - "Photographer Pay | PhotoProOS" - Configure photographer payment settings
+  - `/settings/walkthroughs` - "Walkthroughs | PhotoProOS" - Manage guided walkthrough preferences
+  - `/progress/milestones` - "Milestones | PhotoProOS" - Track business milestones and achievements
+  - `/progress/year-in-review` - "Year in Review | PhotoProOS" - View your annual business summary
+  - `/gear/maintenance` - "Gear Maintenance | PhotoProOS" - Track equipment maintenance schedules
+  - Note: `/achievements/year-in-review` is a redirect page and was skipped
+
+- **Static Metadata Exports for Dashboard Pages (Batch 15 - Analytics & Recovery)** - Added SEO metadata to 10 dashboard pages:
+  - `/reports/team` - "Team Reports | PhotoProOS" - Analyze team performance and productivity
+  - `/orders/analytics` - "Order Analytics | PhotoProOS" - View order trends and product performance
+  - `/leads/analytics` - "Lead Analytics | PhotoProOS" - Analyze lead sources and conversion rates
+  - `/projects/analytics` - "Project Analytics | PhotoProOS" - Track project metrics and completion rates
+  - `/failed-payments` - "Failed Payments | PhotoProOS" - Review and resolve failed payment attempts
+  - `/refunds` - "Refunds | PhotoProOS" - Process and track refunds for clients
+  - `/abandoned-carts` - "Abandoned Carts | PhotoProOS" - Recover abandoned shopping carts
+  - `/pipeline` - "Sales Pipeline | PhotoProOS" - Track opportunities through your sales pipeline
+  - `/client-journey` - "Client Journey | PhotoProOS" - View and optimize the client experience journey
+  - `/mini-sessions` - "Mini Sessions | PhotoProOS" - Manage mini session events and bookings
+
+- **Static Metadata Exports for Dashboard Pages (Batch 14 - Billing & Reports)** - Added SEO metadata to 10 dashboard pages:
+  - `/billing/analytics` - "Billing Analytics | PhotoProOS" - View billing analytics and revenue insights
+  - `/billing/credit-notes` - "Credit Notes | PhotoProOS" - Manage credit notes and refund documentation
+  - `/billing/estimates` - "Estimates | PhotoProOS" - Create and manage project cost estimates
+  - `/billing/reports` - "Billing Reports | PhotoProOS" - Access detailed billing and financial reports
+  - `/billing/retainers` - "Retainers | PhotoProOS" - Manage client retainer agreements
+  - `/reports/bookings` - "Booking Reports | PhotoProOS" - Analyze booking trends and patterns
+  - `/reports/clients` - "Client Reports | PhotoProOS" - Generate reports on client activity and value
+  - `/reports/revenue` - "Revenue Reports | PhotoProOS" - Track revenue metrics and financial performance
+  - `/reports/profit-loss` - "Profit & Loss | PhotoProOS" - View profit and loss statements
+  - `/reports/tax-summary` - "Tax Summary | PhotoProOS" - Generate tax summaries for accounting
+
+- **Static Metadata Exports for Dashboard Pages (Batch 13 - Scheduling & Studio)** - Added SEO metadata to 8 dashboard pages:
+  - `/scheduling/availability` - "Scheduling Availability | PhotoProOS" - Set your available times for bookings
+  - `/scheduling/booking-forms` - "Booking Forms | PhotoProOS" - Manage custom booking forms for clients
+  - `/scheduling/time-off` - "Time Off | PhotoProOS" - Block off time for vacations and breaks
+  - `/scheduling/types` - "Session Types | PhotoProOS" - Configure different session types and durations
+  - `/booking-rules` - "Booking Rules | PhotoProOS" - Set rules for automated booking management
+  - `/booking-page` - "Booking Page | PhotoProOS" - Customize your public booking page
+  - `/studio` - "Studio | PhotoProOS" - Manage your photography studio space
+  - `/vip` - "VIP Clients | PhotoProOS" - Manage your VIP client program
+  - Note: `/create` already had metadata, skipped
+
+- **Static Metadata Exports for Dashboard Pages (Batch 12 - Education & Marketing Tools)** - Added SEO metadata to 10 dashboard pages:
+  - `/courses` - "Courses | PhotoProOS" - Access educational courses and tutorials
+  - `/workshops` - "Workshops | PhotoProOS" - Host and manage photography workshops
+  - `/mentoring` - "Mentoring | PhotoProOS" - Offer or receive photography mentorship
+  - `/resources` - "Resources | PhotoProOS" - Access photography business resources and guides
+  - `/ads` - "Advertising | PhotoProOS" - Manage advertising campaigns for your business
+  - `/seo` - "SEO Tools | PhotoProOS" - Optimize your online presence for search engines
+  - `/content` - "Content | PhotoProOS" - Manage your marketing content and blog posts
+  - `/feedback` - "Feedback | PhotoProOS" - Collect and manage client feedback
+  - `/communications` - "Communications | PhotoProOS" - Manage all client communication channels
+  - `/ai` - "AI Tools | PhotoProOS" - Access AI-powered tools for your photography business
+
+- **Static Metadata Exports for Dashboard Pages (Batch 11 - Team & Legal)** - Added SEO metadata to 10 dashboard pages:
+  - `/associates` - "Associates | PhotoProOS" - Manage associate photographers and contractors
+  - `/vendors` - "Vendors | PhotoProOS" - Manage vendor relationships and partnerships
+  - `/fulfillment` - "Fulfillment | PhotoProOS" - Manage order fulfillment and shipping
+  - `/shipping` - "Shipping | PhotoProOS" - Configure shipping options and rates
+  - `/licensing` - "Licensing | PhotoProOS" - Manage photo licensing and usage rights
+  - `/licenses` - "Licenses | PhotoProOS" - Track sold licenses and usage agreements
+  - `/releases` - "Model Releases | PhotoProOS" - Manage model and property releases
+  - `/waivers` - "Waivers | PhotoProOS" - Create and manage liability waivers
+  - `/timesheets` - "Timesheets | PhotoProOS" - Track work hours and billable time
+  - `/assignments` - "Assignments | PhotoProOS" - Manage team task assignments
+
+- **Static Metadata Exports for Dashboard Pages (Batch 10 - Progress & Business Operations)** - Added SEO metadata to 6 dashboard pages:
+  - `/progress` - "Progress | PhotoProOS" - Track your business growth and achievements
+  - `/benchmarks` - "Benchmarks | PhotoProOS" - Compare your performance against industry benchmarks
+  - `/goals` - "Goals | PhotoProOS" - Set and track your photography business goals
+  - `/mileage` - "Mileage Tracker | PhotoProOS" - Track mileage for tax deductions and expenses
+  - `/commissions` - "Commissions | PhotoProOS" - Track and manage team commissions
+  - `/payroll` - "Payroll | PhotoProOS" - Manage team payroll and compensation
+  - Note: `/achievements`, `/leaderboard`, `/quests`, and `/skills` are redirect pages to `/progress` and do not require metadata
+
+- **Static Metadata Exports for Dashboard Pages (Batch 9 - Media & Utilities)** - Added SEO metadata to 10 dashboard pages:
+  - `/slideshows` - "Slideshows | PhotoProOS" - Create beautiful photo slideshows for clients
+  - `/social` - "Social Media | PhotoProOS" - Schedule and manage social media posts
+  - `/floor-plans` - "Floor Plans | PhotoProOS" - Manage floor plans for real estate photography
+  - `/aerial` - "Aerial Photography | PhotoProOS" - Manage drone and aerial photography services
+  - `/tours` - "Virtual Tours | PhotoProOS" - Create and manage 3D virtual tours
+  - `/timeline` - "Timeline | PhotoProOS" - View project and business timeline
+  - `/archive` - "Archive | PhotoProOS" - Access archived galleries and projects
+  - `/trash` - "Trash | PhotoProOS" - Recover deleted items before permanent removal
+  - `/batch` - "Batch Operations | PhotoProOS" - Perform bulk operations on galleries and assets
+  - `/order-pages` - "Order Pages | PhotoProOS" - Create custom order pages for clients
+
+- **Static Metadata Exports for Dashboard Pages (Batch 8 - Session Preparation & Delivery)** - Added SEO metadata to 10 dashboard pages:
+  - `/prep-guides` - "Prep Guides | PhotoProOS" - Create session prep guides for clients
+  - `/shot-list` - "Shot Lists | PhotoProOS" - Create and manage shot lists for photography sessions
+  - `/mood-boards` - "Mood Boards | PhotoProOS" - Create visual mood boards for client inspiration
+  - `/style-guides` - "Style Guides | PhotoProOS" - Define style guides for consistent photography
+  - `/session-recaps` - "Session Recaps | PhotoProOS" - Create session recap summaries for clients
+  - `/sneak-peeks` - "Sneak Peeks | PhotoProOS" - Share sneak peek photos with clients
+  - `/reveal` - "Gallery Reveals | PhotoProOS" - Create exciting gallery reveal experiences
+  - `/proofing` - "Proofing | PhotoProOS" - Manage client photo proofing and selections
+  - `/prints` - "Print Orders | PhotoProOS" - Manage print orders and fulfillment
+  - `/wall-art` - "Wall Art | PhotoProOS" - Offer wall art and canvas print options
+
+- **Static Metadata Exports for Dashboard Pages (Batch 7 - Client Engagement & Data)** - Added SEO metadata to 10 dashboard pages:
+  - `/reviews` - "Reviews | PhotoProOS" - Collect and manage client reviews and testimonials
+  - `/referrals` - "Referrals | PhotoProOS" - Track client referrals and manage referral rewards
+  - `/loyalty` - "Loyalty Program | PhotoProOS" - Manage loyalty rewards and repeat client incentives
+  - `/waitlist` - "Waitlist | PhotoProOS" - Manage client waitlists for popular services
+  - `/segments` - "Client Segments | PhotoProOS" - Create and manage client segments for targeted marketing
+  - `/tags` - "Tags | PhotoProOS" - Organize content and clients with custom tags
+  - `/custom-fields` - "Custom Fields | PhotoProOS" - Create custom data fields for clients and projects
+  - `/api-keys` - "API Keys | PhotoProOS" - Manage API keys for third-party integrations
+  - `/import` - "Import Data | PhotoProOS" - Import clients, galleries, and data from other platforms
+  - `/export` - "Export Data | PhotoProOS" - Export your data for backup or migration
+
+- **Social Media Marketing Studio (Phase 3 - Brand Kit & Templates)** - Added brand management and template library:
+  - **Brand Kit Page** (`/super-admin/marketing-studio/brand-kit`) - Comprehensive brand asset management:
+    - Business identity section (name, tagline)
+    - Color palette picker with preset colors and live preview
+    - Logo uploader with 4 variants (full, icon, light, dark)
+    - Social handles manager for all 6 platforms
+    - Default hashtags configuration
+  - **Template Library** (`/super-admin/marketing-studio/templates`) - Pre-designed social media templates:
+    - 16 starter templates across 8 categories: Portfolio, Testimonial, Before/After, Announcement, Behind the Scenes, Pricing, Educational, Milestone
+    - Category filtering and search functionality
+    - Template preview cards with platform compatibility indicators
+    - Direct link to composer with template pre-loaded
+  - **Template Definitions** at `/src/lib/marketing-studio/templates.ts` with full layout and element configurations
+
+- **Static Metadata Exports for Dashboard Pages (Batch 6 - Sales & Marketing)** - Added SEO metadata to 9 dashboard pages:
+  - `/proposals` - "Proposals | PhotoProOS" - Create and send professional proposals to potential clients
+  - `/expenses` - "Expenses | PhotoProOS" - Track business expenses and manage photography costs
+  - `/coupons` - "Coupons | PhotoProOS" - Create and manage discount coupons for your photography services
+  - `/gift-cards` - "Gift Cards | PhotoProOS" - Sell and manage photography gift cards
+  - `/memberships` - "Memberships | PhotoProOS" - Create and manage client membership programs
+  - `/campaigns` - "Campaigns | PhotoProOS" - Run marketing campaigns to grow your photography business
+  - `/email-campaigns` - "Email Campaigns | PhotoProOS" - Create and send email marketing campaigns to clients
+  - `/landing-pages` - "Landing Pages | PhotoProOS" - Build custom landing pages for marketing campaigns
+  - `/surveys` - "Surveys | PhotoProOS" - Create and send surveys to gather client feedback
+  - Note: `/estimates` page does not exist in the codebase
+
+- **Static Metadata Exports for Dashboard Pages (Batch 5 - Help & Communication)** - Added SEO metadata to 9 dashboard pages:
+  - `/help` - "Help Center | PhotoProOS" - Find answers, guides, and support resources
+  - `/help/getting-started` - "Getting Started | PhotoProOS" - Quick start guide for new PhotoProOS users
+  - `/help/contact` - "Contact Support | PhotoProOS" - Get in touch with our support team
+  - `/help/videos` - "Video Tutorials | PhotoProOS" - Watch video tutorials and walkthroughs
+  - `/inbox` - "Inbox | PhotoProOS" - View all client inquiries and form submissions
+  - `/email-inbox` - "Email Inbox | PhotoProOS" - Manage incoming emails from clients
+  - `/sms` - "SMS Messages | PhotoProOS" - View and send SMS messages to clients
+  - `/availability` - "Availability | PhotoProOS" - Manage your availability and working hours
+  - `/booking` - "Booking Portal | PhotoProOS" - Customize your online booking experience
+  - Note: `/help/faq` is a client component and cannot have static metadata exports
+
+- **Static Metadata Exports for Dashboard Pages (Batch 4)** - Added SEO metadata to 10 additional dashboard pages:
+  - `/forms` - "Forms | PhotoProOS" - Create and manage custom forms for client inquiries
+  - `/gear` - "Gear | PhotoProOS" - Track and manage your photography equipment inventory
+  - `/rentals` - "Rentals | PhotoProOS" - Manage equipment rentals for photography sessions
+  - `/locations` - "Locations | PhotoProOS" - Save and manage favorite photography locations
+  - `/properties` - "Properties | PhotoProOS" - Manage real estate properties for photography shoots
+  - `/brokerages` - "Brokerages | PhotoProOS" - Manage real estate brokerage partnerships
+  - `/portfolios` - "Portfolios | PhotoProOS" - Showcase your photography work in online portfolios
+  - `/templates` - "Templates | PhotoProOS" - Manage email and document templates
+  - `/templates/emails` - "Email Templates | PhotoProOS" - Create and customize email templates for client communication
+  - `/templates/proposals` - "Proposal Templates | PhotoProOS" - Create reusable proposal templates for clients
+
+- **Static Metadata Exports for Dashboard Settings Pages (Batch 3)** - Added SEO metadata to 10 additional dashboard settings pages:
+  - `/settings/appearance` - "Appearance Settings | PhotoProOS" - Customize the look and feel of your PhotoProOS dashboard
+  - `/settings/booking` - "Booking Settings | PhotoProOS" - Configure online booking and scheduling options
+  - `/settings/data` - "Data Settings | PhotoProOS" - Manage data export, import, and storage settings
+  - `/settings/developer` - "Developer Settings | PhotoProOS" - Access API keys, webhooks, and developer tools
+  - `/settings/developer/api` - "API Settings | PhotoProOS" - Manage API keys and access tokens
+  - `/settings/discounts` - "Discount Settings | PhotoProOS" - Create and manage discount codes and promotions
+  - `/settings/dropbox` - "Dropbox Integration | PhotoProOS" - Connect and sync with your Dropbox account
+  - `/settings/media` - "Media Settings | PhotoProOS" - Configure media upload and processing preferences
+  - `/settings/marketing` - "Marketing Settings | PhotoProOS" - Configure marketing automation and campaign settings
+  - `/settings/team` - "Team Settings | PhotoProOS" - Manage team members, roles, and access permissions
+
+- **Static Metadata Exports for Dashboard Settings Pages (Batch 2)** - Added SEO metadata to 10 additional dashboard settings pages:
+  - `/settings/sms` - "SMS Settings | PhotoProOS" - Configure SMS messaging and text notification settings
+  - `/settings/watermarks` - "Watermark Settings | PhotoProOS" - Create and manage watermarks for your gallery photos
+  - `/settings/travel` - "Travel Settings | PhotoProOS" - Configure travel fees and service area boundaries
+  - `/settings/payouts` - "Payout Settings | PhotoProOS" - Manage how you receive payments from clients
+  - `/settings/features` - "Feature Settings | PhotoProOS" - Enable or disable optional features for your account
+  - `/settings/onboarding` - "Onboarding Settings | PhotoProOS" - Customize the client onboarding experience
+  - `/settings/reviews` - "Review Settings | PhotoProOS" - Configure client review collection and display
+  - `/settings/equipment` - "Equipment Settings | PhotoProOS" - Manage your photography equipment inventory
+  - `/settings/slack` - "Slack Integration | PhotoProOS" - Connect PhotoProOS notifications to your Slack workspace
+  - `/settings/mailchimp` - "Mailchimp Integration | PhotoProOS" - Sync contacts with your Mailchimp email lists
+
+- **Static Metadata Exports for Dashboard Settings Pages** - Added SEO metadata to 8 dashboard settings pages:
+  - `/settings` - "Settings | PhotoProOS" - Configure your PhotoProOS account settings and preferences
+  - `/settings/profile` - "Profile Settings | PhotoProOS" - Manage your personal profile information and preferences
+  - `/settings/branding` - "Branding Settings | PhotoProOS" - Customize your brand colors, logos, and visual identity
+  - `/settings/billing` - "Subscription & Billing | PhotoProOS" - Manage your subscription plan and billing information
+  - `/settings/payments` - "Payment Settings | PhotoProOS" - Configure payment processing and payout preferences
+  - `/settings/security` - "Security Settings | PhotoProOS" - Manage account security, passwords, and two-factor authentication
+  - `/settings/calendar` - "Calendar Settings | PhotoProOS" - Configure calendar sync and scheduling preferences
+  - `/settings/integrations` - "Integrations | PhotoProOS" - Connect third-party apps and services to PhotoProOS
+  - Note: `/settings/notifications` and `/settings/email` are client components and cannot have static metadata exports
+
+- **Static Metadata Exports for Dashboard Pages (Batch 3)** - Added SEO metadata to 10 additional dashboard pages:
+  - `/products` - "Products | PhotoProOS" - Manage physical products and prints available for your photography clients
+  - `/digital-products` - "Digital Products | PhotoProOS" - Sell digital products like presets, guides, and templates to clients
+  - `/orders` - "Orders | PhotoProOS" - Track and fulfill product orders from your photography clients
+  - `/albums` - "Albums | PhotoProOS" - Design and manage photo albums for client delivery
+  - `/collections` - "Collections | PhotoProOS" - Organize photos into curated collections for clients
+  - `/videos` - "Videos | PhotoProOS" - Manage video content and deliverables for clients
+  - `/assets` - "Assets | PhotoProOS" - Manage digital assets, files, and media for your photography business
+  - `/storage` - "Storage | PhotoProOS" - Monitor and manage your cloud storage usage
+  - `/files` - "Files | PhotoProOS" - Browse and manage uploaded files and documents
+  - `/backups` - "Backups | PhotoProOS" - Manage backup settings and restore points for your data
+
+- **Static Metadata Exports for Dashboard Pages (Batch 2)** - Added SEO metadata to 10 additional dashboard pages:
+  - `/payments` - "Payments | PhotoProOS" - View and manage payments received from clients with transaction history and status tracking
+  - `/contracts` - "Contracts | PhotoProOS" - Create, send, and manage photography contracts with e-signature support
+  - `/services` - "Services | PhotoProOS" - Define and manage your photography service packages and pricing
+  - `/scheduling` - "Scheduling | PhotoProOS" - Manage your photography calendar, bookings, and availability
+  - `/projects` - "Projects | PhotoProOS" - Track and manage photography projects from start to completion
+  - `/team` - "Team | PhotoProOS" - Manage team members, roles, and permissions for your photography business
+  - `/messages` - "Messages | PhotoProOS" - Communicate with clients through integrated messaging
+  - `/notifications` - "Notifications | PhotoProOS" - View and manage your account notifications and alerts
+  - `/activity` - "Activity | PhotoProOS" - Track recent activity and changes across your photography business
+  - `/reports` - "Reports | PhotoProOS" - Access business analytics and performance reports
+
+- **Static Metadata Exports for Dashboard Pages** - Added SEO metadata to 10 dashboard pages:
+  - `/billing` - "Billing | PhotoProOS" - Manage billing, invoicing, and financial overview
+  - `/analytics` - "Analytics | PhotoProOS" - View detailed analytics and insights
+  - `/leads` - "Leads | PhotoProOS" - Track and manage potential client leads
+  - `/opportunities` - "Opportunities | PhotoProOS" - Manage sales opportunities
+  - `/automations` - "Automations | PhotoProOS" - Set up automated workflows
+  - `/workflows` - "Workflows | PhotoProOS" - Create custom workflows
+  - `/integrations/google` - "Google Integration | PhotoProOS" - Google Calendar/Drive integration
+  - `/integrations/quickbooks` - "QuickBooks Integration | PhotoProOS" - QuickBooks sync
+  - `/integrations/zapier` - "Zapier Integration | PhotoProOS" - Connect with thousands of apps
+  - `/webhooks` - "Webhooks | PhotoProOS" - Configure webhook endpoints
+
+- **Social Media Marketing Studio (Phase 2 - Full Platform Support)** - Added all 6 platform previews to the marketing studio:
+  - **Twitter/X Preview** - Pixel-accurate tweet preview with verified badge, engagement counts (likes, retweets, replies, views), hashtag/mention highlighting
+  - **Facebook Preview** - Feed post and Story preview with reaction icons (Like, Love, Care), comments/shares count, privacy indicators
+  - **TikTok Preview** - Full mobile video preview with engagement sidebar (likes, comments, bookmarks, shares), spinning disc animation, sound attribution
+  - **Pinterest Preview** - Pin card with 2:3 aspect ratio, save button, board selector, author info, and Idea Pin variant
+  - **Platform Tabs** - Updated composer to show all 6 platforms with custom TikTok and Pinterest SVG icons
+  - **Unified Integration** - All previews integrated in post composer with format switching per platform
+  - Components at: `/src/components/marketing-studio/previews/` (twitter, facebook, tiktok, pinterest)
+
+- **Connected 11 Additional Marketing Pages to CMS** - Extended CMS integration to remaining marketing pages:
+  - **affiliates** (`/affiliates`) - Affiliate program page with dynamic metadata
+  - **blog** (`/blog`) - Blog listing page with dynamic metadata
+  - **careers** (`/careers`) - Careers page with dynamic metadata
+  - **changelog** (`/changelog`) - Changelog page with dynamic metadata
+  - **contact** (`/contact`) - Contact page with dynamic metadata (added Metadata import)
+  - **guides** (`/guides`) - Guides & tutorials page with dynamic metadata
+  - **integrations** (`/integrations`) - Integrations page with dynamic metadata
+  - **partners** (`/partners`) - Partner program page with dynamic metadata
+  - **press** (`/press`) - Press kit page with dynamic metadata
+  - **support** (`/support`) - Help center page with dynamic metadata
+  - **webinars** (`/webinars`) - Webinars page with dynamic metadata
+  - All pages use `getMarketingPageContent()` for CMS data with hardcoded fallbacks
+  - All pages have async page functions ready for CMS content integration in hero sections
+
+- **Comprehensive CMS Documentation** - Created `docs/CMS.md` with complete documentation for the marketing CMS system:
+  - All 32 marketing pages documented with CMS slugs
+  - Data models and schema definitions (MarketingPage, FAQ, Testimonial, TeamMember, BlogPost, MarketingNavigation)
+  - Fetch functions reference for `src/lib/marketing/content.ts`
+  - Implementation phases roadmap (17 phases, 85+ tasks)
+  - Advanced features documentation: Draft Mode, Version History, Scheduled Publishing, Collaborative Editing
+  - Future features: Component Page Builder, Page Analytics, Content Governance, Real-time Collaboration, Workflow Builder
+  - API reference for preview mode, cache invalidation, and webhooks
+  - Verification checklist for each implementation phase
+
+- **Expanded Marketing Seed Script** - Updated `prisma/seed-marketing.ts` with content for all 32 marketing pages:
+  - **15 Main Pages**: homepage, about, pricing, affiliates, blog, careers, changelog, contact, guides, integrations, partners, press, roadmap, support, webinars
+  - **8 Features Pages**: galleries, payments, clients, contracts, automation, analytics, social-media, email-marketing
+  - **6 Industries Pages**: real-estate, commercial, architecture, events, portraits, food
+  - **5 Legal Pages**: terms, privacy, cookies, security, dpa
+  - **16 FAQs** with targetPages for page-specific display
+  - **5 Testimonials** targeting different industries
+  - **4 Team Members** with social links
+  - **Navigation** (navbar + footer) with full menu structure
+  - Run with: `npx tsx prisma/seed-marketing.ts`
+
+- **Social Media Marketing Studio (Phase 1 MVP)** - Created comprehensive social media content creation suite at `/super-admin/marketing-studio`:
+  - **Hub Page** - Central dashboard with quick actions (Create New Post, Quick from Mockup, Browse Templates)
+  - **Post Composer** - All-in-one editing view with live platform previews
+  - **Platform Previews** - Pixel-accurate mockups of Instagram Feed/Story and LinkedIn Post previews showing how content will appear
+  - **Caption Editor** - Full-featured editor with character counts, hashtag limits per platform, emoji picker, and industry-specific hashtag suggestions
+  - **Mockup Integration** - Browse and insert mockups from the existing Mockup Library directly into social posts
+  - **Export Options** - Export as PNG (2x scale) or copy to clipboard using existing html2canvas integration
+  - **Settings Panel** - Industry selector, theme toggle (dark/light), primary color picker
+  - **Platform Support** - Configuration for 6 platforms: Instagram, LinkedIn, Twitter/X, Facebook, TikTok, Pinterest
+  - Types and utilities at: `/src/components/marketing-studio/` and `/src/lib/marketing-studio/`
+  - Phase 2+ will add: All 6 platform previews, Content Calendar, Brand Kit, Template Library, AI caption generation
+
+- **Mockup Library for Marketing Assets** - Created comprehensive internal mockup library at `/super-admin/mockups` for generating marketing and social media assets:
+  - **10 interactive mockups** covering Dashboard, Galleries, Invoicing, Clients, and Client Portal screens
+  - **Industry-aware system** - Mockups auto-switch sample data based on selected industry (Real Estate, Commercial, Events, Portraits, Food, Product)
+  - **Export capabilities** - Export as PNG (2x scale for retina) or copy directly to clipboard
+  - **Theme & color controls** - Toggle dark/light mode, customize primary brand color
+  - **Aspect ratio presets** - Quick select for Instagram (1:1), Twitter/LinkedIn (16:9), Stories (9:16), and more
+  - **Editable fields** - Customize mockup data (names, amounts, dates) with live preview
+  - Located at: `/src/app/(super-admin)/super-admin/mockups/`
+  - Component library at: `/src/components/mockups/`
+  - Dependencies added: `html2canvas` for screenshot export, `jszip` for future batch export
+
+- **Added CMS link to super-admin navigation** - Added "CMS" menu item to `/super-admin` sidebar for easy access to the Marketing CMS at `/super-admin/marketing`. This provides quick access to manage:
+  - Marketing pages (homepage, pricing, features, etc.)
+  - Blog posts
+  - Testimonials
+  - FAQs
+  - Team members
+
+- **Connected Marketing Pages to CMS Database** - All marketing pages now fetch content from the CMS with fallback values:
+  - **Pricing Page** (`/pricing`) - Dynamic metadata and FAQs from CMS via `getPricingContent()` and `getFAQsForPage("pricing")`
+  - **Homepage FAQ Section** - Created `FAQWithCMS` server component wrapper that fetches FAQs from CMS
+  - **8 Feature Pages** - All feature pages (`/features/*`) connected to CMS with `generateMetadata()` using `getFeaturesContent()`:
+    - galleries, payments, clients, contracts, automation, analytics, social-media, email-marketing
+  - **6 Industry Pages** - All industry pages (`/industries/*`) connected to CMS with `generateMetadata()` using `getIndustryContent()`:
+    - real-estate, commercial, architecture, events, portraits, food
+  - **5 Legal Pages** - All legal pages (`/legal/*`) connected to CMS with `generateMetadata()` using `getLegalContent()`:
+    - terms, privacy, cookies, security, dpa
+  - All pages have hardcoded fallback values ensuring they work even without CMS data
+  - 60-second cache revalidation via `unstable_cache` with `revalidateTag("marketing")` for instant updates
+
+- **FAQSection Component Enhancement** - Updated FAQ section component to accept optional props:
+  - Added `FAQSectionProps` interface with optional `faqs`, `heading`, and `subheading` props
+  - Renamed hardcoded FAQs to `fallbackFaqs` for use when no CMS data is provided
+  - Component displays CMS FAQs when provided, falls back to default content otherwise
+  - Navigation (navbar and footer)
+
+- **Verified admin dashboard for easy pricing configuration** - Confirmed `/settings/developer` page provides comprehensive subscription plan management:
+  - "Seed Default Plans" button creates Pro/Studio/Enterprise with correct pricing ($49/$99/$349) and features
+  - "Sync All to Stripe" button syncs all plans to Stripe in one click
+  - Individual plan CRUD operations (create, edit, clone, delete)
+  - A/B pricing experiments for testing different price points
+  - Environment status tab showing Stripe mode (test/live) and integration status
+  - All pricing changes made through admin automatically sync to Stripe
+
 ### Fixed
+- **Fixed plan enforcement error when creating resources** - Fixed "Cannot read properties of undefined (reading 'allowed')" error in plan-enforcement.ts by replacing `ok({...})` calls with `success({...})`. The `ok()` function is for void results and ignores arguments, causing plan limit checks to return undefined data.
 - **Fixed public /help links** - Updated public pages (404, contact, guides, FAQ, integrations, client portal) to link to `/support` instead of `/help` (which was protected). This ensures unauthenticated users can access the help center.
 - **Updated sitemap.ts** - Fixed `/help` to `/support` in sitemap, added missing pages: `/integrations`, `/features/social-media`, `/features/email-marketing`.
 
 ### Changed
+- **Updated billing dashboard pages with correct pricing** - Synced billing/upgrade sections with unified storage model:
+  - Updated `/settings/billing/page.tsx`: Corrected storage values (Free: 25 GB, Pro: 500 GB, Studio: 1 TB), added Enterprise plan ($349/mo)
+  - Updated `/settings/billing/upgrade/page.tsx`: Corrected storage values, added Enterprise plan, added Gallery Sleep Mode feature
+  - Added storage add-on FAQ explaining $199/10TB pricing
+  - Added Gallery Sleep Mode FAQ explaining archive functionality
+  - Updated default storage limit from 2 GB to 25 GB for Free plan
+  - Updated `plan-limits.ts`: Enterprise pricing now $349/mo (was $249), Enterprise storage now 10TB (was 5TB), storage overage simplified to $199/10TB
+
+- **Implemented unified storage model** - Simplified storage from dual (System + File) to single unified pool:
+  - **Free ($0)**: 25 GB storage (hard cap, must upgrade for more)
+  - **Pro ($49/mo)**: 500 GB storage + Gallery Sleep Mode
+  - **Studio ($99/mo)**: 1 TB storage + unlimited usage + white-label & API access
+  - **Enterprise ($349/mo)**: Unlimited storage (10 TB soft cap), up from $249/mo
+  - **Storage add-on**: $199/month per additional 10 TB (available to all paid plans)
+  - **Gallery Sleep Mode**: New feature for paid plans to archive galleries without counting against quota
+  - Removed all references to separate "File Storage" add-on
+  - Updated Enterprise LTD to $3,500 (was $2,500)
+  - Files updated: plan-limits.ts, pricing.tsx, pricing/page.tsx, faq.tsx, subscription-plans.ts, PRICING_STRUCTURE.md
+
+- **Documented unified storage model decisions**:
+  - Free users cannot purchase storage add-ons (must upgrade)
+  - Client uploads count against photographer's quota (same bucket)
+  - LTD storage locked at time of purchase
+  - Team storage is pooled for org account
+  - 30-day grace period for downgrade over-quota with 90-day internal backup
+  - Thumbnails do not count against storage quota
+  - Gallery Sleep Mode: free for paid plans, per-gallery client self-wake toggle
+
+- **Previous: Implemented pricing tier differentiation model** - Restructured plan limits for clearer value propositions:
+  - **Free ($0)**: Basic limits on everything (25GB storage, 5 galleries, 25 clients)
+  - **Pro ($49/mo)**: 500GB storage, limited usage (50 galleries, 100 clients, 3 team members)
+  - **Studio ($99/mo)**: 1TB storage with unlimited usage (galleries, clients, invoices), plus white-label & API access
+  - **Enterprise ($349/mo)**: 10TB storage included (marketed as unlimited), unlimited everything, SSO/SAML, dedicated support
+  - Updated all pricing pages to reflect new feature differentiation
+  - Created comprehensive pricing documentation: docs/PRICING_STRUCTURE.md
+  - Files updated: plan-limits.ts, pricing.tsx, /pricing/page.tsx, faq.tsx, subscription-plans.ts
+
+- **Updated Lifetime Deal (LTD) pricing** - Adjusted for new storage model:
+  - **Pro LTD ($500)**: Pay once for lifetime Pro access with 500GB storage
+  - **Studio LTD ($1,000)**: Pay once for lifetime Studio access with 1TB storage
+  - **Enterprise LTD ($3,500)**: Pay once for lifetime Enterprise access with 10TB storage (was $2,500)
+  - All LTD purchases include: all future features/updates, 10% discount on in-app purchases including storage add-ons ($179/10TB)
+  - Added three-way billing toggle (Monthly/Annual/Lifetime) to pricing pages
+  - Added beta pricing with strikethrough showing post-beta prices for urgency
+  - Added LTD slots tracking (500 slots during beta) with remaining count display
+  - Files updated: plan-limits.ts, pricing.tsx, pricing-client.tsx, PRICING_STRUCTURE.md
+
 - **Converted all 74 placeholder pages to use ComingSoonPage component** - Migrated all inline "Coming Soon" placeholders to use the shared ComingSoonPage component with consistent styling, Beta badge, feature lists, notify-me form, and related links. Pages include:
   - List pages: import, export, webhooks, custom-fields, waivers, surveys, booking-rules, aerial, floor-plans, client-journey, shipping, landing-pages, content, fulfillment, mood-boards, prep-guides, resources, licenses, shot-list, booking-page, opportunities, assignments, releases, style-guides, locations, tags, trash, mentoring, workshops, courses, timeline, associates, team, backups, storage, sms, email-inbox, communications, assets, files
   - Detail pages: mentoring/[id], proposals/[id], segments/[id], associates/[id], albums/[id], collections/[id], surveys/[id], memberships/[id], videos/[id], courses/[id], coupons/[id], digital-products/[id], sneak-peeks/[id], mood-boards/[id], workflows/[id], gear/[id], prep-guides/[id], reveal/[id], expenses/[id], proofing/[id], email-campaigns/[id], shot-list/[id], opportunities/[id], gift-cards/[id], releases/[id], slideshows/[id], workshops/[id], session-recaps/[id], timesheets/[id]

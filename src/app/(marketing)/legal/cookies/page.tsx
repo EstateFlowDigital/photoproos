@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getLegalContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Cookie Policy | PhotoProOS",
-  description: "Learn how PhotoProOS uses cookies and similar technologies to improve your experience.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getLegalContent("cookies");
+  return {
+    title: meta.title || "Cookie Policy | PhotoProOS",
+    description: meta.description || "Learn how PhotoProOS uses cookies and similar technologies to improve your experience.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 export default function CookiePolicyPage() {
   const lastUpdated = "January 1, 2025";

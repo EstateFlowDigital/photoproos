@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Subscription & Billing | PhotoProOS",
+  description: "Manage your subscription plan and billing information.",
+};
+
 export const dynamic = "force-dynamic";
 import { PageHeader } from "@/components/dashboard";
 import Link from "next/link";
@@ -10,20 +17,26 @@ const plans = [
     id: "free",
     name: "Free",
     price: 0,
-    features: ["2 GB storage", "5 galleries/month", "25 clients", "1 team member"],
+    features: ["25 GB storage", "5 active galleries", "25 clients", "1 team member"],
   },
   {
     id: "pro",
     name: "Pro",
     price: 4900,
-    features: ["50 GB storage", "Unlimited galleries", "Unlimited clients", "3 team members", "Custom branding", "Contracts"],
+    features: ["500 GB storage", "50 active galleries", "100 clients", "3 team members", "Gallery Sleep Mode", "Custom branding"],
     popular: true,
   },
   {
     id: "studio",
     name: "Studio",
     price: 9900,
-    features: ["500 GB storage", "Unlimited galleries", "Unlimited clients", "Unlimited team", "Advanced analytics", "API access"],
+    features: ["1 TB storage", "Unlimited galleries", "Unlimited clients", "10 team members", "Gallery Sleep Mode", "API access"],
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    price: 34900,
+    features: ["Unlimited storage", "Unlimited galleries", "Unlimited clients", "Unlimited team", "SSO/SAML", "Dedicated support"],
   },
 ];
 
@@ -43,7 +56,7 @@ export default async function BillingSettingsPage() {
 
   const currentPlan = billingStats?.plan || "free";
   const usage = billingStats?.usage || {
-    storage: { used: 0, limit: 2 },
+    storage: { used: 0, limit: 25 },
     galleries: { used: 0, limit: 5 },
     clients: { used: 0, limit: 25 },
     members: { used: 0, limit: 1 },
@@ -53,6 +66,7 @@ export default async function BillingSettingsPage() {
     free: 0,
     pro: 4900,
     studio: 9900,
+    enterprise: 34900,
   };
 
   return (

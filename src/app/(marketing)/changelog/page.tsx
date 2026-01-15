@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getMarketingPageContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Changelog | PhotoProOS",
-  description: "See what's new in PhotoProOS. Track the latest features, improvements, and fixes.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getMarketingPageContent("changelog");
+  return {
+    title: meta.title || "Changelog | PhotoProOS",
+    description: meta.description || "See what's new in PhotoProOS. Track the latest features, improvements, and fixes.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 const releases = [
   {
@@ -52,7 +58,10 @@ const releases = [
   },
 ];
 
-export default function ChangelogPage() {
+export default async function ChangelogPage() {
+  // Fetch CMS content
+  const { content } = await getMarketingPageContent("changelog");
+
   return (
     <main className="relative min-h-screen bg-background" data-element="changelog-page">
       {/* Hero */}

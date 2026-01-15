@@ -1,3 +1,10 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Calendly Integration | PhotoProOS",
+  description: "Connect and sync with Calendly.",
+};
+
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";

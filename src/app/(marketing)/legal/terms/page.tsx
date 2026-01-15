@@ -1,10 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { getLegalContent } from "@/lib/marketing/content";
 
-export const metadata: Metadata = {
-  title: "Terms of Service | PhotoProOS",
-  description: "Terms and conditions for using PhotoProOS photography business platform.",
-};
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getLegalContent("terms");
+  return {
+    title: meta.title || "Terms of Service | PhotoProOS",
+    description: meta.description || "Terms and conditions for using PhotoProOS photography business platform.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 export default function TermsOfServicePage() {
   const lastUpdated = "January 1, 2025";

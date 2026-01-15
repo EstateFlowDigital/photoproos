@@ -1,7 +1,14 @@
-export const dynamic = "force-dynamic";
+import { Metadata } from "next";
 import { ComingSoonPage } from "@/components/dashboard";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Import Data | PhotoProOS",
+  description: "Import clients, galleries, and data from other platforms.",
+};
+
+export const dynamic = "force-dynamic";
 
 export default async function ImportPage() {
   const auth = await getAuthContext();
