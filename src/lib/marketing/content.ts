@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import { draftMode } from "next/headers";
 import { prisma } from "@/lib/db";
 import type {
   BlogPost,
@@ -29,11 +30,86 @@ const CACHE_TAG = "marketing";
 const CACHE_REVALIDATE = 60; // 1 minute
 
 // ============================================================================
+// PREVIEW MODE HELPERS
+// ============================================================================
+
+/**
+ * Check if preview/draft mode is enabled
+ */
+export async function isPreviewMode(): Promise<boolean> {
+  try {
+    const draft = await draftMode();
+    return draft.isEnabled;
+  } catch {
+    // draftMode() can throw when called outside of request context
+    return false;
+  }
+}
+
+// ============================================================================
 // MARKETING PAGES
 // ============================================================================
 
 /**
- * Get marketing page content by slug with caching
+ * Internal fetch function for marketing page content (not cached)
+ */
+async function fetchMarketingPageContent<T = Record<string, unknown>>(
+  slug: string,
+  preview: boolean
+): Promise<{
+  content: T | null;
+  meta: {
+    title: string | null;
+    description: string | null;
+    ogImage: string | null;
+  };
+  isPreview: boolean;
+  hasDraft: boolean;
+}> {
+  // In preview mode, get any page (draft or published)
+  // In normal mode, only get published pages
+  const page = await prisma.marketingPage.findUnique({
+    where: preview ? { slug } : { slug, status: "published" },
+    select: {
+      content: true,
+      draftContent: true,
+      hasDraft: true,
+      metaTitle: true,
+      metaDescription: true,
+      ogImage: true,
+      status: true,
+    },
+  });
+
+  if (!page) {
+    return {
+      content: null,
+      meta: { title: null, description: null, ogImage: null },
+      isPreview: preview,
+      hasDraft: false,
+    };
+  }
+
+  // In preview mode with draft content, return draft
+  // Otherwise return published content
+  const contentToReturn = preview && page.hasDraft && page.draftContent
+    ? page.draftContent
+    : page.content;
+
+  return {
+    content: contentToReturn as T,
+    meta: {
+      title: page.metaTitle,
+      description: page.metaDescription,
+      ogImage: page.ogImage,
+    },
+    isPreview: preview,
+    hasDraft: page.hasDraft,
+  };
+}
+
+/**
+ * Get marketing page content by slug with caching (published content only)
  */
 export const getMarketingPageContent = unstable_cache(
   async <T = Record<string, unknown>>(slug: string): Promise<{
@@ -44,35 +120,47 @@ export const getMarketingPageContent = unstable_cache(
       ogImage: string | null;
     };
   }> => {
-    const page = await prisma.marketingPage.findUnique({
-      where: { slug, status: "published" },
-      select: {
-        content: true,
-        metaTitle: true,
-        metaDescription: true,
-        ogImage: true,
-      },
-    });
-
-    if (!page) {
-      return {
-        content: null,
-        meta: { title: null, description: null, ogImage: null },
-      };
-    }
-
+    const result = await fetchMarketingPageContent<T>(slug, false);
     return {
-      content: page.content as T,
-      meta: {
-        title: page.metaTitle,
-        description: page.metaDescription,
-        ogImage: page.ogImage,
-      },
+      content: result.content,
+      meta: result.meta,
     };
   },
   ["marketing-page"],
   { tags: [CACHE_TAG], revalidate: CACHE_REVALIDATE }
 );
+
+/**
+ * Get marketing page content with preview mode support
+ * This function checks if draft mode is enabled and returns draft content if available
+ */
+export async function getMarketingPageContentWithPreview<T = Record<string, unknown>>(
+  slug: string
+): Promise<{
+  content: T | null;
+  meta: {
+    title: string | null;
+    description: string | null;
+    ogImage: string | null;
+  };
+  isPreview: boolean;
+  hasDraft: boolean;
+}> {
+  const preview = await isPreviewMode();
+
+  if (preview) {
+    // Don't cache preview content
+    return fetchMarketingPageContent<T>(slug, true);
+  }
+
+  // Use cached version for non-preview
+  const cached = await getMarketingPageContent<T>(slug);
+  return {
+    ...cached,
+    isPreview: false,
+    hasDraft: false, // We don't track this in cached version
+  };
+}
 
 /**
  * Get homepage content

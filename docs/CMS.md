@@ -1224,12 +1224,16 @@ model CMSWebhookLog {
 - [x] Connect all 5 legal pages (terms, privacy, cookies, security, dpa)
 - [x] Connect remaining main pages (about, contact, blog, careers, changelog, guides, integrations, partners, press, support, webinars, affiliates)
 
-### Phase 3: Draft Mode & Preview
-- [ ] Add draftContent field to schema
-- [ ] Create preview API routes
-- [ ] Update fetch functions for preview-aware
-- [ ] Add preview toolbar component
-- [ ] Add device preview (mobile/tablet/desktop)
+### Phase 3: Draft Mode & Preview ✅ COMPLETE
+- [x] Add draftContent, hasDraft, lastEditedBy, lastEditedAt fields to schema
+- [x] Add scheduledPublishAt, scheduledBy fields for future scheduling
+- [x] Create preview API routes (`/api/preview` and `/api/preview/disable`)
+- [x] Update content.ts with preview-aware `getMarketingPageContentWithPreview()`
+- [x] Add `isPreviewMode()` helper function
+- [x] Create PreviewToolbar component with status indicator
+- [x] Add device preview buttons (desktop/tablet/mobile)
+- [x] Add draft operations: `saveDraft()`, `publishDraft()`, `discardDraft()`
+- [x] Add scheduling operations: `schedulePublish()`, `cancelScheduledPublish()`
 
 ### Phase 4: Version History
 - [ ] Create *Version tables in schema

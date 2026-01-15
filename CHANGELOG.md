@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Marketing CMS Phase 3: Draft Mode & Preview** - Edit content without affecting live site:
+  - Schema: Added `draftContent`, `hasDraft`, `lastEditedBy`, `lastEditedAt` to MarketingPage
+  - Schema: Added `scheduledPublishAt`, `scheduledBy` for scheduling future publishes
+  - Preview API routes: `/api/preview` enables draft mode, `/api/preview/disable` exits
+  - Preview-aware `getMarketingPageContentWithPreview()` returns draft content when preview enabled
+  - PreviewToolbar component with status indicator, device preview buttons, quick actions
+  - Draft operations: `saveDraft()`, `publishDraft()`, `discardDraft()` server actions
+  - Scheduling: `schedulePublish()`, `cancelScheduledPublish()` server actions
+
 - **Marketing CMS Phase 2: All Pages Connected** - Complete CMS integration across all marketing pages:
   - Homepage now fetches dynamic metadata from CMS via `getHomepageContent()`
   - All 8 feature pages connected (galleries, payments, clients, contracts, automation, analytics, social-media, email-marketing)

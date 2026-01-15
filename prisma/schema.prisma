@@ -10311,6 +10311,12 @@ model MarketingPage {
   // Content (JSON structure varies by pageType)
   content Json // Flexible content structure
 
+  // Draft Mode - Allows editing without affecting live site
+  draftContent   Json?    // Draft version of content (separate from published)
+  hasDraft       Boolean  @default(false) // Quick check if draft exists
+  lastEditedBy   String?  // User ID of last editor
+  lastEditedAt   DateTime? // Timestamp of last edit
+
   // SEO
   metaTitle       String?
   metaDescription String? @db.Text
@@ -10319,6 +10325,10 @@ model MarketingPage {
   // Status
   status      MarketingPageStatus @default(draft)
   publishedAt DateTime?
+
+  // Scheduling
+  scheduledPublishAt DateTime? // Future publish date
+  scheduledBy        String?   // User ID who scheduled
 
   // Admin tracking
   createdByUserId String? // Clerk user ID
@@ -10330,6 +10340,7 @@ model MarketingPage {
   @@index([slug])
   @@index([pageType])
   @@index([status])
+  @@index([scheduledPublishAt])
 }
 
 // Marketing Navigation - Navbar and Footer content

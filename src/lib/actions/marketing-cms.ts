@@ -230,6 +230,179 @@ export async function deleteMarketingPage(slug: string): Promise<ActionResult<vo
 }
 
 // ============================================================================
+// DRAFT MODE OPERATIONS
+// ============================================================================
+
+/**
+ * Save draft content for a marketing page
+ * This saves content to draftContent without affecting the live published version
+ */
+export async function saveDraft(
+  slug: string,
+  draftContent: Record<string, unknown>
+): Promise<ActionResult<MarketingPage>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+    if (!user) {
+      return fail("Not authenticated");
+    }
+
+    const page = await prisma.marketingPage.update({
+      where: { slug },
+      data: {
+        draftContent,
+        hasDraft: true,
+        lastEditedBy: user.id,
+        lastEditedAt: new Date(),
+        updatedByUserId: user.id,
+      },
+    });
+
+    // Don't invalidate cache - draft changes shouldn't affect live site
+    return ok(page);
+  } catch (error) {
+    console.error("Error saving draft:", error);
+    return fail("Failed to save draft");
+  }
+}
+
+/**
+ * Publish draft content - moves draftContent to content and clears draft
+ */
+export async function publishDraft(slug: string): Promise<ActionResult<MarketingPage>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+    if (!user) {
+      return fail("Not authenticated");
+    }
+
+    // First, get the current draft content
+    const currentPage = await prisma.marketingPage.findUnique({
+      where: { slug },
+      select: { draftContent: true, hasDraft: true },
+    });
+
+    if (!currentPage || !currentPage.hasDraft || !currentPage.draftContent) {
+      return fail("No draft content to publish");
+    }
+
+    // Update the page: move draft to content, clear draft
+    const page = await prisma.marketingPage.update({
+      where: { slug },
+      data: {
+        content: currentPage.draftContent,
+        draftContent: null,
+        hasDraft: false,
+        status: "published",
+        publishedAt: new Date(),
+        lastEditedBy: user.id,
+        lastEditedAt: new Date(),
+        updatedByUserId: user.id,
+      },
+    });
+
+    revalidateMarketing();
+    return ok(page);
+  } catch (error) {
+    console.error("Error publishing draft:", error);
+    return fail("Failed to publish draft");
+  }
+}
+
+/**
+ * Discard draft content - removes draftContent without affecting live content
+ */
+export async function discardDraft(slug: string): Promise<ActionResult<MarketingPage>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const page = await prisma.marketingPage.update({
+      where: { slug },
+      data: {
+        draftContent: null,
+        hasDraft: false,
+      },
+    });
+
+    return ok(page);
+  } catch (error) {
+    console.error("Error discarding draft:", error);
+    return fail("Failed to discard draft");
+  }
+}
+
+/**
+ * Schedule a page for future publishing
+ */
+export async function schedulePublish(
+  slug: string,
+  scheduledPublishAt: Date
+): Promise<ActionResult<MarketingPage>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+    if (!user) {
+      return fail("Not authenticated");
+    }
+
+    // Ensure the scheduled time is in the future
+    if (scheduledPublishAt <= new Date()) {
+      return fail("Scheduled time must be in the future");
+    }
+
+    const page = await prisma.marketingPage.update({
+      where: { slug },
+      data: {
+        scheduledPublishAt,
+        scheduledBy: user.id,
+      },
+    });
+
+    return ok(page);
+  } catch (error) {
+    console.error("Error scheduling publish:", error);
+    return fail("Failed to schedule publish");
+  }
+}
+
+/**
+ * Cancel scheduled publishing
+ */
+export async function cancelScheduledPublish(slug: string): Promise<ActionResult<MarketingPage>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const page = await prisma.marketingPage.update({
+      where: { slug },
+      data: {
+        scheduledPublishAt: null,
+        scheduledBy: null,
+      },
+    });
+
+    return ok(page);
+  } catch (error) {
+    console.error("Error canceling scheduled publish:", error);
+    return fail("Failed to cancel scheduled publish");
+  }
+}
+
+// ============================================================================
 // NAVIGATION
 // ============================================================================
 
