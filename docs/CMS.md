@@ -1218,11 +1218,11 @@ model CMSWebhookLog {
 - [x] Add unsaved changes warnings
 - [x] Add responsive design for all CMS views
 
-### Phase 2: All Pages Connected
-- [ ] Connect all 8 feature pages
-- [ ] Connect all 6 industry pages
-- [ ] Connect all 5 legal pages
-- [ ] Connect remaining main pages
+### Phase 2: All Pages Connected ✅ COMPLETE
+- [x] Connect all 8 feature pages (galleries, payments, clients, contracts, automation, analytics, social-media, email-marketing)
+- [x] Connect all 6 industry pages (real-estate, commercial, architecture, events, portraits, food)
+- [x] Connect all 5 legal pages (terms, privacy, cookies, security, dpa)
+- [x] Connect remaining main pages (about, contact, blog, careers, changelog, guides, integrations, partners, press, support, webinars, affiliates)
 
 ### Phase 3: Draft Mode & Preview
 - [ ] Add draftContent field to schema

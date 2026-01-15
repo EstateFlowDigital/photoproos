@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Minus,
   Plus,
+  Upload,
 } from "lucide-react";
 
 interface PropertiesPanelProps {
@@ -259,30 +260,94 @@ export function PropertiesPanel({
               </>
             )}
 
-            {/* Image-specific: Object Fit */}
+            {/* Image-specific: Upload and Object Fit */}
             {layer.type === "image" && (
-              <div>
-                <label htmlFor="object-fit" className="block text-xs text-[var(--foreground-muted)] mb-1">
-                  Object Fit
-                </label>
-                <div className="relative">
-                  <select
-                    id="object-fit"
-                    value={(layer as ImageLayer).objectFit}
-                    onChange={(e) =>
-                      onUpdateLayer(layer.id, {
-                        objectFit: e.target.value as "cover" | "contain" | "fill",
-                      } as Partial<ImageLayer>)
-                    }
-                    className="w-full appearance-none rounded-lg border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 pr-8 text-sm text-[var(--foreground)] focus:border-[var(--primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
-                  >
-                    <option value="cover">Cover</option>
-                    <option value="contain">Contain</option>
-                    <option value="fill">Fill</option>
-                  </select>
-                  <ChevronDown className="absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-muted)] pointer-events-none" aria-hidden="true" />
+              <>
+                <div>
+                  <label className="block text-xs text-[var(--foreground-muted)] mb-1.5">
+                    Image Source
+                  </label>
+                  {(layer as ImageLayer).src ? (
+                    <div className="space-y-2">
+                      <div className="relative aspect-video rounded-lg overflow-hidden border border-[var(--border)]">
+                        <img
+                          src={(layer as ImageLayer).src}
+                          alt="Layer preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          onClick={() => onUpdateLayer(layer.id, { src: "" } as Partial<ImageLayer>)}
+                          className="absolute top-1 right-1 p-1 rounded bg-black/50 text-white hover:bg-black/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                          aria-label="Remove image"
+                        >
+                          <Minus className="h-3 w-3" aria-hidden="true" />
+                        </button>
+                      </div>
+                      <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-[var(--border)] text-xs text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] hover:text-[var(--foreground)] cursor-pointer focus-within:ring-2 focus-within:ring-[var(--primary)]">
+                        <Upload className="h-3.5 w-3.5" aria-hidden="true" />
+                        Replace Image
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="sr-only"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (ev) => {
+                                onUpdateLayer(layer.id, { src: ev.target?.result as string } as Partial<ImageLayer>);
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center gap-2 w-full px-3 py-6 rounded-lg border border-dashed border-[var(--border)] text-xs text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] hover:text-[var(--foreground)] cursor-pointer focus-within:ring-2 focus-within:ring-[var(--primary)]">
+                      <Upload className="h-6 w-6" aria-hidden="true" />
+                      <span>Click to upload image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              onUpdateLayer(layer.id, { src: ev.target?.result as string } as Partial<ImageLayer>);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </label>
+                  )}
                 </div>
-              </div>
+                <div>
+                  <label htmlFor="object-fit" className="block text-xs text-[var(--foreground-muted)] mb-1">
+                    Object Fit
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="object-fit"
+                      value={(layer as ImageLayer).objectFit}
+                      onChange={(e) =>
+                        onUpdateLayer(layer.id, {
+                          objectFit: e.target.value as "cover" | "contain" | "fill",
+                        } as Partial<ImageLayer>)
+                      }
+                      className="w-full appearance-none rounded-lg border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 pr-8 text-sm text-[var(--foreground)] focus:border-[var(--primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                    >
+                      <option value="cover">Cover</option>
+                      <option value="contain">Contain</option>
+                      <option value="fill">Fill</option>
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-muted)] pointer-events-none" aria-hidden="true" />
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </PropertySection>

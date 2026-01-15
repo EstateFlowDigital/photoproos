@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Marketing CMS Phase 2: All Pages Connected** - Complete CMS integration across all marketing pages:
+  - Homepage now fetches dynamic metadata from CMS via `getHomepageContent()`
+  - All 8 feature pages connected (galleries, payments, clients, contracts, automation, analytics, social-media, email-marketing)
+  - All 6 industry pages connected (real-estate, commercial, architecture, events, portraits, food)
+  - All 5 legal pages connected (terms, privacy, cookies, security, dpa)
+  - All 12 main pages connected (about, contact, blog, careers, changelog, guides, integrations, partners, press, support, webinars, affiliates)
+  - Each page fetches CMS content for hero sections, metadata (title, description, OG image), and FAQs
+  - Fallback defaults ensure pages work without CMS content
+  - Updated docs/CMS.md with Phase 1 and Phase 2 completion status
+
 - **Marketing Studio Phase 5: Advanced Composition System** - Layer-based composition for social media graphics:
   - **Layer Types** - Full support for text, image, shape, mockup, and logo layers:
     - Text layers with font family, size, weight, color, alignment, and line height

@@ -115,6 +115,13 @@ export function PostComposer() {
   const [layers, setLayers] = React.useState<Layer[]>([]);
   const [selectedLayerId, setSelectedLayerId] = React.useState<string | null>(null);
 
+  // Canvas background state
+  const [canvasBgType, setCanvasBgType] = React.useState<"solid" | "gradient">("solid");
+  const [canvasBgColor, setCanvasBgColor] = React.useState("#0a0a0a");
+  const [canvasGradientFrom, setCanvasGradientFrom] = React.useState("#3b82f6");
+  const [canvasGradientTo, setCanvasGradientTo] = React.useState("#8b5cf6");
+  const [canvasGradientAngle, setCanvasGradientAngle] = React.useState(135);
+
   // Preview engagement data (editable in future)
   const [engagement] = React.useState({
     likes: 1247,
@@ -564,12 +571,28 @@ export function PostComposer() {
     }
   }, [selectedLayerId, isDragging, dragLayerId, handleLayerMouseDown]);
 
+  // Compute canvas background style
+  const canvasBgStyle = React.useMemo((): React.CSSProperties => {
+    if (canvasBgType === "gradient") {
+      return {
+        background: `linear-gradient(${canvasGradientAngle}deg, ${canvasGradientFrom}, ${canvasGradientTo})`,
+      };
+    }
+    return {
+      backgroundColor: canvasBgColor,
+    };
+  }, [canvasBgType, canvasBgColor, canvasGradientFrom, canvasGradientTo, canvasGradientAngle]);
+
   // Render the content based on content type
   const renderContent = React.useCallback(() => {
     // If there are layers, render them on a canvas
     if (layers.length > 0) {
       return (
-        <div className="relative w-full h-full bg-[var(--background)]">
+        <div
+          className="relative w-full h-full"
+          style={canvasBgStyle}
+          ref={canvasRef}
+        >
           {/* Background layer (base content) */}
           {contentType === "mockup" && selectedMockup && (
             <div className="absolute inset-0 overflow-hidden flex items-center justify-center">
@@ -720,7 +743,7 @@ export function PostComposer() {
         </p>
       </div>
     );
-  }, [contentType, selectedTemplate, selectedMockup, industry, theme, primaryColor, customImage, layers, renderLayer]);
+  }, [contentType, selectedTemplate, selectedMockup, industry, theme, primaryColor, customImage, layers, renderLayer, canvasBgStyle]);
 
   // Render platform preview
   const renderPreview = React.useCallback(() => {
@@ -1324,6 +1347,165 @@ export function PostComposer() {
               </div>
             </div>
           </div>
+
+          {/* Canvas Background (only when layers exist) */}
+          {layers.length > 0 && (
+            <div className="flex-shrink-0 p-3 border-b border-[var(--card-border)]">
+              <div className="flex items-center gap-2 mb-3">
+                <Square className="h-3.5 w-3.5 text-[var(--foreground-muted)]" aria-hidden="true" />
+                <span className="text-xs font-medium text-[var(--foreground)]">Canvas Background</span>
+              </div>
+
+              <div className="space-y-2.5">
+                {/* Background Type Toggle */}
+                <div>
+                  <label id="bg-type-label" className="block text-xs text-[var(--foreground-muted)] mb-1.5">
+                    Type
+                  </label>
+                  <div
+                    className="flex items-center gap-1"
+                    role="group"
+                    aria-labelledby="bg-type-label"
+                  >
+                    <button
+                      onClick={() => setCanvasBgType("solid")}
+                      aria-pressed={canvasBgType === "solid"}
+                      className={cn(
+                        "flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
+                        canvasBgType === "solid"
+                          ? "bg-[var(--foreground)] text-[var(--background)]"
+                          : "bg-[var(--background)] border border-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+                      )}
+                    >
+                      Solid
+                    </button>
+                    <button
+                      onClick={() => setCanvasBgType("gradient")}
+                      aria-pressed={canvasBgType === "gradient"}
+                      className={cn(
+                        "flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
+                        canvasBgType === "gradient"
+                          ? "bg-[var(--foreground)] text-[var(--background)]"
+                          : "bg-[var(--background)] border border-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+                      )}
+                    >
+                      Gradient
+                    </button>
+                  </div>
+                </div>
+
+                {/* Solid Color Picker */}
+                {canvasBgType === "solid" && (
+                  <div>
+                    <label htmlFor="canvas-bg-color" className="block text-xs text-[var(--foreground-muted)] mb-1.5">
+                      Color
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        id="canvas-bg-color"
+                        type="color"
+                        value={canvasBgColor}
+                        onChange={(e) => setCanvasBgColor(e.target.value)}
+                        className="h-8 w-8 cursor-pointer rounded border border-[var(--border)] bg-transparent"
+                        aria-label="Canvas background color"
+                      />
+                      <input
+                        type="text"
+                        value={canvasBgColor}
+                        onChange={(e) => setCanvasBgColor(e.target.value)}
+                        className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 text-xs text-[var(--foreground)] focus:border-[var(--primary)] focus:outline-none"
+                        placeholder="#000000"
+                        aria-label="Canvas background color hex value"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Gradient Controls */}
+                {canvasBgType === "gradient" && (
+                  <>
+                    <div className="grid grid-cols-2 gap-2">
+                      {/* From Color */}
+                      <div>
+                        <label htmlFor="gradient-from" className="block text-xs text-[var(--foreground-muted)] mb-1.5">
+                          From
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            id="gradient-from"
+                            type="color"
+                            value={canvasGradientFrom}
+                            onChange={(e) => setCanvasGradientFrom(e.target.value)}
+                            className="h-7 w-7 cursor-pointer rounded border border-[var(--border)] bg-transparent flex-shrink-0"
+                            aria-label="Gradient start color"
+                          />
+                          <input
+                            type="text"
+                            value={canvasGradientFrom}
+                            onChange={(e) => setCanvasGradientFrom(e.target.value)}
+                            className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-2 py-1.5 text-xs text-[var(--foreground)] focus:border-[var(--primary)] focus:outline-none"
+                            placeholder="#3b82f6"
+                            aria-label="Gradient start color hex"
+                          />
+                        </div>
+                      </div>
+                      {/* To Color */}
+                      <div>
+                        <label htmlFor="gradient-to" className="block text-xs text-[var(--foreground-muted)] mb-1.5">
+                          To
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            id="gradient-to"
+                            type="color"
+                            value={canvasGradientTo}
+                            onChange={(e) => setCanvasGradientTo(e.target.value)}
+                            className="h-7 w-7 cursor-pointer rounded border border-[var(--border)] bg-transparent flex-shrink-0"
+                            aria-label="Gradient end color"
+                          />
+                          <input
+                            type="text"
+                            value={canvasGradientTo}
+                            onChange={(e) => setCanvasGradientTo(e.target.value)}
+                            className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-2 py-1.5 text-xs text-[var(--foreground)] focus:border-[var(--primary)] focus:outline-none"
+                            placeholder="#8b5cf6"
+                            aria-label="Gradient end color hex"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    {/* Gradient Preview */}
+                    <div
+                      className="h-6 rounded-lg border border-[var(--border)]"
+                      style={{
+                        background: `linear-gradient(${canvasGradientAngle}deg, ${canvasGradientFrom}, ${canvasGradientTo})`,
+                      }}
+                      aria-hidden="true"
+                    />
+                    {/* Angle Slider */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label htmlFor="gradient-angle" className="text-xs text-[var(--foreground-muted)]">
+                          Angle
+                        </label>
+                        <span className="text-xs text-[var(--foreground-muted)]">{canvasGradientAngle}°</span>
+                      </div>
+                      <input
+                        id="gradient-angle"
+                        type="range"
+                        min="0"
+                        max="360"
+                        value={canvasGradientAngle}
+                        onChange={(e) => setCanvasGradientAngle(Number(e.target.value))}
+                        className="w-full h-1.5 rounded-full appearance-none bg-[var(--background-hover)] cursor-pointer accent-[var(--primary)]"
+                        aria-label="Gradient angle in degrees"
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Caption Editor */}
           <div className="flex-1 flex flex-col overflow-hidden min-h-0">

@@ -1,8 +1,20 @@
+import { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import dynamic from "next/dynamic";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { getHomepageContent } from "@/lib/marketing/content";
+
+// Dynamic metadata from CMS
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = await getHomepageContent();
+  return {
+    title: meta.title || "PhotoProOS | The Business OS for Professional Photographers",
+    description: meta.description || "Deliver stunning galleries, collect payments automatically, and run your entire photography business from one platform.",
+    openGraph: meta.ogImage ? { images: [meta.ogImage] } : undefined,
+  };
+}
 
 // New analytics-focused hero
 const HeroAnalyticsSection = dynamic(
