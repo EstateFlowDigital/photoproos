@@ -15,6 +15,10 @@ import {
   Minus,
   Plus,
   Upload,
+  FlipHorizontal,
+  FlipVertical,
+  RotateCcw,
+  RotateCw,
 } from "lucide-react";
 
 interface PropertiesPanelProps {
@@ -180,14 +184,71 @@ export function PropertiesPanel({
               <label htmlFor="rotation" className="block text-xs text-[var(--foreground-muted)] mb-1">
                 Rotation
               </label>
-              <NumberInput
-                id="rotation"
-                value={layer.rotation}
-                onChange={(v) => updateField("rotation", v)}
-                min={-360}
-                max={360}
-                suffix="°"
-              />
+              <div className="flex items-center gap-2">
+                <NumberInput
+                  id="rotation"
+                  value={layer.rotation}
+                  onChange={(v) => updateField("rotation", v)}
+                  min={-360}
+                  max={360}
+                  suffix="°"
+                />
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => updateField("rotation", layer.rotation - 90)}
+                    className="p-1.5 rounded hover:bg-[var(--background-hover)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                    title="Rotate 90° left"
+                    aria-label="Rotate 90 degrees counterclockwise"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                  <button
+                    onClick={() => updateField("rotation", layer.rotation + 90)}
+                    className="p-1.5 rounded hover:bg-[var(--background-hover)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                    title="Rotate 90° right"
+                    aria-label="Rotate 90 degrees clockwise"
+                  >
+                    <RotateCw className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Flip */}
+            <div>
+              <label className="block text-xs text-[var(--foreground-muted)] mb-1">
+                Flip
+              </label>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => updateField("flipX", !layer.flipX)}
+                  aria-pressed={layer.flipX}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
+                    layer.flipX
+                      ? "bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/30"
+                      : "bg-[var(--background)] border border-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+                  )}
+                  title="Flip horizontally"
+                >
+                  <FlipHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
+                  Horizontal
+                </button>
+                <button
+                  onClick={() => updateField("flipY", !layer.flipY)}
+                  aria-pressed={layer.flipY}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
+                    layer.flipY
+                      ? "bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/30"
+                      : "bg-[var(--background)] border border-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+                  )}
+                  title="Flip vertically"
+                >
+                  <FlipVertical className="h-3.5 w-3.5" aria-hidden="true" />
+                  Vertical
+                </button>
+              </div>
             </div>
           </div>
         </PropertySection>

@@ -26,9 +26,9 @@ import {
   Sparkles,
   History,
 } from "lucide-react";
-import { VersionHistory } from "@/components/cms";
+import { VersionHistory, SchedulingPanel, ActiveEditors, useAutoSave, AutoSaveBadge } from "@/components/cms";
 import type { MarketingPage } from "@prisma/client";
-import { updateMarketingPage, publishMarketingPage, deleteMarketingPage } from "@/lib/actions/marketing-cms";
+import { updateMarketingPage, publishMarketingPage, deleteMarketingPage, schedulePublish, cancelScheduledPublish, saveDraft } from "@/lib/actions/marketing-cms";
 
 interface Props {
   page: MarketingPage;
@@ -863,6 +863,29 @@ export function PageEditorClient({ page }: Props) {
   const [metaDescription, setMetaDescription] = useState(page.metaDescription || "");
   const [ogImage, setOgImage] = useState(page.ogImage || "");
   const [status, setStatus] = useState(page.status);
+  const [scheduledPublishAt, setScheduledPublishAt] = useState<Date | null>(
+    page.scheduledPublishAt ? new Date(page.scheduledPublishAt) : null
+  );
+
+  // Auto-save draft content
+  const handleAutoSave = useCallback(async () => {
+    try {
+      const parsedContent = JSON.parse(content);
+      const result = await saveDraft(page.slug, parsedContent);
+      return result.success;
+    } catch {
+      // Invalid JSON, skip auto-save
+      return false;
+    }
+  }, [content, page.slug]);
+
+  const autoSave = useAutoSave({
+    content,
+    onSave: handleAutoSave,
+    debounceDelay: 3000, // Wait 3 seconds after typing stops
+    intervalDelay: 30000, // Also save every 30 seconds
+    enabled: true,
+  });
 
   // Track original values for dirty checking
   const originalValues = useMemo(() => ({
@@ -975,6 +998,28 @@ export function PageEditorClient({ page }: Props) {
     }
   };
 
+  // Handle schedule publish
+  const handleSchedulePublish = useCallback(async (date: Date) => {
+    const result = await schedulePublish(page.slug, date);
+    if (result.success && result.data) {
+      setScheduledPublishAt(result.data.scheduledPublishAt ? new Date(result.data.scheduledPublishAt) : null);
+      router.refresh();
+      return { success: true };
+    }
+    return { success: false, error: result.error || "Failed to schedule" };
+  }, [page.slug, router]);
+
+  // Handle cancel scheduled publish
+  const handleCancelScheduledPublish = useCallback(async () => {
+    const result = await cancelScheduledPublish(page.slug);
+    if (result.success) {
+      setScheduledPublishAt(null);
+      router.refresh();
+      return { success: true };
+    }
+    return { success: false, error: result.error || "Failed to cancel schedule" };
+  }, [page.slug, router]);
+
   // Keyboard shortcut for save (Cmd/Ctrl + S)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1072,17 +1117,35 @@ export function PageEditorClient({ page }: Props) {
               >
                 {status}
               </span>
+              {scheduledPublishAt && status !== "published" && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] font-medium">
+                  Scheduled
+                </span>
+              )}
               {hasUnsavedChanges && (
                 <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-500 font-medium">
                   Unsaved changes
                 </span>
               )}
+              <AutoSaveBadge
+                status={autoSave.status}
+                lastSavedAt={autoSave.lastSavedAt}
+                isOnline={autoSave.isOnline}
+              />
             </div>
             <p className="text-sm text-[var(--foreground-muted)]">/{page.slug}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          {/* Active editors indicator */}
+          <ActiveEditors
+            entityType="MarketingPage"
+            entityId={page.id}
+            className="hidden sm:flex"
+          />
+
+          <div className="flex items-center gap-2">
           <a
             href={publicUrl}
             target="_blank"
@@ -1147,6 +1210,7 @@ export function PageEditorClient({ page }: Props) {
               </>
             )}
           </button>
+          </div>
         </div>
       </div>
 
@@ -1301,6 +1365,19 @@ export function PageEditorClient({ page }: Props) {
               ]}
               description="Draft pages are not visible on the public site"
             />
+
+            {/* Scheduling Section */}
+            <div className="border-t border-[var(--border)] pt-6">
+              <h3 className="text-sm font-medium text-[var(--foreground)] mb-4">Scheduling</h3>
+              <SchedulingPanel
+                scheduledAt={scheduledPublishAt}
+                scheduledBy={page.scheduledBy}
+                onSchedule={handleSchedulePublish}
+                onCancelSchedule={handleCancelScheduledPublish}
+                isPublished={status === "published"}
+                disabled={isPending}
+              />
+            </div>
 
             <div className="border-t border-[var(--border)] pt-6">
               <h3 className="text-sm font-medium text-[var(--foreground)] mb-4">Page Information</h3>

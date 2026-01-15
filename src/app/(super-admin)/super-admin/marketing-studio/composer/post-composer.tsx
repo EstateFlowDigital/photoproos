@@ -48,6 +48,14 @@ import {
   Square,
   Grid3X3,
   Magnet,
+  ZoomIn,
+  ZoomOut,
+  AlignLeft,
+  AlignRight,
+  AlignCenterHorizontal,
+  AlignCenterVertical,
+  AlignStartVertical,
+  AlignEndVertical,
 } from "lucide-react";
 
 // Content type for the preview
@@ -129,6 +137,10 @@ export function PostComposer() {
   const [snapToGrid, setSnapToGrid] = React.useState(true);
   const [gridSize, setGridSize] = React.useState(20);
   const [alignmentGuides, setAlignmentGuides] = React.useState<{ type: "h" | "v"; position: number }[]>([]);
+
+  // Zoom state
+  const [canvasZoom, setCanvasZoom] = React.useState(100);
+  const ZOOM_LEVELS = [25, 50, 75, 100, 125, 150, 200];
 
   // Preview engagement data (editable in future)
   const [engagement] = React.useState({
@@ -269,6 +281,8 @@ export function PostComposer() {
       position: { x: 50, y: 50 },
       size: { width: 200, height: 100 },
       rotation: 0,
+      flipX: false,
+      flipY: false,
       zIndex: layers.length,
     };
 
@@ -722,6 +736,45 @@ export function PostComposer() {
     toast.success("Redo");
   }, [historyIndex, layerHistory]);
 
+  // Alignment handlers
+  const handleAlignLayer = React.useCallback(
+    (alignment: "left" | "center-h" | "right" | "top" | "center-v" | "bottom") => {
+      if (!selectedLayerId) return;
+      const layer = layers.find((l) => l.id === selectedLayerId);
+      if (!layer || layer.locked) return;
+
+      // Get canvas dimensions from platform config
+      const canvasWidth = platformConfig?.previewSize?.width || 540;
+      const canvasHeight = platformConfig?.previewSize?.height || 540;
+
+      const newPosition = { ...layer.position };
+
+      switch (alignment) {
+        case "left":
+          newPosition.x = 0;
+          break;
+        case "center-h":
+          newPosition.x = (canvasWidth - layer.size.width) / 2;
+          break;
+        case "right":
+          newPosition.x = canvasWidth - layer.size.width;
+          break;
+        case "top":
+          newPosition.y = 0;
+          break;
+        case "center-v":
+          newPosition.y = (canvasHeight - layer.size.height) / 2;
+          break;
+        case "bottom":
+          newPosition.y = canvasHeight - layer.size.height;
+          break;
+      }
+
+      handleUpdateLayer(selectedLayerId, { position: newPosition });
+    },
+    [selectedLayerId, layers, platformConfig, handleUpdateLayer]
+  );
+
   // Keyboard shortcuts
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -838,6 +891,35 @@ export function PostComposer() {
         setShowLayersPanel((prev) => !prev);
         return;
       }
+
+      // Zoom in (Cmd/Ctrl + Plus or =)
+      if (isMod && (e.key === "+" || e.key === "=")) {
+        e.preventDefault();
+        setCanvasZoom((prev) => {
+          const currentIndex = ZOOM_LEVELS.indexOf(prev);
+          if (currentIndex === -1) return Math.min(200, prev + 25);
+          return ZOOM_LEVELS[Math.min(currentIndex + 1, ZOOM_LEVELS.length - 1)];
+        });
+        return;
+      }
+
+      // Zoom out (Cmd/Ctrl + Minus)
+      if (isMod && e.key === "-") {
+        e.preventDefault();
+        setCanvasZoom((prev) => {
+          const currentIndex = ZOOM_LEVELS.indexOf(prev);
+          if (currentIndex === -1) return Math.max(25, prev - 25);
+          return ZOOM_LEVELS[Math.max(currentIndex - 1, 0)];
+        });
+        return;
+      }
+
+      // Reset zoom (Cmd/Ctrl + 0)
+      if (isMod && e.key === "0") {
+        e.preventDefault();
+        setCanvasZoom(100);
+        return;
+      }
     };
 
     document.addEventListener("keydown", handleKeyDown);
@@ -894,6 +976,12 @@ export function PostComposer() {
   const renderLayer = React.useCallback((layer: Layer) => {
     if (!layer.visible) return null;
 
+    // Build transform string including rotation and flip
+    const transforms: string[] = [];
+    if (layer.rotation !== 0) transforms.push(`rotate(${layer.rotation}deg)`);
+    if (layer.flipX) transforms.push("scaleX(-1)");
+    if (layer.flipY) transforms.push("scaleY(-1)");
+
     const baseStyle: React.CSSProperties = {
       position: "absolute",
       left: `${layer.position.x}px`,
@@ -901,7 +989,7 @@ export function PostComposer() {
       width: `${layer.size.width}px`,
       height: `${layer.size.height}px`,
       opacity: layer.opacity / 100,
-      transform: `rotate(${layer.rotation}deg)`,
+      transform: transforms.length > 0 ? transforms.join(" ") : undefined,
       zIndex: layer.zIndex,
       pointerEvents: layer.locked ? "none" : "auto",
     };
@@ -1581,10 +1669,121 @@ export function PostComposer() {
             </div>
           </nav>
 
+          {/* Zoom & Alignment Toolbar */}
+          {layers.length > 0 && (
+            <div className="flex-shrink-0 px-4 py-2 border-b border-[var(--card-border)] bg-[var(--background-secondary)]">
+              <div className="flex items-center justify-between gap-4">
+                {/* Alignment buttons (only when layer selected) */}
+                <div className="flex items-center gap-1">
+                  {selectedLayerId && (
+                    <>
+                      <span className="text-xs text-[var(--foreground-muted)] mr-1">Align:</span>
+                      <button
+                        onClick={() => handleAlignLayer("left")}
+                        className="p-1.5 rounded hover:bg-[var(--background-hover)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                        aria-label="Align left"
+                        title="Align left"
+                      >
+                        <AlignLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                      </button>
+                      <button
+                        onClick={() => handleAlignLayer("center-h")}
+                        className="p-1.5 rounded hover:bg-[var(--background-hover)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                        aria-label="Center horizontally"
+                        title="Center horizontally"
+                      >
+                        <AlignCenterHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
+                      </button>
+                      <button
+                        onClick={() => handleAlignLayer("right")}
+                        className="p-1.5 rounded hover:bg-[var(--background-hover)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                        aria-label="Align right"
+                        title="Align right"
+                      >
+                        <AlignRight className="h-3.5 w-3.5" aria-hidden="true" />
+                      </button>
+                      <div className="w-px h-4 bg-[var(--border)] mx-1" />
+                      <button
+                        onClick={() => handleAlignLayer("top")}
+                        className="p-1.5 rounded hover:bg-[var(--background-hover)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                        aria-label="Align top"
+                        title="Align top"
+                      >
+                        <AlignStartVertical className="h-3.5 w-3.5" aria-hidden="true" />
+                      </button>
+                      <button
+                        onClick={() => handleAlignLayer("center-v")}
+                        className="p-1.5 rounded hover:bg-[var(--background-hover)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                        aria-label="Center vertically"
+                        title="Center vertically"
+                      >
+                        <AlignCenterVertical className="h-3.5 w-3.5" aria-hidden="true" />
+                      </button>
+                      <button
+                        onClick={() => handleAlignLayer("bottom")}
+                        className="p-1.5 rounded hover:bg-[var(--background-hover)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                        aria-label="Align bottom"
+                        title="Align bottom"
+                      >
+                        <AlignEndVertical className="h-3.5 w-3.5" aria-hidden="true" />
+                      </button>
+                    </>
+                  )}
+                  {!selectedLayerId && (
+                    <span className="text-xs text-[var(--foreground-muted)]">Select a layer to align</span>
+                  )}
+                </div>
+
+                {/* Zoom controls */}
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setCanvasZoom((prev) => Math.max(25, prev - 25))}
+                    disabled={canvasZoom <= 25}
+                    className="p-1.5 rounded hover:bg-[var(--background-hover)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                    aria-label="Zoom out"
+                  >
+                    <ZoomOut className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                  <select
+                    value={canvasZoom}
+                    onChange={(e) => setCanvasZoom(Number(e.target.value))}
+                    className="appearance-none rounded border border-[var(--border)] bg-[var(--background)] px-2 py-1 text-xs text-[var(--foreground)] focus:border-[var(--primary)] focus:outline-none cursor-pointer"
+                    aria-label="Zoom level"
+                  >
+                    {ZOOM_LEVELS.map((level) => (
+                      <option key={level} value={level}>
+                        {level}%
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => setCanvasZoom((prev) => Math.min(200, prev + 25))}
+                    disabled={canvasZoom >= 200}
+                    className="p-1.5 rounded hover:bg-[var(--background-hover)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                    aria-label="Zoom in"
+                  >
+                    <ZoomIn className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                  <button
+                    onClick={() => setCanvasZoom(100)}
+                    className="ml-1 px-2 py-1 rounded text-xs text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] hover:text-[var(--foreground)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                    aria-label="Reset zoom to 100%"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Preview Area */}
           <div className="flex-1 overflow-auto p-4 sm:p-6 bg-[var(--background)]">
             <div className="flex justify-center">
-              <div ref={previewRef} className="inline-block max-w-full">
+              <div
+                ref={previewRef}
+                className="inline-block max-w-full transition-transform origin-center"
+                style={{ transform: layers.length > 0 ? `scale(${canvasZoom / 100})` : undefined }}
+              >
                 {renderPreview()}
               </div>
             </div>

@@ -8,6 +8,95 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Marketing CMS Phase 6: Collaboration & Workflow** - Real-time collaboration and activity tracking:
+  - **CMSPresence Table** (Prisma schema):
+    - Track who is editing what content in real-time
+    - `userId`, `userName`, `userAvatar`, `userColor` for user identification
+    - `entityType`, `entityId` to identify the content being edited
+    - `activeField` for field-level presence (optional)
+    - `lastSeen` timestamp with heartbeat mechanism (15s interval)
+    - `sessionId` for multi-tab support
+    - Unique constraint on `[userId, entityType, entityId]`
+    - Indexes for efficient presence queries
+  - **CMSAuditLog Table** (Prisma schema):
+    - Track all CMS activity for compliance and debugging
+    - `userId`, `userName` for who performed the action
+    - `entityType`, `entityId`, `entityName` for what was affected
+    - `action` field for create/update/publish/delete/restore actions
+    - `details` JSON field for additional context
+    - `ipAddress`, `userAgent` for security auditing
+    - Indexes on entityType+entityId, userId, action, createdAt
+  - **Presence Server Actions** (`marketing-cms.ts`):
+    - `updatePresence()` - Heartbeat for presence tracking, creates/updates record
+    - `getActiveEditors()` - Get other users editing same content (excludes current user)
+    - `removePresence()` - Cleanup when leaving editor page
+    - `cleanupStalePresence()` - Cron job helper, removes records older than 2 minutes
+    - Stale threshold: 60 seconds (twice the heartbeat interval)
+  - **Audit Log Server Actions** (`marketing-cms.ts`):
+    - `createAuditLog()` - Create audit entry with user, entity, action, details
+    - `getAuditLogs()` - Paginated logs for specific entity with filtering
+    - `getRecentActivity()` - Recent activity across all CMS content
+  - **ActiveEditors Component** (`active-editors.tsx`):
+    - Avatar stack showing other users editing the same content
+    - Color-coded avatars based on user ID hash (8 distinct colors)
+    - Tooltip with editor name, active field, and last seen time
+    - Automatic heartbeat (15s) and polling (10s) intervals
+    - Compact mode variant for tight spaces
+    - `usePresence` hook for manual presence management
+  - **Auto-Save System** (`auto-save.tsx`):
+    - `useAutoSave` hook for automatic draft saving
+    - Debounced saves on content change (configurable delay, default 2s)
+    - Periodic saves at interval (configurable, default 30s)
+    - Offline detection with visual indicator
+    - Status tracking: idle, saving, saved, error
+    - `AutoSaveIndicator` component with detailed status UI
+    - `AutoSaveBadge` compact component for header integration
+    - Integration with `saveDraft()` server action
+  - **Page Editor Integration**:
+    - ActiveEditors component in page header (desktop)
+    - AutoSaveBadge showing draft save status
+    - Automatic draft saving as you type (3s debounce)
+    - Background saves every 30 seconds
+    - Offline detection warns when connection lost
+
+- **Marketing CMS Phase 5: Scheduled Publishing & Content Calendar** - Automate content publishing with scheduling:
+  - **Scheduled Publishing System**:
+    - Cron endpoint `/api/cron/cms-scheduled-publish` processes due pages every 5-15 minutes
+    - `processScheduledPublishes()` action finds and publishes pages with `scheduledPublishAt <= now`
+    - Publishes draft content if available, otherwise just updates status
+    - Clears scheduling fields after successful publish
+    - Cache invalidation via `revalidateTag("marketing")` for immediate visibility
+    - Supports both GET and POST methods for cron service flexibility
+  - **Scheduling Panel Component** (`scheduling-panel.tsx`):
+    - Date/time picker with minimum 5 minutes in the future validation
+    - Visual indicators showing scheduled date, time until publish, and scheduled by user
+    - Edit and cancel schedule functionality
+    - Different states: editing, scheduled, published
+    - Quick schedule buttons for common times (1 hour, tomorrow 9am, next Monday 9am)
+  - **Page Editor Integration**:
+    - "Scheduling" section in Settings tab with SchedulingPanel component
+    - "Scheduled" badge in page header when page has scheduled publish
+    - Handlers for `schedulePublish()` and `cancelScheduledPublish()` actions
+    - Real-time state updates after scheduling operations
+  - **Content Calendar Page** (`/super-admin/marketing/calendar`):
+    - Month calendar view with navigation (prev/next month, today button)
+    - Day cells showing scheduled and published content counts
+    - Hover tooltips with page list for scheduled content
+    - Today highlight with ring indicator
+    - Month/Week view toggle (UI ready)
+  - **Calendar Sidebar**:
+    - Upcoming Scheduled section with next 5 scheduled pages
+    - Drafts section showing pages needing attention with edit timestamps
+    - Quick Stats showing scheduled, drafts, and published this month counts
+    - Links to page editor from all list items
+  - **Calendar Server Actions**:
+    - `getScheduledPages()` - Fetch pages by date range with scheduling info
+    - `getDraftPages()` - Fetch all pages with draft content
+    - `getContentCalendarSummary()` - Calendar data with counts by date
+  - **Navigation Integration**:
+    - "Content Calendar" quick action card on marketing dashboard
+    - CalendarDays icon from lucide-react
+
 - **Marketing Studio Polish: Advanced Composition Tools** - Professional-grade editing features for the post composer:
   - **Keyboard Shortcuts**:
     - Delete/Backspace: Delete selected layer
@@ -42,6 +131,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Center guides visible during drag/resize operations
     - Grid & Alignment settings panel in composer sidebar
     - Snap threshold of 8px for smooth alignment
+  - **Canvas Zoom Controls**:
+    - Zoom toolbar with ZoomIn/ZoomOut buttons
+    - Dropdown selector for preset zoom levels (25%, 50%, 75%, 100%, 125%, 150%, 200%)
+    - Keyboard shortcuts: Cmd/Ctrl+Plus (zoom in), Cmd/Ctrl+Minus (zoom out), Cmd/Ctrl+0 (reset to 100%)
+    - Smooth zoom transform applied to preview container
+    - Visual percentage indicator showing current zoom level
+  - **Quick Alignment Buttons**:
+    - Toolbar with 6 alignment options (only visible when layer selected)
+    - Horizontal alignment: Left, Center, Right
+    - Vertical alignment: Top, Center, Bottom
+    - Icons: AlignLeft, AlignRight, AlignCenterHorizontal, AlignCenterVertical, AlignStartVertical, AlignEndVertical
+    - Instant layer repositioning relative to canvas dimensions
+  - **Layer Flip & Rotate Controls**:
+    - `flipX` and `flipY` properties added to LayerBase type
+    - Toggle buttons in Properties Panel for horizontal and vertical flip
+    - Quick rotate buttons: -90° (rotate CCW), +90° (rotate CW)
+    - Visual flip state indicators with active button styling
+    - Transform string composition for rotation + flip combinations
+    - FlipHorizontal, FlipVertical, RotateCcw, RotateCw icons from Lucide
 
 - **Marketing CMS Phase 4: Version History & Inline Editing** - Track changes and edit content directly on pages:
   - **Schema: MarketingPageVersion Table**:

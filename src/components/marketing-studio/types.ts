@@ -239,6 +239,8 @@ export interface LayerBase {
   position: { x: number; y: number };
   size: { width: number; height: number };
   rotation: number;
+  flipX: boolean;
+  flipY: boolean;
   zIndex: number;
 }
 

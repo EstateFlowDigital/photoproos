@@ -18,6 +18,8 @@ import type {
   BlogCategory,
   TestimonialIndustry,
   FAQCategory,
+  CMSPresence,
+  CMSAuditLog,
 } from "@prisma/client";
 import {
   type CreateBlogPostInput,
@@ -1654,5 +1656,280 @@ export async function getContentCalendarSummary(
   } catch (error) {
     console.error("Error fetching content calendar summary:", error);
     return fail("Failed to fetch content calendar summary");
+  }
+}
+
+// ============================================================================
+// CMS PRESENCE - Collaborative Editing
+// ============================================================================
+
+// Color palette for user avatars
+const PRESENCE_COLORS = [
+  "#3b82f6", // blue
+  "#22c55e", // green
+  "#f97316", // orange
+  "#8b5cf6", // purple
+  "#ec4899", // pink
+  "#14b8a6", // teal
+  "#f59e0b", // amber
+  "#ef4444", // red
+];
+
+/**
+ * Get a consistent color for a user based on their ID
+ */
+function getUserColor(userId: string): string {
+  let hash = 0;
+  for (let i = 0; i < userId.length; i++) {
+    hash = ((hash << 5) - hash) + userId.charCodeAt(i);
+    hash = hash & hash;
+  }
+  return PRESENCE_COLORS[Math.abs(hash) % PRESENCE_COLORS.length];
+}
+
+/**
+ * Update or create presence for the current user editing an entity
+ * Should be called periodically (every 10-30 seconds) while editing
+ */
+export async function updatePresence(
+  entityType: string,
+  entityId: string,
+  activeField?: string
+): Promise<ActionResult<CMSPresence>> {
+  try {
+    const user = await currentUser();
+    if (!user) {
+      return fail("Not authenticated");
+    }
+
+    const presence = await prisma.cMSPresence.upsert({
+      where: {
+        userId_entityType_entityId: {
+          userId: user.id,
+          entityType,
+          entityId,
+        },
+      },
+      update: {
+        lastSeen: new Date(),
+        activeField,
+        userName: user.firstName
+          ? `${user.firstName} ${user.lastName || ""}`.trim()
+          : user.emailAddresses[0]?.emailAddress || "Unknown",
+        userAvatar: user.imageUrl,
+      },
+      create: {
+        userId: user.id,
+        userName: user.firstName
+          ? `${user.firstName} ${user.lastName || ""}`.trim()
+          : user.emailAddresses[0]?.emailAddress || "Unknown",
+        userAvatar: user.imageUrl,
+        userColor: getUserColor(user.id),
+        entityType,
+        entityId,
+        activeField,
+      },
+    });
+
+    return ok(presence);
+  } catch (error) {
+    console.error("Error updating presence:", error);
+    return fail("Failed to update presence");
+  }
+}
+
+/**
+ * Get all active editors for an entity
+ * Considers presence stale after 60 seconds
+ */
+export async function getActiveEditors(
+  entityType: string,
+  entityId: string
+): Promise<ActionResult<CMSPresence[]>> {
+  try {
+    const user = await currentUser();
+    const staleThreshold = new Date(Date.now() - 60 * 1000); // 60 seconds ago
+
+    const editors = await prisma.cMSPresence.findMany({
+      where: {
+        entityType,
+        entityId,
+        lastSeen: {
+          gte: staleThreshold,
+        },
+        // Optionally exclude current user
+        ...(user ? { NOT: { userId: user.id } } : {}),
+      },
+      orderBy: {
+        lastSeen: "desc",
+      },
+    });
+
+    return ok(editors);
+  } catch (error) {
+    console.error("Error fetching active editors:", error);
+    return fail("Failed to fetch active editors");
+  }
+}
+
+/**
+ * Remove presence when user leaves the editor
+ */
+export async function removePresence(
+  entityType: string,
+  entityId: string
+): Promise<ActionResult<void>> {
+  try {
+    const user = await currentUser();
+    if (!user) {
+      return fail("Not authenticated");
+    }
+
+    await prisma.cMSPresence.deleteMany({
+      where: {
+        userId: user.id,
+        entityType,
+        entityId,
+      },
+    });
+
+    return success();
+  } catch (error) {
+    console.error("Error removing presence:", error);
+    return fail("Failed to remove presence");
+  }
+}
+
+/**
+ * Clean up stale presence records (for cron job)
+ * Removes records older than 2 minutes
+ */
+export async function cleanupStalePresence(): Promise<
+  ActionResult<{ deleted: number }>
+> {
+  try {
+    const staleThreshold = new Date(Date.now() - 2 * 60 * 1000); // 2 minutes ago
+
+    const result = await prisma.cMSPresence.deleteMany({
+      where: {
+        lastSeen: {
+          lt: staleThreshold,
+        },
+      },
+    });
+
+    return ok({ deleted: result.count });
+  } catch (error) {
+    console.error("Error cleaning up stale presence:", error);
+    return fail("Failed to clean up stale presence");
+  }
+}
+
+// ============================================================================
+// CMS AUDIT LOG - Activity Tracking
+// ============================================================================
+
+/**
+ * Create an audit log entry
+ * Internal function - called by other actions when they perform operations
+ */
+export async function createAuditLog(params: {
+  entityType: string;
+  entityId: string;
+  entityName?: string;
+  action: string;
+  details?: Record<string, unknown>;
+  ipAddress?: string;
+  userAgent?: string;
+}): Promise<ActionResult<CMSAuditLog>> {
+  try {
+    const user = await currentUser();
+    if (!user) {
+      return fail("Not authenticated");
+    }
+
+    const log = await prisma.cMSAuditLog.create({
+      data: {
+        userId: user.id,
+        userName: user.firstName
+          ? `${user.firstName} ${user.lastName || ""}`.trim()
+          : user.emailAddresses[0]?.emailAddress || "Unknown",
+        entityType: params.entityType,
+        entityId: params.entityId,
+        entityName: params.entityName,
+        action: params.action,
+        details: params.details || undefined,
+        ipAddress: params.ipAddress,
+        userAgent: params.userAgent,
+      },
+    });
+
+    return ok(log);
+  } catch (error) {
+    console.error("Error creating audit log:", error);
+    return fail("Failed to create audit log");
+  }
+}
+
+/**
+ * Get audit logs for an entity
+ */
+export async function getAuditLogs(
+  entityType: string,
+  entityId: string,
+  options?: {
+    limit?: number;
+    offset?: number;
+  }
+): Promise<ActionResult<{ logs: CMSAuditLog[]; total: number }>> {
+  try {
+    const limit = options?.limit || 50;
+    const offset = options?.offset || 0;
+
+    const [logs, total] = await Promise.all([
+      prisma.cMSAuditLog.findMany({
+        where: {
+          entityType,
+          entityId,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.cMSAuditLog.count({
+        where: {
+          entityType,
+          entityId,
+        },
+      }),
+    ]);
+
+    return ok({ logs, total });
+  } catch (error) {
+    console.error("Error fetching audit logs:", error);
+    return fail("Failed to fetch audit logs");
+  }
+}
+
+/**
+ * Get recent activity across all CMS content
+ */
+export async function getRecentActivity(
+  limit: number = 20
+): Promise<ActionResult<CMSAuditLog[]>> {
+  try {
+    const logs = await prisma.cMSAuditLog.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: limit,
+    });
+
+    return ok(logs);
+  } catch (error) {
+    console.error("Error fetching recent activity:", error);
+    return fail("Failed to fetch recent activity");
   }
 }

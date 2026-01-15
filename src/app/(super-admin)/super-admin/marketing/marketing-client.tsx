@@ -11,6 +11,7 @@ import {
   PanelLeft,
   ChevronRight,
   ExternalLink,
+  CalendarDays,
 } from "lucide-react";
 import type {
   MarketingPage,
@@ -380,6 +381,13 @@ export function MarketingDashboardClient({ pages = [], posts = [], testimonials 
             title="Navigation"
             description="Navbar and footer links"
             elementId="marketing-action-navigation"
+          />
+          <QuickActionCard
+            href="/super-admin/marketing/calendar"
+            icon={CalendarDays}
+            title="Content Calendar"
+            description="Schedule and plan content"
+            elementId="marketing-action-calendar"
           />
         </nav>
       </section>

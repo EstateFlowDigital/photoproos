@@ -10375,6 +10375,63 @@ model MarketingPageVersion {
   @@index([createdAt])
 }
 
+// CMS Presence - Track who is actively editing content
+model CMSPresence {
+  id String @id @default(cuid())
+
+  // User info
+  userId     String
+  userName   String
+  userAvatar String?
+  userColor  String? // Color for cursor/avatar border
+
+  // What they're editing
+  entityType String // "MarketingPage", "FAQ", "BlogPost", etc.
+  entityId   String
+
+  // Field-level presence (optional - for collaborative editing)
+  activeField String? // e.g., "content.hero.headline"
+
+  // Heartbeat tracking
+  lastSeen DateTime @default(now())
+
+  // Session tracking
+  sessionId String?
+
+  @@unique([userId, entityType, entityId])
+  @@index([entityType, entityId])
+  @@index([lastSeen])
+}
+
+// CMS Audit Log - Track all CMS activity
+model CMSAuditLog {
+  id String @id @default(cuid())
+
+  // Who performed the action
+  userId   String
+  userName String
+
+  // What entity was affected
+  entityType String // "MarketingPage", "FAQ", "BlogPost", etc.
+  entityId   String
+  entityName String? // Display name for the entity
+
+  // Action details
+  action  String // "create", "update", "publish", "delete", "restore", "schedule", etc.
+  details Json? // Additional context like { field: "headline", oldValue: "...", newValue: "..." }
+
+  // IP and user agent for security
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
 // Marketing Navigation - Navbar and Footer content
 model MarketingNavigation {
   id String @id @default(cuid())
