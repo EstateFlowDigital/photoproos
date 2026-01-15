@@ -10432,6 +10432,55 @@ model CMSAuditLog {
   @@index([createdAt])
 }
 
+// Content Approval Workflow
+model ContentApproval {
+  id String @id @default(cuid())
+
+  // What content is being approved
+  entityType  String // "MarketingPage", "BlogPost", etc.
+  entityId    String
+  entityTitle String?
+
+  // Approval status
+  status ApprovalStatus @default(pending)
+
+  // Who requested approval
+  requestedBy     String
+  requestedByName String
+  requestedAt     DateTime @default(now())
+
+  // Approval chain - array of approvers
+  approvers   Json // [{ userId, name, status, respondedAt, comment }]
+  currentStep Int  @default(0)
+
+  // Content snapshot at time of request
+  contentSnapshot Json
+  changesSummary  String? @db.Text
+
+  // Resolution
+  resolvedAt     DateTime?
+  resolvedBy     String?
+  resolvedByName String?
+  resolution     String? // "approved", "rejected", "cancelled"
+  resolutionNote String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([entityType, entityId])
+  @@index([status])
+  @@index([requestedBy])
+  @@index([resolvedAt])
+}
+
+enum ApprovalStatus {
+  pending
+  in_review
+  approved
+  rejected
+  cancelled
+}
+
 // Marketing Navigation - Navbar and Footer content
 model MarketingNavigation {
   id String @id @default(cuid())

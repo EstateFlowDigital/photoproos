@@ -56,6 +56,11 @@ import {
   AlignCenterVertical,
   AlignStartVertical,
   AlignEndVertical,
+  Lock,
+  Clipboard,
+  ClipboardPaste,
+  Save,
+  FolderOpen,
 } from "lucide-react";
 
 // Content type for the preview
@@ -141,6 +146,28 @@ export function PostComposer() {
   // Zoom state
   const [canvasZoom, setCanvasZoom] = React.useState(100);
   const ZOOM_LEVELS = [25, 50, 75, 100, 125, 150, 200];
+
+  // Copied layer style for paste functionality
+  const [copiedStyle, setCopiedStyle] = React.useState<{
+    opacity: number;
+    rotation: number;
+    flipX: boolean;
+    flipY: boolean;
+    // Type-specific styles
+    fill?: string;
+    stroke?: string;
+    strokeWidth?: number;
+    borderRadius?: number;
+    color?: string;
+    fontFamily?: string;
+    fontSize?: number;
+    fontWeight?: number;
+    textAlign?: string;
+    lineHeight?: number;
+  } | null>(null);
+
+  // Multi-select layers
+  const [selectedLayerIds, setSelectedLayerIds] = React.useState<Set<string>>(new Set());
 
   // Preview engagement data (editable in future)
   const [engagement] = React.useState({
@@ -417,7 +444,7 @@ export function PostComposer() {
   const [resizeStart, setResizeStart] = React.useState({ x: 0, y: 0 });
   const [initialLayerBounds, setInitialLayerBounds] = React.useState({ x: 0, y: 0, width: 0, height: 0 });
 
-  // Handle layer drag start
+  // Handle layer drag start with multi-select support
   const handleLayerMouseDown = React.useCallback((e: React.MouseEvent, layerId: string) => {
     const layer = layers.find((l) => l.id === layerId);
     if (!layer || layer.locked) return;
@@ -425,13 +452,39 @@ export function PostComposer() {
     e.preventDefault();
     e.stopPropagation();
 
+    const isMod = e.metaKey || e.ctrlKey;
+    const isShift = e.shiftKey;
+
+    // Multi-select with Cmd/Ctrl or Shift
+    if (isMod || isShift) {
+      setSelectedLayerIds((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(layerId)) {
+          newSet.delete(layerId);
+          // If deselecting, also update single selection
+          if (selectedLayerId === layerId) {
+            setSelectedLayerId(newSet.size > 0 ? Array.from(newSet)[0] : null);
+          }
+        } else {
+          newSet.add(layerId);
+          // Set as primary selection
+          setSelectedLayerId(layerId);
+        }
+        return newSet;
+      });
+      setRightPanelTab("properties");
+      return;
+    }
+
+    // Single click - clear multi-selection and select only this layer
+    setSelectedLayerIds(new Set([layerId]));
     setIsDragging(true);
     setDragLayerId(layerId);
     setDragStart({ x: e.clientX, y: e.clientY });
     setLayerStart({ x: layer.position.x, y: layer.position.y });
     setSelectedLayerId(layerId);
     setRightPanelTab("properties");
-  }, [layers]);
+  }, [layers, selectedLayerId]);
 
   // Snap value to grid
   const snapToGridValue = React.useCallback(
@@ -775,6 +828,154 @@ export function PostComposer() {
     [selectedLayerId, layers, platformConfig, handleUpdateLayer]
   );
 
+  // Copy layer style
+  const handleCopyStyle = React.useCallback(() => {
+    if (!selectedLayerId) return;
+    const layer = layers.find((l) => l.id === selectedLayerId);
+    if (!layer) return;
+
+    const baseStyle = {
+      opacity: layer.opacity,
+      rotation: layer.rotation,
+      flipX: layer.flipX,
+      flipY: layer.flipY,
+    };
+
+    // Add type-specific styles
+    if (layer.type === "shape") {
+      const shapeLayer = layer as ShapeLayer;
+      setCopiedStyle({
+        ...baseStyle,
+        fill: shapeLayer.fill,
+        stroke: shapeLayer.stroke,
+        strokeWidth: shapeLayer.strokeWidth,
+        borderRadius: shapeLayer.borderRadius,
+      });
+    } else if (layer.type === "text") {
+      const textLayer = layer as TextLayer;
+      setCopiedStyle({
+        ...baseStyle,
+        color: textLayer.color,
+        fontFamily: textLayer.fontFamily,
+        fontSize: textLayer.fontSize,
+        fontWeight: textLayer.fontWeight,
+        textAlign: textLayer.textAlign,
+        lineHeight: textLayer.lineHeight,
+      });
+    } else {
+      setCopiedStyle(baseStyle);
+    }
+
+    toast.success("Style copied");
+  }, [selectedLayerId, layers]);
+
+  // Paste layer style
+  const handlePasteStyle = React.useCallback(() => {
+    if (!selectedLayerId || !copiedStyle) return;
+    const layer = layers.find((l) => l.id === selectedLayerId);
+    if (!layer || layer.locked) return;
+
+    const updates: Partial<Layer> = {
+      opacity: copiedStyle.opacity,
+      rotation: copiedStyle.rotation,
+      flipX: copiedStyle.flipX,
+      flipY: copiedStyle.flipY,
+    };
+
+    // Apply type-specific styles if layer types match
+    if (layer.type === "shape" && copiedStyle.fill !== undefined) {
+      Object.assign(updates, {
+        fill: copiedStyle.fill,
+        stroke: copiedStyle.stroke,
+        strokeWidth: copiedStyle.strokeWidth,
+        borderRadius: copiedStyle.borderRadius,
+      });
+    } else if (layer.type === "text" && copiedStyle.color !== undefined) {
+      Object.assign(updates, {
+        color: copiedStyle.color,
+        fontFamily: copiedStyle.fontFamily,
+        fontSize: copiedStyle.fontSize,
+        fontWeight: copiedStyle.fontWeight,
+        textAlign: copiedStyle.textAlign,
+        lineHeight: copiedStyle.lineHeight,
+      });
+    }
+
+    handleUpdateLayer(selectedLayerId, updates);
+    toast.success("Style pasted");
+  }, [selectedLayerId, copiedStyle, layers, handleUpdateLayer]);
+
+  // Quick opacity change handler
+  const handleQuickOpacityChange = React.useCallback((opacity: number) => {
+    if (!selectedLayerId) return;
+    const layer = layers.find((l) => l.id === selectedLayerId);
+    if (!layer || layer.locked) return;
+    handleUpdateLayer(selectedLayerId, { opacity });
+  }, [selectedLayerId, layers, handleUpdateLayer]);
+
+  // Save composition as template
+  const handleSaveComposition = React.useCallback(() => {
+    if (layers.length === 0) {
+      toast.error("Add at least one layer to save");
+      return;
+    }
+
+    const compositionName = prompt("Enter a name for this composition:");
+    if (!compositionName) return;
+
+    const composition = {
+      id: `custom-${Date.now()}`,
+      name: compositionName,
+      createdAt: new Date().toISOString(),
+      platform: selectedPlatform,
+      format: selectedFormat,
+      layers: layers,
+      canvasBackground: {
+        type: canvasBgType,
+        color: canvasBgColor,
+        gradientFrom: canvasGradientFrom,
+        gradientTo: canvasGradientTo,
+        gradientAngle: canvasGradientAngle,
+      },
+      caption: caption,
+    };
+
+    // Get existing saved compositions
+    const existingStr = localStorage.getItem("photoproos-saved-compositions");
+    const existing = existingStr ? JSON.parse(existingStr) : [];
+    existing.push(composition);
+    localStorage.setItem("photoproos-saved-compositions", JSON.stringify(existing));
+
+    toast.success(`Saved "${compositionName}"`);
+  }, [layers, selectedPlatform, selectedFormat, canvasBgType, canvasBgColor, canvasGradientFrom, canvasGradientTo, canvasGradientAngle, caption]);
+
+  // Load saved compositions list
+  const savedCompositions = React.useMemo(() => {
+    if (typeof window === "undefined") return [];
+    const str = localStorage.getItem("photoproos-saved-compositions");
+    return str ? JSON.parse(str) : [];
+  }, []);
+
+  // Load a saved composition
+  const handleLoadComposition = React.useCallback((compositionId: string) => {
+    const compositions = JSON.parse(localStorage.getItem("photoproos-saved-compositions") || "[]");
+    const composition = compositions.find((c: { id: string }) => c.id === compositionId);
+    if (!composition) return;
+
+    // Apply the saved composition
+    setLayers(composition.layers);
+    setSelectedPlatform(composition.platform);
+    setSelectedFormat(composition.format);
+    setCanvasBgType(composition.canvasBackground.type);
+    setCanvasBgColor(composition.canvasBackground.color);
+    setCanvasGradientFrom(composition.canvasBackground.gradientFrom);
+    setCanvasGradientTo(composition.canvasBackground.gradientTo);
+    setCanvasGradientAngle(composition.canvasBackground.gradientAngle);
+    setCaption(composition.caption || "");
+
+    toast.success(`Loaded "${composition.name}"`);
+  }, []);
+
   // Keyboard shortcuts
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -786,17 +987,37 @@ export function PostComposer() {
 
       const isMod = e.metaKey || e.ctrlKey;
 
-      // Delete selected layer (Delete or Backspace)
-      if ((e.key === "Delete" || e.key === "Backspace") && selectedLayerId) {
+      // Delete selected layer(s) (Delete or Backspace)
+      if ((e.key === "Delete" || e.key === "Backspace") && (selectedLayerId || selectedLayerIds.size > 0)) {
         e.preventDefault();
-        handleDeleteLayer(selectedLayerId);
+        // Delete all multi-selected layers if any
+        if (selectedLayerIds.size > 1) {
+          selectedLayerIds.forEach((id) => handleDeleteLayer(id));
+          setSelectedLayerIds(new Set());
+          toast.success(`Deleted ${selectedLayerIds.size} layers`);
+        } else if (selectedLayerId) {
+          handleDeleteLayer(selectedLayerId);
+        }
         return;
       }
 
-      // Escape - Deselect layer
+      // Escape - Deselect layer(s)
       if (e.key === "Escape") {
         e.preventDefault();
         setSelectedLayerId(null);
+        setSelectedLayerIds(new Set());
+        return;
+      }
+
+      // Select all layers (Cmd/Ctrl + A)
+      if (isMod && e.key === "a" && layers.length > 0) {
+        e.preventDefault();
+        const allIds = new Set(layers.filter((l) => !l.locked).map((l) => l.id));
+        setSelectedLayerIds(allIds);
+        if (allIds.size > 0) {
+          setSelectedLayerId(Array.from(allIds)[0]);
+        }
+        toast.success(`Selected ${allIds.size} layers`);
         return;
       }
 
@@ -821,8 +1042,22 @@ export function PostComposer() {
         return;
       }
 
-      // Copy/Export (Cmd/Ctrl + C) - only when no text is selected
-      if (isMod && e.key === "c" && !window.getSelection()?.toString()) {
+      // Copy style (Cmd/Ctrl + Shift + C) - when layer selected
+      if (isMod && e.shiftKey && e.key === "c" && selectedLayerId) {
+        e.preventDefault();
+        handleCopyStyle();
+        return;
+      }
+
+      // Paste style (Cmd/Ctrl + Shift + V) - when layer selected and style copied
+      if (isMod && e.shiftKey && e.key === "v" && selectedLayerId && copiedStyle) {
+        e.preventDefault();
+        handlePasteStyle();
+        return;
+      }
+
+      // Copy to clipboard (Cmd/Ctrl + C) - only when no text is selected and not shift
+      if (isMod && e.key === "c" && !e.shiftKey && !window.getSelection()?.toString()) {
         e.preventDefault();
         handleCopy();
         return;
@@ -926,6 +1161,7 @@ export function PostComposer() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [
     selectedLayerId,
+    selectedLayerIds,
     layers,
     handleDeleteLayer,
     handleDuplicateLayer,
@@ -935,6 +1171,9 @@ export function PostComposer() {
     handleCopy,
     handleExport,
     handleAddLayer,
+    handleCopyStyle,
+    handlePasteStyle,
+    copiedStyle,
   ]);
 
   // Resize handles component for selected layers
@@ -972,9 +1211,27 @@ export function PostComposer() {
     [selectedLayerId, handleResizeMouseDown]
   );
 
+  // Render lock badge for locked layers
+  const renderLockBadge = React.useCallback((locked: boolean) => {
+    if (!locked) return null;
+    return (
+      <div
+        className="absolute -top-2 -right-2 z-50 flex items-center justify-center w-5 h-5 rounded-full bg-[var(--warning)] shadow-md"
+        title="Layer is locked"
+        aria-label="Locked layer"
+      >
+        <Lock className="h-3 w-3 text-white" aria-hidden="true" />
+      </div>
+    );
+  }, []);
+
   // Render a single layer
   const renderLayer = React.useCallback((layer: Layer) => {
     if (!layer.visible) return null;
+
+    const isSelected = selectedLayerId === layer.id;
+    const isMultiSelected = selectedLayerIds.has(layer.id);
+    const isPrimarySelection = isSelected && selectedLayerIds.size > 1;
 
     // Build transform string including rotation and flip
     const transforms: string[] = [];
@@ -1015,13 +1272,16 @@ export function PostComposer() {
             }}
             className={cn(
               "select-none whitespace-pre-wrap transition-shadow",
-              selectedLayerId === layer.id && "ring-2 ring-[var(--primary)] ring-offset-1",
+              isSelected && "ring-2 ring-[var(--primary)] ring-offset-1",
+              isMultiSelected && !isSelected && "ring-2 ring-[var(--ai)] ring-offset-1",
+              isPrimarySelection && "ring-2 ring-[var(--primary)] ring-offset-2",
               isDragging && dragLayerId === layer.id && "opacity-90 shadow-lg"
             )}
             onMouseDown={(e) => handleLayerMouseDown(e, layer.id)}
           >
             {textLayer.content}
             {renderResizeHandles(layer.id, layer.locked)}
+            {renderLockBadge(layer.locked)}
           </div>
         );
       }
@@ -1039,12 +1299,15 @@ export function PostComposer() {
             }}
             className={cn(
               "transition-shadow",
-              selectedLayerId === layer.id && "ring-2 ring-[var(--primary)] ring-offset-1",
+              isSelected && "ring-2 ring-[var(--primary)] ring-offset-1",
+              isMultiSelected && !isSelected && "ring-2 ring-[var(--ai)] ring-offset-1",
+              isPrimarySelection && "ring-2 ring-[var(--primary)] ring-offset-2",
               isDragging && dragLayerId === layer.id && "opacity-90 shadow-lg"
             )}
             onMouseDown={(e) => handleLayerMouseDown(e, layer.id)}
           >
             {renderResizeHandles(layer.id, layer.locked)}
+            {renderLockBadge(layer.locked)}
           </div>
         );
       }
@@ -1059,7 +1322,9 @@ export function PostComposer() {
             }}
             className={cn(
               "overflow-hidden transition-shadow",
-              selectedLayerId === layer.id && "ring-2 ring-[var(--primary)] ring-offset-1",
+              isSelected && "ring-2 ring-[var(--primary)] ring-offset-1",
+              isMultiSelected && !isSelected && "ring-2 ring-[var(--ai)] ring-offset-1",
+              isPrimarySelection && "ring-2 ring-[var(--primary)] ring-offset-2",
               isDragging && dragLayerId === layer.id && "opacity-90 shadow-lg"
             )}
             onMouseDown={(e) => handleLayerMouseDown(e, layer.id)}
@@ -1078,6 +1343,7 @@ export function PostComposer() {
               </div>
             )}
             {renderResizeHandles(layer.id, layer.locked)}
+            {renderLockBadge(layer.locked)}
           </div>
         );
       }
@@ -1096,7 +1362,9 @@ export function PostComposer() {
             }}
             className={cn(
               "overflow-hidden transition-shadow",
-              selectedLayerId === layer.id && "ring-2 ring-[var(--primary)] ring-offset-1",
+              isSelected && "ring-2 ring-[var(--primary)] ring-offset-1",
+              isMultiSelected && !isSelected && "ring-2 ring-[var(--ai)] ring-offset-1",
+              isPrimarySelection && "ring-2 ring-[var(--primary)] ring-offset-2",
               isDragging && dragLayerId === layer.id && "opacity-90 shadow-lg"
             )}
             onMouseDown={(e) => handleLayerMouseDown(e, layer.id)}
@@ -1113,13 +1381,14 @@ export function PostComposer() {
               />
             </div>
             {renderResizeHandles(layer.id, layer.locked)}
+            {renderLockBadge(layer.locked)}
           </div>
         );
       }
       default:
         return null;
     }
-  }, [selectedLayerId, isDragging, dragLayerId, handleLayerMouseDown, renderResizeHandles]);
+  }, [selectedLayerId, selectedLayerIds, isDragging, dragLayerId, handleLayerMouseDown, renderResizeHandles, renderLockBadge]);
 
   // Compute canvas background style
   const canvasBgStyle = React.useMemo((): React.CSSProperties => {
@@ -1528,6 +1797,41 @@ export function PostComposer() {
                 <Menu className="h-4 w-4" aria-hidden="true" />
               )}
             </button>
+            {/* Save composition */}
+            <button
+              onClick={handleSaveComposition}
+              disabled={layers.length === 0}
+              className="hidden sm:flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--background)] px-2 sm:px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--background-hover)] disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+              aria-label="Save composition"
+              title="Save composition for later"
+            >
+              <Save className="h-4 w-4" aria-hidden="true" />
+              <span className="hidden md:inline">Save</span>
+            </button>
+
+            {/* Load saved composition dropdown */}
+            {savedCompositions.length > 0 && (
+              <div className="relative hidden sm:block">
+                <select
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      handleLoadComposition(e.target.value);
+                      e.target.value = "";
+                    }
+                  }}
+                  className="appearance-none rounded-lg border border-[var(--border)] bg-[var(--background)] pl-3 pr-8 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--background-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] cursor-pointer"
+                  aria-label="Load saved composition"
+                  defaultValue=""
+                >
+                  <option value="" disabled>Load saved...</option>
+                  {savedCompositions.map((comp: { id: string; name: string }) => (
+                    <option key={comp.id} value={comp.id}>{comp.name}</option>
+                  ))}
+                </select>
+                <FolderOpen className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-muted)] pointer-events-none" aria-hidden="true" />
+              </div>
+            )}
+
             <button
               onClick={handleCopy}
               disabled={isExporting}
@@ -1733,6 +2037,84 @@ export function PostComposer() {
                     <span className="text-xs text-[var(--foreground-muted)]">Select a layer to align</span>
                   )}
                 </div>
+
+                {/* Opacity & Style controls (when layer selected) */}
+                {selectedLayerId && selectedLayer && (
+                  <div className="flex items-center gap-2">
+                    {/* Lock indicator */}
+                    {selectedLayer.locked && (
+                      <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[var(--warning)]/10 border border-[var(--warning)]/30">
+                        <Lock className="h-3 w-3 text-[var(--warning)]" aria-hidden="true" />
+                        <span className="text-xs text-[var(--warning)]">Locked</span>
+                      </div>
+                    )}
+
+                    {/* Opacity slider */}
+                    <div className="flex items-center gap-1.5">
+                      <label htmlFor="toolbar-opacity" className="text-xs text-[var(--foreground-muted)]">
+                        Opacity:
+                      </label>
+                      <input
+                        id="toolbar-opacity"
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={selectedLayer.opacity}
+                        onChange={(e) => handleQuickOpacityChange(Number(e.target.value))}
+                        disabled={selectedLayer.locked}
+                        className="w-16 h-1 rounded-full bg-[var(--border)] appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--primary)]"
+                        aria-label="Layer opacity"
+                      />
+                      <span className="text-xs text-[var(--foreground)] w-8">{selectedLayer.opacity}%</span>
+                    </div>
+
+                    <div className="w-px h-4 bg-[var(--border)]" />
+
+                    {/* Copy/Paste style buttons */}
+                    <button
+                      onClick={handleCopyStyle}
+                      className="p-1.5 rounded hover:bg-[var(--background-hover)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                      aria-label="Copy style (Cmd+Shift+C)"
+                      title="Copy style (Cmd+Shift+C)"
+                    >
+                      <Clipboard className="h-3.5 w-3.5" aria-hidden="true" />
+                    </button>
+                    <button
+                      onClick={handlePasteStyle}
+                      disabled={!copiedStyle || selectedLayer.locked}
+                      className="p-1.5 rounded hover:bg-[var(--background-hover)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                      aria-label="Paste style (Cmd+Shift+V)"
+                      title={copiedStyle ? "Paste style (Cmd+Shift+V)" : "No style copied"}
+                    >
+                      <ClipboardPaste className="h-3.5 w-3.5" aria-hidden="true" />
+                    </button>
+                    {copiedStyle && (
+                      <span className="text-xs text-[var(--success)]">Style copied</span>
+                    )}
+
+                    {/* Multi-select indicator */}
+                    {selectedLayerIds.size > 1 && (
+                      <>
+                        <div className="w-px h-4 bg-[var(--border)]" />
+                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[var(--ai)]/10 border border-[var(--ai)]/30">
+                          <span className="text-xs font-medium text-[var(--ai)]">
+                            {selectedLayerIds.size} selected
+                          </span>
+                          <button
+                            onClick={() => {
+                              setSelectedLayerIds(new Set());
+                              setSelectedLayerId(null);
+                            }}
+                            className="text-[var(--ai)] hover:text-[var(--ai)]/70 focus:outline-none"
+                            aria-label="Clear selection"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
 
                 {/* Zoom controls */}
                 <div className="flex items-center gap-1">

@@ -8,6 +8,151 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Marketing Studio Polish: Advanced Features** - Layer composition enhancements:
+  - **Layer Locking UI**:
+    - Visual lock badge on locked layers in the canvas
+    - Lock indicator badge in toolbar when editing locked layer
+    - Warning styling with orange/amber color scheme
+  - **Toolbar Opacity Slider**:
+    - Quick opacity slider in toolbar for selected layer
+    - Real-time opacity adjustment from 0-100%
+    - Disabled state when layer is locked
+  - **Copy/Paste Styles**:
+    - Copy layer style (Cmd/Ctrl+Shift+C)
+    - Paste layer style (Cmd/Ctrl+Shift+V)
+    - Copies opacity, rotation, flip state
+    - Type-specific styles (text styles, shape fill/stroke)
+    - Visual indicator when style is copied
+  - **Multi-Select Layers**:
+    - Cmd/Ctrl+Click to toggle layer selection
+    - Shift+Click to add to selection
+    - Cmd/Ctrl+A to select all layers
+    - Batch delete for selected layers
+    - Purple ring indicator for multi-selected layers
+    - Multi-select count badge in toolbar
+    - Clear selection button
+  - **Save/Load Compositions**:
+    - Save button to store composition to localStorage
+    - Prompt for composition name
+    - Load dropdown for saved compositions
+    - Persists layers, background settings, caption
+  - **Marketing Studio README**:
+    - Comprehensive documentation for all components
+    - Keyboard shortcuts reference
+    - TypeScript interfaces documentation
+    - Usage examples and code snippets
+    - Accessibility and browser support notes
+
+- **Marketing CMS Phase 9: AI Content Generation** - AI-powered content suggestions:
+  - **AI Generation API** (`/api/cms/ai/generate/route.ts`):
+    - POST endpoint for generating content suggestions
+    - Super-admin authentication required
+    - Field-specific prompts for: metaTitle, metaDescription, headline, subheadline, ctaText, featureTitle, featureDescription
+    - Anthropic Claude 3.5 Sonnet integration with `@anthropic-ai/sdk`
+    - Parses numbered list responses into individual suggestions
+    - Mock fallback when API key not configured (for development)
+    - Returns `{ suggestions: string[], source: "anthropic" | "mock" }`
+  - **AI Assistant Component** (`ai-assistant.tsx`):
+    - `AIAssistant` - Full dropdown component with suggestions panel
+    - Toggle button with sparkle icon and expand/collapse state
+    - Loading state with spinner animation
+    - Error handling with alert display
+    - Suggestion cards with Apply and Copy buttons
+    - Demo badge when using mock data
+    - Regenerate button for new suggestions
+  - **AI Field Wrapper** (`AIFieldWrapper`):
+    - Wraps input fields with AI button overlay
+    - Positioned absolute in top-right corner
+    - Seamless integration with existing form fields
+  - **AI Button** (`AIButton`):
+    - Compact sparkle icon button for inline use
+    - Dropdown with quick-select suggestions
+    - Backdrop click to close
+    - Regenerate option within dropdown
+  - **useAISuggestions Hook**:
+    - Programmatic AI generation for custom integrations
+    - `generate(field, context, currentValue)` function
+    - Loading, suggestions, and error state management
+    - Clear function to reset state
+  - **Context-Aware Prompts**:
+    - `pageType` - Type of page being edited
+    - `pageTitle` - Current page title for context
+    - `topic` - Main topic/subject matter
+    - `industry` - Target industry
+    - `tone` - Writing tone (professional, casual, friendly, formal)
+  - **Accessibility Features**:
+    - ARIA labels on all interactive elements
+    - `aria-expanded` on toggle button
+    - `role="listbox"` on suggestions container
+    - `role="option"` on suggestion items
+    - Keyboard navigable
+
+- **Marketing CMS Phase 8: Approval Workflows** - Content approval system:
+  - **ContentApproval Table** (Prisma schema):
+    - `entityType`, `entityId`, `entityTitle` for content identification
+    - `status` enum: pending, in_review, approved, rejected, cancelled
+    - `requestedBy`, `requestedByName`, `requestedAt` for tracking requester
+    - `approvers` JSON array: `[{ userId, name, status, respondedAt, comment }]`
+    - `currentStep` for multi-step approval chains
+    - `contentSnapshot` JSON for storing version at time of request
+    - `changesSummary` text field for human-readable change description
+    - `resolvedAt`, `resolvedBy`, `resolvedByName`, `resolution`, `resolutionNote` for resolution tracking
+    - Indexes on entityType+entityId, status, requestedBy, resolvedAt
+  - **Approval Server Actions** (`marketing-cms.ts`):
+    - `requestApproval()` - Create new approval request with approvers list and content snapshot
+    - `respondToApproval()` - Approve/reject with comment, auto-resolve when all approve
+    - `cancelApproval()` - Cancel pending request (requester only)
+    - `getMyPendingApprovals()` - Get approvals awaiting current user's response
+    - `getApprovalHistory()` - Get all approvals for specific entity
+    - `getAllPendingApprovals()` - Get all pending approvals (for approval inbox)
+  - **ApprovalPanel Component** (`approval-panel.tsx`):
+    - Request form with multi-select approvers and optional change summary
+    - Status card showing current approval state with icon and color coding
+    - Approver timeline showing each approver's response status
+    - Pending/approved/rejected indicators with timestamps and comments
+    - Action buttons: Cancel Request (for requester)
+  - **ApprovalResponsePanel Component**:
+    - Shows approval request details (requester, date, summary)
+    - Approve/Reject buttons with comment input
+    - Status indicators for current user's pending action
+  - **ApprovalBadge Component**:
+    - Compact status indicator for headers/lists
+    - Color-coded: yellow (pending), green (approved), red (rejected)
+    - Hover tooltip with full status text
+
+- **Marketing CMS Phase 7: Quality & SEO** - Content quality scoring and health monitoring:
+  - **SEO Score Component** (`seo-score.tsx`):
+    - Real-time SEO scoring with letter grade (A-F)
+    - 7 comprehensive checks: meta title length (50-60 chars), meta description length (150-160 chars), OG image presence, clean URL structure, H1 headline requirement, content depth (300+ chars), keyword presence
+    - Color-coded grade display (A=green, B=blue, C=yellow, D=orange, F=red)
+    - Expandable check list showing pass/fail/warning for each item
+    - `SEOScoreBadge` - Compact badge with grade letter
+    - `SEOScorePanel` - Full panel with all checks and recommendations
+    - `useSEOScore` hook for programmatic access to score data
+  - **Content Validation Utilities** (`content-validation.ts`):
+    - 9 built-in validation rules:
+      - Hero section required
+      - Meta title required (50-60 chars recommended)
+      - Meta description required (150-160 chars recommended)
+      - OG image required
+      - No empty content sections
+      - CTA required
+      - No banned words (click here, best ever, guaranteed, etc.)
+      - Clean URL structure
+      - Sufficient content depth
+    - `validateContent()` - Run all rules against content
+    - `getValidationSummary()` - Get counts by severity
+    - `isReadyToPublish()` - Check if content passes all error rules
+    - `getContentQualityScore()` - Percentage score based on passed checks
+    - Severity levels: error (blocks publish), warning (advisory), info (suggestion)
+  - **Content Health Dashboard** (`content-health.tsx`):
+    - Overview metrics: total pages, published, draft, archived
+    - Quality indicators: stale content (90+ days), missing SEO, missing OG images
+    - Draft status: pages with pending changes
+    - Color-coded metric cards with trend indicators
+    - `ContentHealthBadge` - Compact health indicator
+    - `useContentHealth` hook for fetching health metrics
+
 - **Marketing CMS Phase 6: Collaboration & Workflow** - Real-time collaboration and activity tracking:
   - **CMSPresence Table** (Prisma schema):
     - Track who is editing what content in real-time

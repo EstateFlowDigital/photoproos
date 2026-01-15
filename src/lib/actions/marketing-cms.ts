@@ -20,6 +20,7 @@ import type {
   FAQCategory,
   CMSPresence,
   CMSAuditLog,
+  ContentApproval,
 } from "@prisma/client";
 import {
   type CreateBlogPostInput,
@@ -1931,5 +1932,335 @@ export async function getRecentActivity(
   } catch (error) {
     console.error("Error fetching recent activity:", error);
     return fail("Failed to fetch recent activity");
+  }
+}
+
+// ===========================================
+// Content Approval Workflow Actions
+// ===========================================
+
+interface Approver {
+  userId: string;
+  name: string;
+  status: "pending" | "approved" | "rejected";
+  respondedAt?: string;
+  comment?: string;
+}
+
+/**
+ * Request approval for content
+ */
+export async function requestApproval(params: {
+  entityType: string;
+  entityId: string;
+  entityTitle: string;
+  contentSnapshot: Record<string, unknown>;
+  changesSummary?: string;
+  approvers: { userId: string; name: string }[];
+}): Promise<ActionResult<ContentApproval>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+    if (!user) {
+      return fail("Not authenticated");
+    }
+
+    // Check if there's already a pending approval for this content
+    const existing = await prisma.contentApproval.findFirst({
+      where: {
+        entityType: params.entityType,
+        entityId: params.entityId,
+        status: { in: ["pending", "in_review"] },
+      },
+    });
+
+    if (existing) {
+      return fail("There is already a pending approval request for this content");
+    }
+
+    // Create approval request
+    const approvers: Approver[] = params.approvers.map((a) => ({
+      userId: a.userId,
+      name: a.name,
+      status: "pending",
+    }));
+
+    const approval = await prisma.contentApproval.create({
+      data: {
+        entityType: params.entityType,
+        entityId: params.entityId,
+        entityTitle: params.entityTitle,
+        status: "pending",
+        requestedBy: user.id,
+        requestedByName: user.firstName
+          ? `${user.firstName} ${user.lastName || ""}`.trim()
+          : user.emailAddresses[0]?.emailAddress || "Unknown",
+        approvers: approvers,
+        currentStep: 0,
+        contentSnapshot: params.contentSnapshot,
+        changesSummary: params.changesSummary,
+      },
+    });
+
+    return ok(approval);
+  } catch (error) {
+    console.error("Error requesting approval:", error);
+    return fail("Failed to request approval");
+  }
+}
+
+/**
+ * Respond to an approval request (approve or reject)
+ */
+export async function respondToApproval(params: {
+  approvalId: string;
+  action: "approve" | "reject";
+  comment?: string;
+}): Promise<ActionResult<ContentApproval>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+    if (!user) {
+      return fail("Not authenticated");
+    }
+
+    const approval = await prisma.contentApproval.findUnique({
+      where: { id: params.approvalId },
+    });
+
+    if (!approval) {
+      return fail("Approval request not found");
+    }
+
+    if (!["pending", "in_review"].includes(approval.status)) {
+      return fail("This approval request has already been resolved");
+    }
+
+    const approvers = approval.approvers as Approver[];
+    const currentStep = approval.currentStep;
+
+    // Find current approver
+    if (currentStep >= approvers.length) {
+      return fail("Invalid approval step");
+    }
+
+    const currentApprover = approvers[currentStep];
+    if (currentApprover.userId !== user.id) {
+      return fail("You are not the current approver for this request");
+    }
+
+    // Update approver response
+    approvers[currentStep] = {
+      ...currentApprover,
+      status: params.action === "approve" ? "approved" : "rejected",
+      respondedAt: new Date().toISOString(),
+      comment: params.comment,
+    };
+
+    const userName = user.firstName
+      ? `${user.firstName} ${user.lastName || ""}`.trim()
+      : user.emailAddresses[0]?.emailAddress || "Unknown";
+
+    // Determine new status
+    let newStatus: "pending" | "in_review" | "approved" | "rejected" = approval.status as "pending" | "in_review";
+    let resolvedAt: Date | undefined;
+    let resolvedBy: string | undefined;
+    let resolvedByName: string | undefined;
+    let resolution: string | undefined;
+
+    if (params.action === "reject") {
+      // Rejection ends the workflow
+      newStatus = "rejected";
+      resolvedAt = new Date();
+      resolvedBy = user.id;
+      resolvedByName = userName;
+      resolution = "rejected";
+    } else if (currentStep + 1 >= approvers.length) {
+      // Last approver approved - mark as approved
+      newStatus = "approved";
+      resolvedAt = new Date();
+      resolvedBy = user.id;
+      resolvedByName = userName;
+      resolution = "approved";
+    } else {
+      // Move to next step
+      newStatus = "in_review";
+    }
+
+    const updated = await prisma.contentApproval.update({
+      where: { id: params.approvalId },
+      data: {
+        approvers: approvers,
+        currentStep: params.action === "approve" ? currentStep + 1 : currentStep,
+        status: newStatus,
+        resolvedAt,
+        resolvedBy,
+        resolvedByName,
+        resolution,
+        resolutionNote: params.comment,
+      },
+    });
+
+    return ok(updated);
+  } catch (error) {
+    console.error("Error responding to approval:", error);
+    return fail("Failed to respond to approval");
+  }
+}
+
+/**
+ * Cancel an approval request
+ */
+export async function cancelApproval(
+  approvalId: string
+): Promise<ActionResult<ContentApproval>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+    if (!user) {
+      return fail("Not authenticated");
+    }
+
+    const approval = await prisma.contentApproval.findUnique({
+      where: { id: approvalId },
+    });
+
+    if (!approval) {
+      return fail("Approval request not found");
+    }
+
+    if (!["pending", "in_review"].includes(approval.status)) {
+      return fail("This approval request has already been resolved");
+    }
+
+    // Only the requester can cancel
+    if (approval.requestedBy !== user.id) {
+      return fail("Only the requester can cancel this approval");
+    }
+
+    const userName = user.firstName
+      ? `${user.firstName} ${user.lastName || ""}`.trim()
+      : user.emailAddresses[0]?.emailAddress || "Unknown";
+
+    const updated = await prisma.contentApproval.update({
+      where: { id: approvalId },
+      data: {
+        status: "cancelled",
+        resolvedAt: new Date(),
+        resolvedBy: user.id,
+        resolvedByName: userName,
+        resolution: "cancelled",
+      },
+    });
+
+    return ok(updated);
+  } catch (error) {
+    console.error("Error cancelling approval:", error);
+    return fail("Failed to cancel approval");
+  }
+}
+
+/**
+ * Get pending approvals for current user
+ */
+export async function getMyPendingApprovals(): Promise<
+  ActionResult<ContentApproval[]>
+> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const user = await currentUser();
+    if (!user) {
+      return fail("Not authenticated");
+    }
+
+    // Get all pending/in_review approvals
+    const approvals = await prisma.contentApproval.findMany({
+      where: {
+        status: { in: ["pending", "in_review"] },
+      },
+      orderBy: {
+        requestedAt: "desc",
+      },
+    });
+
+    // Filter to only those where current user is the current approver
+    const myApprovals = approvals.filter((approval) => {
+      const approvers = approval.approvers as Approver[];
+      const currentApprover = approvers[approval.currentStep];
+      return currentApprover?.userId === user.id && currentApprover?.status === "pending";
+    });
+
+    return ok(myApprovals);
+  } catch (error) {
+    console.error("Error fetching pending approvals:", error);
+    return fail("Failed to fetch pending approvals");
+  }
+}
+
+/**
+ * Get approval history for an entity
+ */
+export async function getApprovalHistory(
+  entityType: string,
+  entityId: string
+): Promise<ActionResult<ContentApproval[]>> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const approvals = await prisma.contentApproval.findMany({
+      where: {
+        entityType,
+        entityId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return ok(approvals);
+  } catch (error) {
+    console.error("Error fetching approval history:", error);
+    return fail("Failed to fetch approval history");
+  }
+}
+
+/**
+ * Get all pending approvals (for admin dashboard)
+ */
+export async function getAllPendingApprovals(): Promise<
+  ActionResult<ContentApproval[]>
+> {
+  try {
+    if (!(await isSuperAdmin())) {
+      return fail("Unauthorized");
+    }
+
+    const approvals = await prisma.contentApproval.findMany({
+      where: {
+        status: { in: ["pending", "in_review"] },
+      },
+      orderBy: {
+        requestedAt: "desc",
+      },
+    });
+
+    return ok(approvals);
+  } catch (error) {
+    console.error("Error fetching all pending approvals:", error);
+    return fail("Failed to fetch pending approvals");
   }
 }

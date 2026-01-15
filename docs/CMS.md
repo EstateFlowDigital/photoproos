@@ -1348,23 +1348,52 @@ model CMSWebhookLog {
 - [x] Integrate auto-save into page editor (3s debounce, 30s interval)
 - [x] Add offline detection with visual indicator
 
-### Phase 7: Quality & SEO
-- [ ] Add SEO scoring component
-- [ ] Add content validation
-- [ ] Add broken link checker
-- [ ] Add content health dashboard
+### Phase 7: Quality & SEO ✅ COMPLETE
+- [x] Create SEOScore component (`seo-score.tsx`):
+  - Real-time SEO scoring with letter grade (A-F)
+  - 7 comprehensive checks: meta title (50-60 chars), meta description (150-160 chars), OG image, URL structure, H1 headline, content depth (300+ chars), keywords
+  - `SEOScoreBadge`, `SEOScorePanel`, `useSEOScore` hook
+  - Color-coded grades and expandable check list
+- [x] Create content validation utilities (`content-validation.ts`):
+  - 9 built-in validation rules (hero, meta title/description, OG image, empty sections, CTA, banned words, URL structure, content depth)
+  - `validateContent()`, `getValidationSummary()`, `isReadyToPublish()`, `getContentQualityScore()`
+  - Severity levels: error (blocks publish), warning (advisory), info (suggestion)
+- [x] Build content health dashboard (`content-health.tsx`):
+  - Overview metrics: total, published, draft, archived counts
+  - Quality indicators: stale content (90+ days), missing SEO, missing OG images
+  - `ContentHealthBadge`, `ContentHealthDashboard`, `useContentHealth` hook
 
-### Phase 8: Approval Workflows
-- [ ] Create ContentApproval table
-- [ ] Build approval request UI
-- [ ] Build approval inbox
-- [ ] Add approval notifications
+### Phase 8: Approval Workflows ✅ COMPLETE
+- [x] Create ContentApproval table in Prisma schema:
+  - `entityType`, `entityId`, `entityTitle` for content identification
+  - `status` enum: pending, in_review, approved, rejected, cancelled
+  - `approvers` JSON array with userId, name, status, respondedAt, comment
+  - `contentSnapshot` for version at time of request
+  - Indexes on entityType+entityId, status, requestedBy
+- [x] Build approval server actions (`marketing-cms.ts`):
+  - `requestApproval()` - Create new request with approvers and snapshot
+  - `respondToApproval()` - Approve/reject with comment
+  - `cancelApproval()` - Cancel pending request
+  - `getMyPendingApprovals()`, `getApprovalHistory()`, `getAllPendingApprovals()`
+- [x] Build approval UI components (`approval-panel.tsx`):
+  - `ApprovalPanel` - Request form with multi-select approvers, status card, approver timeline
+  - `ApprovalResponsePanel` - Approve/reject interface with comment input
+  - `ApprovalBadge` - Compact color-coded status indicator
 
-### Phase 9: AI Content Generation
-- [ ] Create AIContentSuggestion table
-- [ ] Build AI assistant UI
-- [ ] Create AI generation API
-- [ ] Add accept/reject flow
+### Phase 9: AI Content Generation ✅ COMPLETE
+- [x] Create AI generation API (`/api/cms/ai/generate/route.ts`):
+  - Super-admin authentication required
+  - Field-specific prompts: metaTitle, metaDescription, headline, subheadline, ctaText, featureTitle, featureDescription
+  - Anthropic Claude 3.5 Sonnet integration
+  - Mock fallback for development without API key
+  - Returns `{ suggestions: string[], source: "anthropic" | "mock" }`
+- [x] Build AI assistant components (`ai-assistant.tsx`):
+  - `AIAssistant` - Full dropdown with suggestions panel, apply/copy/regenerate
+  - `AIFieldWrapper` - Wraps input fields with AI button overlay
+  - `AIButton` - Compact inline button with dropdown
+  - `useAISuggestions` hook for programmatic access
+- [x] Context-aware prompts with pageType, pageTitle, topic, industry, tone
+- [x] Full ARIA accessibility: labels, expanded states, listbox/option roles
 
 ### Phase 10: Webhooks
 - [ ] Create CMSWebhook tables

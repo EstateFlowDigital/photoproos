@@ -463,6 +463,205 @@ PhotoProOS uses Next.js Server Actions for data mutations. Key action files:
 | `payment-plans.ts` | Installment plans |
 | `watermark-settings.ts` | Watermark configuration |
 | `analytics.ts` | Revenue and LTV metrics |
+| `marketing-cms.ts` | Marketing CMS operations |
+
+## Marketing CMS
+
+PhotoProOS includes a comprehensive Content Management System (CMS) for marketing pages. The CMS provides enterprise-grade features for content editing, collaboration, and publishing.
+
+### CMS Features
+
+| Feature | Description |
+|---------|-------------|
+| **Draft Mode** | Edit content without affecting the live site |
+| **Live Preview** | Real-time preview with device breakpoints |
+| **Version History** | Track changes with restore capability |
+| **Scheduled Publishing** | Set future publish dates with cron automation |
+| **Collaborative Editing** | See who's editing with presence indicators |
+| **Auto-Save** | Never lose work with automatic draft saving |
+| **SEO Scoring** | Real-time SEO analysis with letter grades |
+| **Content Health** | Dashboard showing content quality metrics |
+| **Approval Workflows** | Multi-step approval chains |
+| **AI Content** | AI-powered content suggestions |
+
+### CMS Components
+
+Import from `@/components/cms`:
+
+```typescript
+import {
+  // Preview & Editing
+  PreviewToolbar,
+  PreviewToolbarWrapper,
+  InlineEditable,
+  InlineEditProvider,
+  useInlineEdit,
+
+  // Version History
+  VersionHistory,
+  VersionBadge,
+  ContentDiff,
+  ContentDiffModal,
+
+  // Scheduling
+  SchedulingPanel,
+  QuickScheduleButtons,
+
+  // Collaboration
+  ActiveEditors,
+  ActiveEditorsCompact,
+  usePresence,
+  useAutoSave,
+  AutoSaveIndicator,
+  AutoSaveBadge,
+
+  // Quality & SEO
+  SEOScore,
+  SEOScoreBadge,
+  SEOScorePanel,
+  useSEOScore,
+  ContentHealthDashboard,
+  ContentHealthBadge,
+  useContentHealth,
+
+  // Approval Workflows
+  ApprovalPanel,
+  ApprovalResponsePanel,
+  ApprovalBadge,
+
+  // AI Content
+  AIAssistant,
+  AIFieldWrapper,
+  AIButton,
+  useAISuggestions,
+} from "@/components/cms";
+```
+
+### CMS Server Actions
+
+Key server actions in `marketing-cms.ts`:
+
+| Action | Purpose |
+|--------|---------|
+| `getMarketingPages()` | List all marketing pages |
+| `getMarketingPage(slug)` | Get single page by slug |
+| `createMarketingPage()` | Create new page |
+| `updateMarketingPage()` | Update page content |
+| `publishMarketingPage()` | Publish draft to live |
+| `saveDraft()` | Save draft without publishing |
+| `restoreVersion()` | Restore previous version |
+| `schedulePublish()` | Set scheduled publish date |
+| `cancelScheduledPublish()` | Cancel scheduled publish |
+| `updatePresence()` | Update editor presence |
+| `getActiveEditors()` | Get users editing content |
+| `requestApproval()` | Request content approval |
+| `respondToApproval()` | Approve/reject request |
+
+### CMS Database Tables
+
+| Table | Purpose |
+|-------|---------|
+| `MarketingPage` | Marketing page content |
+| `MarketingPageVersion` | Version history |
+| `MarketingNavigation` | Navbar/footer content |
+| `FAQ` | FAQ items |
+| `FAQVersion` | FAQ version history |
+| `Testimonial` | Customer testimonials |
+| `TeamMember` | Team member profiles |
+| `BlogPost` | Blog articles |
+| `CMSPresence` | Active editor tracking |
+| `CMSAuditLog` | Activity logging |
+| `ContentApproval` | Approval workflows |
+
+### SEO Score System
+
+The SEO scoring system evaluates content on 7 key factors:
+
+| Check | Pass Criteria | Weight |
+|-------|---------------|--------|
+| Meta Title | 50-60 characters | 15% |
+| Meta Description | 150-160 characters | 15% |
+| OG Image | Present and valid URL | 15% |
+| URL Structure | Lowercase, no special chars | 10% |
+| H1 Headline | Present in content | 15% |
+| Content Depth | 300+ characters | 15% |
+| Keywords | Contains topic keywords | 15% |
+
+Grades: A (90-100), B (80-89), C (70-79), D (60-69), F (<60)
+
+### Content Validation Rules
+
+Built-in validation rules for content quality:
+
+| Rule | Severity | Description |
+|------|----------|-------------|
+| Hero Required | Error | Hero section must exist |
+| Meta Title | Warning | 50-60 chars recommended |
+| Meta Description | Warning | 150-160 chars recommended |
+| OG Image | Warning | Social sharing image required |
+| No Empty Sections | Error | Content sections must have content |
+| CTA Required | Warning | Call-to-action recommended |
+| No Banned Words | Warning | Avoid "click here", "best ever", etc. |
+| URL Structure | Error | Clean, SEO-friendly URLs |
+| Content Depth | Info | 300+ chars recommended |
+
+### Auto-Save Configuration
+
+```typescript
+const { status, lastSaved } = useAutoSave({
+  data: pageContent,
+  onSave: async (data) => await saveDraft(pageId, data),
+  debounceMs: 3000,      // Save 3s after last change
+  intervalMs: 30000,     // Also save every 30s
+  enabled: true,
+});
+```
+
+### AI Content Generation
+
+The AI assistant generates suggestions for:
+- Meta titles (50-60 chars, SEO-optimized)
+- Meta descriptions (150-160 chars)
+- Headlines and subheadlines
+- CTA text
+- Feature titles and descriptions
+
+```typescript
+const { suggestions, isLoading, generate } = useAISuggestions();
+
+await generate("metaTitle", {
+  pageType: "features",
+  pageTitle: "Gallery Features",
+  topic: "photo galleries",
+  industry: "photography",
+  tone: "professional",
+});
+```
+
+### Cron Jobs for CMS
+
+**Scheduled Publishing:**
+
+| Endpoint | Schedule | Purpose |
+|----------|----------|---------|
+| `/api/cron/cms-scheduled-publish` | Every 5-15 min | Publish scheduled content |
+
+```bash
+curl -X GET "https://your-domain.com/api/cron/cms-scheduled-publish" \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+### CMS Admin Routes
+
+| Route | Description |
+|-------|-------------|
+| `/super-admin/marketing` | Marketing CMS dashboard |
+| `/super-admin/marketing/[slug]` | Page editor |
+| `/super-admin/marketing/calendar` | Content calendar |
+| `/super-admin/marketing/faqs` | FAQ management |
+| `/super-admin/marketing/testimonials` | Testimonials |
+| `/super-admin/marketing/blog` | Blog posts |
+| `/super-admin/marketing/navigation` | Navbar/footer |
 
 ## Development
 
