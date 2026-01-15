@@ -8,6 +8,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Marketing Studio Phase 6: AI Caption Generator** - AI-powered caption generation for social media:
+  - **AI Captions Utility** (`ai-captions.ts`):
+    - Six tone options: professional, casual, inspirational, educational, promotional, storytelling
+    - Three length options: short, medium, long
+    - Industry-specific caption templates for real estate, commercial, events, portraits, food, product
+    - Industry-specific hashtag suggestions (10 hashtags per industry)
+    - Call-to-action templates for promotional content
+    - Emoji sets matched to caption tones
+    - `generateCaption()` server action with simulated AI delay
+    - `generateCaptionVariations()` for multiple caption options
+  - **Caption Editor AI Integration** (`caption-editor.tsx`):
+    - AI button with purple/violet accent (--ai color token)
+    - AI Generator panel with tone selector dropdown
+    - Length toggle buttons (Short/Medium/Long)
+    - Checkbox options: Include hashtags, Include emoji, Include call-to-action
+    - Generate button with loading spinner animation
+    - Generated caption preview with apply/regenerate actions
+    - Toast notifications for success/error states
+    - Full accessibility with ARIA labels and keyboard navigation
+
+- **Marketing Studio Phase 5 Completion: Canvas & Layers** - Advanced composition features:
+  - **Drag-and-drop layer positioning**:
+    - Mouse-based drag system with document-level event listeners
+    - Visual feedback during drag (cursor change, opacity, shadow)
+    - Locked layers cannot be dragged
+    - Auto-select and switch to Properties tab on drag start
+    - Constrained to canvas bounds (minimum 0,0 position)
+  - **Image layer upload functionality**:
+    - FileReader API for base64 image encoding
+    - Image preview with remove button
+    - Replace image functionality
+    - Upload icon and empty state placeholder
+  - **Canvas background controls**:
+    - Solid/gradient toggle buttons
+    - Solid color picker with hex input
+    - Gradient controls: from/to color pickers with hex inputs
+    - Gradient preview bar showing current gradient
+    - Angle slider (0-360 degrees) with degree display
+    - Canvas background applied to layer composition view
+    - Controls only appear when layers exist
+
 - **Marketing CMS Phase 3: Draft Mode & Preview** - Edit content without affecting live site:
   - Schema: Added `draftContent`, `hasDraft`, `lastEditedBy`, `lastEditedAt` to MarketingPage
   - Schema: Added `scheduledPublishAt`, `scheduledBy` for scheduling future publishes
