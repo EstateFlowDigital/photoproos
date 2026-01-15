@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect, useMemo, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -50,50 +50,78 @@ interface FooterContent {
   copyright?: string;
 }
 
-// Tab button component
+// Tab button component with ARIA attributes
 function TabButton({
   active,
   onClick,
   icon: Icon,
   label,
+  tabId,
+  panelId,
 }: {
   active: boolean;
   onClick: () => void;
   icon: React.ElementType;
   label: string;
+  tabId?: string;
+  panelId?: string;
 }) {
   return (
     <button
+      role="tab"
+      id={tabId}
+      aria-selected={active}
+      aria-controls={panelId}
+      tabIndex={active ? 0 : -1}
       onClick={onClick}
       className={cn(
         "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2",
         active
           ? "bg-[var(--primary)] text-white"
           : "text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--background-elevated)]"
       )}
     >
-      <Icon className="w-4 h-4" />
+      <Icon className="w-4 h-4" aria-hidden="true" />
       {label}
     </button>
   );
 }
 
-// Input field component
+// Generate unique IDs for form fields
+let navFieldIdCounter = 0;
+function useNavFieldId(prefix: string) {
+  const [id] = useState(() => `nav-${prefix}-${++navFieldIdCounter}`);
+  return id;
+}
+
+// Input field component with proper accessibility
 function InputField({
   label,
   value,
   onChange,
   placeholder,
+  id: providedId,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  id?: string;
 }) {
+  const generatedId = useNavFieldId("input");
+  const inputId = providedId || generatedId;
+
   return (
     <div className="space-y-1.5">
-      <label className="block text-sm font-medium text-[var(--foreground)]">{label}</label>
+      <label
+        htmlFor={inputId}
+        className="block text-sm font-medium text-[var(--foreground)]"
+      >
+        {label}
+      </label>
       <input
+        id={inputId}
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -109,41 +137,58 @@ function InputField({
   );
 }
 
-// Link editor component
+// Link editor component with accessibility
 function LinkEditor({
   link,
   onChange,
   onRemove,
+  index,
 }: {
   link: NavLink;
   onChange: (link: NavLink) => void;
   onRemove: () => void;
+  index: number;
 }) {
   return (
-    <div className="flex items-start gap-3 p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] group">
-      <div className="flex-shrink-0 cursor-grab text-[var(--foreground-muted)]">
+    <div
+      className="flex items-start gap-3 p-3 bg-[var(--background)] rounded-lg border border-[var(--border)] group"
+      role="listitem"
+    >
+      <div
+        className="flex-shrink-0 cursor-grab text-[var(--foreground-muted)] mt-7"
+        aria-hidden="true"
+      >
         <GripVertical className="w-4 h-4" />
       </div>
-      <div className="flex-1 grid grid-cols-2 gap-3">
+      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <InputField
           label="Label"
           value={link.label}
           onChange={(value) => onChange({ ...link, label: value })}
           placeholder="Link text"
+          id={`nav-link-${index}-label`}
         />
         <InputField
           label="URL"
           value={link.href}
           onChange={(value) => onChange({ ...link, href: value })}
           placeholder="/page-url"
+          id={`nav-link-${index}-href`}
         />
       </div>
       <button
+        type="button"
         onClick={onRemove}
-        className="flex-shrink-0 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-red-500 transition-all"
-        aria-label="Remove link"
+        className={cn(
+          "flex-shrink-0 p-1.5 rounded-lg mt-7",
+          "sm:opacity-0 sm:group-hover:opacity-100",
+          "hover:bg-red-500/10 text-red-500",
+          "transition-all",
+          "focus:outline-none focus:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500"
+        )}
+        aria-label={`Remove ${link.label || "link"}`}
       >
-        <X className="w-4 h-4" />
+        <X className="w-4 h-4" aria-hidden="true" />
       </button>
     </div>
   );
@@ -213,15 +258,26 @@ export function NavigationEditorClient({ navbar, footer }: Props) {
   const [activeTab, setActiveTab] = useState<"navbar" | "footer">("navbar");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
-  // Navbar state
-  const [navbarContent, setNavbarContent] = useState<string>(
-    JSON.stringify(navbar?.content || { links: [], ctaText: "", ctaLink: "" }, null, 2)
+  // Original content for tracking changes
+  const originalNavbar = useMemo(
+    () => JSON.stringify(navbar?.content || { links: [], ctaText: "", ctaLink: "" }, null, 2),
+    [navbar]
+  );
+  const originalFooter = useMemo(
+    () => JSON.stringify(footer?.content || { columns: [], legal: [], copyright: "" }, null, 2),
+    [footer]
   );
 
+  // Navbar state
+  const [navbarContent, setNavbarContent] = useState<string>(originalNavbar);
+
   // Footer state
-  const [footerContent, setFooterContent] = useState<string>(
-    JSON.stringify(footer?.content || { columns: [], legal: [], copyright: "" }, null, 2)
-  );
+  const [footerContent, setFooterContent] = useState<string>(originalFooter);
+
+  // Track unsaved changes
+  const hasUnsavedChanges = useMemo(() => {
+    return navbarContent !== originalNavbar || footerContent !== originalFooter;
+  }, [navbarContent, footerContent, originalNavbar, originalFooter]);
 
   // Parse content for visual editing
   const parsedNavbar: NavContent = (() => {
@@ -282,7 +338,7 @@ export function NavigationEditorClient({ navbar, footer }: Props) {
   };
 
   // Handle save
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     setSaveStatus("saving");
 
     let parsedNav, parsedFoot;
@@ -308,7 +364,35 @@ export function NavigationEditorClient({ navbar, footer }: Props) {
         setSaveStatus("error");
       }
     });
-  };
+  }, [navbarContent, footerContent, router]);
+
+  // Keyboard shortcut for save (Cmd/Ctrl + S)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+        e.preventDefault();
+        if (!isPending && saveStatus !== "saving") {
+          handleSave();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleSave, isPending, saveStatus]);
+
+  // Warn before leaving with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   return (
     <div className="space-y-6" data-element="navigation-editor">
@@ -317,18 +401,26 @@ export function NavigationEditorClient({ navbar, footer }: Props) {
         <div className="flex items-center gap-3">
           <Link
             href="/super-admin/marketing"
-            className="p-2 rounded-lg hover:bg-[var(--background-elevated)] transition-colors"
+            className="p-2 rounded-lg hover:bg-[var(--background-elevated)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
             aria-label="Back to Marketing CMS"
           >
-            <ChevronLeft className="w-5 h-5 text-[var(--foreground-muted)]" />
+            <ChevronLeft className="w-5 h-5 text-[var(--foreground-muted)]" aria-hidden="true" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold text-[var(--foreground)]">Navigation</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl font-bold text-[var(--foreground)]">Navigation</h1>
+              {hasUnsavedChanges && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-500 font-medium">
+                  Unsaved changes
+                </span>
+              )}
+            </div>
             <p className="text-sm text-[var(--foreground-muted)]">Edit navbar and footer links</p>
           </div>
         </div>
 
         <button
+          type="button"
           onClick={handleSave}
           disabled={isPending || saveStatus === "saving"}
           className={cn(
@@ -336,32 +428,38 @@ export function NavigationEditorClient({ navbar, footer }: Props) {
             "text-sm font-medium",
             "bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90",
             "disabled:opacity-50 disabled:cursor-not-allowed",
-            "transition-colors min-w-[100px] justify-center"
+            "transition-colors min-w-[100px] justify-center",
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--primary)]"
           )}
         >
           {saveStatus === "saving" ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
               Saving
             </>
           ) : saveStatus === "saved" ? (
             <>
-              <Check className="w-4 h-4" />
+              <Check className="w-4 h-4" aria-hidden="true" />
               Saved
             </>
           ) : saveStatus === "error" ? (
             <>
-              <AlertCircle className="w-4 h-4" />
+              <AlertCircle className="w-4 h-4" aria-hidden="true" />
               Error
             </>
           ) : (
             <>
-              <Save className="w-4 h-4" />
+              <Save className="w-4 h-4" aria-hidden="true" />
               Save
             </>
           )}
         </button>
       </div>
+
+      {/* Keyboard shortcut hint */}
+      <p className="text-xs text-[var(--foreground-muted)]">
+        Tip: Press <kbd className="px-1.5 py-0.5 rounded bg-[var(--background-elevated)] font-mono">⌘S</kbd> to save
+      </p>
 
       {/* Tabs */}
       <div className="flex items-center gap-2 border-b border-[var(--border)] pb-4">
@@ -386,21 +484,29 @@ export function NavigationEditorClient({ navbar, footer }: Props) {
             {/* Visual link editor */}
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-[var(--foreground)]">Navigation Links</h3>
-              <div className="space-y-2">
+              <div className="space-y-2" role="list" aria-label="Navigation links">
                 {(parsedNavbar.links || []).map((link, index) => (
                   <LinkEditor
                     key={index}
                     link={link}
+                    index={index}
                     onChange={(updated) => updateNavbarLink(index, updated)}
                     onRemove={() => removeNavbarLink(index)}
                   />
                 ))}
               </div>
               <button
+                type="button"
                 onClick={addNavbarLink}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed border-[var(--border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:border-[var(--primary)] transition-colors"
+                className={cn(
+                  "w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg",
+                  "border-2 border-dashed border-[var(--border)]",
+                  "text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:border-[var(--primary)]",
+                  "transition-colors",
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2"
+                )}
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4" aria-hidden="true" />
                 Add Link
               </button>
             </div>
@@ -408,7 +514,7 @@ export function NavigationEditorClient({ navbar, footer }: Props) {
             {/* CTA settings */}
             <div className="border-t border-[var(--border)] pt-6 space-y-4">
               <h3 className="text-sm font-medium text-[var(--foreground)]">Call to Action</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <InputField
                   label="CTA Text"
                   value={parsedNavbar.ctaText || ""}
@@ -416,6 +522,7 @@ export function NavigationEditorClient({ navbar, footer }: Props) {
                     setNavbarContent(JSON.stringify({ ...parsedNavbar, ctaText: value }, null, 2));
                   }}
                   placeholder="Start Free Trial"
+                  id="navbar-cta-text"
                 />
                 <InputField
                   label="CTA Link"
@@ -424,6 +531,7 @@ export function NavigationEditorClient({ navbar, footer }: Props) {
                     setNavbarContent(JSON.stringify({ ...parsedNavbar, ctaLink: value }, null, 2));
                   }}
                   placeholder="/sign-up"
+                  id="navbar-cta-link"
                 />
               </div>
             </div>

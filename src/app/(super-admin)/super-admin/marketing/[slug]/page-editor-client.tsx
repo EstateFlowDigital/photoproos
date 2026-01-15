@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useCallback, useMemo } from "react";
+import { useState, useTransition, useEffect, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -107,7 +107,14 @@ const PAGE_CONTENT_SCHEMAS: Record<string, ContentSection[]> = {
   ],
 };
 
-// Input field component
+// Generate unique IDs for form fields
+let fieldIdCounter = 0;
+function useFieldId(prefix: string) {
+  const [id] = useState(() => `${prefix}-${++fieldIdCounter}`);
+  return id;
+}
+
+// Input field component with proper accessibility
 function InputField({
   label,
   value,
@@ -115,6 +122,7 @@ function InputField({
   placeholder,
   description,
   maxLength,
+  id: providedId,
 }: {
   label: string;
   value: string;
@@ -122,35 +130,57 @@ function InputField({
   placeholder?: string;
   description?: string;
   maxLength?: number;
+  id?: string;
 }) {
+  const generatedId = useFieldId("input");
+  const inputId = providedId || generatedId;
+  const descriptionId = `${inputId}-desc`;
+  const isOverLimit = maxLength && value.length > maxLength;
+
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium text-[var(--foreground)]">{label}</label>
+        <label
+          htmlFor={inputId}
+          className="block text-sm font-medium text-[var(--foreground)]"
+        >
+          {label}
+        </label>
         {maxLength && (
-          <span className={cn("text-xs", value.length > maxLength ? "text-red-500" : "text-[var(--foreground-muted)]")}>
+          <span
+            className={cn("text-xs", isOverLimit ? "text-red-500" : "text-[var(--foreground-muted)]")}
+            aria-live="polite"
+          >
             {value.length}/{maxLength}
           </span>
         )}
       </div>
-      {description && <p className="text-xs text-[var(--foreground-muted)]">{description}</p>}
+      {description && (
+        <p id={descriptionId} className="text-xs text-[var(--foreground-muted)]">
+          {description}
+        </p>
+      )}
       <input
+        id={inputId}
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        aria-describedby={description ? descriptionId : undefined}
+        aria-invalid={isOverLimit ? "true" : undefined}
         className={cn(
           "w-full px-3 py-2 rounded-lg text-sm",
           "bg-[var(--background)] border border-[var(--border)]",
           "focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 focus:ring-offset-[var(--background)]",
-          "text-[var(--foreground)] placeholder:text-[var(--foreground-muted)]"
+          "text-[var(--foreground)] placeholder:text-[var(--foreground-muted)]",
+          isOverLimit && "border-red-500"
         )}
       />
     </div>
   );
 }
 
-// Textarea field component
+// Textarea field component with proper accessibility
 function TextareaField({
   label,
   value,
@@ -159,6 +189,7 @@ function TextareaField({
   description,
   maxLength,
   rows = 3,
+  id: providedId,
 }: {
   label: string;
   value: string;
@@ -167,55 +198,94 @@ function TextareaField({
   description?: string;
   maxLength?: number;
   rows?: number;
+  id?: string;
 }) {
+  const generatedId = useFieldId("textarea");
+  const textareaId = providedId || generatedId;
+  const descriptionId = `${textareaId}-desc`;
+  const isOverLimit = maxLength && value.length > maxLength;
+
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium text-[var(--foreground)]">{label}</label>
+        <label
+          htmlFor={textareaId}
+          className="block text-sm font-medium text-[var(--foreground)]"
+        >
+          {label}
+        </label>
         {maxLength && (
-          <span className={cn("text-xs", value.length > maxLength ? "text-red-500" : "text-[var(--foreground-muted)]")}>
+          <span
+            className={cn("text-xs", isOverLimit ? "text-red-500" : "text-[var(--foreground-muted)]")}
+            aria-live="polite"
+          >
             {value.length}/{maxLength}
           </span>
         )}
       </div>
-      {description && <p className="text-xs text-[var(--foreground-muted)]">{description}</p>}
+      {description && (
+        <p id={descriptionId} className="text-xs text-[var(--foreground-muted)]">
+          {description}
+        </p>
+      )}
       <textarea
+        id={textareaId}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={rows}
+        aria-describedby={description ? descriptionId : undefined}
+        aria-invalid={isOverLimit ? "true" : undefined}
         className={cn(
           "w-full px-3 py-2 rounded-lg resize-y text-sm",
           "bg-[var(--background)] border border-[var(--border)]",
           "focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-1 focus:ring-offset-[var(--background)]",
-          "text-[var(--foreground)] placeholder:text-[var(--foreground-muted)]"
+          "text-[var(--foreground)] placeholder:text-[var(--foreground-muted)]",
+          isOverLimit && "border-red-500"
         )}
       />
     </div>
   );
 }
 
-// Select field component
+// Select field component with proper accessibility
 function SelectField({
   label,
   value,
   onChange,
   options,
   description,
+  id: providedId,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   options: { value: string; label: string }[];
   description?: string;
+  id?: string;
 }) {
+  const generatedId = useFieldId("select");
+  const selectId = providedId || generatedId;
+  const descriptionId = `${selectId}-desc`;
+
   return (
     <div className="space-y-1.5">
-      <label className="block text-sm font-medium text-[var(--foreground)]">{label}</label>
-      {description && <p className="text-xs text-[var(--foreground-muted)]">{description}</p>}
+      <label
+        htmlFor={selectId}
+        className="block text-sm font-medium text-[var(--foreground)]"
+      >
+        {label}
+      </label>
+      {description && (
+        <p id={descriptionId} className="text-xs text-[var(--foreground-muted)]">
+          {description}
+        </p>
+      )}
       <select
+        id={selectId}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        aria-describedby={description ? descriptionId : undefined}
         className={cn(
           "w-full px-3 py-2 rounded-lg text-sm",
           "bg-[var(--background)] border border-[var(--border)]",
@@ -233,35 +303,45 @@ function SelectField({
   );
 }
 
-// Tab button component
+// Tab button component with proper ARIA attributes
 function TabButton({
   active,
   onClick,
   icon: Icon,
   label,
+  tabId,
+  panelId,
 }: {
   active: boolean;
   onClick: () => void;
   icon: React.ElementType;
   label: string;
+  tabId?: string;
+  panelId?: string;
 }) {
   return (
     <button
+      role="tab"
+      id={tabId}
+      aria-selected={active}
+      aria-controls={panelId}
+      tabIndex={active ? 0 : -1}
       onClick={onClick}
       className={cn(
         "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2",
         active
           ? "bg-[var(--primary)] text-white"
           : "text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--background-elevated)]"
       )}
     >
-      <Icon className="w-4 h-4" />
+      <Icon className="w-4 h-4" aria-hidden="true" />
       {label}
     </button>
   );
 }
 
-// Collapsible section component
+// Collapsible section component with proper accessibility
 function CollapsibleSection({
   title,
   children,
@@ -272,21 +352,39 @@ function CollapsibleSection({
   defaultOpen?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const sectionId = useFieldId("section");
+  const contentId = `${sectionId}-content`;
 
   return (
     <div className="border border-[var(--border)] rounded-lg overflow-hidden">
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-[var(--background-elevated)] hover:bg-[var(--background-tertiary)] transition-colors"
+        aria-expanded={isOpen}
+        aria-controls={contentId}
+        className={cn(
+          "w-full flex items-center justify-between px-4 py-3",
+          "bg-[var(--background-elevated)] hover:bg-[var(--background-tertiary)]",
+          "transition-colors text-left",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--primary)]"
+        )}
       >
         <span className="font-medium text-sm text-[var(--foreground)]">{title}</span>
         {isOpen ? (
-          <ChevronUp className="w-4 h-4 text-[var(--foreground-muted)]" />
+          <ChevronUp className="w-4 h-4 text-[var(--foreground-muted)]" aria-hidden="true" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-[var(--foreground-muted)]" />
+          <ChevronDown className="w-4 h-4 text-[var(--foreground-muted)]" aria-hidden="true" />
         )}
       </button>
-      {isOpen && <div className="p-4 space-y-4">{children}</div>}
+      <div
+        id={contentId}
+        role="region"
+        aria-labelledby={sectionId}
+        hidden={!isOpen}
+        className={isOpen ? "p-4 space-y-4" : ""}
+      >
+        {isOpen && children}
+      </div>
     </div>
   );
 }
@@ -481,7 +579,7 @@ function JsonEditor({
   );
 }
 
-// Unsaved changes warning dialog
+// Unsaved changes warning dialog with proper accessibility
 function UnsavedChangesDialog({
   isOpen,
   onSave,
@@ -493,32 +591,78 @@ function UnsavedChangesDialog({
   onDiscard: () => void;
   onCancel: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const saveButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Handle escape key and focus management
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Focus the save button when dialog opens
+    saveButtonRef.current?.focus();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onCancel();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onCancel]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onCancel} />
-      <div className="relative bg-[var(--card)] border border-[var(--border)] rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-        <h3 className="text-lg font-semibold text-[var(--foreground)] mb-2">Unsaved Changes</h3>
-        <p className="text-sm text-[var(--foreground-muted)] mb-6">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="unsaved-dialog-title"
+      aria-describedby="unsaved-dialog-desc"
+      className="fixed inset-0 z-50 flex items-center justify-center"
+    >
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={onCancel}
+        aria-hidden="true"
+      />
+      <div
+        ref={dialogRef}
+        className="relative bg-[var(--card)] border border-[var(--border)] rounded-lg p-6 max-w-md w-full mx-4 shadow-xl"
+      >
+        <h3
+          id="unsaved-dialog-title"
+          className="text-lg font-semibold text-[var(--foreground)] mb-2"
+        >
+          Unsaved Changes
+        </h3>
+        <p
+          id="unsaved-dialog-desc"
+          className="text-sm text-[var(--foreground-muted)] mb-6"
+        >
           You have unsaved changes. Do you want to save them before leaving?
         </p>
-        <div className="flex items-center justify-end gap-3">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
           <button
+            type="button"
             onClick={onDiscard}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--background-elevated)] transition-colors"
+            className="px-4 py-2 rounded-lg text-sm font-medium text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--background-elevated)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
           >
             Discard
           </button>
           <button
+            type="button"
             onClick={onCancel}
-            className="px-4 py-2 rounded-lg text-sm font-medium border border-[var(--border)] hover:bg-[var(--background-elevated)] transition-colors"
+            className="px-4 py-2 rounded-lg text-sm font-medium border border-[var(--border)] hover:bg-[var(--background-elevated)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
           >
             Cancel
           </button>
           <button
+            ref={saveButtonRef}
+            type="button"
             onClick={onSave}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90 transition-colors"
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
             Save Changes
           </button>
@@ -528,7 +672,7 @@ function UnsavedChangesDialog({
   );
 }
 
-// Delete confirmation dialog
+// Delete confirmation dialog with proper accessibility
 function DeleteConfirmDialog({
   isOpen,
   pageName,
@@ -545,32 +689,83 @@ function DeleteConfirmDialog({
   onCancel: () => void;
 }) {
   const [confirmText, setConfirmText] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
+
+  // Reset confirm text when dialog opens/closes
+  useEffect(() => {
+    if (!isOpen) {
+      setConfirmText("");
+    }
+  }, [isOpen]);
+
+  // Handle escape key and focus management
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Focus the appropriate element when dialog opens
+    if (isProtected) {
+      cancelRef.current?.focus();
+    } else {
+      inputRef.current?.focus();
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onCancel();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, isProtected, onCancel]);
 
   if (!isOpen) return null;
 
   const canDelete = confirmText.toLowerCase() === "delete";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onCancel} />
+    <div
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="delete-dialog-title"
+      aria-describedby="delete-dialog-desc"
+      className="fixed inset-0 z-50 flex items-center justify-center"
+    >
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={onCancel}
+        aria-hidden="true"
+      />
       <div className="relative bg-[var(--card)] border border-[var(--border)] rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-full bg-red-500/10">
+          <div className="p-2 rounded-full bg-red-500/10" aria-hidden="true">
             <Trash2 className="w-5 h-5 text-red-500" />
           </div>
-          <h3 className="text-lg font-semibold text-[var(--foreground)]">Delete Page</h3>
+          <h3
+            id="delete-dialog-title"
+            className="text-lg font-semibold text-[var(--foreground)]"
+          >
+            Delete Page
+          </h3>
         </div>
 
         {isProtected ? (
           <>
-            <p className="text-sm text-[var(--foreground-muted)] mb-6">
+            <p
+              id="delete-dialog-desc"
+              className="text-sm text-[var(--foreground-muted)] mb-6"
+            >
               <strong className="text-[var(--foreground)]">{pageName}</strong> is a protected page and cannot be deleted.
               Protected pages include Homepage, Pricing, and About.
             </p>
             <div className="flex items-center justify-end">
               <button
+                ref={cancelRef}
+                type="button"
                 onClick={onCancel}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90 transition-colors"
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 Got it
               </button>
@@ -578,19 +773,29 @@ function DeleteConfirmDialog({
           </>
         ) : (
           <>
-            <p className="text-sm text-[var(--foreground-muted)] mb-4">
+            <p
+              id="delete-dialog-desc"
+              className="text-sm text-[var(--foreground-muted)] mb-4"
+            >
               Are you sure you want to delete <strong className="text-[var(--foreground)]">{pageName}</strong>?
               This action cannot be undone.
             </p>
             <div className="mb-6">
-              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-                Type "delete" to confirm
+              <label
+                htmlFor="delete-confirm-input"
+                className="block text-sm font-medium text-[var(--foreground)] mb-2"
+              >
+                Type &quot;delete&quot; to confirm
               </label>
               <input
+                ref={inputRef}
+                id="delete-confirm-input"
                 type="text"
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value)}
                 placeholder="delete"
+                autoComplete="off"
+                spellCheck={false}
                 className={cn(
                   "w-full px-3 py-2 rounded-lg text-sm",
                   "bg-[var(--background)] border border-[var(--border)]",
@@ -599,26 +804,29 @@ function DeleteConfirmDialog({
                 )}
               />
             </div>
-            <div className="flex items-center justify-end gap-3">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
               <button
+                type="button"
                 onClick={onCancel}
-                className="px-4 py-2 rounded-lg text-sm font-medium border border-[var(--border)] hover:bg-[var(--background-elevated)] transition-colors"
+                className="px-4 py-2 rounded-lg text-sm font-medium border border-[var(--border)] hover:bg-[var(--background-elevated)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={onConfirm}
                 disabled={!canDelete || isDeleting}
                 className={cn(
                   "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                   "bg-red-600 text-white hover:bg-red-700",
-                  "disabled:opacity-50 disabled:cursor-not-allowed"
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 )}
               >
                 {isDeleting ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
-                    Deleting...
+                    <Loader2 className="w-4 h-4 animate-spin inline mr-2" aria-hidden="true" />
+                    <span>Deleting...</span>
                   </>
                 ) : (
                   "Delete Page"

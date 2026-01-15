@@ -8,6 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Social Media Marketing Studio - Phase 4: Content Calendar** - Complete content planning system:
+  - Content Calendar page (`/super-admin/marketing-studio/calendar`) with 4 views:
+    - **Month View** - Traditional calendar grid with post thumbnails
+    - **Week View** - Detailed time-slot based scheduling
+    - **Board View** - Kanban-style columns (Draft, Scheduled, Published, Failed)
+    - **Grid View** - Instagram-style feed preview
+  - Platform filtering to show posts for specific platforms
+  - Post status indicators with color-coded legend
+  - Quick navigation (Today, Previous/Next month)
+  - Post cards with platform icons, scheduling info, and status
+
+- **Post Composer Improvements** - Enhanced composer with better layout and content options:
+  - Content Type Selector - Switch between Mockup, Template, or Custom Image
+  - Custom Image Upload - Upload your own images directly to the composer
+  - Template Preview - Templates now render with proper backgrounds and text
+  - Mockup Scaling - Mockups now scale properly within the preview container (35% scale)
+  - Narrower right sidebar (72px → 72px) with compact controls
+  - Smaller platform/format buttons for better fit
+  - Hidden mockup picker by default (opens on demand)
+
 - **Marketing CMS Page Editor Enhancements** - Comprehensive improvements to the CMS page editor:
   - Visual field editor for structured content (hero sections, features, benefits, etc.)
   - Toggle between Visual Editor and JSON Editor modes
@@ -25,6 +45,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Configure CTA button text and link
   - Edit footer content structure via JSON editor
   - Footer structure preview with example schema
+  - Keyboard shortcut (Cmd/Ctrl+S) for quick save
+  - Unsaved changes detection with browser warning
+  - Full accessibility improvements with proper ARIA labels
+
+- **Marketing CMS Pages List** - Enhanced page listing with search and filtering:
+  - Real-time search by page title or slug
+  - Filter pills by page type (Homepage, Features, Industries, Legal, etc.)
+  - Status filter dropdown (Published, Draft, Archived)
+  - Results count with filter state indicator
+  - Clear filters button when filters are active
+  - Responsive design for mobile devices
+  - Proper ARIA roles for accessibility
+
+- **Marketing CMS Accessibility Improvements** - WCAG 2.1 AA compliance enhancements:
+  - All form fields have proper label associations (`htmlFor`/`id`)
+  - Character count indicators with `aria-live="polite"`
+  - Dialogs with proper ARIA roles (`dialog`, `alertdialog`)
+  - Escape key closes all dialogs
+  - Focus management - auto-focus on primary actions
+  - Tab buttons with proper `role="tab"` and `aria-selected`
+  - Collapsible sections with `aria-expanded` and `aria-controls`
+  - Icon decorations marked with `aria-hidden="true"`
+  - Focus visible ring styles for keyboard navigation
+  - Responsive button layouts (stack on mobile, row on desktop)
 
 - **Social Media Marketing Studio - Phase 3: Brand Kit & Templates** - Complete brand management and template system:
   - Brand Kit page (`/super-admin/marketing-studio/brand-kit`) with:
