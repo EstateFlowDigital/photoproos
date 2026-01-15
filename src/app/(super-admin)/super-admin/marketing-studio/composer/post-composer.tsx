@@ -373,6 +373,59 @@ export function PostComposer() {
     );
   }, []);
 
+  // Drag-and-drop state
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [dragLayerId, setDragLayerId] = React.useState<string | null>(null);
+  const [dragStart, setDragStart] = React.useState({ x: 0, y: 0 });
+  const [layerStart, setLayerStart] = React.useState({ x: 0, y: 0 });
+  const canvasRef = React.useRef<HTMLDivElement>(null);
+
+  // Handle layer drag start
+  const handleLayerMouseDown = React.useCallback((e: React.MouseEvent, layerId: string) => {
+    const layer = layers.find((l) => l.id === layerId);
+    if (!layer || layer.locked) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    setIsDragging(true);
+    setDragLayerId(layerId);
+    setDragStart({ x: e.clientX, y: e.clientY });
+    setLayerStart({ x: layer.position.x, y: layer.position.y });
+    setSelectedLayerId(layerId);
+    setRightPanelTab("properties");
+  }, [layers]);
+
+  // Handle layer drag
+  React.useEffect(() => {
+    if (!isDragging || !dragLayerId) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
+
+      const newX = Math.max(0, layerStart.x + deltaX);
+      const newY = Math.max(0, layerStart.y + deltaY);
+
+      handleUpdateLayer(dragLayerId, {
+        position: { x: newX, y: newY },
+      });
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      setDragLayerId(null);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, dragLayerId, dragStart, layerStart, handleUpdateLayer]);
+
   // Render a single layer
   const renderLayer = React.useCallback((layer: Layer) => {
     if (!layer.visible) return null;
@@ -406,15 +459,14 @@ export function PostComposer() {
               display: "flex",
               alignItems: "center",
               justifyContent: textLayer.textAlign === "center" ? "center" : textLayer.textAlign === "right" ? "flex-end" : "flex-start",
+              cursor: layer.locked ? "not-allowed" : isDragging && dragLayerId === layer.id ? "grabbing" : "grab",
             }}
             className={cn(
-              "cursor-move select-none whitespace-pre-wrap",
-              selectedLayerId === layer.id && "ring-2 ring-[var(--primary)] ring-offset-1"
+              "select-none whitespace-pre-wrap transition-shadow",
+              selectedLayerId === layer.id && "ring-2 ring-[var(--primary)] ring-offset-1",
+              isDragging && dragLayerId === layer.id && "opacity-90 shadow-lg"
             )}
-            onClick={() => {
-              setSelectedLayerId(layer.id);
-              setRightPanelTab("properties");
-            }}
+            onMouseDown={(e) => handleLayerMouseDown(e, layer.id)}
           >
             {textLayer.content}
           </div>
@@ -430,15 +482,14 @@ export function PostComposer() {
               backgroundColor: shapeLayer.fill,
               border: shapeLayer.strokeWidth > 0 ? `${shapeLayer.strokeWidth}px solid ${shapeLayer.stroke}` : undefined,
               borderRadius: shapeLayer.shapeType === "circle" ? "50%" : shapeLayer.borderRadius ? `${shapeLayer.borderRadius}px` : undefined,
+              cursor: layer.locked ? "not-allowed" : isDragging && dragLayerId === layer.id ? "grabbing" : "grab",
             }}
             className={cn(
-              "cursor-move",
-              selectedLayerId === layer.id && "ring-2 ring-[var(--primary)] ring-offset-1"
+              "transition-shadow",
+              selectedLayerId === layer.id && "ring-2 ring-[var(--primary)] ring-offset-1",
+              isDragging && dragLayerId === layer.id && "opacity-90 shadow-lg"
             )}
-            onClick={() => {
-              setSelectedLayerId(layer.id);
-              setRightPanelTab("properties");
-            }}
+            onMouseDown={(e) => handleLayerMouseDown(e, layer.id)}
           />
         );
       }
@@ -447,22 +498,24 @@ export function PostComposer() {
         return (
           <div
             key={layer.id}
-            style={baseStyle}
-            className={cn(
-              "cursor-move overflow-hidden",
-              selectedLayerId === layer.id && "ring-2 ring-[var(--primary)] ring-offset-1"
-            )}
-            onClick={() => {
-              setSelectedLayerId(layer.id);
-              setRightPanelTab("properties");
+            style={{
+              ...baseStyle,
+              cursor: layer.locked ? "not-allowed" : isDragging && dragLayerId === layer.id ? "grabbing" : "grab",
             }}
+            className={cn(
+              "overflow-hidden transition-shadow",
+              selectedLayerId === layer.id && "ring-2 ring-[var(--primary)] ring-offset-1",
+              isDragging && dragLayerId === layer.id && "opacity-90 shadow-lg"
+            )}
+            onMouseDown={(e) => handleLayerMouseDown(e, layer.id)}
           >
             {imageLayer.src ? (
               <img
                 src={imageLayer.src}
                 alt={layer.name}
                 style={{ objectFit: imageLayer.objectFit }}
-                className="w-full h-full"
+                className="w-full h-full pointer-events-none"
+                draggable={false}
               />
             ) : (
               <div className="w-full h-full bg-[var(--background-hover)] flex items-center justify-center">
@@ -481,15 +534,16 @@ export function PostComposer() {
         return (
           <div
             key={layer.id}
-            style={baseStyle}
-            className={cn(
-              "cursor-move overflow-hidden",
-              selectedLayerId === layer.id && "ring-2 ring-[var(--primary)] ring-offset-1"
-            )}
-            onClick={() => {
-              setSelectedLayerId(layer.id);
-              setRightPanelTab("properties");
+            style={{
+              ...baseStyle,
+              cursor: layer.locked ? "not-allowed" : isDragging && dragLayerId === layer.id ? "grabbing" : "grab",
             }}
+            className={cn(
+              "overflow-hidden transition-shadow",
+              selectedLayerId === layer.id && "ring-2 ring-[var(--primary)] ring-offset-1",
+              isDragging && dragLayerId === layer.id && "opacity-90 shadow-lg"
+            )}
+            onMouseDown={(e) => handleLayerMouseDown(e, layer.id)}
           >
             <div
               className="origin-top-left"
@@ -508,7 +562,7 @@ export function PostComposer() {
       default:
         return null;
     }
-  }, [selectedLayerId]);
+  }, [selectedLayerId, isDragging, dragLayerId, handleLayerMouseDown]);
 
   // Render the content based on content type
   const renderContent = React.useCallback(() => {
