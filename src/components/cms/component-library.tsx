@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { getCMSComponents } from "@/lib/actions/cms-page-builder";
+import { PresetLibrary } from "./preset-library";
 import type { CMSComponentCategory } from "@prisma/client";
-import type { ComponentWithSchema } from "@/lib/cms/page-builder-utils";
+import type { ComponentWithSchema, PageComponentInstance } from "@/lib/cms/page-builder-utils";
 import {
   Layout,
   Grid3x3,
@@ -31,14 +32,19 @@ import {
   ChevronDown,
   ChevronRight,
   GripVertical,
+  Bookmark,
+  Blocks,
 } from "lucide-react";
 
 // ============================================================================
 // TYPES
 // ============================================================================
 
+type LibraryTab = "components" | "presets";
+
 interface ComponentLibraryProps {
   onComponentSelect: (component: ComponentWithSchema) => void;
+  onPresetSelect?: (instance: Partial<PageComponentInstance>) => void;
   className?: string;
 }
 
@@ -207,7 +213,8 @@ function CategoryGroup({
 // MAIN COMPONENT
 // ============================================================================
 
-export function ComponentLibrary({ onComponentSelect, className }: ComponentLibraryProps) {
+export function ComponentLibrary({ onComponentSelect, onPresetSelect, className }: ComponentLibraryProps) {
+  const [activeTab, setActiveTab] = useState<LibraryTab>("components");
   const [components, setComponents] = useState<ComponentWithSchema[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -272,73 +279,116 @@ export function ComponentLibrary({ onComponentSelect, className }: ComponentLibr
     "custom",
   ];
 
+  // Handle preset selection with fallback
+  const handlePresetSelect = (instance: Partial<PageComponentInstance>) => {
+    if (onPresetSelect) {
+      onPresetSelect(instance);
+    }
+  };
+
   return (
     <div className={cn("component-library flex flex-col h-full", className)}>
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-[var(--border)]">
-        <h3 className="text-sm font-semibold mb-2">Components</h3>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground-muted)]" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search components..."
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-[var(--background-tertiary)] border border-[var(--border)] focus:outline-none focus:border-[var(--primary)]"
-          />
-        </div>
+      {/* Tabs */}
+      <div className="flex border-b border-[var(--border)]">
+        <button
+          onClick={() => setActiveTab("components")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors",
+            activeTab === "components"
+              ? "text-[var(--primary)] border-b-2 border-[var(--primary)] bg-[var(--primary)]/5"
+              : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+          )}
+        >
+          <Blocks className="w-4 h-4" />
+          Components
+        </button>
+        <button
+          onClick={() => setActiveTab("presets")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors",
+            activeTab === "presets"
+              ? "text-[var(--primary)] border-b-2 border-[var(--primary)] bg-[var(--primary)]/5"
+              : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+          )}
+        >
+          <Bookmark className="w-4 h-4" />
+          Presets
+        </button>
       </div>
 
-      {/* Component List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {loading ? (
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="animate-pulse space-y-2">
-                <div className="h-6 bg-[var(--background-tertiary)] rounded w-24" />
-                <div className="h-16 bg-[var(--background-tertiary)] rounded" />
-                <div className="h-16 bg-[var(--background-tertiary)] rounded" />
-              </div>
-            ))}
+      {activeTab === "presets" ? (
+        <PresetLibrary
+          onPresetSelect={handlePresetSelect}
+          className="flex-1 overflow-hidden"
+        />
+      ) : (
+        <>
+          {/* Search */}
+          <div className="px-4 py-3 border-b border-[var(--border)]">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--foreground-muted)]" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search components..."
+                className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-[var(--background-tertiary)] border border-[var(--border)] focus:outline-none focus:border-[var(--primary)]"
+              />
+            </div>
           </div>
-        ) : filteredComponents.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-sm text-[var(--foreground-muted)]">
-              {searchQuery ? "No components found" : "No components available"}
+
+          {/* Component List */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {loading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="animate-pulse space-y-2">
+                    <div className="h-6 bg-[var(--background-tertiary)] rounded w-24" />
+                    <div className="h-16 bg-[var(--background-tertiary)] rounded" />
+                    <div className="h-16 bg-[var(--background-tertiary)] rounded" />
+                  </div>
+                ))}
+              </div>
+            ) : filteredComponents.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-sm text-[var(--foreground-muted)]">
+                  {searchQuery ? "No components found" : "No components available"}
+                </p>
+              </div>
+            ) : searchQuery ? (
+              // Flat list when searching
+              <div className="space-y-2">
+                {filteredComponents.map((component) => (
+                  <ComponentCard
+                    key={component.id}
+                    component={component}
+                    onSelect={() => onComponentSelect(component)}
+                  />
+                ))}
+              </div>
+            ) : (
+              // Grouped by category when not searching
+              categoryOrder.map((category) => (
+                <CategoryGroup
+                  key={category}
+                  category={category}
+                  components={groupedComponents[category] || []}
+                  onComponentSelect={onComponentSelect}
+                  isExpanded={expandedCategories.has(category)}
+                  onToggle={() => toggleCategory(category)}
+                />
+              ))
+            )}
+          </div>
+
+          {/* Footer hint */}
+          <div className="px-4 py-3 border-t border-[var(--border)]">
+            <p className="text-xs text-[var(--foreground-muted)] text-center">
+              Drag components to the canvas or click to add
             </p>
           </div>
-        ) : searchQuery ? (
-          // Flat list when searching
-          <div className="space-y-2">
-            {filteredComponents.map((component) => (
-              <ComponentCard
-                key={component.id}
-                component={component}
-                onSelect={() => onComponentSelect(component)}
-              />
-            ))}
-          </div>
-        ) : (
-          // Grouped by category when not searching
-          categoryOrder.map((category) => (
-            <CategoryGroup
-              key={category}
-              category={category}
-              components={groupedComponents[category] || []}
-              onComponentSelect={onComponentSelect}
-              isExpanded={expandedCategories.has(category)}
-              onToggle={() => toggleCategory(category)}
-            />
-          ))
-        )}
-      </div>
-
-      {/* Footer hint */}
-      <div className="px-4 py-3 border-t border-[var(--border)]">
-        <p className="text-xs text-[var(--foreground-muted)] text-center">
-          Drag components to the canvas or click to add
-        </p>
-      </div>
+        </>
+      )}
     </div>
   );
 }

@@ -28,8 +28,10 @@ import {
   Settings,
   Layers,
   Check,
+  Bookmark,
 } from "lucide-react";
-import { MOCKUPS, CATEGORIES, getMockupById, type MockupDefinition, type MockupCategory } from "@/components/mockups";
+import { SavePresetDialog } from "./save-preset-dialog";
+import { MOCKUPS, CATEGORIES, getMockupById, type MockupCategory } from "@/components/mockups";
 
 // ============================================================================
 // TYPES
@@ -623,6 +625,7 @@ export function ComponentEditor({
 }: ComponentEditorProps) {
   const [content, setContent] = useState<Record<string, unknown>>(instance.content);
   const [isDirty, setIsDirty] = useState(false);
+  const [showSavePreset, setShowSavePreset] = useState(false);
 
   // Get schema for this component type
   const componentType = instance.componentSlug.replace(/-/g, "_") as CMSComponentType;
@@ -695,10 +698,31 @@ export function ComponentEditor({
 
       {/* Footer */}
       <div className="px-4 py-3 border-t border-[var(--border)]">
-        <p className="text-xs text-[var(--foreground-muted)] text-center">
-          Changes are auto-saved
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-[var(--foreground-muted)]">
+            Changes are auto-saved
+          </p>
+          <button
+            onClick={() => setShowSavePreset(true)}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg",
+              "bg-[var(--background-tertiary)] hover:bg-[var(--background-hover)]",
+              "transition-colors"
+            )}
+          >
+            <Bookmark className="w-3.5 h-3.5" />
+            Save as Preset
+          </button>
+        </div>
       </div>
+
+      {/* Save Preset Dialog */}
+      {showSavePreset && (
+        <SavePresetDialog
+          instance={{ ...instance, content }}
+          onClose={() => setShowSavePreset(false)}
+        />
+      )}
     </div>
   );
 }

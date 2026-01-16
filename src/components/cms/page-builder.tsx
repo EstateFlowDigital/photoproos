@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { ComponentLibrary } from "./component-library";
 import { ComponentEditor } from "./component-editor";
 import { LivePreview, DeviceToggle, type DeviceType } from "./live-preview";
+import { TemplateSelectorModal } from "./template-selector";
 import type { PageComponentInstance, ComponentWithSchema } from "@/lib/cms/page-builder-utils";
 import type { MarketingPage } from "@prisma/client";
 import {
@@ -27,6 +28,7 @@ import {
   AlertTriangle,
   PanelRight,
   Monitor,
+  FileText,
 } from "lucide-react";
 
 // ============================================================================
