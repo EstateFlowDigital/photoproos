@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Gallery Delivery Button Improvements** - Refactored delivery button with better UX:
+  - Loading state while delivering gallery
+  - Toast notifications for success, failure, and email delivery status
+  - Proper error handling for email send failures
+
+- **Invoice Bulk Action Feedback** - Added toast notifications for bulk invoice actions:
+  - "Mark as Paid" shows success/failure count
+  - "Send Reminder" shows success/failure count
+  - Proper error handling with user feedback
+
+- **CMS Mockup Field Editor** - New field type for selecting mockups in CMS components:
+  - Visual mockup picker with category filtering
+  - Preview of selected mockup
+  - Integration with existing mockup library
+
+- **CMS Page Builder Enhancements** - New page builder features for marketing pages
+
 - **Comprehensive Module Configuration System** - Super admin config now includes ALL platform modules:
   - 34 platform modules added as configurable feature flags organized by category:
     - **Core Modules** (6): Dashboard, Settings, Projects, Forms, Messages, My Progress
@@ -30,6 +47,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Database schema updated with `FeatureFlagStatus` enum
 
 ### Fixed
+
+- **Zapier Settings API Keys Not Displaying** - Fixed property name mismatch (`apiKeysResult.apiKeys` → `apiKeysResult.data`) that prevented API keys from appearing in Zapier integration settings
+
+- **Gallery Detail Silent Fetch Failures** - Added toast notifications when download history or add-on requests fail to load, replacing silent dev-only console warnings
+
+- **Gallery Reminders Inconsistent Returns** - Fixed `gallery-reminders.ts` to use `fail()` helper instead of raw object literals for consistent error handling
+
+- **Contact Page Static Generation Error** - Added `force-dynamic` to contact page to fix webpack runtime error during build
+
+### Changed
+
+- **Gallery List Modal Accessibility** - Improved delete confirmation modals with:
+  - `role="dialog"` and `aria-modal="true"` attributes
+  - `aria-labelledby` linking to modal titles
+  - Escape key handler to close modals
+  - Click outside (backdrop) to close modals
 
 - **Marketing CMS Data Not Appearing** - Fixed the same `ok(data)` bug in `marketing-cms.ts`:
   - 49 instances of `ok(data)` replaced with `success(data)`

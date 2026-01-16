@@ -60,7 +60,7 @@ export async function sendBatchGalleryReminders(organizationId: string) {
     });
 
     if (!org) {
-      return { success: false, error: "Organization not found", data: { sent: 0, failed: 0 } };
+      return fail("Organization not found");
     }
 
     const photographerName = org.publicName || org.name;
@@ -223,11 +223,7 @@ export async function sendBatchGalleryReminders(organizationId: string) {
     return success({ sent, failed, results });
   } catch (error) {
     console.error("Error in sendBatchGalleryReminders:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-      data: { sent: 0, failed: 0 },
-    };
+    return fail(error instanceof Error ? error.message : "Unknown error");
   }
 }
 

@@ -46,12 +46,12 @@ export function PageBuilderClient({ page, initialComponents }: PageBuilderClient
             Content Editor
           </Link>
           <Link
-            href={`/${page.slug === "homepage" ? "" : page.slug}`}
+            href={`/p/${page.slug}`}
             target="_blank"
-            className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg hover:bg-[var(--background-hover)] transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90 transition-colors"
           >
             <Eye className="w-4 h-4" />
-            Preview
+            View Page
           </Link>
         </div>
       </div>

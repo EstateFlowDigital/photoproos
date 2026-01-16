@@ -4,6 +4,7 @@ import { useState, useCallback, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { ComponentLibrary } from "./component-library";
 import { ComponentEditor } from "./component-editor";
+import { LivePreview, DeviceToggle, type DeviceType } from "./live-preview";
 import type { PageComponentInstance, ComponentWithSchema } from "@/lib/cms/page-builder-utils";
 import type { MarketingPage } from "@prisma/client";
 import {
@@ -24,6 +25,8 @@ import {
   Plus,
   Loader2,
   AlertTriangle,
+  PanelRight,
+  Monitor,
 } from "lucide-react";
 
 // ============================================================================
@@ -354,6 +357,8 @@ function DropZone({ onDrop, isOver }: DropZoneProps) {
 // MAIN PAGE BUILDER
 // ============================================================================
 
+type RightPanelMode = "editor" | "preview";
+
 export function PageBuilder({
   page,
   initialComponents,
@@ -366,6 +371,9 @@ export function PageBuilder({
   const [dragSourceIndex, setDragSourceIndex] = useState<number | null>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [showPreviewPanel, setShowPreviewPanel] = useState(false);
+  const [rightPanelMode, setRightPanelMode] = useState<RightPanelMode>("editor");
+  const [previewDevice, setPreviewDevice] = useState<DeviceType>("desktop");
 
   // Find selected component
   const selectedComponent = selectedId
@@ -531,8 +539,13 @@ export function PageBuilder({
     setDragOverIndex(null);
   };
 
+  // Calculate grid columns based on panel visibility
+  const gridCols = showPreviewPanel
+    ? "grid-cols-[280px_1fr_350px_400px]"
+    : "grid-cols-[280px_1fr_350px]";
+
   return (
-    <div className={cn("page-builder grid grid-cols-[280px_1fr_350px] h-full", className)}>
+    <div className={cn("page-builder grid h-full", gridCols, className)}>
       {/* Component Library */}
       <div className="border-r border-[var(--border)] bg-[var(--card)]">
         <ComponentLibrary onComponentSelect={handleComponentSelect} />
@@ -549,11 +562,54 @@ export function PageBuilder({
             <h3 className="font-semibold">{page.title}</h3>
             {isPending && <Loader2 className="w-4 h-4 animate-spin text-[var(--primary)]" />}
           </div>
-          <div className="flex items-center gap-2 text-sm text-[var(--foreground-secondary)]">
+          <div className="flex items-center gap-3 text-sm text-[var(--foreground-secondary)]">
             <span>{components.length} component{components.length !== 1 ? "s" : ""}</span>
-            <button className="flex items-center gap-1 px-3 py-1 rounded hover:bg-[var(--background-hover)]">
-              <Eye className="w-4 h-4" />
-              Preview
+
+            {/* Right Panel Mode Toggle */}
+            <div className="flex items-center gap-1 p-1 bg-[var(--background-tertiary)] rounded-lg">
+              <button
+                onClick={() => setRightPanelMode("editor")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-all",
+                  rightPanelMode === "editor"
+                    ? "bg-[var(--card)] text-[var(--foreground)] shadow-sm"
+                    : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+                )}
+              >
+                <Settings className="w-3.5 h-3.5" />
+                Editor
+              </button>
+              <button
+                onClick={() => setRightPanelMode("preview")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-all",
+                  rightPanelMode === "preview"
+                    ? "bg-[var(--card)] text-[var(--foreground)] shadow-sm"
+                    : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+                )}
+              >
+                <Eye className="w-3.5 h-3.5" />
+                Preview
+              </button>
+            </div>
+
+            {/* Show Device Toggle when in preview mode */}
+            {rightPanelMode === "preview" && (
+              <DeviceToggle device={previewDevice} onChange={setPreviewDevice} />
+            )}
+
+            {/* Toggle extra preview panel */}
+            <button
+              onClick={() => setShowPreviewPanel(!showPreviewPanel)}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors",
+                showPreviewPanel
+                  ? "bg-[var(--primary)] text-white"
+                  : "hover:bg-[var(--background-hover)]"
+              )}
+              title={showPreviewPanel ? "Hide preview panel" : "Show preview panel"}
+            >
+              <PanelRight className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -623,23 +679,46 @@ export function PageBuilder({
         </div>
       </div>
 
-      {/* Editor Panel */}
-      <div className="border-l border-[var(--border)] bg-[var(--card)] overflow-y-auto">
-        {selectedComponent ? (
-          <ComponentEditor
-            instance={selectedComponent}
-            onUpdate={(content) => handleContentUpdate(selectedComponent.id, content)}
-            onClose={() => setSelectedId(null)}
-          />
-        ) : (
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center text-sm text-[var(--foreground-muted)]">
-              <Settings className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p>Select a component to edit</p>
-            </div>
+      {/* Right Panel - Editor or Preview */}
+      <div className="border-l border-[var(--border)] bg-[var(--card)] overflow-hidden flex flex-col">
+        {rightPanelMode === "editor" ? (
+          // Editor Mode
+          <div className="flex-1 overflow-y-auto">
+            {selectedComponent ? (
+              <ComponentEditor
+                instance={selectedComponent}
+                onUpdate={(content) => handleContentUpdate(selectedComponent.id, content)}
+                onClose={() => setSelectedId(null)}
+              />
+            ) : (
+              <div className="h-full flex items-center justify-center">
+                <div className="text-center text-sm text-[var(--foreground-muted)]">
+                  <Settings className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p>Select a component to edit</p>
+                </div>
+              </div>
+            )}
           </div>
+        ) : (
+          // Preview Mode - Inline preview in the right panel
+          <LivePreview
+            components={components}
+            initialDevice={previewDevice}
+            className="h-full"
+          />
         )}
       </div>
+
+      {/* Extra Preview Panel (toggleable) */}
+      {showPreviewPanel && (
+        <div className="border-l border-[var(--border)] bg-[var(--card)] overflow-hidden">
+          <LivePreview
+            components={components}
+            initialDevice="mobile"
+            className="h-full"
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -109,6 +109,23 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
     }
   }, [showServiceFilter]);
 
+  // Handle escape key for modals
+  useEffect(() => {
+    function handleEscapeKey(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        if (showDeleteConfirm) {
+          setShowDeleteConfirm(null);
+        } else if (showBulkDeleteConfirm) {
+          setShowBulkDeleteConfirm(false);
+        }
+      }
+    }
+    if (showDeleteConfirm || showBulkDeleteConfirm) {
+      document.addEventListener("keydown", handleEscapeKey);
+      return () => document.removeEventListener("keydown", handleEscapeKey);
+    }
+  }, [showDeleteConfirm, showBulkDeleteConfirm]);
+
   // Toggle service in filter
   const toggleServiceFilter = (serviceId: string) => {
     setServiceFilter((prev) => {
@@ -906,9 +923,19 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
 
       {/* Single Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-modal-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isLoading) {
+              setShowDeleteConfirm(null);
+            }
+          }}
+        >
           <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-foreground">Delete Gallery</h3>
+            <h3 id="delete-modal-title" className="text-lg font-semibold text-foreground">Delete Gallery</h3>
             <p className="mt-2 text-sm text-foreground-muted">
               Are you sure you want to delete &ldquo;{galleries.find((g) => g.id === showDeleteConfirm)?.name}&rdquo;? This action cannot be undone.
             </p>
@@ -936,9 +963,19 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
 
       {/* Bulk Delete Confirmation Modal */}
       {showBulkDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="bulk-delete-modal-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isLoading) {
+              setShowBulkDeleteConfirm(false);
+            }
+          }}
+        >
           <div className="w-full max-w-md rounded-xl border border-[var(--card-border)] bg-[var(--card)] p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-foreground">Delete {selectedGalleries.size} Galleries</h3>
+            <h3 id="bulk-delete-modal-title" className="text-lg font-semibold text-foreground">Delete {selectedGalleries.size} Galleries</h3>
             <p className="mt-2 text-sm text-foreground-muted">
               Are you sure you want to delete {selectedGalleries.size} gallery{selectedGalleries.size !== 1 ? "ies" : "y"}? This action cannot be undone.
             </p>

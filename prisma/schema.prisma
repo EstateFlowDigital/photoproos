@@ -10911,6 +10911,54 @@ model CMSComponent {
   @@index([sortOrder])
 }
 
+// Component Preset - Saved configured component for reuse
+model CMSComponentPreset {
+  id            String           @id @default(cuid())
+  name          String           // Display name
+  description   String?          // Description of what this preset is for
+  componentType CMSComponentType // Which component type this preset is for
+  content       Json             // Pre-configured content
+  thumbnail     String?          // Preview image
+  category      String?          // Category for organization (e.g., "photography", "real-estate")
+  tags          String[]         // Tags for search/filtering
+  isGlobal      Boolean          @default(false) // Available to all users (vs. user-specific)
+  createdBy     String?          // User ID who created this preset
+  createdByName String?          // Display name of creator
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([componentType])
+  @@index([category])
+  @@index([isGlobal])
+  @@index([createdBy])
+}
+
+// Page Template - Pre-built page layouts with components
+model CMSPageTemplate {
+  id          String  @id @default(cuid())
+  name        String  // Display name
+  description String? // Description of what this template is for
+  slug        String  @unique // URL-safe identifier
+  thumbnail   String? // Preview image
+  industry    String? // Target industry (e.g., "commercial", "wedding", "real-estate")
+  tags        String[] // Tags for search/filtering
+  components  Json    // Array of PageComponentInstance[]
+  isActive    Boolean @default(true)
+  isGlobal    Boolean @default(true) // Available to all users
+  sortOrder   Int     @default(0)
+  usageCount  Int     @default(0) // Track how often this template is used
+  createdBy   String? // User ID who created this template
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([industry])
+  @@index([isActive])
+  @@index([isGlobal])
+  @@index([sortOrder])
+}
+
 // Component types enum
 enum CMSComponentType {
   hero              // Hero sections with headline, subtext, CTA
