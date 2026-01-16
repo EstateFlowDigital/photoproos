@@ -83,7 +83,7 @@ export async function getSupportTickets(): Promise<
       },
     });
 
-    return ok(
+    return success(
       tickets.map((ticket) => ({
         id: ticket.id,
         subject: ticket.subject,
@@ -152,7 +152,7 @@ export async function getSupportTicket(
       },
     });
 
-    return ok({
+    return success({
       id: ticket.id,
       subject: ticket.subject,
       category: ticket.category,
@@ -217,7 +217,7 @@ export async function createSupportTicket(data: {
     });
 
     revalidatePath("/support");
-    return ok({ id: ticket.id });
+    return success({ id: ticket.id });
   } catch (error) {
     console.warn("[SupportTickets] Error creating support ticket:", error);
     return fail("Failed to create ticket");
@@ -287,7 +287,7 @@ export async function sendSupportMessage(
 
     revalidatePath("/support");
     revalidatePath(`/support/${ticketId}`);
-    return ok({ id: message.id });
+    return success({ id: message.id });
   } catch (error) {
     console.warn("[SupportTickets] Error sending message:", error);
     return fail("Failed to send message");
@@ -530,7 +530,7 @@ export async function getAllSupportTickets(filters?: {
       },
     });
 
-    return ok(
+    return success(
       tickets.map((ticket) => ({
         id: ticket.id,
         subject: ticket.subject,
@@ -581,7 +581,7 @@ export async function sendAdminReply(
 
     revalidatePath("/super-admin/support");
     revalidatePath(`/super-admin/support/${ticketId}`);
-    return ok({ id: message.id });
+    return success({ id: message.id });
   } catch (error) {
     console.error("Error sending admin reply:", error);
     return fail("Failed to send reply");
@@ -767,7 +767,7 @@ export async function getAdminSupportTicket(
       },
     });
 
-    return ok({
+    return success({
       id: ticket.id,
       subject: ticket.subject,
       category: ticket.category,

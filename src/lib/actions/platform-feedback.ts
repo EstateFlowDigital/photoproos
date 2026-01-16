@@ -103,7 +103,7 @@ export async function submitPlatformFeedback(data: {
       },
     });
 
-    return ok({ id: feedback.id, xpAwarded: xpAward });
+    return success({ id: feedback.id, xpAwarded: xpAward });
   } catch (error) {
     console.error("Error submitting feedback:", error);
     return fail("Failed to submit feedback");
@@ -126,7 +126,7 @@ export async function shouldShowFeedbackModal(): Promise<
     });
 
     if (!user) {
-      return ok({ show: false, sessionCount: 0 });
+      return success({ show: false, sessionCount: 0 });
     }
 
     // Check for recent feedback (within last 50 sessions)
@@ -147,10 +147,10 @@ export async function shouldShowFeedbackModal(): Promise<
       !recentFeedback &&
       user.totalSessions % 10 === 0; // Every 10 sessions
 
-    return ok({ show: shouldShow, sessionCount: user.totalSessions });
+    return success({ show: shouldShow, sessionCount: user.totalSessions });
   } catch (error) {
     console.error("Error checking feedback modal:", error);
-    return ok({ show: false, sessionCount: 0 });
+    return success({ show: false, sessionCount: 0 });
   }
 }
 
@@ -199,7 +199,7 @@ export async function getAllPlatformFeedback(options?: {
       },
     });
 
-    return ok(
+    return success(
       feedback.map((f) => ({
         id: f.id,
         source: f.source,
@@ -288,7 +288,7 @@ export async function getFeedbackStats(): Promise<ActionResult<FeedbackStats>> {
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
-    return ok({
+    return success({
       totalFeedback,
       averageRating: avgRating._avg.rating || 0,
       pendingReview,

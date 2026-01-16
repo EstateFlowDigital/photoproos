@@ -203,7 +203,7 @@ export async function getSuperAdminDashboardStats(): Promise<
       revenueGrowth.push((revenueOnDay?._sum?.amountCents ?? 0) / 100);
     }
 
-    return ok({
+    return success({
       totalUsers: totalUsers ?? 0,
       activeUsers: activeUsers ?? 0,
       totalOrganizations: totalOrganizations ?? 0,
@@ -359,7 +359,7 @@ export async function getAllUsers(options?: {
       };
     });
 
-    return ok({ users: userList, total });
+    return success({ users: userList, total });
   } catch (error) {
     console.error("Error getting users:", error);
     return fail("Failed to load users");
@@ -436,7 +436,7 @@ export async function getUserDetails(
         ])
       : [0, 0, { _sum: { amountCents: 0 } }];
 
-    return ok({
+    return success({
       id: user.id,
       clerkUserId: user.clerkUserId,
       email: user.email,
@@ -695,7 +695,7 @@ export async function createCustomChallenge(
     });
 
     revalidatePath(`/super-admin/users/${userId}`);
-    return ok({ id: challenge.id });
+    return success({ id: challenge.id });
   } catch (error) {
     console.error("Error creating challenge:", error);
     return fail("Failed to create challenge");
@@ -763,7 +763,7 @@ export async function startImpersonation(
       metadata: { reason, sessionId: session.id },
     });
 
-    return ok({ redirectUrl: `/super-admin/impersonate/${userId}`, sessionId: session.id });
+    return success({ redirectUrl: `/super-admin/impersonate/${userId}`, sessionId: session.id });
   } catch (error) {
     console.error("Error starting impersonation:", error);
     return fail("Failed to start impersonation");
@@ -825,10 +825,10 @@ export async function getActiveImpersonation(): Promise<
 > {
   try {
     const user = await currentUser();
-    if (!user) return ok(null);
+    if (!user) return success(null);
 
     const isAdmin = user.publicMetadata?.isSuperAdmin === true;
-    if (!isAdmin) return ok(null);
+    if (!isAdmin) return success(null);
 
     const session = await prisma.impersonationSession.findFirst({
       where: {
@@ -837,9 +837,9 @@ export async function getActiveImpersonation(): Promise<
       },
     });
 
-    if (!session) return ok(null);
+    if (!session) return success(null);
 
-    return ok({ userId: session.targetUserId, reason: session.reason });
+    return success({ userId: session.targetUserId, reason: session.reason });
   } catch (error) {
     console.error("Error getting active impersonation:", error);
     return fail("Failed to get impersonation");
@@ -935,7 +935,7 @@ export async function getAuditLogs(options?: {
       adminUser: adminUserMap.get(log.adminUserId) || null,
     }));
 
-    return ok({ logs: logsWithAdminInfo, total });
+    return success({ logs: logsWithAdminInfo, total });
   } catch (error) {
     console.error("[SuperAdmin] Error fetching audit logs:", error);
     return fail("Failed to fetch audit logs");
@@ -952,7 +952,7 @@ export async function getFeatureFlags(): Promise<ActionResult<unknown[]>> {
       orderBy: [{ category: "asc" }, { order: "asc" }],
     });
 
-    return ok(flags);
+    return success(flags);
   } catch (error) {
     console.error("[SuperAdmin] Error fetching feature flags:", error);
     return fail("Failed to fetch feature flags");
@@ -1005,7 +1005,7 @@ export async function createFeatureFlag(
     });
 
     revalidatePath("/super-admin/config");
-    return ok(flag);
+    return success(flag);
   } catch (error) {
     console.error("[SuperAdmin] Error creating feature flag:", error);
     return fail("Failed to create feature flag");
@@ -1046,7 +1046,7 @@ export async function toggleFeatureFlag(
     });
 
     revalidatePath("/super-admin/config");
-    return ok(flag);
+    return success(flag);
   } catch (error) {
     console.error("[SuperAdmin] Error toggling feature flag:", error);
     return fail("Failed to toggle feature flag");
@@ -1142,7 +1142,7 @@ export async function getSystemSettings(): Promise<ActionResult<unknown[]>> {
       orderBy: [{ category: "asc" }, { key: "asc" }],
     });
 
-    return ok(settings);
+    return success(settings);
   } catch (error) {
     console.error("[SuperAdmin] Error fetching system settings:", error);
     return fail("Failed to fetch system settings");
@@ -1191,7 +1191,7 @@ export async function createSystemSetting(
     });
 
     revalidatePath("/super-admin/config");
-    return ok(setting);
+    return success(setting);
   } catch (error) {
     console.error("[SuperAdmin] Error creating system setting:", error);
     return fail("Failed to create system setting");
@@ -1235,7 +1235,7 @@ export async function updateSystemSetting(
     });
 
     revalidatePath("/super-admin/config");
-    return ok(setting);
+    return success(setting);
   } catch (error) {
     console.error("[SuperAdmin] Error updating system setting:", error);
     return fail("Failed to update system setting");
@@ -1364,7 +1364,7 @@ export async function seedDefaultFeatureFlags(): Promise<ActionResult<number>> {
     }
 
     revalidatePath("/super-admin/config");
-    return ok(created);
+    return success(created);
   } catch (error) {
     console.error("[SuperAdmin] Error seeding feature flags:", error);
     return fail("Failed to seed flags");
@@ -1432,7 +1432,7 @@ export async function seedDefaultSystemSettings(): Promise<ActionResult<number>>
     }
 
     revalidatePath("/super-admin/config");
-    return ok(created);
+    return success(created);
   } catch (error) {
     console.error("[SuperAdmin] Error seeding system settings:", error);
     return fail("Failed to seed settings");
@@ -1496,7 +1496,7 @@ export async function getSystemHealthStats(): Promise<
       prisma.featureFlag.count(),
     ]);
 
-    return ok({
+    return success({
       totalUsers: totalUsers ?? 0,
       totalOrganizations: totalOrganizations ?? 0,
       totalGalleries: totalGalleries ?? 0,
@@ -1609,7 +1609,7 @@ export async function getAnnouncements(options?: {
       prisma.announcement.count({ where }),
     ]);
 
-    return ok({ announcements: announcements as AnnouncementListItem[], total });
+    return success({ announcements: announcements as AnnouncementListItem[], total });
   } catch (error) {
     console.error("[SuperAdmin] Error fetching announcements:", error);
     return fail("Failed to fetch announcements");
@@ -1649,7 +1649,7 @@ export async function getAnnouncementById(
       return fail("Announcement not found");
     }
 
-    return ok(announcement as AnnouncementListItem & { readStatuses: { userId: string; readAt: Date; isDismissed: boolean }[] });
+    return success(announcement as AnnouncementListItem & { readStatuses: { userId: string; readAt: Date; isDismissed: boolean }[] });
   } catch (error) {
     console.error("[SuperAdmin] Error fetching announcement:", error);
     return fail("Failed to fetch announcement");
@@ -1713,7 +1713,7 @@ export async function createAnnouncement(
     });
 
     revalidatePath("/super-admin/announcements");
-    return ok(announcement as AnnouncementListItem);
+    return success(announcement as AnnouncementListItem);
   } catch (error) {
     console.error("[SuperAdmin] Error creating announcement:", error);
     return fail("Failed to create announcement");
@@ -1788,7 +1788,7 @@ export async function updateAnnouncement(
     });
 
     revalidatePath("/super-admin/announcements");
-    return ok(announcement as AnnouncementListItem);
+    return success(announcement as AnnouncementListItem);
   } catch (error) {
     console.error("[SuperAdmin] Error updating announcement:", error);
     return fail("Failed to update announcement");
@@ -1926,7 +1926,7 @@ export async function getAnnouncementStats(): Promise<
       byPriority[result.priority] = result._count || 0;
     }
 
-    return ok({
+    return success({
       total,
       active,
       expired,
@@ -1984,7 +1984,7 @@ export async function toggleAnnouncementActive(
     });
 
     revalidatePath("/super-admin/announcements");
-    return ok({ isActive: announcement.isActive });
+    return success({ isActive: announcement.isActive });
   } catch (error) {
     console.error("[SuperAdmin] Error toggling announcement:", error);
     return fail("Failed to toggle announcement");
@@ -2110,7 +2110,7 @@ export async function getPlatformDiscounts(options?: {
       prisma.discountCode.count({ where }),
     ]);
 
-    return ok({ discounts: discounts as DiscountCodeListItem[], total });
+    return success({ discounts: discounts as DiscountCodeListItem[], total });
   } catch (error) {
     console.error("[SuperAdmin] Error fetching platform discounts:", error);
     return fail("Failed to fetch discounts");
@@ -2153,7 +2153,7 @@ export async function getDiscountById(
       return fail("Discount not found");
     }
 
-    return ok(discount as DiscountCodeListItem & { usages: Array<{ id: string; clientEmail: string | null; userId: string | null; discountAmount: number; createdAt: Date; source: string | null }> });
+    return success(discount as DiscountCodeListItem & { usages: Array<{ id: string; clientEmail: string | null; userId: string | null; discountAmount: number; createdAt: Date; source: string | null }> });
   } catch (error) {
     console.error("[SuperAdmin] Error fetching discount:", error);
     return fail("Failed to fetch discount");
@@ -2236,7 +2236,7 @@ export async function createPlatformDiscount(
     });
 
     revalidatePath("/super-admin/discounts");
-    return ok(discount as DiscountCodeListItem);
+    return success(discount as DiscountCodeListItem);
   } catch (error) {
     console.error("[SuperAdmin] Error creating discount:", error);
     return fail("Failed to create discount");
@@ -2322,7 +2322,7 @@ export async function updatePlatformDiscount(
     });
 
     revalidatePath("/super-admin/discounts");
-    return ok(discount as DiscountCodeListItem);
+    return success(discount as DiscountCodeListItem);
   } catch (error) {
     console.error("[SuperAdmin] Error updating discount:", error);
     return fail("Failed to update discount");
@@ -2418,7 +2418,7 @@ export async function toggleDiscountActive(
     });
 
     revalidatePath("/super-admin/discounts");
-    return ok({ isActive: discount.isActive });
+    return success({ isActive: discount.isActive });
   } catch (error) {
     console.error("[SuperAdmin] Error toggling discount:", error);
     return fail("Failed to toggle discount");
@@ -2482,7 +2482,7 @@ export async function getDiscountStats(): Promise<
       }),
     ]);
 
-    return ok({
+    return success({
       totalPlatformDiscounts,
       activePlatformDiscounts,
       totalRedemptions,
@@ -2538,7 +2538,7 @@ export async function generateDiscountQrCode(
     });
 
     revalidatePath("/super-admin/discounts");
-    return ok({ qrCodeUrl, shareableUrl });
+    return success({ qrCodeUrl, shareableUrl });
   } catch (error) {
     console.error("[SuperAdmin] Error generating QR code:", error);
     return fail("Failed to generate QR code");
@@ -2873,7 +2873,7 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
       count: data.count,
     }));
 
-    return ok({
+    return success({
       totalRevenueCents,
       revenueToday: ((revenueToday?._sum?.amountCents ?? 0) + (revenueToday?._sum?.tipAmountCents ?? 0)) / 100,
       revenueThisWeek: ((revenueThisWeek?._sum?.amountCents ?? 0) + (revenueThisWeek?._sum?.tipAmountCents ?? 0)) / 100,
@@ -2933,7 +2933,7 @@ export async function getRecentPayments(options: {
       },
     });
 
-    return ok(
+    return success(
       payments.map((p) => ({
         id: p.id,
         amountCents: p.amountCents,
@@ -2979,7 +2979,7 @@ export async function getRecentInvoices(options: {
       },
     });
 
-    return ok(
+    return success(
       invoices.map((i) => ({
         id: i.id,
         invoiceNumber: i.invoiceNumber,
@@ -3229,7 +3229,7 @@ export async function getEngagementStats(): Promise<ActionResult<EngagementStats
     // Defensive array checks for groupBy results
     const safeActivityCounts = Array.isArray(activityCounts) ? activityCounts : [];
 
-    return ok({
+    return success({
       dau: dauCount ?? 0,
       wau: wauCount ?? 0,
       mau: mauCount ?? 0,
@@ -3330,7 +3330,7 @@ export async function getAtRiskUsers(options: {
     );
 
     const now = new Date();
-    return ok(
+    return success(
       users.map((u) => {
         const org = u.memberships[0]?.organization;
         const daysSince = u.lastLoginAt
@@ -3394,7 +3394,7 @@ export async function getActivityBreakdown(options: {
 
     const previousMap = new Map(safePreviousPeriod.map((p) => [p.type, p._count ?? 0]));
 
-    return ok(
+    return success(
       safeCurrentPeriod.map((c) => {
         const prev = previousMap.get(c.type) || 0;
         const currentCount = c._count ?? 0;
