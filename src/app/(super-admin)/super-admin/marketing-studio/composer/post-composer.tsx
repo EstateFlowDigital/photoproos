@@ -10,7 +10,7 @@ import { PLATFORMS, PLATFORM_LIST } from "@/lib/marketing-studio/platforms";
 import { getMockupById } from "@/components/mockups/mockup-registry";
 import { getIndustriesArray } from "@/lib/constants/industries";
 import { exportToPng, copyToClipboard } from "@/lib/mockups/export";
-import { getTemplateById, type Template } from "@/lib/marketing-studio/templates";
+import { getTemplateById, saveCustomTemplate, type Template, type TemplateCategory, type TemplateLayout } from "@/lib/marketing-studio/templates";
 import { InstagramPreview } from "@/components/marketing-studio/previews/instagram-preview";
 import { LinkedInPreview } from "@/components/marketing-studio/previews/linkedin-preview";
 import { TwitterPreview } from "@/components/marketing-studio/previews/twitter-preview";
@@ -21,6 +21,8 @@ import { CaptionEditor } from "@/components/marketing-studio/composer/caption-ed
 import { MockupPicker } from "@/components/marketing-studio/composer/mockup-picker";
 import { LayersPanel } from "@/components/marketing-studio/composer/layers-panel";
 import { PropertiesPanel } from "@/components/marketing-studio/composer/properties-panel";
+import { SaveTemplateModal } from "@/components/marketing-studio/composer/save-template-modal";
+import { BatchExportModal } from "@/components/marketing-studio/composer/batch-export-modal";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -63,7 +65,24 @@ import {
   FolderOpen,
   Group,
   Ungroup,
+  FileArchive,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Circle,
+  Copy as CopyIcon,
 } from "lucide-react";
+
+// Carousel slide type
+interface CarouselSlide {
+  id: string;
+  layers: Layer[];
+  bgType: "solid" | "gradient";
+  bgColor: string;
+  gradientFrom: string;
+  gradientTo: string;
+  gradientAngle: number;
+}
 
 // Content type for the preview
 type ContentType = "mockup" | "template" | "image";
@@ -127,10 +146,17 @@ export function PostComposer() {
   const [showRightSidebar, setShowRightSidebar] = React.useState(true);
   const [showLayersPanel, setShowLayersPanel] = React.useState(false);
   const [rightPanelTab, setRightPanelTab] = React.useState<"settings" | "properties">("settings");
+  const [showSaveTemplateModal, setShowSaveTemplateModal] = React.useState(false);
+  const [showBatchExportModal, setShowBatchExportModal] = React.useState(false);
 
   // Composition state
   const [layers, setLayers] = React.useState<Layer[]>([]);
   const [selectedLayerId, setSelectedLayerId] = React.useState<string | null>(null);
+
+  // Carousel state
+  const [carouselSlides, setCarouselSlides] = React.useState<CarouselSlide[]>([]);
+  const [currentSlideIndex, setCurrentSlideIndex] = React.useState(0);
+  const isCarouselMode = selectedFormat === "carousel";
 
   // Canvas background state
   const [canvasBgType, setCanvasBgType] = React.useState<"solid" | "gradient">("solid");
@@ -170,6 +196,11 @@ export function PostComposer() {
 
   // Multi-select layers
   const [selectedLayerIds, setSelectedLayerIds] = React.useState<Set<string>>(new Set());
+
+  // Inline text editing state
+  const [editingTextLayerId, setEditingTextLayerId] = React.useState<string | null>(null);
+  const [editingTextValue, setEditingTextValue] = React.useState<string>("");
+  const textEditRef = React.useRef<HTMLTextAreaElement>(null);
 
   // Preview engagement data (editable in future)
   const [engagement] = React.useState({
@@ -412,6 +443,98 @@ export function PostComposer() {
     return matches;
   }, [caption]);
 
+  // Convert current composition to template layout
+  const getCurrentTemplateLayout = React.useCallback((): TemplateLayout => {
+    const canvasWidth = platformConfig?.previewSize?.width || 540;
+    const canvasHeight = platformConfig?.previewSize?.height || 540;
+
+    // Convert layers to template elements (percentages)
+    const elements = layers.map((layer) => {
+      const baseElement = {
+        position: {
+          x: (layer.position.x / canvasWidth) * 100,
+          y: (layer.position.y / canvasHeight) * 100,
+        },
+        size: {
+          width: (layer.size.width / canvasWidth) * 100,
+          height: (layer.size.height / canvasHeight) * 100,
+        },
+      };
+
+      if (layer.type === "text") {
+        const textLayer = layer as TextLayer;
+        return {
+          ...baseElement,
+          type: "text" as const,
+          content: textLayer.content,
+          style: {
+            fontFamily: textLayer.fontFamily,
+            fontSize: textLayer.fontSize,
+            fontWeight: textLayer.fontWeight,
+            color: textLayer.color,
+            textAlign: textLayer.textAlign,
+          },
+        };
+      }
+
+      if (layer.type === "shape") {
+        const shapeLayer = layer as ShapeLayer;
+        return {
+          ...baseElement,
+          type: "shape" as const,
+          style: {
+            backgroundColor: shapeLayer.fill,
+            borderColor: shapeLayer.stroke,
+            borderWidth: shapeLayer.strokeWidth,
+            borderRadius: shapeLayer.borderRadius || 0,
+          },
+        };
+      }
+
+      if (layer.type === "image") {
+        return {
+          ...baseElement,
+          type: "image" as const,
+        };
+      }
+
+      // Default for other types
+      return {
+        ...baseElement,
+        type: "shape" as const,
+      };
+    });
+
+    return {
+      background: canvasBgType,
+      backgroundColor: canvasBgType === "solid" ? canvasBgColor : undefined,
+      gradientFrom: canvasBgType === "gradient" ? canvasGradientFrom : undefined,
+      gradientTo: canvasBgType === "gradient" ? canvasGradientTo : undefined,
+      gradientAngle: canvasBgType === "gradient" ? canvasGradientAngle : undefined,
+      elements,
+    };
+  }, [layers, platformConfig, canvasBgType, canvasBgColor, canvasGradientFrom, canvasGradientTo, canvasGradientAngle]);
+
+  // Handle save as template
+  const handleSaveAsTemplate = React.useCallback((templateData: {
+    name: string;
+    description: string;
+    category: TemplateCategory;
+    platforms: PlatformId[];
+    format: PostFormat;
+    tags: string[];
+    captionTemplate: string;
+    layout: TemplateLayout;
+  }) => {
+    try {
+      const savedTemplate = saveCustomTemplate(templateData);
+      toast.success(`Template "${savedTemplate.name}" saved successfully!`);
+    } catch (error) {
+      console.error("Failed to save template:", error);
+      toast.error("Failed to save template");
+    }
+  }, []);
+
   // Layer manipulation callbacks
   const handleAddLayer = React.useCallback((type: LayerType) => {
     const baseLayer = {
@@ -541,6 +664,162 @@ export function PostComposer() {
     setLayers((prev) =>
       prev.map((l) => (l.id === id ? { ...l, ...updates } : l))
     );
+  }, []);
+
+  // Carousel slide handlers
+  const createNewSlide = React.useCallback((): CarouselSlide => ({
+    id: `slide-${Date.now()}`,
+    layers: [],
+    bgType: canvasBgType,
+    bgColor: canvasBgColor,
+    gradientFrom: canvasGradientFrom,
+    gradientTo: canvasGradientTo,
+    gradientAngle: canvasGradientAngle,
+  }), [canvasBgType, canvasBgColor, canvasGradientFrom, canvasGradientTo, canvasGradientAngle]);
+
+  const handleAddSlide = React.useCallback(() => {
+    const newSlide = createNewSlide();
+    setCarouselSlides((prev) => [...prev, newSlide]);
+    setCurrentSlideIndex(carouselSlides.length); // Go to the new slide
+    // Clear current layers for the new slide
+    setLayers([]);
+    setSelectedLayerId(null);
+    toast.success("New slide added");
+  }, [createNewSlide, carouselSlides.length]);
+
+  const handleDeleteSlide = React.useCallback((index: number) => {
+    if (carouselSlides.length <= 1) {
+      toast.error("Carousel must have at least one slide");
+      return;
+    }
+
+    setCarouselSlides((prev) => prev.filter((_, i) => i !== index));
+
+    // Adjust current slide index if needed
+    if (currentSlideIndex >= carouselSlides.length - 1) {
+      setCurrentSlideIndex(Math.max(0, carouselSlides.length - 2));
+    } else if (currentSlideIndex > index) {
+      setCurrentSlideIndex(currentSlideIndex - 1);
+    }
+
+    toast.success("Slide deleted");
+  }, [carouselSlides.length, currentSlideIndex]);
+
+  const handleDuplicateSlide = React.useCallback((index: number) => {
+    const slide = carouselSlides[index];
+    if (!slide) return;
+
+    const newSlide: CarouselSlide = {
+      ...slide,
+      id: `slide-${Date.now()}`,
+      layers: slide.layers.map((l) => ({ ...l, id: generateLayerId() })),
+    };
+
+    const newSlides = [...carouselSlides];
+    newSlides.splice(index + 1, 0, newSlide);
+    setCarouselSlides(newSlides);
+    setCurrentSlideIndex(index + 1);
+    setLayers(newSlide.layers);
+    toast.success("Slide duplicated");
+  }, [carouselSlides]);
+
+  const handleGoToSlide = React.useCallback((index: number) => {
+    // Save current slide state
+    if (carouselSlides.length > 0 && currentSlideIndex < carouselSlides.length) {
+      const updatedSlides = [...carouselSlides];
+      updatedSlides[currentSlideIndex] = {
+        ...updatedSlides[currentSlideIndex],
+        layers,
+        bgType: canvasBgType,
+        bgColor: canvasBgColor,
+        gradientFrom: canvasGradientFrom,
+        gradientTo: canvasGradientTo,
+        gradientAngle: canvasGradientAngle,
+      };
+      setCarouselSlides(updatedSlides);
+    }
+
+    // Load new slide state
+    const targetSlide = carouselSlides[index];
+    if (targetSlide) {
+      setLayers(targetSlide.layers);
+      setCanvasBgType(targetSlide.bgType);
+      setCanvasBgColor(targetSlide.bgColor);
+      setCanvasGradientFrom(targetSlide.gradientFrom);
+      setCanvasGradientTo(targetSlide.gradientTo);
+      setCanvasGradientAngle(targetSlide.gradientAngle);
+    }
+
+    setCurrentSlideIndex(index);
+    setSelectedLayerId(null);
+  }, [carouselSlides, currentSlideIndex, layers, canvasBgType, canvasBgColor, canvasGradientFrom, canvasGradientTo, canvasGradientAngle]);
+
+  // Initialize carousel mode
+  React.useEffect(() => {
+    if (isCarouselMode && carouselSlides.length === 0) {
+      // Create first slide with current canvas state
+      const initialSlide: CarouselSlide = {
+        id: `slide-${Date.now()}`,
+        layers: [...layers],
+        bgType: canvasBgType,
+        bgColor: canvasBgColor,
+        gradientFrom: canvasGradientFrom,
+        gradientTo: canvasGradientTo,
+        gradientAngle: canvasGradientAngle,
+      };
+      setCarouselSlides([initialSlide]);
+      setCurrentSlideIndex(0);
+    }
+  }, [isCarouselMode]);
+
+  // Save current slide state when layers or background change
+  React.useEffect(() => {
+    if (isCarouselMode && carouselSlides.length > 0 && currentSlideIndex < carouselSlides.length) {
+      const updatedSlides = [...carouselSlides];
+      updatedSlides[currentSlideIndex] = {
+        ...updatedSlides[currentSlideIndex],
+        layers,
+        bgType: canvasBgType,
+        bgColor: canvasBgColor,
+        gradientFrom: canvasGradientFrom,
+        gradientTo: canvasGradientTo,
+        gradientAngle: canvasGradientAngle,
+      };
+      setCarouselSlides(updatedSlides);
+    }
+  }, [layers, canvasBgType, canvasBgColor, canvasGradientFrom, canvasGradientTo, canvasGradientAngle]);
+
+  // Inline text editing handlers
+  const handleStartTextEdit = React.useCallback((layerId: string) => {
+    const layer = layers.find((l) => l.id === layerId);
+    if (!layer || layer.type !== "text" || layer.locked) return;
+
+    const textLayer = layer as TextLayer;
+    setEditingTextLayerId(layerId);
+    setEditingTextValue(textLayer.content);
+    // Focus the textarea after state update
+    setTimeout(() => {
+      textEditRef.current?.focus();
+      textEditRef.current?.select();
+    }, 0);
+  }, [layers]);
+
+  const handleCommitTextEdit = React.useCallback(() => {
+    if (!editingTextLayerId) return;
+
+    // Update the layer with the new text
+    if (editingTextValue.trim()) {
+      handleUpdateLayer(editingTextLayerId, { content: editingTextValue } as Partial<TextLayer>);
+    }
+
+    // Clear editing state
+    setEditingTextLayerId(null);
+    setEditingTextValue("");
+  }, [editingTextLayerId, editingTextValue, handleUpdateLayer]);
+
+  const handleCancelTextEdit = React.useCallback(() => {
+    setEditingTextLayerId(null);
+    setEditingTextValue("");
   }, []);
 
   // Drag-and-drop state
@@ -1206,9 +1485,15 @@ export function PostComposer() {
         return;
       }
 
-      // Escape - Deselect layer(s)
+      // Escape - Cancel text editing or deselect layer(s)
       if (e.key === "Escape") {
         e.preventDefault();
+        // If editing text, cancel the edit
+        if (editingTextLayerId) {
+          handleCancelTextEdit();
+          return;
+        }
+        // Otherwise deselect layers
         setSelectedLayerId(null);
         setSelectedLayerIds(new Set());
         return;
@@ -1395,6 +1680,8 @@ export function PostComposer() {
     handleGroupLayers,
     handleUngroupLayers,
     copiedStyle,
+    editingTextLayerId,
+    handleCancelTextEdit,
   ]);
 
   // Resize handles component for selected layers
@@ -1475,6 +1762,7 @@ export function PostComposer() {
     switch (layer.type) {
       case "text": {
         const textLayer = layer as TextLayer;
+        const isEditingThis = editingTextLayerId === layer.id;
         return (
           <div
             key={layer.id}
@@ -1487,21 +1775,66 @@ export function PostComposer() {
               textAlign: textLayer.textAlign,
               lineHeight: textLayer.lineHeight,
               display: "flex",
-              alignItems: "center",
+              alignItems: isEditingThis ? "stretch" : "center",
               justifyContent: textLayer.textAlign === "center" ? "center" : textLayer.textAlign === "right" ? "flex-end" : "flex-start",
-              cursor: layer.locked ? "not-allowed" : isDragging && dragLayerId === layer.id ? "grabbing" : "grab",
+              cursor: isEditingThis ? "text" : layer.locked ? "not-allowed" : isDragging && dragLayerId === layer.id ? "grabbing" : "grab",
             }}
             className={cn(
-              "select-none whitespace-pre-wrap transition-shadow",
+              "whitespace-pre-wrap transition-shadow",
+              !isEditingThis && "select-none",
               isSelected && "ring-2 ring-[var(--primary)] ring-offset-1",
               isMultiSelected && !isSelected && "ring-2 ring-[var(--ai)] ring-offset-1",
               isPrimarySelection && "ring-2 ring-[var(--primary)] ring-offset-2",
               isDragging && dragLayerId === layer.id && "opacity-90 shadow-lg"
             )}
-            onMouseDown={(e) => handleLayerMouseDown(e, layer.id)}
+            onMouseDown={(e) => {
+              if (!isEditingThis) {
+                handleLayerMouseDown(e, layer.id);
+              }
+            }}
+            onDoubleClick={(e) => {
+              e.stopPropagation();
+              if (!layer.locked) {
+                handleStartTextEdit(layer.id);
+              }
+            }}
           >
-            {textLayer.content}
-            {renderResizeHandles(layer.id, layer.locked)}
+            {isEditingThis ? (
+              <textarea
+                ref={textEditRef}
+                value={editingTextValue}
+                onChange={(e) => setEditingTextValue(e.target.value)}
+                onBlur={handleCommitTextEdit}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleCommitTextEdit();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    handleCancelTextEdit();
+                  }
+                }}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  resize: "none",
+                  padding: 0,
+                  margin: 0,
+                  font: "inherit",
+                  color: "inherit",
+                  textAlign: textLayer.textAlign as React.CSSProperties["textAlign"],
+                  lineHeight: textLayer.lineHeight,
+                  overflow: "hidden",
+                }}
+                className="focus:outline-none"
+              />
+            ) : (
+              textLayer.content
+            )}
+            {!isEditingThis && renderResizeHandles(layer.id, layer.locked)}
             {renderLockBadge(layer.locked)}
           </div>
         );
@@ -1974,6 +2307,9 @@ export function PostComposer() {
             timestamp="2 hours ago"
             hashtags={hashtags}
             isVerified={true}
+            slideCount={isCarouselMode ? carouselSlides.length : 1}
+            currentSlide={currentSlideIndex}
+            onSlideChange={handleGoToSlide}
           >
             {content}
           </InstagramPreview>
@@ -2079,7 +2415,7 @@ export function PostComposer() {
           </div>
         );
     }
-  }, [selectedPlatform, selectedFormat, caption, engagement, hashtags, platformConfig.name, renderContent]);
+  }, [selectedPlatform, selectedFormat, caption, engagement, hashtags, platformConfig.name, renderContent, isCarouselMode, carouselSlides.length, currentSlideIndex, handleGoToSlide]);
 
   return (
     <div className="post-composer flex flex-col h-[calc(100vh-64px)]">
@@ -2147,6 +2483,18 @@ export function PostComposer() {
               <span className="hidden md:inline">Save</span>
             </button>
 
+            {/* Save as Template */}
+            <button
+              onClick={() => setShowSaveTemplateModal(true)}
+              disabled={layers.length === 0}
+              className="hidden sm:flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--background)] px-2 sm:px-3 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--background-hover)] disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+              aria-label="Save as template"
+              title="Save composition as reusable template"
+            >
+              <LayoutTemplate className="h-4 w-4" aria-hidden="true" />
+              <span className="hidden lg:inline">Template</span>
+            </button>
+
             {/* Load saved composition dropdown */}
             {savedCompositions.length > 0 && (
               <div className="relative hidden sm:block">
@@ -2187,6 +2535,16 @@ export function PostComposer() {
             >
               <Download className="h-4 w-4" aria-hidden="true" />
               <span className="hidden sm:inline">Export PNG</span>
+            </button>
+            <button
+              onClick={() => setShowBatchExportModal(true)}
+              disabled={layers.length === 0}
+              className="hidden sm:flex items-center gap-2 rounded-lg border border-[var(--primary)] bg-transparent px-3 py-2 text-sm font-medium text-[var(--primary)] hover:bg-[var(--primary)]/10 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+              aria-label="Batch export to multiple platforms"
+              title="Export to multiple platforms as ZIP"
+            >
+              <FileArchive className="h-4 w-4" aria-hidden="true" />
+              <span className="hidden lg:inline">Batch</span>
             </button>
           </div>
         </div>
@@ -2520,8 +2878,8 @@ export function PostComposer() {
           )}
 
           {/* Preview Area */}
-          <div className="flex-1 overflow-auto p-4 sm:p-6 bg-[var(--background)]">
-            <div className="flex justify-center">
+          <div className="flex-1 overflow-auto p-4 sm:p-6 bg-[var(--background)] flex flex-col">
+            <div className="flex-1 flex justify-center items-center">
               <div
                 ref={previewRef}
                 className="inline-block max-w-full transition-transform origin-center"
@@ -2530,6 +2888,99 @@ export function PostComposer() {
                 {renderPreview()}
               </div>
             </div>
+
+            {/* Carousel Navigation */}
+            {isCarouselMode && carouselSlides.length > 0 && (
+              <div className="flex-shrink-0 mt-4 flex flex-col items-center gap-3">
+                {/* Slide thumbnails */}
+                <div className="flex items-center gap-2 p-2 rounded-xl bg-[var(--card)] border border-[var(--card-border)]">
+                  <button
+                    onClick={() => handleGoToSlide(Math.max(0, currentSlideIndex - 1))}
+                    disabled={currentSlideIndex === 0}
+                    className="p-1.5 rounded-lg text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                    aria-label="Previous slide"
+                  >
+                    <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                  </button>
+
+                  <div className="flex items-center gap-1.5">
+                    {carouselSlides.map((slide, index) => (
+                      <button
+                        key={slide.id}
+                        onClick={() => handleGoToSlide(index)}
+                        className={cn(
+                          "relative group rounded-lg overflow-hidden transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
+                          index === currentSlideIndex
+                            ? "ring-2 ring-[var(--primary)] ring-offset-2 ring-offset-[var(--card)]"
+                            : "opacity-60 hover:opacity-100"
+                        )}
+                        aria-label={`Go to slide ${index + 1}`}
+                        aria-current={index === currentSlideIndex ? "true" : undefined}
+                      >
+                        {/* Slide thumbnail */}
+                        <div
+                          className="w-12 h-12 flex items-center justify-center text-xs font-medium"
+                          style={{
+                            background: slide.bgType === "gradient"
+                              ? `linear-gradient(${slide.gradientAngle}deg, ${slide.gradientFrom}, ${slide.gradientTo})`
+                              : slide.bgColor,
+                          }}
+                        >
+                          <span className="text-white/80">{index + 1}</span>
+                        </div>
+                        {/* Delete button on hover (not for first slide if it's the only one) */}
+                        {carouselSlides.length > 1 && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteSlide(index);
+                            }}
+                            className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity"
+                            aria-label={`Delete slide ${index + 1}`}
+                          >
+                            <Trash2 className="h-3 w-3 text-white" aria-hidden="true" />
+                          </button>
+                        )}
+                      </button>
+                    ))}
+
+                    {/* Add slide button */}
+                    {carouselSlides.length < 10 && (
+                      <button
+                        onClick={handleAddSlide}
+                        className="w-12 h-12 rounded-lg border-2 border-dashed border-[var(--border)] text-[var(--foreground-muted)] hover:border-[var(--primary)] hover:text-[var(--primary)] flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                        aria-label="Add new slide"
+                      >
+                        <Plus className="h-4 w-4" aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => handleGoToSlide(Math.min(carouselSlides.length - 1, currentSlideIndex + 1))}
+                    disabled={currentSlideIndex === carouselSlides.length - 1}
+                    className="p-1.5 rounded-lg text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--background-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                    aria-label="Next slide"
+                  >
+                    <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                </div>
+
+                {/* Slide info and actions */}
+                <div className="flex items-center gap-4 text-xs text-[var(--foreground-muted)]">
+                  <span>
+                    Slide {currentSlideIndex + 1} of {carouselSlides.length}
+                  </span>
+                  <button
+                    onClick={() => handleDuplicateSlide(currentSlideIndex)}
+                    className="flex items-center gap-1 hover:text-[var(--foreground)] transition-colors focus:outline-none focus-visible:underline"
+                  >
+                    <CopyIcon className="h-3 w-3" aria-hidden="true" />
+                    Duplicate slide
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </main>
 
@@ -3090,6 +3541,25 @@ export function PostComposer() {
           />
         )}
       </div>
+
+      {/* Save as Template Modal */}
+      <SaveTemplateModal
+        isOpen={showSaveTemplateModal}
+        onClose={() => setShowSaveTemplateModal(false)}
+        onSave={handleSaveAsTemplate}
+        currentPlatform={selectedPlatform}
+        currentFormat={selectedFormat}
+        currentCaption={caption}
+        currentLayout={getCurrentTemplateLayout()}
+      />
+
+      {/* Batch Export Modal */}
+      <BatchExportModal
+        isOpen={showBatchExportModal}
+        onClose={() => setShowBatchExportModal(false)}
+        canvasRef={previewRef}
+        compositionName="social-post"
+      />
     </div>
   );
 }

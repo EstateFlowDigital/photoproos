@@ -8,6 +8,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Marketing Studio: Save as Template** - Create reusable templates from compositions:
+  - "Save as Template" button in composer toolbar
+  - Modal with template name, description, category, and tags
+  - Platform selection (multi-select)
+  - Templates saved to localStorage as custom templates
+  - Custom templates appear in Template Library with "Custom" badge
+  - "My Templates" section at top of Template Library
+  - Delete button for custom templates (with confirmation)
+  - Custom templates searchable and filterable like built-in templates
+
+- **Marketing Studio: Batch Export** - Export compositions to multiple platforms at once:
+  - "Batch" button in composer toolbar opens batch export modal
+  - Select multiple platform/format combinations (Instagram Feed, Story, LinkedIn Post, etc.)
+  - Platform icons with grouped format selection
+  - "Select All" and "Select None" quick actions
+  - Per-platform select/deselect all buttons
+  - Progress bar with current format indicator during export
+  - Exports rendered at target dimensions (e.g., 1080x1080 for Instagram Feed)
+  - All exports bundled into a single ZIP file download
+  - Uses JSZip for ZIP generation and html2canvas for rendering
+
+- **Marketing Studio: Inline Text Editing** - Edit text directly on the canvas:
+  - Double-click any text layer to edit inline
+  - Text appears in a seamless textarea matching the layer styling
+  - Press Enter to save changes (Shift+Enter for newline)
+  - Press Escape to cancel editing
+  - Click outside to save changes
+  - Locked layers cannot be edited
+  - Respects font family, size, weight, color, alignment, and line height
+  - Resize handles hidden during editing for cleaner experience
+
+- **Marketing Studio: Enhanced Hub** - Improved landing page with quick workflows:
+  - Quick Workflows section with 4 shortcut cards:
+    - "Quick Story" - Jump to story format composer
+    - "Quote Graphic" - Browse testimonial templates
+    - "Carousel Post" - Create multi-image carousel
+    - "Before & After" - Editing transformation templates
+  - Recent Drafts section showing saved compositions:
+    - Thumbnail preview with platform badge
+    - Edit and Delete actions on hover
+    - Auto-loads from localStorage
+    - Shows most recent 4 drafts
+
+- **Marketing Studio: Carousel/Multi-Image Support** - Create multi-slide Instagram carousels:
+  - Carousel mode activates when selecting "carousel" format
+  - Each slide has independent layers and background settings
+  - Slide navigation bar below canvas with thumbnails
+  - Add up to 10 slides per carousel
+  - Delete slides (minimum 1 required)
+  - Duplicate slides with all layers
+  - Navigate slides with left/right arrow buttons
+  - Current slide indicator shows progress
+  - Instagram preview shows carousel dots and navigation arrows
+  - Slide state preserved when switching between slides
+
 - **Marketing Studio: Template to Editable Layers** - Templates now convert to fully editable layers:
   - Clicking a template in the Template Library creates editable layer objects
   - Template elements (text, images, shapes, logos) become draggable/resizable layers
@@ -72,6 +127,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Usage examples and code snippets
     - Accessibility and browser support notes
 
+- **Marketing CMS Phase 13: Page Analytics** - Traffic, engagement, and conversion tracking:
+  - **CMSPageAnalytics, CMSPageEvent & CMSVisitorSession Tables** (Prisma schema):
+    - `CMSPageAnalytics` model for daily aggregated metrics per page
+    - `CMSPageEvent` model for individual tracking events
+    - `CMSVisitorSession` model for session tracking
+    - `CMSPageEventType` enum with 14 event types (pageview, scroll_depth, time_on_page, cta_click, link_click, form_start, form_submit, video_play, video_complete, download, share, copy, search, error)
+    - Metrics: pageviews, unique visitors, avg time on page, bounce rate, scroll depth
+    - Conversion tracking: CTA clicks, signup clicks, conversions
+    - Traffic source breakdown (direct, organic, referral, social, email)
+    - Device/browser/country breakdowns
+    - UTM parameter tracking for marketing attribution
+  - **Analytics Utility Functions** (`src/lib/cms/analytics.ts`):
+    - `trackEvent()` - Record individual page events
+    - `upsertSession()` - Create/update visitor sessions
+    - `endSession()` - Mark session completion with duration
+    - `markConversion()` - Track conversion events
+    - `aggregateDailyAnalytics()` - Aggregate events into daily summaries
+    - `getPageAnalytics()` - Fetch analytics for specific page
+    - `getAnalyticsSummary()` - Cross-page analytics summary
+    - `getRealTimeVisitors()` - Count active visitors (5-minute window)
+    - `getRecentEvents()` - Recent events for a page
+    - `cleanupOldEvents()` - Remove events older than 90 days
+    - `cleanupOldSessions()` - Remove sessions older than 30 days
+  - **Analytics Utility Helpers** (`src/lib/cms/analytics-utils.ts`):
+    - `parseUserAgent()` - Extract device, browser, OS from user agent
+    - `parseReferrer()` - Categorize referrer sources (google, social, etc.)
+    - `generateVisitorId()` / `generateSessionId()` - Create unique IDs
+  - **Analytics API Route** (`src/app/api/cms/analytics/route.ts`):
+    - POST endpoint for event collection
+    - Handles: event, session_start, session_end, conversion types
+    - Parses user agent and geolocation from headers
+    - Country detection via Vercel/Cloudflare headers
+    - CORS preflight support
+  - **Analytics Server Actions** (`src/lib/actions/cms-analytics.ts`):
+    - `getPageAnalyticsData()` - Page analytics with date range
+    - `getAnalyticsSummaryData()` - Overall site analytics
+    - `getRealTimeVisitorCount()` - Active visitor count
+    - `getPageRecentEvents()` - Recent events for a page
+    - `getTopPages()` - Top pages by pageviews
+    - `getTrafficSources()` - Traffic source breakdown
+    - `getDeviceBreakdown()` - Device type distribution
+    - `getCountryBreakdown()` - Geographic distribution
+    - `getConversionFunnel()` - Funnel visualization data
+    - `getDailyTrend()` - Daily pageview/visitor trends
+    - `triggerAggregation()` - Manual aggregation trigger
+    - `cleanupAnalyticsData()` - Maintenance action
+    - `getAnalyticsDashboardData()` - All-in-one dashboard data
+  - **PageAnalyticsDashboard Component** (`src/components/cms/page-analytics.tsx`):
+    - `PageAnalyticsDashboard` - Full analytics dashboard with all metrics
+    - `PageAnalyticsView` - Simplified view for individual pages
+    - `AnalyticsBadge` - Compact visitor count indicator
+    - `MetricCard` - Individual metric cards with change indicators
+    - `SimpleLineChart` - SVG-based line chart for trends
+    - `HorizontalBarChart` - SVG bar charts for breakdowns
+    - `FunnelChart` - Conversion funnel visualization
+    - Real-time visitor count with 30-second refresh
+    - Date range selector (7/30/90 days)
+    - Traffic sources pie chart
+    - Device breakdown visualization
+    - Top pages ranking
+  - **Client-Side Analytics Tracker** (`src/components/cms/analytics-tracker.tsx`):
+    - `AnalyticsTracker` - Drop-in component for automatic tracking
+    - `useAnalytics` hook - Manual event tracking API
+    - Visitor ID persistence in localStorage
+    - Session ID management in sessionStorage
+    - 30-minute session timeout
+    - UTM parameter extraction from URL
+    - Scroll depth milestone tracking (25%, 50%, 75%, 100%)
+    - Time on page tracking with visibility API
+    - CTA click tracking via data-cta attributes
+    - Link click tracking (optional)
+    - `navigator.sendBeacon()` for reliable page unload tracking
+    - Convenience methods: `trackVideoPlay()`, `trackVideoComplete()`, `trackFormStart()`, `trackFormSubmit()`, `trackShare()`, `trackDownload()`, `trackConversion()`
+  - **CMS Index Exports** - All analytics components exported from `src/components/cms/index.ts`
+
 - **Marketing CMS Phase 10: Webhooks** - External integrations via webhooks:
   - **CMSWebhook & CMSWebhookLog Tables** (Prisma schema):
     - `CMSWebhook` model for webhook configuration (name, URL, secret, events, headers)
@@ -129,6 +259,135 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `updateFAQ()` → `faq_updated` webhook
     - `deleteFAQ()` → `faq_deleted` webhook
     - `respondToApproval()` → `content_approved` or `content_rejected` webhook
+
+- **Marketing CMS Phase 12: Component Page Builder** - Drag-and-drop page construction:
+  - **CMSComponent Table & Enums** (Prisma schema):
+    - `CMSComponent` model for reusable page building blocks
+    - `CMSComponentType` enum with 21 component types (hero, features_grid, testimonials, faq_accordion, cta_section, stats_metrics, pricing_table, team_grid, logo_cloud, image_gallery, text_block, video_embed, comparison_table, timeline, cards_grid, contact_form, newsletter_signup, social_proof, benefits_list, custom)
+    - `CMSComponentCategory` enum (hero, content, social, conversion, navigation, data, custom)
+    - `PageLayoutMode` enum (structured, components) for MarketingPage
+    - `layoutMode` and `components` fields added to MarketingPage
+    - Component schema JSON field for dynamic field definitions
+    - Default content JSON with sensible defaults per component type
+    - Usage tracking with `usageCount` field
+  - **Component Library Utilities** (`src/lib/cms/page-builder.ts`):
+    - `ComponentFieldType` - 16 field types (text, textarea, richtext, number, url, email, image, video, icon, color, select, multiselect, toggle, date, array, object)
+    - `ComponentField` interface for field schema definitions
+    - `ComponentSchema` with validation rules (required, min/max, pattern)
+    - `PageComponentInstance` interface for component instances on pages
+    - `COMPONENT_SCHEMAS` - Pre-defined schemas for all 21 component types
+    - `DEFAULT_COMPONENT_CONTENT` - Default content for each type
+    - `COMPONENT_CATEGORIES` - Category metadata with labels
+    - `generateComponentId()` - Create unique instance IDs
+    - `createComponentInstance()` - Create instances with defaults
+    - `reorderComponents()`, `insertComponent()`, `removeComponent()` - List manipulation
+    - `duplicateComponent()` - Clone component instances
+    - `updateComponentContent()` - Update instance content
+    - `validateComponentContent()` - Validate against schema
+    - `getComponents()`, `getComponentBySlug()`, `getComponentsByCategory()` - Database queries
+    - `seedDefaultComponents()` - Initialize default components
+  - **Page Builder Server Actions** (`src/lib/actions/cms-page-builder.ts`):
+    - Component library CRUD: `getCMSComponents()`, `getCMSComponent()`, `getCMSComponentBySlug()`, `createCMSComponent()`, `updateCMSComponent()`, `deleteCMSComponent()`
+    - Page builder operations: `getPageForBuilder()`, `updatePageComponents()`
+    - Component manipulation: `addComponentToPage()`, `removeComponentFromPage()`, `reorderPageComponents()`, `duplicateComponentInstance()`
+    - `updateComponentInstanceContent()` - Update instance content
+    - `setPageLayoutMode()` - Switch between structured/components mode
+    - `seedDefaultComponents()` - Setup action for initial components
+    - `getComponentStats()` - Dashboard statistics
+  - **ComponentLibrary Component** (`src/components/cms/component-library.tsx`):
+    - Sidebar component library with search
+    - Category grouping with expand/collapse
+    - Component cards with name, description, icon
+    - Drag-and-drop support for adding to canvas
+    - Category icons with color coding
+    - Loading skeleton and empty states
+  - **PageBuilder Component** (`src/components/cms/page-builder.tsx`):
+    - Three-panel layout (library, canvas, editor)
+    - Drag-and-drop canvas for component arrangement
+    - `CanvasComponent` - Draggable component cards with actions
+    - Move up/down, duplicate, edit, delete actions
+    - `ComponentPreview` - Visual preview per component type
+    - `DropZone` - Target area for dropping components
+    - Real-time save with pending indicator
+    - Error display with dismiss option
+  - **ComponentEditor Component** (`src/components/cms/component-editor.tsx`):
+    - Dynamic field editor based on schema
+    - Field type editors: text, textarea, richtext, number, url, email, image, select, toggle, icon, color
+    - `ArrayFieldEditor` - Edit arrays of items with add/remove/reorder
+    - Expand/collapse items in arrays
+    - Auto-save with debouncing (500ms)
+    - Field icons for visual clarity
+    - Help text and required field indicators
+  - **Component Renderers** (`src/components/cms/component-renderers.tsx`):
+    - `ComponentRenderer` - Dispatcher for all component types
+    - `PageRenderer` - Render all components on a page
+    - `HeroRenderer` - Hero sections with headline, subheadline, CTAs
+    - `FeaturesGridRenderer` - Feature cards in grid layout
+    - `TestimonialsRenderer` - Testimonial carousel with ratings
+    - `FAQAccordionRenderer` - Expandable FAQ sections
+    - `CTASectionRenderer` - CTA blocks with multiple styles
+    - `StatsMetricsRenderer` - Statistics with prefix/suffix
+    - `TextBlockRenderer` - Rich text with max-width options
+    - `VideoEmbedRenderer` - YouTube/Vimeo embeds
+    - `LogoCloudRenderer` - Partner logo display
+    - `CardsGridRenderer` - Generic card grids
+  - **CMS Index Exports** - All new components exported from `src/components/cms/index.ts`
+
+- **Marketing CMS Phase 11: Media Library** - Asset management and organization:
+  - **MediaFolder & MediaAsset Tables** (Prisma schema):
+    - `MediaFolder` model with hierarchical structure (parent/children relations)
+    - `MediaAsset` model for file metadata (filename, mimeType, size, dimensions)
+    - `MediaAssetType` enum (image, video, audio, document, archive, other)
+    - Storage provider abstraction (local, S3, Cloudinary, UploadThing)
+    - Image variants (thumbnail, medium, large) with blurhash placeholders
+    - Usage tracking with `usedIn` JSON field
+    - Tags, favorites, and public/private visibility
+    - EXIF data storage for images
+  - **Media Utility Functions** (`src/lib/cms/media.ts`):
+    - `getAssetType()` - Determine type from MIME type
+    - `generateFilename()` - Create unique filenames
+    - `formatFileSize()` - Human-readable file sizes
+    - `isSupportedType()` - Validate file types
+    - `getFolderPath()` - Get breadcrumb path to folder
+    - `getFolderTree()` - Build hierarchical folder tree
+    - `searchAssets()` - Filter and search assets
+    - `getMediaStats()` - Library statistics
+    - `trackAssetUsage()` / `removeAssetUsage()` - Usage tracking
+    - Supported types: images, videos, audio, documents, archives
+  - **Media Server Actions** (`src/lib/actions/cms-media.ts`):
+    - Folder CRUD: `createMediaFolder()`, `updateMediaFolder()`, `deleteMediaFolder()`
+    - Asset CRUD: `createMediaAsset()`, `updateMediaAsset()`, `deleteMediaAsset()`
+    - Bulk operations: `deleteMediaAssets()`, `moveMediaAssets()`
+    - Tag management: `addMediaTags()`, `removeMediaTags()`, `getAllMediaTags()`
+    - `toggleMediaFavorite()` - Star/unstar assets
+    - `getMediaStatistics()` - Dashboard stats
+  - **MediaLibrary Component** (`src/components/cms/media-library.tsx`):
+    - Full browser with folder navigation
+    - Grid and list view modes
+    - Search with query input
+    - Type filter (images, videos, audio, documents, archives)
+    - Favorites filter toggle
+    - Sort by date, name, size, usage
+    - Multi-select with bulk actions
+    - Asset cards with thumbnail preview
+    - External link and delete actions
+    - Storage usage display
+  - **MediaUploader Component** (`src/components/cms/media-uploader.tsx`):
+    - Drag and drop file zone
+    - Click to browse files
+    - File validation (size, type)
+    - Upload progress indicators
+    - Success/error status per file
+    - Batch upload support
+    - `MediaUploadButton` - Compact upload trigger
+  - **MediaPicker Component** (`src/components/cms/media-picker.tsx`):
+    - Modal for selecting assets
+    - Browse and Upload tabs
+    - Single or multiple selection modes
+    - Type filtering (accept specific types)
+    - `MediaField` - Form field with picker integration
+    - `MediaPreview` - Display selected media
+    - `MediaBadge` - Compact asset count indicator
 
 - **Marketing CMS Phase 9: AI Content Generation** - AI-powered content suggestions:
   - **AI Generation API** (`/api/cms/ai/generate/route.ts`):
@@ -644,6 +903,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Milestones (2 templates)
 
 ### Fixed
+- **CMS Media Uploader Build Error** - Fixed client component importing server-side database code:
+  - Split `@/lib/cms/media.ts` utilities into client-safe `@/lib/cms/media-constants.ts`
+  - Constants (`MAX_FILE_SIZE`, `SUPPORTED_*_TYPES`) and utilities (`formatFileSize`, `isSupportedType`, `getAssetType`) moved to new file
+  - Updated `media-uploader.tsx` and `media-library.tsx` to import from `media-constants.ts`
+  - Resolves "Cannot resolve 'fs'", "Cannot resolve 'net'" errors from pg library in client bundle
+
 - **CMS Webhooks Build Errors** - Fixed module resolution and server action issues:
   - Changed import path from `@/lib/actions/result` to `@/lib/types/action-result` in `cms-webhooks.ts`
   - Made `verifyWebhookSignature` function async to comply with server action requirements

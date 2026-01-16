@@ -16,6 +16,9 @@ import {
 interface Props extends InstagramPreviewProps {
   className?: string;
   children?: React.ReactNode; // For mockup content
+  slideCount?: number; // For carousel mode
+  currentSlide?: number; // Current slide index (0-based)
+  onSlideChange?: (index: number) => void; // Callback when slide changes
 }
 
 export function InstagramPreview({
@@ -31,6 +34,9 @@ export function InstagramPreview({
   isVerified,
   className,
   children,
+  slideCount = 1,
+  currentSlide = 0,
+  onSlideChange,
 }: Props) {
   const [isLiked, setIsLiked] = React.useState(false);
   const [isSaved, setIsSaved] = React.useState(false);
@@ -170,6 +176,50 @@ export function InstagramPreview({
         ) : (
           <div className="h-full w-full flex items-center justify-center bg-gray-50">
             <span className="text-gray-400 text-sm">Add content</span>
+          </div>
+        )}
+
+        {/* Carousel Navigation Arrows */}
+        {slideCount > 1 && (
+          <>
+            {currentSlide > 0 && (
+              <button
+                onClick={() => onSlideChange?.(currentSlide - 1)}
+                className="absolute left-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-white/90 shadow-lg flex items-center justify-center hover:bg-white transition-colors"
+                aria-label="Previous slide"
+              >
+                <ChevronLeft className="h-4 w-4 text-gray-700" />
+              </button>
+            )}
+            {currentSlide < slideCount - 1 && (
+              <button
+                onClick={() => onSlideChange?.(currentSlide + 1)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-white/90 shadow-lg flex items-center justify-center hover:bg-white transition-colors"
+                aria-label="Next slide"
+              >
+                <ChevronRight className="h-4 w-4 text-gray-700" />
+              </button>
+            )}
+          </>
+        )}
+
+        {/* Carousel Dots */}
+        {slideCount > 1 && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1">
+            {Array.from({ length: slideCount }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => onSlideChange?.(i)}
+                className={cn(
+                  "h-1.5 rounded-full transition-all",
+                  i === currentSlide
+                    ? "w-1.5 bg-blue-500"
+                    : "w-1.5 bg-gray-400/50 hover:bg-gray-400"
+                )}
+                aria-label={`Go to slide ${i + 1}`}
+                aria-current={i === currentSlide ? "true" : undefined}
+              />
+            ))}
           </div>
         )}
       </div>

@@ -17,6 +17,12 @@ import {
   Sparkles,
   Clock,
   Target,
+  Smartphone,
+  Quote,
+  Columns,
+  FileImage,
+  Edit3,
+  Trash2,
 } from "lucide-react";
 import { PLATFORM_LIST } from "@/lib/marketing-studio/platforms";
 
@@ -65,6 +71,86 @@ const QUICK_ACTIONS = [
   },
 ];
 
+// Workflow shortcuts for common tasks
+const WORKFLOW_SHORTCUTS = [
+  {
+    id: "story",
+    title: "Quick Story",
+    description: "Create a vertical story for Instagram/Facebook",
+    icon: Smartphone,
+    href: "/super-admin/marketing-studio/composer?platform=instagram&format=story",
+    color: "#E4405F",
+  },
+  {
+    id: "quote",
+    title: "Quote Graphic",
+    description: "Create a testimonial or quote post",
+    icon: Quote,
+    href: "/super-admin/marketing-studio/templates?category=testimonial",
+    color: "#8b5cf6",
+  },
+  {
+    id: "carousel",
+    title: "Carousel Post",
+    description: "Create a multi-image carousel",
+    icon: Columns,
+    href: "/super-admin/marketing-studio/composer?format=carousel",
+    color: "#f97316",
+  },
+  {
+    id: "before-after",
+    title: "Before & After",
+    description: "Showcase editing transformations",
+    icon: FileImage,
+    href: "/super-admin/marketing-studio/templates?category=before-after",
+    color: "#22c55e",
+  },
+];
+
+// Storage key for saved compositions
+const SAVED_COMPOSITIONS_KEY = "photoproos-saved-compositions";
+
+interface SavedComposition {
+  id: string;
+  name: string;
+  platform: string;
+  format: string;
+  updatedAt: string;
+  thumbnail?: string;
+}
+
+// Get saved compositions from localStorage
+function getSavedCompositions(): SavedComposition[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem(SAVED_COMPOSITIONS_KEY);
+    if (!stored) return [];
+    const compositions = JSON.parse(stored);
+    // Return most recent 4 compositions
+    return compositions
+      .sort((a: SavedComposition, b: SavedComposition) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      )
+      .slice(0, 4);
+  } catch {
+    return [];
+  }
+}
+
+// Delete a saved composition
+function deleteSavedComposition(id: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const stored = localStorage.getItem(SAVED_COMPOSITIONS_KEY);
+    if (!stored) return;
+    const compositions = JSON.parse(stored);
+    const filtered = compositions.filter((c: SavedComposition) => c.id !== id);
+    localStorage.setItem(SAVED_COMPOSITIONS_KEY, JSON.stringify(filtered));
+  } catch {
+    // Ignore errors
+  }
+}
+
 const PLATFORM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   instagram: Instagram,
   linkedin: Linkedin,
@@ -93,6 +179,21 @@ const FEATURES = [
 ];
 
 export function MarketingStudioHub() {
+  const [savedCompositions, setSavedCompositions] = React.useState<SavedComposition[]>([]);
+
+  // Load saved compositions on mount
+  React.useEffect(() => {
+    setSavedCompositions(getSavedCompositions());
+  }, []);
+
+  // Handle delete composition
+  const handleDeleteComposition = React.useCallback((id: string, name: string) => {
+    if (window.confirm(`Delete "${name}"? This cannot be undone.`)) {
+      deleteSavedComposition(id);
+      setSavedCompositions(getSavedCompositions());
+    }
+  }, []);
+
   return (
     <div className="marketing-studio-hub space-y-6 sm:space-y-8">
       {/* Quick Actions */}
@@ -135,6 +236,123 @@ export function MarketingStudioHub() {
           ))}
         </div>
       </section>
+
+      {/* Workflow Shortcuts */}
+      <section data-element="workflow-shortcuts" aria-labelledby="workflow-shortcuts-heading">
+        <h2
+          id="workflow-shortcuts-heading"
+          className="text-sm font-semibold text-[var(--foreground-muted)] uppercase tracking-wider mb-4"
+        >
+          Quick Workflows
+        </h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {WORKFLOW_SHORTCUTS.map((shortcut) => (
+            <Link
+              key={shortcut.id}
+              href={shortcut.href}
+              className="group flex items-center gap-3 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-3 hover:border-[var(--border-hover)] hover:shadow-md transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+              aria-label={`${shortcut.title}: ${shortcut.description}`}
+            >
+              <div
+                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg"
+                style={{ backgroundColor: `${shortcut.color}15` }}
+              >
+                <shortcut.icon className="h-4 w-4" style={{ color: shortcut.color }} aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-sm font-medium text-[var(--foreground)] truncate">
+                  {shortcut.title}
+                </h3>
+                <p className="text-xs text-[var(--foreground-muted)] truncate">
+                  {shortcut.description}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Recent Drafts */}
+      {savedCompositions.length > 0 && (
+        <section data-element="recent-drafts" aria-labelledby="recent-drafts-heading">
+          <div className="flex items-center justify-between mb-4">
+            <h2
+              id="recent-drafts-heading"
+              className="text-sm font-semibold text-[var(--foreground-muted)] uppercase tracking-wider"
+            >
+              Recent Drafts
+            </h2>
+            <Link
+              href="/super-admin/marketing-studio/composer"
+              className="text-xs text-[var(--primary)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] rounded"
+            >
+              View all
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {savedCompositions.map((composition) => {
+              const platformIcon = PLATFORM_ICONS[composition.platform] || ImageIcon;
+              const PlatformIcon = platformIcon;
+              return (
+                <article
+                  key={composition.id}
+                  className="group relative flex flex-col rounded-lg border border-[var(--card-border)] bg-[var(--card)] overflow-hidden hover:border-[var(--border-hover)] transition-colors"
+                >
+                  {/* Thumbnail or placeholder */}
+                  <div className="aspect-video bg-[var(--background-hover)] flex items-center justify-center">
+                    {composition.thumbnail ? (
+                      <img
+                        src={composition.thumbnail}
+                        alt={composition.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <ImageIcon className="h-8 w-8 text-[var(--foreground-muted)]" aria-hidden="true" />
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <PlatformIcon className="h-3.5 w-3.5 text-[var(--foreground-muted)]" aria-hidden="true" />
+                      <span className="text-xs text-[var(--foreground-muted)] capitalize">
+                        {composition.platform} {composition.format}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-medium text-[var(--foreground)] truncate">
+                      {composition.name}
+                    </h3>
+                    <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                      {new Date(composition.updatedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  {/* Hover actions */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <Link
+                      href={`/super-admin/marketing-studio/composer?load=${composition.id}`}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-black text-xs font-medium hover:bg-gray-100 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                    >
+                      <Edit3 className="h-3.5 w-3.5" aria-hidden="true" />
+                      Edit
+                    </Link>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleDeleteComposition(composition.id, composition.name);
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-medium hover:bg-red-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                      Delete
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Supported Platforms */}
       <section data-element="platforms" aria-labelledby="platforms-heading">

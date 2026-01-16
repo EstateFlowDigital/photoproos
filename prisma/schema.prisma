@@ -10330,6 +10330,10 @@ model MarketingPage {
   scheduledPublishAt DateTime? // Future publish date
   scheduledBy        String?   // User ID who scheduled
 
+  // Component Page Builder
+  layoutMode PageLayoutMode @default(structured) // structured = JSON content, components = drag-drop builder
+  components Json?          // [{ id, componentId, content, order }] - Component instances for page builder
+
   // Admin tracking
   createdByUserId String? // Clerk user ID
   updatedByUserId String? // Last editor
@@ -10341,6 +10345,7 @@ model MarketingPage {
   @@index([pageType])
   @@index([status])
   @@index([scheduledPublishAt])
+  @@index([layoutMode])
 }
 
 // Marketing Page Version - Tracks content history for rollback
@@ -10724,4 +10729,460 @@ model FAQ {
   @@index([category])
   @@index([isVisible])
   @@index([sortOrder])
+}
+
+// ============================================================================
+// CMS MEDIA LIBRARY
+// ============================================================================
+
+// MediaFolder - Organize media assets into folders
+model MediaFolder {
+  id String @id @default(cuid())
+
+  name        String
+  description String?
+  slug        String   @unique // URL-friendly identifier
+  color       String?  // Folder color for visual organization
+
+  // Hierarchy
+  parentId String?
+  parent   MediaFolder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children MediaFolder[] @relation("FolderHierarchy")
+
+  // Contents
+  assets MediaAsset[]
+
+  // Metadata
+  createdBy     String?
+  createdByName String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parentId])
+  @@index([slug])
+}
+
+// MediaAsset - Individual media files
+model MediaAsset {
+  id String @id @default(cuid())
+
+  // File info
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int            // File size in bytes
+  type         MediaAssetType @default(image)
+
+  // Storage
+  url        String // Public URL
+  storageKey String // Storage provider key (S3, Cloudinary, etc.)
+  provider   String @default("local") // "local", "s3", "cloudinary", "uploadthing"
+
+  // Image-specific metadata
+  width       Int?
+  height      Int?
+  aspectRatio Float?
+  blurhash    String? // Blur hash for placeholder
+
+  // Variants (thumbnails, optimized versions)
+  thumbnailUrl String?
+  mediumUrl    String?
+  largeUrl     String?
+  variants     Json? // { "thumbnail": "url", "medium": "url", etc. }
+
+  // Organization
+  folderId String?
+  folder   MediaFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  tags     String[]     @default([])
+
+  // Metadata
+  title       String?
+  alt         String?  // Alt text for accessibility
+  caption     String?
+  description String?  @db.Text
+  credit      String?  // Photo credit/attribution
+
+  // EXIF data (for images)
+  exifData Json?
+
+  // Usage tracking
+  usageCount Int       @default(0) // How many times used in content
+  lastUsedAt DateTime?
+  usedIn     Json? // Array of { entityType, entityId, field }
+
+  // Admin tracking
+  uploadedBy     String?
+  uploadedByName String?
+
+  // Status
+  isPublic   Boolean @default(true)
+  isFavorite Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([folderId])
+  @@index([type])
+  @@index([mimeType])
+  @@index([tags])
+  @@index([isPublic])
+  @@index([isFavorite])
+  @@index([createdAt])
+  @@index([uploadedBy])
+}
+
+// Media asset type enum
+enum MediaAssetType {
+  image
+  video
+  audio
+  document
+  archive
+  other
+}
+
+// ============================================================================
+// PAGE BUILDER - Component-based Page Construction
+// ============================================================================
+
+// Page layout mode enum
+enum PageLayoutMode {
+  structured  // Traditional JSON content (legacy)
+  components  // Component-based drag-drop builder
+}
+
+// CMS Component - Reusable building blocks for pages
+model CMSComponent {
+  id          String @id @default(cuid())
+
+  // Identity
+  name        String        // Display name (e.g., "Hero Section")
+  slug        String @unique // Unique identifier (e.g., "hero", "features-grid")
+  description String?       // Description for component library
+
+  // Type and category
+  type        CMSComponentType
+  category    CMSComponentCategory @default(content)
+
+  // Schema for editable fields
+  // { fields: [{ name, label, type, required, default, options }] }
+  schema      Json
+
+  // Default content structure
+  defaultContent Json
+
+  // Visual
+  thumbnail   String?  // Preview image URL
+  icon        String?  // Icon name for library
+
+  // Ordering and visibility
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+
+  // Usage tracking
+  usageCount  Int      @default(0)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([type])
+  @@index([category])
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+// Component types enum
+enum CMSComponentType {
+  hero              // Hero sections with headline, subtext, CTA
+  features_grid     // Grid of feature cards
+  features_list     // List of features with icons
+  testimonials      // Customer quotes/testimonials
+  faq_accordion     // FAQ expandable sections
+  cta_section       // Call-to-action blocks
+  stats_metrics     // Statistics/metrics display
+  pricing_table     // Pricing tiers (pulls from plan-limits)
+  team_grid         // Team member grid
+  logo_cloud        // Partner/client logos
+  image_gallery     // Image gallery grid
+  text_block        // Rich text/markdown content
+  video_embed       // Video player embed
+  comparison_table  // Feature comparison tables
+  timeline          // Timeline/roadmap display
+  cards_grid        // Generic card grid
+  contact_form      // Contact form section
+  newsletter_signup // Newsletter signup form
+  social_proof      // Social proof section
+  benefits_list     // Benefits/value props list
+  custom            // Custom HTML/component
+}
+
+// Component category enum
+enum CMSComponentCategory {
+  hero        // Hero/banner sections
+  content     // Text and media content
+  social      // Testimonials, logos, social proof
+  conversion  // CTAs, forms, pricing
+  navigation  // Navigation elements
+  data        // Tables, comparisons, timelines
+  custom      // Custom components
+}
+
+// ============================================================================
+// PAGE ANALYTICS - Traffic and Engagement Tracking
+// ============================================================================
+
+// Daily aggregated analytics for marketing pages
+model CMSPageAnalytics {
+  id          String   @id @default(cuid())
+
+  // Reference
+  pageId      String
+  pageSlug    String   // Denormalized for quick queries
+
+  // Date (aggregated by day)
+  date        DateTime @db.Date
+
+  // Traffic metrics
+  pageviews       Int @default(0)
+  uniqueVisitors  Int @default(0)
+
+  // Engagement metrics
+  avgTimeOnPage   Float @default(0)  // seconds
+  bounceRate      Float @default(0)  // percentage (0-100)
+  avgScrollDepth  Float @default(0)  // percentage (0-100)
+
+  // Conversion metrics
+  ctaClicks       Int @default(0)
+  signupClicks    Int @default(0)
+  conversions     Int @default(0)
+
+  // Traffic sources breakdown
+  sources         Json? // { direct: n, google: n, bing: n, social: n, referral: n, email: n }
+
+  // Device breakdown
+  devices         Json? // { desktop: n, mobile: n, tablet: n }
+
+  // Browser breakdown
+  browsers        Json? // { chrome: n, safari: n, firefox: n, edge: n, other: n }
+
+  // Country breakdown (top 10)
+  countries       Json? // { US: n, UK: n, CA: n, ... }
+
+  // Entry/exit pages
+  entryCount      Int @default(0)   // Started session on this page
+  exitCount       Int @default(0)   // Ended session on this page
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([pageId, date])
+  @@index([pageSlug, date])
+  @@index([date])
+}
+
+// Individual page events for real-time tracking
+model CMSPageEvent {
+  id          String   @id @default(cuid())
+
+  // Reference
+  pageId      String
+  pageSlug    String   // Denormalized
+
+  // Event details
+  eventType   CMSPageEventType
+  eventData   Json?    // Additional event-specific data
+
+  // Visitor identification
+  visitorId   String   // Anonymous visitor ID (cookie-based)
+  sessionId   String   // Session ID
+
+  // Context
+  referrer    String?  // Referring URL
+  utmSource   String?  // UTM source
+  utmMedium   String?  // UTM medium
+  utmCampaign String?  // UTM campaign
+
+  // Device info
+  userAgent   String?
+  deviceType  String?  // desktop, mobile, tablet
+  browser     String?
+  os          String?
+  country     String?  // Country code from IP
+
+  // Timing
+  timestamp   DateTime @default(now())
+
+  @@index([pageId, timestamp])
+  @@index([pageSlug, timestamp])
+  @@index([eventType, timestamp])
+  @@index([visitorId])
+  @@index([sessionId])
+}
+
+// Event types for page analytics
+enum CMSPageEventType {
+  pageview           // Page was loaded
+  scroll_depth       // Scroll milestone reached (25%, 50%, 75%, 100%)
+  time_on_page       // Time milestone or page exit
+  cta_click          // CTA button clicked
+  link_click         // Internal/external link clicked
+  form_start         // Started filling a form
+  form_submit        // Form submitted
+  video_play         // Video started playing
+  video_complete     // Video finished
+  download           // File download initiated
+  share              // Social share clicked
+  copy               // Content copied
+  search             // On-page search performed
+  error              // JavaScript error occurred
+}
+
+// Real-time visitor session tracking
+model CMSVisitorSession {
+  id          String   @id @default(cuid())
+
+  visitorId   String   // Anonymous visitor ID
+  sessionId   String   @unique
+
+  // Session data
+  startedAt   DateTime @default(now())
+  lastActiveAt DateTime @default(now())
+  endedAt     DateTime?
+
+  // First page info
+  entryPageId   String?
+  entryPageSlug String?
+  landingUrl    String?
+
+  // Exit info
+  exitPageId    String?
+  exitPageSlug  String?
+
+  // Session metrics
+  pageviewCount Int @default(1)
+  eventCount    Int @default(0)
+  totalDuration Int @default(0)  // seconds
+
+  // Attribution
+  referrer      String?
+  utmSource     String?
+  utmMedium     String?
+  utmCampaign   String?
+  utmTerm       String?
+  utmContent    String?
+
+  // Device info
+  deviceType    String?
+  browser       String?
+  os            String?
+  country       String?
+
+  // Conversion tracking
+  converted     Boolean @default(false)
+  conversionType String?
+  conversionAt  DateTime?
+
+  @@index([visitorId])
+  @@index([startedAt])
+  @@index([lastActiveAt])
+}
+
+// ============================================================================
+// CONTENT GOVERNANCE
+// ============================================================================
+
+// Governance policy types
+enum GovernancePolicyType {
+  brand_voice        // Check for banned/required words
+  legal_compliance   // Required disclaimers, etc.
+  accessibility      // Alt text, contrast, etc.
+  seo                // Meta lengths, keywords, etc.
+  freshness          // Content age limits
+  approval_gates     // Required approvers
+  publishing_windows // Time restrictions
+}
+
+// Actions when policy is violated
+enum GovernanceAction {
+  warn              // Show warning but allow
+  block             // Prevent publishing
+  require_override  // Block unless admin override
+}
+
+// Governance policy definitions
+model CMSGovernancePolicy {
+  id          String   @id @default(cuid())
+
+  name        String
+  description String?
+
+  // Policy type
+  type        GovernancePolicyType
+
+  // Target content types
+  targetTypes String[] // ["MarketingPage", "BlogPost", "FAQ"]
+
+  // Policy rules (JSON array of rule objects)
+  // Each rule: { field, check, value?, severity, message }
+  // - field: Content field to check (e.g., "content", "metaTitle")
+  // - check: Type of check ("contains", "not_contains", "max_length", "min_length", "regex", etc.)
+  // - value: Value to check against (words array, length number, pattern string)
+  // - severity: "error" | "warning" | "info"
+  // - message: Human-readable error message
+  rules       Json
+
+  // Action when violated
+  action      GovernanceAction @default(warn)
+
+  // Priority for ordering checks
+  priority    Int @default(0)
+
+  // Active status
+  isActive    Boolean @default(true)
+
+  // Relation to violations
+  violations  CMSGovernanceViolation[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([type])
+  @@index([isActive])
+}
+
+// Governance violations record
+model CMSGovernanceViolation {
+  id          String   @id @default(cuid())
+
+  // Policy that was violated
+  policyId    String
+  policy      CMSGovernancePolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+
+  // Content that violated the policy
+  entityType  String   // "MarketingPage", "BlogPost", "FAQ"
+  entityId    String
+
+  // Violations found (JSON array)
+  // Each: { rule, field, message, value?, snippet? }
+  violations  Json
+
+  // Overall severity (highest from all violations)
+  severity    String   // "error" | "warning" | "info"
+
+  // Was publishing blocked?
+  blocked     Boolean @default(false)
+
+  // Resolution
+  resolvedAt  DateTime?
+  resolvedBy  String?
+  resolution  String?  // "fixed" | "overridden" | "dismissed"
+  overrideReason String?
+
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([policyId])
+  @@index([severity])
+  @@index([resolvedAt])
 }

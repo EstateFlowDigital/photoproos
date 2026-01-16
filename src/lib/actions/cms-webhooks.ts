@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { isSuperAdmin, currentUser } from "@/lib/auth/super-admin";
-import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, type ActionResult } from "@/lib/types/action-result";
 import { randomBytes } from "crypto";
 import type { CMSWebhook, CMSWebhookLog, CMSWebhookEvent } from "@prisma/client";
 import { testWebhook, retryWebhook, getWebhookStats, cleanupWebhookLogs } from "@/lib/cms/webhooks";

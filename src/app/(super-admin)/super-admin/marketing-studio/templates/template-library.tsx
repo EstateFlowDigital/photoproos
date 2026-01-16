@@ -6,9 +6,13 @@ import Link from "next/link";
 import {
   TEMPLATES,
   TEMPLATE_CATEGORIES,
+  getCustomTemplates,
+  deleteCustomTemplate,
   type Template,
   type TemplateCategory,
+  type CustomTemplate,
 } from "@/lib/marketing-studio/templates";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Search,
@@ -26,6 +30,8 @@ import {
   Twitter,
   Facebook,
   ArrowRight,
+  Trash2,
+  Star,
 } from "lucide-react";
 
 // Custom icons for platforms not in lucide
@@ -78,10 +84,34 @@ export function TemplateLibrary() {
   const [selectedCategory, setSelectedCategory] = React.useState<TemplateCategory | null>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
   const searchInputRef = React.useRef<HTMLInputElement>(null);
+  const [customTemplates, setCustomTemplates] = React.useState<CustomTemplate[]>([]);
+
+  // Load custom templates on mount
+  React.useEffect(() => {
+    setCustomTemplates(getCustomTemplates());
+  }, []);
+
+  // All templates (built-in + custom)
+  const allTemplates = React.useMemo(() => {
+    return [...TEMPLATES, ...customTemplates];
+  }, [customTemplates]);
+
+  // Handle delete custom template
+  const handleDeleteCustomTemplate = React.useCallback((id: string, name: string) => {
+    if (window.confirm(`Delete "${name}"? This cannot be undone.`)) {
+      const success = deleteCustomTemplate(id);
+      if (success) {
+        setCustomTemplates(getCustomTemplates());
+        toast.success(`Template "${name}" deleted`);
+      } else {
+        toast.error("Failed to delete template");
+      }
+    }
+  }, []);
 
   // Filter templates with memoization
   const filteredTemplates = React.useMemo(() => {
-    let templates = TEMPLATES;
+    let templates = allTemplates;
 
     if (selectedCategory) {
       templates = templates.filter((t) => t.category === selectedCategory);
@@ -98,7 +128,7 @@ export function TemplateLibrary() {
     }
 
     return templates;
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, searchQuery, allTemplates]);
 
   // Group templates by category for display
   const groupedTemplates = React.useMemo(() => {
@@ -106,12 +136,16 @@ export function TemplateLibrary() {
       return { filtered: filteredTemplates };
     }
 
-    const groups: Record<string, Template[]> = {};
+    const groups: Record<string, (Template | CustomTemplate)[]> = {};
     TEMPLATE_CATEGORIES.forEach((cat) => {
-      groups[cat.id] = TEMPLATES.filter((t) => t.category === cat.id);
+      groups[cat.id] = allTemplates.filter((t) => t.category === cat.id);
     });
+    // Add custom templates section if any exist
+    if (customTemplates.length > 0) {
+      groups["custom"] = customTemplates;
+    }
     return groups;
-  }, [filteredTemplates, selectedCategory, searchQuery]);
+  }, [filteredTemplates, selectedCategory, searchQuery, allTemplates, customTemplates]);
 
   // Handle search clear
   const handleClearSearch = React.useCallback(() => {
@@ -187,11 +221,29 @@ export function TemplateLibrary() {
               )}
             >
               All Templates
-              <span className="opacity-60">({TEMPLATES.length})</span>
+              <span className="opacity-60">({allTemplates.length})</span>
             </button>
+            {/* My Templates tab - only show if there are custom templates */}
+            {customTemplates.length > 0 && (
+              <button
+                onClick={() => handleCategorySelect("custom" as TemplateCategory)}
+                role="tab"
+                aria-selected={selectedCategory === ("custom" as TemplateCategory)}
+                className={cn(
+                  "flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]",
+                  selectedCategory === ("custom" as TemplateCategory)
+                    ? "bg-[var(--ai)]/10 text-[var(--ai)]"
+                    : "text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] hover:text-[var(--foreground)]"
+                )}
+              >
+                <Star className="h-4 w-4" aria-hidden="true" />
+                <span className="hidden sm:inline">My Templates</span>
+                <span className="opacity-60">({customTemplates.length})</span>
+              </button>
+            )}
             {TEMPLATE_CATEGORIES.map((category) => {
               const Icon = CATEGORY_ICONS[category.icon] || ImageIcon;
-              const count = TEMPLATES.filter((t) => t.category === category.id).length;
+              const count = allTemplates.filter((t) => t.category === category.id).length;
               return (
                 <button
                   key={category.id}
@@ -238,7 +290,11 @@ export function TemplateLibrary() {
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {filteredTemplates.map((template) => (
-                    <TemplateCard key={template.id} template={template} />
+                    <TemplateCard
+                      key={template.id}
+                      template={template}
+                      onDelete={"isCustom" in template ? () => handleDeleteCustomTemplate(template.id, template.name) : undefined}
+                    />
                   ))}
                 </div>
               </>
@@ -247,6 +303,46 @@ export function TemplateLibrary() {
         ) : (
           // Grouped by category
           <div className="space-y-10">
+            {/* My Templates section - shown first if there are custom templates */}
+            {customTemplates.length > 0 && (
+              <section aria-labelledby="category-custom">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-lg bg-[var(--ai)]/10 flex items-center justify-center">
+                      <Star className="h-4 w-4 text-[var(--ai)]" aria-hidden="true" />
+                    </div>
+                    <div>
+                      <h2 id="category-custom" className="text-base font-semibold text-[var(--foreground)]">
+                        My Templates
+                      </h2>
+                      <p className="text-xs text-[var(--foreground-muted)]">
+                        Your saved custom templates
+                      </p>
+                    </div>
+                  </div>
+                  {customTemplates.length > 5 && (
+                    <button
+                      onClick={() => handleCategorySelect("custom" as TemplateCategory)}
+                      className="flex items-center gap-1 text-sm text-[var(--ai)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ai)] rounded p-1 self-start sm:self-center"
+                      aria-label="View all My Templates"
+                    >
+                      View all
+                      <ArrowRight className="h-3 w-3" aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {customTemplates.slice(0, 5).map((template) => (
+                    <TemplateCard
+                      key={template.id}
+                      template={template}
+                      onDelete={() => handleDeleteCustomTemplate(template.id, template.name)}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
             {TEMPLATE_CATEGORIES.map((category) => {
               const templates = groupedTemplates[category.id] || [];
               if (templates.length === 0) return null;
@@ -279,7 +375,11 @@ export function TemplateLibrary() {
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     {templates.slice(0, 5).map((template) => (
-                      <TemplateCard key={template.id} template={template} />
+                      <TemplateCard
+                        key={template.id}
+                        template={template}
+                        onDelete={"isCustom" in template ? () => handleDeleteCustomTemplate(template.id, template.name) : undefined}
+                      />
                     ))}
                   </div>
                 </section>
@@ -292,7 +392,15 @@ export function TemplateLibrary() {
   );
 }
 
-function TemplateCard({ template }: { template: Template }) {
+function TemplateCard({
+  template,
+  onDelete,
+}: {
+  template: Template | CustomTemplate;
+  onDelete?: () => void;
+}) {
+  const isCustom = "isCustom" in template && template.isCustom;
+
   // Generate a gradient background based on the template layout
   const bgStyle: React.CSSProperties = {};
   if (template.layout.background === "gradient") {
@@ -307,59 +415,85 @@ function TemplateCard({ template }: { template: Template }) {
   const platformList = template.platforms.map(p => PLATFORM_NAMES[p] || p).join(", ");
 
   return (
-    <Link
-      href={`/super-admin/marketing-studio/composer?template=${template.id}`}
-      className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] rounded-xl"
-      aria-label={`${template.name} - ${template.format} template for ${platformList}`}
-    >
-      <article>
-        <div
-          className="aspect-square rounded-xl border border-[var(--card-border)] overflow-hidden relative transition-all group-hover:border-[var(--primary)] group-hover:shadow-lg group-focus-visible:border-[var(--primary)] group-focus-visible:shadow-lg"
-          style={bgStyle}
-        >
-          {/* Template preview placeholder */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center px-4">
-              <p className="text-white/80 text-xs font-medium">{template.name}</p>
+    <div className="group relative">
+      <Link
+        href={`/super-admin/marketing-studio/composer?template=${template.id}`}
+        className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] rounded-xl"
+        aria-label={`${template.name} - ${template.format} template for ${platformList}`}
+      >
+        <article>
+          <div
+            className="aspect-square rounded-xl border border-[var(--card-border)] overflow-hidden relative transition-all group-hover:border-[var(--primary)] group-hover:shadow-lg group-focus-visible:border-[var(--primary)] group-focus-visible:shadow-lg"
+            style={bgStyle}
+          >
+            {/* Template preview placeholder */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center px-4">
+                <p className="text-white/80 text-xs font-medium">{template.name}</p>
+              </div>
+            </div>
+
+            {/* Hover overlay */}
+            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity flex items-center justify-center">
+              <span className="px-3 py-1.5 rounded-full bg-white text-black text-xs font-medium">
+                Use Template
+              </span>
+            </div>
+
+            {/* Custom badge */}
+            {isCustom && (
+              <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-[var(--ai)] text-white text-[10px] font-medium flex items-center gap-1">
+                <Star className="h-2.5 w-2.5" aria-hidden="true" />
+                Custom
+              </div>
+            )}
+
+            {/* Format badge */}
+            <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/50 text-white text-[10px] font-medium capitalize">
+              {template.format}
             </div>
           </div>
 
-          {/* Hover overlay */}
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity flex items-center justify-center">
-            <span className="px-3 py-1.5 rounded-full bg-white text-black text-xs font-medium">
-              Use Template
-            </span>
+          <div className="mt-2">
+            <h3 className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)] group-focus-visible:text-[var(--primary)] transition-colors truncate">
+              {template.name}
+            </h3>
+            <div className="flex items-center gap-1 mt-1" aria-label={`Available on ${platformList}`}>
+              {template.platforms.slice(0, 3).map((platform) => {
+                const Icon = PLATFORM_ICONS[platform] || ImageIcon;
+                return (
+                  <Icon
+                    key={platform}
+                    className="h-3 w-3 text-[var(--foreground-muted)]"
+                    aria-hidden="true"
+                  />
+                );
+              })}
+              {template.platforms.length > 3 && (
+                <span className="text-[10px] text-[var(--foreground-muted)]">
+                  +{template.platforms.length - 3}
+                </span>
+              )}
+            </div>
           </div>
+        </article>
+      </Link>
 
-          {/* Format badge */}
-          <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/50 text-white text-[10px] font-medium capitalize">
-            {template.format}
-          </div>
-        </div>
-
-        <div className="mt-2">
-          <h3 className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)] group-focus-visible:text-[var(--primary)] transition-colors truncate">
-            {template.name}
-          </h3>
-          <div className="flex items-center gap-1 mt-1" aria-label={`Available on ${platformList}`}>
-            {template.platforms.slice(0, 3).map((platform) => {
-              const Icon = PLATFORM_ICONS[platform] || ImageIcon;
-              return (
-                <Icon
-                  key={platform}
-                  className="h-3 w-3 text-[var(--foreground-muted)]"
-                  aria-hidden="true"
-                />
-              );
-            })}
-            {template.platforms.length > 3 && (
-              <span className="text-[10px] text-[var(--foreground-muted)]">
-                +{template.platforms.length - 3}
-              </span>
-            )}
-          </div>
-        </div>
-      </article>
-    </Link>
+      {/* Delete button for custom templates */}
+      {onDelete && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onDelete();
+          }}
+          className="absolute top-2 right-10 p-1.5 rounded-full bg-[var(--error)]/80 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[var(--error)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white z-10"
+          aria-label={`Delete ${template.name} template`}
+          title="Delete template"
+        >
+          <Trash2 className="h-3 w-3" aria-hidden="true" />
+        </button>
+      )}
+    </div>
   );
 }

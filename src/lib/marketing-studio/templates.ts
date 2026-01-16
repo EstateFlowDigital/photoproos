@@ -716,25 +716,94 @@ export const TEMPLATES: Template[] = [
   },
 ];
 
-// Helper functions
-export function getTemplatesByCategory(category: TemplateCategory): Template[] {
-  return TEMPLATES.filter((t) => t.category === category);
+// Custom template type (includes isCustom flag and creation date)
+export interface CustomTemplate extends Template {
+  isCustom: true;
+  createdAt: string;
 }
 
-export function getTemplateById(id: string): Template | undefined {
-  return TEMPLATES.find((t) => t.id === id);
+// Storage key for custom templates
+const CUSTOM_TEMPLATES_KEY = "photoproos-custom-templates";
+
+// Get custom templates from localStorage
+export function getCustomTemplates(): CustomTemplate[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem(CUSTOM_TEMPLATES_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error("Failed to load custom templates:", error);
+    return [];
+  }
+}
+
+// Save a custom template to localStorage
+export function saveCustomTemplate(template: Omit<CustomTemplate, "isCustom" | "createdAt">): CustomTemplate {
+  const customTemplates = getCustomTemplates();
+  const newTemplate: CustomTemplate = {
+    ...template,
+    id: `custom-${Date.now()}`,
+    isCustom: true,
+    createdAt: new Date().toISOString(),
+  };
+  customTemplates.push(newTemplate);
+  localStorage.setItem(CUSTOM_TEMPLATES_KEY, JSON.stringify(customTemplates));
+  return newTemplate;
+}
+
+// Delete a custom template
+export function deleteCustomTemplate(id: string): boolean {
+  const customTemplates = getCustomTemplates();
+  const filtered = customTemplates.filter((t) => t.id !== id);
+  if (filtered.length === customTemplates.length) return false;
+  localStorage.setItem(CUSTOM_TEMPLATES_KEY, JSON.stringify(filtered));
+  return true;
+}
+
+// Update a custom template
+export function updateCustomTemplate(id: string, updates: Partial<CustomTemplate>): CustomTemplate | null {
+  const customTemplates = getCustomTemplates();
+  const index = customTemplates.findIndex((t) => t.id === id);
+  if (index === -1) return null;
+  customTemplates[index] = { ...customTemplates[index], ...updates };
+  localStorage.setItem(CUSTOM_TEMPLATES_KEY, JSON.stringify(customTemplates));
+  return customTemplates[index];
+}
+
+// Helper functions
+export function getTemplatesByCategory(category: TemplateCategory): Template[] {
+  const builtIn = TEMPLATES.filter((t) => t.category === category);
+  const custom = getCustomTemplates().filter((t) => t.category === category);
+  return [...builtIn, ...custom];
+}
+
+export function getTemplateById(id: string): Template | CustomTemplate | undefined {
+  // Check built-in templates first
+  const builtIn = TEMPLATES.find((t) => t.id === id);
+  if (builtIn) return builtIn;
+  // Then check custom templates
+  return getCustomTemplates().find((t) => t.id === id);
 }
 
 export function getTemplatesForPlatform(platform: PlatformId): Template[] {
-  return TEMPLATES.filter((t) => t.platforms.includes(platform));
+  const builtIn = TEMPLATES.filter((t) => t.platforms.includes(platform));
+  const custom = getCustomTemplates().filter((t) => t.platforms.includes(platform));
+  return [...builtIn, ...custom];
 }
 
 export function searchTemplates(query: string): Template[] {
   const lowerQuery = query.toLowerCase();
-  return TEMPLATES.filter(
-    (t) =>
-      t.name.toLowerCase().includes(lowerQuery) ||
-      t.description.toLowerCase().includes(lowerQuery) ||
-      t.tags.some((tag) => tag.includes(lowerQuery))
-  );
+  const searchFn = (t: Template) =>
+    t.name.toLowerCase().includes(lowerQuery) ||
+    t.description.toLowerCase().includes(lowerQuery) ||
+    t.tags.some((tag) => tag.includes(lowerQuery));
+
+  const builtIn = TEMPLATES.filter(searchFn);
+  const custom = getCustomTemplates().filter(searchFn);
+  return [...builtIn, ...custom];
+}
+
+// Get all templates (built-in + custom)
+export function getAllTemplates(): (Template | CustomTemplate)[] {
+  return [...TEMPLATES, ...getCustomTemplates()];
 }
