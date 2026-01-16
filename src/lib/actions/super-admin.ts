@@ -137,14 +137,14 @@ export async function getSuperAdminDashboardStats(): Promise<
       }),
       prisma.payment.aggregate({
         _sum: { amountCents: true },
-        where: { status: "succeeded" },
+        where: { status: "paid" },
       }),
       prisma.user.count({
         where: { createdAt: { gte: weekAgo } },
       }),
-      prisma.gallery.count(),
+      prisma.project.count(),
       prisma.client.count(),
-      prisma.gallery.count({
+      prisma.project.count({
         where: {
           status: "delivered",
           deliveredAt: { gte: monthAgo },
@@ -153,7 +153,7 @@ export async function getSuperAdminDashboardStats(): Promise<
       prisma.payment.aggregate({
         _sum: { amountCents: true },
         where: {
-          status: "succeeded",
+          status: "paid",
           createdAt: { gte: monthAgo },
         },
       }),
@@ -190,7 +190,7 @@ export async function getSuperAdminDashboardStats(): Promise<
         prisma.payment.aggregate({
           _sum: { amountCents: true },
           where: {
-            status: "succeeded",
+            status: "paid",
             createdAt: {
               gte: dayStart,
               lte: dayEnd,
@@ -297,9 +297,9 @@ export async function getAllUsers(options?: {
       .filter(Boolean) as string[];
 
     // Only run groupBy queries if there are organizations to query
-    const [galleryCounts, clientCounts, revenueSums] = orgIds.length > 0
+    const [projectCounts, clientCounts, revenueSums] = orgIds.length > 0
       ? await Promise.all([
-          prisma.gallery.groupBy({
+          prisma.project.groupBy({
             by: ["organizationId"],
             where: { organizationId: { in: orgIds } },
             _count: true,
@@ -311,13 +311,13 @@ export async function getAllUsers(options?: {
           }),
           prisma.payment.groupBy({
             by: ["organizationId"],
-            where: { organizationId: { in: orgIds }, status: "succeeded" },
+            where: { organizationId: { in: orgIds }, status: "paid" },
             _sum: { amountCents: true },
           }),
         ])
       : [[], [], []];
 
-    const galleryMap = new Map(galleryCounts.map((g) => [g.organizationId, g._count]));
+    const galleryMap = new Map(projectCounts.map((g) => [g.organizationId, g._count]));
     const clientMap = new Map(clientCounts.map((c) => [c.organizationId, c._count]));
     const revenueMap = new Map(
       revenueSums.map((r) => [r.organizationId, r._sum.amountCents || 0])
@@ -427,10 +427,10 @@ export async function getUserDetails(
     // Get stats
     const [galleryCount, clientCount, revenueSum] = orgId
       ? await Promise.all([
-          prisma.gallery.count({ where: { organizationId: orgId } }),
+          prisma.project.count({ where: { organizationId: orgId } }),
           prisma.client.count({ where: { organizationId: orgId } }),
           prisma.payment.aggregate({
-            where: { organizationId: orgId, status: "succeeded" },
+            where: { organizationId: orgId, status: "paid" },
             _sum: { amountCents: true },
           }),
         ])
@@ -1472,7 +1472,7 @@ export async function getSystemHealthStats(): Promise<
     ] = await Promise.all([
       prisma.user.count(),
       prisma.organization.count(),
-      prisma.gallery.count(),
+      prisma.project.count(),
       prisma.user.count({
         where: {
           lastLoginAt: {
