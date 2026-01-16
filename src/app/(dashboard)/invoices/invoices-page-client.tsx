@@ -10,6 +10,7 @@ import { formatCurrencyWhole as formatCurrency } from "@/lib/utils/units";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ChevronRightIcon, PlusIcon, DocumentIcon, SearchIcon, XIcon as CloseIcon } from "@/components/ui/icons";
 import { updateInvoiceStatus, sendInvoiceReminder } from "@/lib/actions/invoices";
+import { useToast } from "@/components/ui/toast";
 
 type SortOption = "newest" | "oldest" | "amountHigh" | "amountLow" | "dueDate";
 type DateRangeFilter = "all" | "7days" | "30days" | "90days";
@@ -47,6 +48,7 @@ interface InvoicesPageClientProps {
 
 export function InvoicesPageClient({ invoices, statusFilter }: InvoicesPageClientProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const tableParentRef = useRef<HTMLDivElement | null>(null);
 
   // Search and filter state
@@ -133,9 +135,22 @@ export function InvoicesPageClient({ invoices, statusFilter }: InvoicesPageClien
   const handleBulkMarkAsPaid = async () => {
     setIsBulkActionPending(true);
     try {
-      await Promise.all([...selectedIds].map((id) => updateInvoiceStatus(id, "paid")));
+      const results = await Promise.all(
+        [...selectedIds].map((id) => updateInvoiceStatus(id, "paid"))
+      );
+      const successCount = results.filter((r) => r.success).length;
+      const failCount = results.length - successCount;
+
+      if (successCount > 0) {
+        showToast(`Marked ${successCount} invoice(s) as paid`, "success");
+      }
+      if (failCount > 0) {
+        showToast(`Failed to update ${failCount} invoice(s)`, "error");
+      }
       router.refresh();
       clearSelection();
+    } catch {
+      showToast("Failed to update invoices", "error");
     } finally {
       setIsBulkActionPending(false);
     }
@@ -144,9 +159,22 @@ export function InvoicesPageClient({ invoices, statusFilter }: InvoicesPageClien
   const handleBulkSendReminder = async () => {
     setIsBulkActionPending(true);
     try {
-      await Promise.all([...selectedIds].map((id) => sendInvoiceReminder(id)));
+      const results = await Promise.all(
+        [...selectedIds].map((id) => sendInvoiceReminder(id))
+      );
+      const successCount = results.filter((r) => r.success).length;
+      const failCount = results.length - successCount;
+
+      if (successCount > 0) {
+        showToast(`Sent ${successCount} reminder(s) successfully`, "success");
+      }
+      if (failCount > 0) {
+        showToast(`Failed to send ${failCount} reminder(s)`, "error");
+      }
       router.refresh();
       clearSelection();
+    } catch {
+      showToast("Failed to send reminders", "error");
     } finally {
       setIsBulkActionPending(false);
     }

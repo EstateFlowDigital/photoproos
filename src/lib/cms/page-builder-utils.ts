@@ -30,7 +30,8 @@ export type ComponentFieldType =
   | "toggle"         // Boolean toggle
   | "date"           // Date picker
   | "array"          // Array of items
-  | "object";        // Nested object
+  | "object"         // Nested object
+  | "mockup";        // Mockup picker from mockup library
 
 /**
  * Field definition in component schema
@@ -49,6 +50,8 @@ export interface ComponentField {
   itemSchema?: ComponentField[];
   // For object fields
   fields?: ComponentField[];
+  // For mockup fields
+  mockupCategory?: string; // Filter mockups by category (e.g., "dashboard", "galleries")
   // Validation
   minLength?: number;
   maxLength?: number;

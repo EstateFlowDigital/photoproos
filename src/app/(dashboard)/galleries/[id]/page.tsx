@@ -4,7 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GalleryDetailClient } from "./gallery-detail-client";
 import { GalleryActions } from "./gallery-actions";
-import { getGallery, deliverGallery } from "@/lib/actions/galleries";
+import { DeliverButton } from "./deliver-button";
+import { getGallery } from "@/lib/actions/galleries";
 import { getClientInvoices } from "@/lib/actions/invoices";
 import { getGalleryDownloadAnalytics } from "@/lib/actions/download-tracking";
 import { WalkthroughWrapper } from "@/components/walkthrough";
@@ -214,21 +215,7 @@ export default async function GalleryDetailPage({ params }: GalleryDetailPagePro
               )
             )}
             {gallery.status !== "delivered" && (
-              <form
-                action={async () => {
-                  "use server";
-                  await deliverGallery(id);
-                }}
-              >
-                <button
-                  type="submit"
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--primary)] p-2.5 md:px-4 md:py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--primary)]/90"
-                  title="Deliver Gallery"
-                >
-                  <SendIcon className="h-4 w-4" />
-                  <span className="hidden md:inline">Deliver Gallery</span>
-                </button>
-              </form>
+              <DeliverButton galleryId={id} />
             )}
           </div>
         }
@@ -271,14 +258,6 @@ function EditIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
       <path d="M2.695 14.763l-1.262 3.154a.5.5 0 0 0 .65.65l3.155-1.262a4 4 0 0 0 1.343-.885L17.5 5.5a2.121 2.121 0 0 0-3-3L3.58 13.42a4 4 0 0 0-.885 1.343Z" />
-    </svg>
-  );
-}
-
-function SendIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
-      <path d="M3.105 2.288a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25h6.115a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.086l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.155.75.75 0 0 0 0-1.114A28.897 28.897 0 0 0 3.105 2.288Z" />
     </svg>
   );
 }

@@ -338,13 +338,14 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
           if (process.env.NODE_ENV === "development") {
             console.warn("[GalleryDetail] Failed to fetch download history:", error);
           }
+          showToast("Failed to load download history", "error");
         } finally {
           setIsLoadingDownloads(false);
         }
       };
       fetchDownloadHistory();
     }
-  }, [activeTab, gallery.id, downloadHistory.length, isLoadingDownloads]);
+  }, [activeTab, gallery.id, downloadHistory.length, isLoadingDownloads, showToast]);
 
   // Fetch add-on requests count on mount
   useEffect(() => {
@@ -364,10 +365,11 @@ export function GalleryDetailClient({ gallery }: GalleryDetailClientProps) {
         if (process.env.NODE_ENV === "development") {
           console.warn("[GalleryDetail] Failed to fetch add-on requests:", error);
         }
+        showToast("Failed to load add-on requests", "error");
       }
     };
     fetchAddonRequestsCount();
-  }, [gallery.id]);
+  }, [gallery.id, showToast]);
 
   // Handle submitting a new comment
   const handleSubmitComment = () => {

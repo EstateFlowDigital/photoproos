@@ -1165,6 +1165,21 @@ export function PageEditorClient({ page, userId, userName }: Props) {
           />
 
           <div className="flex items-center gap-2">
+          {/* Page Builder Link */}
+          <Link
+            href={`/super-admin/marketing/${page.slug}/builder`}
+            className={cn(
+              "inline-flex items-center gap-2 px-3 py-2 rounded-lg",
+              "text-sm font-medium",
+              "text-[var(--primary)] bg-[var(--primary)]/10 hover:bg-[var(--primary)]/20",
+              "transition-colors"
+            )}
+            title="Open drag-and-drop page builder"
+          >
+            <LayoutGrid className="w-4 h-4" />
+            <span className="hidden sm:inline">Page Builder</span>
+          </Link>
+
           <a
             href={page.hasDraft ? previewUrl : publicUrl}
             target="_blank"

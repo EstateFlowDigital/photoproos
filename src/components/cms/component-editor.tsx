@@ -26,7 +26,10 @@ import {
   Calendar,
   List,
   Settings,
+  Layers,
+  Check,
 } from "lucide-react";
+import { MOCKUPS, CATEGORIES, getMockupById, type MockupDefinition, type MockupCategory } from "@/components/mockups";
 
 // ============================================================================
 // TYPES
@@ -72,6 +75,7 @@ const FIELD_ICONS: Record<string, React.ElementType> = {
   date: Calendar,
   array: List,
   object: Settings,
+  mockup: Layers,
 };
 
 // ============================================================================
@@ -284,6 +288,126 @@ function ColorFieldEditor({ field: _field, value, onChange }: FieldEditorProps) 
   );
 }
 
+function MockupFieldEditor({ field, value, onChange }: FieldEditorProps) {
+  const [selectedCategory, setSelectedCategory] = useState<MockupCategory | "all">("all");
+  const selectedMockupId = value as string;
+
+  // Filter mockups by category if specified
+  const filteredMockups = MOCKUPS.filter((m) => {
+    if (field.mockupCategory && m.category !== field.mockupCategory) return false;
+    if (selectedCategory !== "all" && m.category !== selectedCategory) return false;
+    return true;
+  });
+
+  // Get the currently selected mockup
+  const selectedMockup = selectedMockupId ? getMockupById(selectedMockupId) : null;
+
+  // Get unique categories from available mockups
+  const availableCategories = field.mockupCategory
+    ? []
+    : [...new Set(MOCKUPS.map((m) => m.category))];
+
+  return (
+    <div className="space-y-3">
+      {/* Selected mockup preview */}
+      {selectedMockup && (
+        <div className="p-3 bg-[var(--background-tertiary)] border border-[var(--primary)]/30 rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Layers className="w-4 h-4 text-[var(--primary)]" />
+              <span className="text-sm font-medium">{selectedMockup.name}</span>
+            </div>
+            <button
+              onClick={() => onChange("")}
+              className="p-1 rounded hover:bg-[var(--background-hover)] text-[var(--foreground-muted)]"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+          <p className="text-xs text-[var(--foreground-muted)]">{selectedMockup.description}</p>
+        </div>
+      )}
+
+      {/* Category filter (only if not restricted by field) */}
+      {!field.mockupCategory && availableCategories.length > 1 && (
+        <div className="flex flex-wrap gap-1">
+          <button
+            onClick={() => setSelectedCategory("all")}
+            className={cn(
+              "px-2 py-1 text-xs rounded",
+              selectedCategory === "all"
+                ? "bg-[var(--primary)] text-white"
+                : "bg-[var(--background-tertiary)] hover:bg-[var(--background-hover)]"
+            )}
+          >
+            All
+          </button>
+          {availableCategories.map((cat) => {
+            const categoryInfo = CATEGORIES.find((c) => c.id === cat);
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={cn(
+                  "px-2 py-1 text-xs rounded capitalize",
+                  selectedCategory === cat
+                    ? "bg-[var(--primary)] text-white"
+                    : "bg-[var(--background-tertiary)] hover:bg-[var(--background-hover)]"
+                )}
+              >
+                {categoryInfo?.name || cat}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Mockup grid */}
+      <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+        {filteredMockups.map((mockup) => {
+          const isSelected = selectedMockupId === mockup.id;
+          const CategoryIcon = CATEGORIES.find((c) => c.id === mockup.category)?.icon || Layers;
+
+          return (
+            <button
+              key={mockup.id}
+              onClick={() => onChange(mockup.id)}
+              className={cn(
+                "p-3 rounded-lg border text-left transition-all",
+                isSelected
+                  ? "border-[var(--primary)] bg-[var(--primary)]/10"
+                  : "border-[var(--border)] hover:border-[var(--foreground-muted)] bg-[var(--background-tertiary)]"
+              )}
+            >
+              <div className="flex items-start gap-2">
+                <CategoryIcon className={cn(
+                  "w-4 h-4 mt-0.5 flex-shrink-0",
+                  isSelected ? "text-[var(--primary)]" : "text-[var(--foreground-muted)]"
+                )} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs font-medium truncate">{mockup.name}</span>
+                    {isSelected && <Check className="w-3 h-3 text-[var(--primary)]" />}
+                  </div>
+                  <p className="text-xs text-[var(--foreground-muted)] line-clamp-2 mt-0.5">
+                    {mockup.description}
+                  </p>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {filteredMockups.length === 0 && (
+        <div className="text-center py-4 text-sm text-[var(--foreground-muted)]">
+          No mockups available{field.mockupCategory ? ` in ${field.mockupCategory}` : ""}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ============================================================================
 // ARRAY FIELD EDITOR
 // ============================================================================
@@ -455,6 +579,8 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
         return <IconFieldEditor field={field} value={value} onChange={onChange} />;
       case "color":
         return <ColorFieldEditor field={field} value={value} onChange={onChange} />;
+      case "mockup":
+        return <MockupFieldEditor field={field} value={value} onChange={onChange} />;
       case "array":
         return (
           <ArrayFieldEditor
@@ -595,5 +721,6 @@ export {
   ToggleFieldEditor,
   IconFieldEditor,
   ColorFieldEditor,
+  MockupFieldEditor,
 };
 export type { ComponentEditorProps, FieldEditorProps, ArrayFieldEditorProps };
