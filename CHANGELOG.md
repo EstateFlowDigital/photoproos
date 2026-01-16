@@ -43,6 +43,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Removed non-existent `WebhookCard` and `WebhookForm` exports from CMS index
 
 ### Added
+- **Marketing Studio: Product Showcase Templates** - 24 new SaaS-style templates for promoting PhotoProOS features:
+  - **Headline + Screenshot patterns**: Classic SaaS style with bold headline, subtext, and dashboard preview below
+    - Teal gradient, dark mode, and blue gradient hero variants
+  - **Metrics Hero patterns**: Large impact numbers with dashboard preview
+    - Multi-metric layout and single metric focus variants
+  - **Split Screen patterns**: Text on one side, dashboard on the other
+    - Horizontal and reversed layouts for LinkedIn and Facebook
+  - **Feature Spotlight patterns**: Highlight specific features (Galleries, Invoicing, Booking, Analytics)
+    - Each with unique gradient colors matching feature themes
+  - **Story/Vertical patterns**: Optimized for Instagram/TikTok Stories
+    - Headline, feature focus, and metrics variants with swipe-up CTAs
+  - **Carousel patterns**: Multi-slide feature showcase and transformation stories
+  - **Comparison pattern**: "Old Way vs New Way" side-by-side comparison
+  - **CTA patterns**: Strong call-to-action with free trial and limited offer urgency
+  - **Minimal patterns**: Ultra-clean dark and light designs
+  - **Testimonial + Dashboard combo**: Customer quote with product screenshot
+  - **Color variations**: Purple and emerald gradient options
+  - New "Product Showcase" template category with monitor icon
+
 - **Marketing Studio: Help & Instructions Page** - Comprehensive visual guide at `/super-admin/marketing-studio/help`:
   - Step-by-step instructions for all Marketing Studio features
   - Visual diagrams showing the composer interface layout

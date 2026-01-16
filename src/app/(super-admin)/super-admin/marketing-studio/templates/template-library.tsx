@@ -25,6 +25,7 @@ import {
   Tag,
   Lightbulb,
   Trophy,
+  Monitor,
   Instagram,
   Linkedin,
   Twitter,
@@ -60,6 +61,7 @@ const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>
   tag: Tag,
   lightbulb: Lightbulb,
   trophy: Trophy,
+  monitor: Monitor,
 };
 
 const PLATFORM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
