@@ -31,6 +31,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Border radius adjustment
   - Templates now properly render screenshot drop areas instead of solid blue shapes
 
+- **Screenshot Zones: Accessibility & Quality Polish** - Comprehensive fixes for screenshot zones feature:
+  - **Accessibility Fixes** (post-composer.tsx):
+    - Added keyboard support (Enter/Space) to open screenshot picker from zones
+    - Added `role="button"`, `tabIndex`, and `aria-label` for screen readers
+    - Added `focus-visible` ring styles for keyboard navigation
+    - Added `onError` handler to show toast when screenshot images fail to load
+    - Fixed race condition: deleting a layer now properly clears screenshot picker state
+    - Removed unnecessary setState dependencies from renderLayer callback
+  - **Screenshot Picker Modal** (screenshot-picker.tsx):
+    - Added `role="dialog"`, `aria-modal`, `aria-labelledby` for modal semantics
+    - Added ESC key handler to close modal
+    - Added `role="tablist"` and `role="tab"` with ARIA attributes for tabs
+    - Added `aria-label`, `aria-pressed` to screenshot grid items
+    - Added `focus-visible` ring states to all interactive elements
+    - Added drag-over visual feedback (border/background change)
+    - Replaced `alert()` calls with `toast.error()` notifications
+    - Added FileReader error handling with user-friendly messages
+    - Clear file input after upload to allow re-uploading same file
+  - **Responsiveness** (screenshot-picker.tsx):
+    - Modal now uses `w-full max-w-[900px]` instead of fixed `w-[900px]`
+    - Grid now responsive: 1 column on mobile, 2 on tablet, 3 on desktop
+    - Upload preview uses responsive `max-h-[200px] md:max-h-[300px]`
+    - Upload drop zone uses responsive padding `p-8 md:p-12`
+  - **SVG Accessibility** (10 dashboard screenshot files):
+    - Added `role="img"` and `aria-labelledby` to all SVGs
+    - Added `<title>` and `<desc>` elements with descriptive text
+
 - **CMS Homepage Editing** - Homepage sections now read content from CMS database:
   - Expanded `HomepageContent` schema with 15 section types (hero, logos, metrics, howItWorks, pillars, industryTabs, clientExperience, toolReplacement, integrations, caseStudies, comparison, security, testimonials, pricing, cta)
   - Updated `hero-analytics.tsx` section to accept CMS content props with fallback defaults
