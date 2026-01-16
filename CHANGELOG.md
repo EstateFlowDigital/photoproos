@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Super Admin Data Not Appearing in Lists** - Fixed critical bug where newly created data wouldn't show in lists:
+  - FAQs, Testimonials, and Team members weren't appearing after creation
+  - Root cause: Client components stored props in `useState` which ignores prop updates after `router.refresh()`
+  - Fix: Changed to `useMemo` pattern that properly reacts to prop changes
+  - Affected files: `faqs-client.tsx`, `testimonials-client.tsx`, `team-client.tsx`
+
+- **Super Admin Calendar Page Null Check** - Fixed runtime errors on calendar page:
+  - Added proper null checks for `calendarSummary`, `scheduledPages`, and `draftPages`
+  - Added `Array.isArray()` checks to prevent undefined errors
+
 - **Super Admin Navigation Complete** - Added missing pages to super-admin sidebar:
   - Added **Marketing Studio** link (`/super-admin/marketing-studio`) - Social media post composer
   - Added **Mockups** link (`/super-admin/mockups`) - Mockup management
