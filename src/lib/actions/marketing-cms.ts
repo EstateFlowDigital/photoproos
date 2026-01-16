@@ -275,6 +275,7 @@ export async function updateMarketingPage(
 
 /**
  * Publish a marketing page
+ * If there's draft content, it gets promoted to published content
  */
 export async function publishMarketingPage(slug: string): Promise<ActionResult<MarketingPage>> {
   try {
@@ -287,9 +288,49 @@ export async function publishMarketingPage(slug: string): Promise<ActionResult<M
       return fail("Not authenticated");
     }
 
+    // First, get the current page to check for draft content
+    const currentPage = await prisma.marketingPage.findUnique({
+      where: { slug },
+      select: {
+        id: true,
+        content: true,
+        draftContent: true,
+        hasDraft: true,
+        metaTitle: true,
+        metaDescription: true,
+        ogImage: true,
+      },
+    });
+
+    if (!currentPage) {
+      return fail("Page not found");
+    }
+
+    // If there's draft content, promote it to published content
+    const contentToPublish = currentPage.hasDraft && currentPage.draftContent
+      ? currentPage.draftContent
+      : currentPage.content;
+
+    // Create version snapshot before publishing
+    await createVersionSnapshot(
+      currentPage.id,
+      slug,
+      currentPage.content,
+      currentPage.metaTitle,
+      currentPage.metaDescription,
+      currentPage.ogImage,
+      user.id,
+      user.fullName || user.firstName || null,
+      currentPage.hasDraft ? "Published draft content" : "Published"
+    );
+
+    // Update page: promote draft to content, clear draft, set published
     const page = await prisma.marketingPage.update({
       where: { slug },
       data: {
+        content: contentToPublish,
+        draftContent: null,
+        hasDraft: false,
         status: "published",
         publishedAt: new Date(),
         updatedByUserId: user.id,

@@ -41,6 +41,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Created `src/lib/seed/homepage-content.ts` with `seedHomepageContent()` and `resetHomepageContent()` functions
   - All sections maintain backwards compatibility with hardcoded defaults when no CMS content exists
 
+- **CMS Preview/Staging Mode** - Preview draft changes before publishing:
+  - Homepage now uses `getHomepageContentWithPreview()` which checks Next.js draft mode
+  - Added `PreviewToolbar` to homepage - floating toolbar appears when in preview mode
+  - Fixed `publishMarketingPage()` to properly promote draft content to published:
+    - Now copies `draftContent` to `content` field when publishing
+    - Clears `draftContent` and `hasDraft` flag after publish
+    - Creates version snapshot before publishing for rollback
+  - Updated page editor Preview button:
+    - Shows "Preview Draft" (orange) when draft exists, links to `/api/preview?slug=...`
+    - Shows "View Live" when no draft exists, links directly to page
+  - Preview toolbar shows device switching (desktop/tablet/mobile), edit link, exit preview
+  - Full workflow: Edit → Save Draft → Preview Draft → Publish
+
 ### Fixed
 - **Super-Admin Marketing CMS Fixes** - Resolved issues with testimonials, team members, FAQs, and navigation:
   - Fixed Zod validation for optional URL fields - empty strings now properly transform to null before URL validation

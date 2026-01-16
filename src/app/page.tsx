@@ -4,11 +4,12 @@ import { redirect } from "next/navigation";
 import dynamic from "next/dynamic";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { getHomepageContent } from "@/lib/marketing/content";
+import { getHomepageContentWithPreview } from "@/lib/marketing/content";
+import { PreviewToolbar } from "@/components/cms/preview-toolbar";
 
 // Dynamic metadata from CMS
 export async function generateMetadata(): Promise<Metadata> {
-  const { meta } = await getHomepageContent();
+  const { meta } = await getHomepageContentWithPreview();
   return {
     title: meta.title || "PhotoProOS | The Business OS for Professional Photographers",
     description: meta.description || "Deliver stunning galleries, collect payments automatically, and run your entire photography business from one platform.",
@@ -105,11 +106,14 @@ export default async function Home() {
     redirect("/dashboard");
   }
 
-  // Fetch homepage content from CMS
-  const { content } = await getHomepageContent();
+  // Fetch homepage content from CMS (supports preview mode)
+  const { content, isPreview, hasDraft } = await getHomepageContentWithPreview();
 
   return (
     <main id="main-content" data-element="homepage" className="relative min-h-screen overflow-hidden bg-background">
+      {/* Preview Mode Toolbar */}
+      <PreviewToolbar isPreview={isPreview} hasDraft={hasDraft} pageSlug="homepage" />
+
       {/* Scroll Progress Indicator */}
       <ScrollProgress color="linear-gradient(90deg, #3b82f6, #8b5cf6)" height={2} />
 

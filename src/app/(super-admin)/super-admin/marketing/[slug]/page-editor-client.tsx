@@ -931,6 +931,9 @@ export function PageEditorClient({ page, userId, userName }: Props) {
   // Get public URL
   const publicUrl = page.slug === "homepage" ? "/" : `/${page.slug}`;
 
+  // Get preview URL (enables draft mode)
+  const previewUrl = `/api/preview?slug=${page.slug}&redirect=${encodeURIComponent(publicUrl)}`;
+
   // Parse content for visual editor
   const parsedContent = useMemo(() => {
     try {
@@ -1163,17 +1166,21 @@ export function PageEditorClient({ page, userId, userName }: Props) {
 
           <div className="flex items-center gap-2">
           <a
-            href={publicUrl}
+            href={page.hasDraft ? previewUrl : publicUrl}
             target="_blank"
             rel="noopener noreferrer"
             className={cn(
               "inline-flex items-center gap-2 px-3 py-2 rounded-lg",
-              "text-sm font-medium text-[var(--foreground-muted)]",
-              "hover:bg-[var(--background-elevated)] transition-colors"
+              "text-sm font-medium",
+              page.hasDraft
+                ? "text-orange-500 bg-orange-500/10 hover:bg-orange-500/20"
+                : "text-[var(--foreground-muted)] hover:bg-[var(--background-elevated)]",
+              "transition-colors"
             )}
+            title={page.hasDraft ? "Preview draft changes" : "View live page"}
           >
             <Eye className="w-4 h-4" />
-            <span className="hidden sm:inline">Preview</span>
+            <span className="hidden sm:inline">{page.hasDraft ? "Preview Draft" : "View Live"}</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
 

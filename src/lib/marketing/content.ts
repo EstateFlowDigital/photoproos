@@ -163,10 +163,18 @@ export async function getMarketingPageContentWithPreview<T = Record<string, unkn
 }
 
 /**
- * Get homepage content
+ * Get homepage content (cached, published only)
  */
 export const getHomepageContent = async () => {
   return getMarketingPageContent<HomepageContent>("homepage");
+};
+
+/**
+ * Get homepage content with preview mode support
+ * Returns draft content when preview mode is enabled
+ */
+export const getHomepageContentWithPreview = async () => {
+  return getMarketingPageContentWithPreview<HomepageContent>("homepage");
 };
 
 /**
