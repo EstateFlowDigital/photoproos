@@ -266,6 +266,7 @@ export function InvoicesPageClient({ invoices, statusFilter }: InvoicesPageClien
                     type="checkbox"
                     checked={isAllSelected}
                     onChange={() => (isAllSelected ? clearSelection() : selectAll())}
+                    aria-label="Select all invoices"
                     className="h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background-elevated)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
                   />
                 </th>
@@ -321,6 +322,7 @@ export function InvoicesPageClient({ invoices, statusFilter }: InvoicesPageClien
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => toggleSelection(invoice.id)}
+                        aria-label={`Select invoice ${invoice.invoiceNumber}`}
                         className="relative z-20 h-4 w-4 rounded border-[var(--card-border)] bg-[var(--background-elevated)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-0"
                       />
                     </td>

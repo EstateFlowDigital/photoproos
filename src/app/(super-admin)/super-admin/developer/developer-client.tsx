@@ -471,11 +471,11 @@ export function DeveloperPageClient({
                 <div className="space-y-1">
                   {plan.features.slice(0, 3).map((feature, i) => (
                     <div
-                      key={i}
+                      key={feature.id || i}
                       className="flex items-center gap-2 text-xs text-[var(--foreground-muted)]"
                     >
                       <CheckIcon className="w-3 h-3 text-[var(--success)]" />
-                      {feature}
+                      {feature.name}
                     </div>
                   ))}
                   {plan.features.length > 3 && (

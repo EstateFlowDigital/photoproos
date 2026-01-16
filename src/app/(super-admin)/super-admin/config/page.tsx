@@ -13,9 +13,9 @@ async function ConfigLoader() {
     getAuditLogs({ limit: 10 }),
   ]);
 
-  const flags = flagsResult.success ? (flagsResult.data as unknown[]) : [];
-  const settings = settingsResult.success ? (settingsResult.data as unknown[]) : [];
-  const auditLogs = auditResult.success ? (auditResult.data?.logs ?? []) : [];
+  const flags = flagsResult.success && Array.isArray(flagsResult.data) ? flagsResult.data : [];
+  const settings = settingsResult.success && Array.isArray(settingsResult.data) ? settingsResult.data : [];
+  const auditLogs = auditResult.success && Array.isArray(auditResult.data?.logs) ? auditResult.data.logs : [];
 
   return (
     <ConfigPageClient

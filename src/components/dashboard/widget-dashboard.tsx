@@ -74,7 +74,10 @@ export interface DashboardData {
   recentGalleries: Array<{
     id: string;
     name: string;
-    thumbnailUrl: string | null;
+    client: string;
+    photoCount: number;
+    status: "draft" | "pending" | "delivered" | "expired";
+    thumbnailUrl?: string;
     createdAt: SerializedDate;
   }>;
   upcomingBookings: Array<{

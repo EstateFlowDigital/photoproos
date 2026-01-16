@@ -8,6 +8,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+
+- **Dashboard Audit Phase 1: Accessibility & Design System Fixes** - Comprehensive fixes across 14+ dashboard pages:
+
+  **Accessibility (WCAG 2.1 AA Compliance)**
+  - **team-page-client.tsx**: Added ARIA attributes to dropdown menu (`role="menu"`, `aria-expanded`, `aria-haspopup`), keyboard navigation (Arrow keys, Escape, Enter/Space), replaced native `confirm()` with accessible modal dialog using `useConfirm` hook
+  - **workflows-client.tsx**: Added dropdown ARIA attributes and keyboard navigation, screen reader label for search input, null safety for config lookups
+  - **leads-page-client.tsx**: Implemented focus trap in detail modal (Tab cycling, Escape to close), focus restoration on close, ARIA dialog attributes (`role="dialog"`, `aria-modal`, `aria-labelledby`), click outside to dismiss
+  - **notifications-page-client.tsx**: Added proper tab navigation with `role="tablist"`, `role="tab"`, `aria-selected`, `aria-controls`, `role="tabpanel"`, and arrow key navigation
+  - **inbox-page-client.tsx**: Added proper `<label>` associations with `htmlFor`, screen reader hints for keyboard shortcuts (`aria-describedby`)
+  - **contracts-page-client.tsx**: Added accessible search input label (`sr-only`), clear button `aria-label`
+  - **invoices-page-client.tsx**: Added `aria-label` to select-all checkbox and individual row checkboxes
+
+  **Null Safety / Runtime Crash Prevention**
+  - **dashboard/page.tsx**: Fixed non-null assertions on potentially null data (`widgetConfigResult.data!` → proper null check, filtered null dates before mapping for calendar events and deadlines)
+  - **galleries/page.tsx**: Added optional chaining for assets array access (`gallery.assets?.[0]?.thumbnailUrl`)
+
+  **Design System Compliance (CSS Variables)**
+  - **team-page-client.tsx**: Replaced hardcoded Tailwind colors (`bg-purple-500/10`, `bg-blue-500/10`) with CSS variables (`--ai`, `--primary`, `--foreground-muted`, `--error`)
+  - **leads-page-client.tsx**: Replaced hardcoded colors for inquiry type badges (purple/cyan/orange → `--ai`/`--info`/`--warning`), convert button (green → `--success`)
+  - **cms/page.tsx**: Replaced all hardcoded colors (`text-blue-500`, `text-yellow-500`, `text-purple-500`, `text-orange-500`, `text-green-500`, `text-red-500`) with semantic CSS variables (`--primary`, `--warning`, `--ai`, `--success`, `--error`)
+
+- **Dashboard Widget Fixes** - Fixed multiple issues with dashboard widgets not displaying correctly:
+  - **Revenue Calculation Bug**: Fixed `lastMonthRevenueValue` not being converted from cents to dollars
+    - Both `thisMonthRevenueValue` and `lastMonthRevenueValue` now properly divide by 100
+    - Fixed percentage change calculation using consistent units
+  - **Gallery Data Transformation**: Fixed missing data for Recent Galleries widget
+    - Added `client`, `photoCount`, and `status` fields to gallery data
+    - Updated `DashboardData` type interface to include full gallery properties
+  - **Image Domain Configuration**: Updated `next.config.mjs` to support R2 storage images
+    - Changed from `domains` to `remotePatterns` for more flexible configuration
+    - Added patterns for `*.r2.dev`, `*.r2.cloudflarestorage.com`, and `**.photoproos.com`
+    - Gallery thumbnails should now load correctly from Cloudflare R2 storage
+
 - **AI Page Type Export Fix** - Fixed AI page crashing with "L is not a function" error:
   - Added missing `export` keyword to type interfaces in `@/lib/actions/ai.ts`
   - Exported: `ConversationSummary`, `ConversationMessage`, `ConversationDetail`, `PendingAction`

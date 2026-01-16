@@ -349,11 +349,11 @@ export default async function DashboardPage() {
     }),
   ]);
 
-  // Process results
+  // Process results (convert cents to dollars)
   const thisMonthRevenueValue = (thisMonthRevenue._sum.totalCents || 0) / 100;
-  const lastMonthRevenueValue = lastMonthRevenue._sum.totalCents || 0;
+  const lastMonthRevenueValue = (lastMonthRevenue._sum.totalCents || 0) / 100;
   const pendingInvoicesValue = (pendingInvoices._sum.totalCents || 0) / 100;
-  const widgetConfig = widgetConfigResult.success ? widgetConfigResult.data! : { version: 2 as const, widgets: [], gridColumns: 4 };
+  const widgetConfig = widgetConfigResult.success && widgetConfigResult.data ? widgetConfigResult.data : { version: 2 as const, widgets: [], gridColumns: 4 };
   const expiringGalleries = expiringGalleriesResult.success ? expiringGalleriesResult.data : [];
   const overdueInvoices = overdueInvoicesResult.success ? overdueInvoicesResult.data : { invoices: [], totalOverdueCents: 0 };
   const walkthroughState = walkthroughPreferenceResult.success && walkthroughPreferenceResult.data ? walkthroughPreferenceResult.data.state : "open";
@@ -367,7 +367,7 @@ export default async function DashboardPage() {
   const yearToDateRevenueValue = (yearToDateRevenue._sum.totalCents || 0) / 100;
 
   // Calculate changes
-  const revenueChange = calculatePercentChange(thisMonthRevenueValue, lastMonthRevenueValue / 100);
+  const revenueChange = calculatePercentChange(thisMonthRevenueValue, lastMonthRevenueValue);
   const galleriesChange = calculateCountChange(activeGalleries, lastMonthActiveGalleries);
   const clientsChange = calculateCountChange(totalClients, lastMonthTotalClients);
 
@@ -394,14 +394,16 @@ export default async function DashboardPage() {
       href: `/scheduling/${booking.id}`,
       type: "booking" as const,
     })),
-    ...calendarOpenHouses.map((site) => ({
-      id: `open-house-${site.id}`,
-      title: `Open House · ${site.project?.name || "Property"}`,
-      subtitle: site.address,
-      date: site.openHouseDate!.toISOString(),
-      href: `/properties/${site.projectId}`,
-      type: "open_house" as const,
-    })),
+    ...calendarOpenHouses
+      .filter((site) => site.openHouseDate !== null)
+      .map((site) => ({
+        id: `open-house-${site.id}`,
+        title: `Open House · ${site.project?.name || "Property"}`,
+        subtitle: site.address,
+        date: site.openHouseDate!.toISOString(),
+        href: `/properties/${site.projectId}`,
+        type: "open_house" as const,
+      })),
   ];
 
   // Build dashboard data for widgets
@@ -415,7 +417,10 @@ export default async function DashboardPage() {
     recentGalleries: recentGalleries.map((g) => ({
       id: g.id,
       name: g.name,
-      thumbnailUrl: g.coverImageUrl || g.assets[0]?.thumbnailUrl || g.assets[0]?.originalUrl || null,
+      client: g.client?.company || g.client?.fullName || "Unknown Client",
+      photoCount: g._count?.assets || 0,
+      status: (g.status === "delivered" ? "delivered" : g.status === "pending_review" ? "pending" : g.status === "expired" ? "expired" : "draft") as "draft" | "pending" | "delivered" | "expired",
+      thumbnailUrl: g.coverImageUrl || g.assets?.[0]?.thumbnailUrl || g.assets?.[0]?.originalUrl || undefined,
       createdAt: g.createdAt,
     })),
     upcomingBookings: upcomingBookings.map((b) => ({
@@ -497,14 +502,16 @@ export default async function DashboardPage() {
       expiresAt: c.expiresAt || undefined,
     })),
     // Deadlines widget data
-    deadlines: upcomingDeadlines.map((d) => ({
-      id: d.id,
-      title: d.title,
-      dueDate: d.dueDate!,
-      type: "task" as const,
-      href: d.projectId ? `/projects/tasks/${d.id}` : "/projects",
-      priority: d.priority as "low" | "medium" | "high" | undefined,
-    })),
+    deadlines: upcomingDeadlines
+      .filter((d) => d.dueDate !== null)
+      .map((d) => ({
+        id: d.id,
+        title: d.title,
+        dueDate: d.dueDate!,
+        type: "task" as const,
+        href: d.projectId ? `/projects/tasks/${d.id}` : "/projects",
+        priority: d.priority as "low" | "medium" | "high" | undefined,
+      })),
     // Referral widget data
     referral: referralStats ? {
       referralCode: referralProfile?.referralCode || null,

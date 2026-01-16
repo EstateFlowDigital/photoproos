@@ -140,7 +140,7 @@ export default async function GalleriesPage({ searchParams }: GalleriesPageProps
     photos: gallery._count.assets,
     status: gallery.status as "delivered" | "pending" | "draft" | "archived",
     revenue: gallery.priceCents > 0 ? formatCurrency(gallery.priceCents) : undefined,
-    thumbnailUrl: gallery.coverImageUrl || gallery.assets[0]?.thumbnailUrl || gallery.assets[0]?.originalUrl || undefined,
+    thumbnailUrl: gallery.coverImageUrl || gallery.assets?.[0]?.thumbnailUrl || gallery.assets?.[0]?.originalUrl || undefined,
     createdAt: gallery.createdAt.toISOString(),
     views: gallery.viewCount,
     downloads: gallery.downloadCount,

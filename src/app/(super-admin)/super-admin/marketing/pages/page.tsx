@@ -29,7 +29,7 @@ function LoadingSkeleton() {
 // Pages list content
 async function PagesContent() {
   const result = await getMarketingPages();
-  const pages = result.success ? result.data : [];
+  const pages = result.success && Array.isArray(result.data) ? result.data : [];
 
   return <PagesListClient pages={pages} />;
 }

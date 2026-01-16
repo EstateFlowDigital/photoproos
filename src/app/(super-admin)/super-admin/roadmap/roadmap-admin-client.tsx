@@ -16,7 +16,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  Select,
+  SelectRoot as Select,
   SelectContent,
   SelectItem,
   SelectTrigger,

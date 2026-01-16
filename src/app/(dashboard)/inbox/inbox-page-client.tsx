@@ -769,7 +769,9 @@ function ConversationView({
       {/* Reply Box */}
       <div className="border-t border-[var(--card-border)] p-4">
         <div className="rounded-lg border border-[var(--card-border)] bg-[var(--background)]">
+          <label htmlFor="reply-textarea" className="sr-only">Reply message</label>
           <textarea
+            id="reply-textarea"
             value={replyText}
             onChange={(e) => setReplyText(e.target.value)}
             onKeyDown={(e) => {
@@ -780,8 +782,10 @@ function ConversationView({
             }}
             placeholder="Type your reply... (⌘+Enter to send)"
             rows={3}
+            aria-describedby="reply-hint"
             className="w-full resize-none border-0 bg-transparent p-4 text-sm text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-0"
           />
+          <span id="reply-hint" className="sr-only">Press Command or Control plus Enter to send</span>
           <div className="flex items-start justify-between gap-4 flex-wrap border-t border-[var(--card-border)] px-4 py-2">
             <div className="flex items-center gap-1">
               <button
@@ -959,8 +963,9 @@ function ComposeModal({
             </div>
           )}
           <div>
-            <label className="text-sm font-medium text-foreground-muted">To</label>
+            <label htmlFor="compose-to" className="text-sm font-medium text-foreground-muted">To</label>
             <input
+              id="compose-to"
               type="email"
               value={to}
               onChange={(e) => setTo(e.target.value)}
@@ -969,8 +974,9 @@ function ComposeModal({
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-foreground-muted">Subject</label>
+            <label htmlFor="compose-subject" className="text-sm font-medium text-foreground-muted">Subject</label>
             <input
+              id="compose-subject"
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
@@ -979,8 +985,9 @@ function ComposeModal({
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-foreground-muted">Message</label>
+            <label htmlFor="compose-message" className="text-sm font-medium text-foreground-muted">Message</label>
             <textarea
+              id="compose-message"
               value={body}
               onChange={(e) => setBody(e.target.value)}
               onKeyDown={(e) => {
@@ -991,8 +998,10 @@ function ComposeModal({
               }}
               placeholder="Type your message... (⌘+Enter to send)"
               rows={8}
+              aria-describedby="compose-hint"
               className="mt-1 w-full resize-none rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-2 text-sm text-foreground placeholder:text-foreground-muted focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
             />
+            <span id="compose-hint" className="sr-only">Press Command or Control plus Enter to send</span>
           </div>
         </div>
 

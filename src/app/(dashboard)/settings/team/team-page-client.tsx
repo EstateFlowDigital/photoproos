@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { InviteModal, PendingInvitations } from "./invite-modal";
 import { ArrowLeftIcon, PlusIcon, CheckIcon, XIcon, UsersIcon, ShieldIcon, UserIcon, TrashIcon } from "@/components/ui/settings-icons";
 import { updateMemberRole, removeMember } from "@/lib/actions/settings";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 interface TeamMember {
   id: string;
@@ -39,29 +40,66 @@ interface TeamPageClientProps {
 }
 
 const roleLabels = {
-  owner: { label: "Owner", color: "bg-purple-500/10 text-purple-400" },
-  admin: { label: "Admin", color: "bg-blue-500/10 text-blue-400" },
-  member: { label: "Member", color: "bg-gray-500/10 text-gray-400" },
+  owner: { label: "Owner", color: "bg-[var(--ai)]/10 text-[var(--ai)]" },
+  admin: { label: "Admin", color: "bg-[var(--primary)]/10 text-[var(--primary)]" },
+  member: { label: "Member", color: "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)]" },
 };
 
 export function TeamPageClient({ members, pendingInvitations, memberLimit }: TeamPageClientProps) {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
   const [isPending, startTransition] = useTransition();
   const searchParams = useSearchParams();
   const inviteHandledRef = useRef(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const confirm = useConfirm();
 
   const canInvite = memberLimit === -1 || members.length < memberLimit;
   const inviteParam = searchParams?.get("invite");
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = () => setOpenDropdown(null);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpenDropdown(null);
+        setFocusedIndex(-1);
+      }
+    };
     if (openDropdown) {
       document.addEventListener("click", handleClickOutside);
-      return () => document.removeEventListener("click", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.removeEventListener("click", handleClickOutside);
+        document.removeEventListener("keydown", handleKeyDown);
+      };
     }
   }, [openDropdown]);
+
+  // Focus management for dropdown menu items
+  useEffect(() => {
+    if (openDropdown && dropdownRef.current && focusedIndex >= 0) {
+      const items = dropdownRef.current.querySelectorAll('[role="menuitem"]');
+      (items[focusedIndex] as HTMLElement)?.focus();
+    }
+  }, [focusedIndex, openDropdown]);
+
+  const handleDropdownKeyNav = useCallback((e: React.KeyboardEvent, itemCount: number) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setFocusedIndex((prev) => (prev + 1) % itemCount);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setFocusedIndex((prev) => (prev - 1 + itemCount) % itemCount);
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      setFocusedIndex(0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      setFocusedIndex(itemCount - 1);
+    }
+  }, []);
 
   const handleRoleChange = (memberId: string, newRole: "admin" | "member") => {
     startTransition(async () => {
@@ -72,11 +110,20 @@ export function TeamPageClient({ members, pendingInvitations, memberLimit }: Tea
         toast.error(result.error || "Failed to update role");
       }
       setOpenDropdown(null);
+      setFocusedIndex(-1);
     });
   };
 
-  const handleRemoveMember = (memberId: string, memberName: string) => {
-    if (!confirm(`Are you sure you want to remove ${memberName} from the team?`)) {
+  const handleRemoveMember = async (memberId: string, memberName: string) => {
+    const confirmed = await confirm({
+      title: "Remove Team Member",
+      description: `Are you sure you want to remove ${memberName} from the team? This action cannot be undone.`,
+      confirmText: "Remove",
+      cancelText: "Cancel",
+      variant: "destructive",
+    });
+
+    if (!confirmed) {
       return;
     }
     startTransition(async () => {
@@ -87,6 +134,7 @@ export function TeamPageClient({ members, pendingInvitations, memberLimit }: Tea
         toast.error(result.error || "Failed to remove member");
       }
       setOpenDropdown(null);
+      setFocusedIndex(-1);
     });
   };
 
@@ -187,56 +235,89 @@ export function TeamPageClient({ members, pendingInvitations, memberLimit }: Tea
                     >
                       Skills & Equipment
                     </Link>
-                    {member.role !== "owner" && (
-                      <div className="relative">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenDropdown(openDropdown === member.id ? null : member.id);
-                          }}
-                          className="rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground"
-                          disabled={isPending}
-                        >
-                          <MoreIcon className="h-4 w-4" />
-                        </button>
-                        {openDropdown === member.id && (
-                          <div
-                            className="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-1 shadow-lg"
-                            onClick={(e) => e.stopPropagation()}
+                    {member.role !== "owner" && (() => {
+                      const menuItems = [
+                        ...(member.role !== "admin" ? [{ action: "admin" as const, label: "Make Admin", Icon: ShieldIcon, iconClass: "text-[var(--primary)]" }] : []),
+                        ...(member.role !== "member" ? [{ action: "member" as const, label: "Make Member", Icon: UserIcon, iconClass: "text-[var(--foreground-muted)]" }] : []),
+                        { action: "remove" as const, label: "Remove from Team", Icon: TrashIcon, iconClass: "text-[var(--error)]", isDestructive: true },
+                      ];
+                      return (
+                        <div className="relative">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenDropdown(openDropdown === member.id ? null : member.id);
+                              setFocusedIndex(-1);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                setOpenDropdown(openDropdown === member.id ? null : member.id);
+                                setFocusedIndex(0);
+                              } else if (e.key === "ArrowDown" && openDropdown !== member.id) {
+                                e.preventDefault();
+                                setOpenDropdown(member.id);
+                                setFocusedIndex(0);
+                              }
+                            }}
+                            aria-haspopup="menu"
+                            aria-expanded={openDropdown === member.id}
+                            aria-label={`Actions for ${member.user.fullName || member.user.email}`}
+                            className="rounded-lg bg-[var(--background-hover)] p-2 text-foreground-muted transition-colors hover:bg-[var(--background-secondary)] hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                            disabled={isPending}
                           >
-                            <div className="px-3 py-2 text-xs font-medium text-foreground-muted">
-                              Change Role
-                            </div>
-                            {member.role !== "admin" && (
-                              <button
-                                onClick={() => handleRoleChange(member.id, "admin")}
-                                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-[var(--background-hover)]"
-                              >
-                                <ShieldIcon className="h-4 w-4 text-blue-400" />
-                                Make Admin
-                              </button>
-                            )}
-                            {member.role !== "member" && (
-                              <button
-                                onClick={() => handleRoleChange(member.id, "member")}
-                                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-[var(--background-hover)]"
-                              >
-                                <UserIcon className="h-4 w-4 text-gray-400" />
-                                Make Member
-                              </button>
-                            )}
-                            <div className="my-1 border-t border-[var(--card-border)]" />
-                            <button
-                              onClick={() => handleRemoveMember(member.id, member.user.fullName || member.user.email)}
-                              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-[var(--error)] hover:bg-[var(--error)]/10"
+                            <MoreIcon className="h-4 w-4" />
+                          </button>
+                          {openDropdown === member.id && (
+                            <div
+                              ref={dropdownRef}
+                              role="menu"
+                              aria-label="Member actions"
+                              className="absolute right-0 top-full z-50 mt-1 w-48 rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-1 shadow-lg"
+                              onClick={(e) => e.stopPropagation()}
+                              onKeyDown={(e) => handleDropdownKeyNav(e, menuItems.length)}
                             >
-                              <TrashIcon className="h-4 w-4" />
-                              Remove from Team
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                              <div className="px-3 py-2 text-xs font-medium text-foreground-muted" id={`role-section-${member.id}`}>
+                                Change Role
+                              </div>
+                              {menuItems.map((item, index) => (
+                                <button
+                                  key={item.action}
+                                  role="menuitem"
+                                  tabIndex={focusedIndex === index ? 0 : -1}
+                                  onClick={() => {
+                                    if (item.action === "remove") {
+                                      handleRemoveMember(member.id, member.user.fullName || member.user.email);
+                                    } else {
+                                      handleRoleChange(member.id, item.action);
+                                    }
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                      e.preventDefault();
+                                      if (item.action === "remove") {
+                                        handleRemoveMember(member.id, member.user.fullName || member.user.email);
+                                      } else {
+                                        handleRoleChange(member.id, item.action);
+                                      }
+                                    }
+                                  }}
+                                  className={cn(
+                                    "flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors focus:outline-none focus-visible:bg-[var(--background-hover)]",
+                                    item.isDestructive
+                                      ? "text-[var(--error)] hover:bg-[var(--error)]/10 border-t border-[var(--card-border)] mt-1"
+                                      : "text-foreground hover:bg-[var(--background-hover)]"
+                                  )}
+                                >
+                                  <item.Icon className={cn("h-4 w-4", item.iconClass)} />
+                                  {item.label}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Zap,
@@ -149,6 +149,56 @@ export function WorkflowsClient() {
   const [workflows, setWorkflows] = useState<Workflow[]>(MOCK_WORKFLOWS);
   const [search, setSearch] = useState("");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside or pressing Escape
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpenMenuId(null);
+        setFocusedIndex(-1);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpenMenuId(null);
+        setFocusedIndex(-1);
+      }
+    };
+    if (openMenuId) {
+      document.addEventListener("click", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.removeEventListener("click", handleClickOutside);
+        document.removeEventListener("keydown", handleKeyDown);
+      };
+    }
+  }, [openMenuId]);
+
+  // Focus management for dropdown menu items
+  useEffect(() => {
+    if (openMenuId && dropdownRef.current && focusedIndex >= 0) {
+      const items = dropdownRef.current.querySelectorAll('[role="menuitem"]');
+      (items[focusedIndex] as HTMLElement)?.focus();
+    }
+  }, [focusedIndex, openMenuId]);
+
+  const handleDropdownKeyNav = useCallback((e: React.KeyboardEvent, itemCount: number) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setFocusedIndex((prev) => (prev + 1) % itemCount);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setFocusedIndex((prev) => (prev - 1 + itemCount) % itemCount);
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      setFocusedIndex(0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      setFocusedIndex(itemCount - 1);
+    }
+  }, []);
 
   const formatRelativeTime = (dateString: string) => {
     const diff = Date.now() - new Date(dateString).getTime();
@@ -229,9 +279,11 @@ export function WorkflowsClient() {
       {/* Search and Actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="relative w-full sm:w-64">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" aria-hidden="true" />
+          <label htmlFor="workflow-search" className="sr-only">Search workflows</label>
           <input
-            type="text"
+            id="workflow-search"
+            type="search"
             placeholder="Search workflows..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -266,8 +318,8 @@ export function WorkflowsClient() {
       ) : (
         <div className="space-y-3">
           {filteredWorkflows.map((workflow) => {
-            const triggerConfig = TRIGGER_CONFIG[workflow.trigger];
-            const statusConfig = STATUS_CONFIG[workflow.status];
+            const triggerConfig = TRIGGER_CONFIG[workflow.trigger] ?? { label: "Unknown", icon: Zap, color: "text-foreground-muted" };
+            const statusConfig = STATUS_CONFIG[workflow.status] ?? { label: "Unknown", color: "text-foreground-muted", bg: "bg-[var(--background-tertiary)]" };
             const TriggerIcon = triggerConfig.icon;
 
             return (
@@ -331,30 +383,66 @@ export function WorkflowsClient() {
                         )}
                       </Button>
                     )}
-                    <div className="relative">
+                    <div className="relative" ref={openMenuId === workflow.id ? dropdownRef : undefined}>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setOpenMenuId(openMenuId === workflow.id ? null : workflow.id)}
+                        onClick={() => {
+                          setOpenMenuId(openMenuId === workflow.id ? null : workflow.id);
+                          setFocusedIndex(-1);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setOpenMenuId(openMenuId === workflow.id ? null : workflow.id);
+                            setFocusedIndex(0);
+                          } else if (e.key === "ArrowDown" && openMenuId !== workflow.id) {
+                            e.preventDefault();
+                            setOpenMenuId(workflow.id);
+                            setFocusedIndex(0);
+                          }
+                        }}
+                        aria-haspopup="menu"
+                        aria-expanded={openMenuId === workflow.id}
+                        aria-label={`Actions for ${workflow.name}`}
                       >
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                       {openMenuId === workflow.id && (
-                        <div className="absolute right-0 top-full z-10 mt-1 w-36 rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-1 shadow-lg">
+                        <div
+                          role="menu"
+                          aria-label="Workflow actions"
+                          className="absolute right-0 top-full z-10 mt-1 w-36 rounded-lg border border-[var(--card-border)] bg-[var(--card)] py-1 shadow-lg"
+                          onKeyDown={(e) => handleDropdownKeyNav(e, 3)}
+                        >
                           <Link
                             href={`/workflows/${workflow.id}`}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-[var(--background-hover)]"
+                            role="menuitem"
+                            tabIndex={focusedIndex === 0 ? 0 : -1}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-[var(--background-hover)] focus:outline-none focus-visible:bg-[var(--background-hover)]"
                           >
                             <Edit2 className="h-4 w-4" />
                             Edit
                           </Link>
-                          <button className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-[var(--background-hover)]">
+                          <button
+                            role="menuitem"
+                            tabIndex={focusedIndex === 1 ? 0 : -1}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-[var(--background-hover)] focus:outline-none focus-visible:bg-[var(--background-hover)]"
+                          >
                             <Copy className="h-4 w-4" />
                             Duplicate
                           </button>
                           <button
+                            role="menuitem"
+                            tabIndex={focusedIndex === 2 ? 0 : -1}
                             onClick={() => handleDelete(workflow.id)}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--error)] hover:bg-[var(--background-hover)]"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                handleDelete(workflow.id);
+                              }
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--error)] hover:bg-[var(--background-hover)] focus:outline-none focus-visible:bg-[var(--background-hover)]"
                           >
                             <Trash2 className="h-4 w-4" />
                             Delete

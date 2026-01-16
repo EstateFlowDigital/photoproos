@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -142,32 +142,59 @@ export function NotificationsPageClient({
 
       {/* Tab Navigation */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap gap-1 rounded-lg bg-[var(--background-tertiary)] p-1 sm:flex-nowrap">
+        <div
+          role="tablist"
+          aria-label="Notifications and Activity tabs"
+          className="flex flex-wrap gap-1 rounded-lg bg-[var(--background-tertiary)] p-1 sm:flex-nowrap"
+          onKeyDown={(e) => {
+            if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+              e.preventDefault();
+              const tabs: TabType[] = ["notifications", "activity"];
+              const currentIndex = tabs.indexOf(activeTab);
+              const direction = e.key === "ArrowRight" ? 1 : -1;
+              const newIndex = (currentIndex + direction + tabs.length) % tabs.length;
+              setActiveTab(tabs[newIndex]);
+              // Focus the new tab
+              const tabButtons = e.currentTarget.querySelectorAll('[role="tab"]');
+              (tabButtons[newIndex] as HTMLElement)?.focus();
+            }
+          }}
+        >
           <button
+            role="tab"
+            id="notifications-tab"
+            aria-selected={activeTab === "notifications"}
+            aria-controls="notifications-panel"
+            tabIndex={activeTab === "notifications" ? 0 : -1}
             onClick={() => setActiveTab("notifications")}
-            className={`relative flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            className={`relative flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] ${
               activeTab === "notifications"
                 ? "bg-[var(--card)] text-foreground shadow-sm"
                 : "text-foreground-muted hover:text-foreground"
             }`}
           >
-            <BellIcon className="h-4 w-4" />
+            <BellIcon className="h-4 w-4" aria-hidden="true" />
             Notifications
             {unreadCount > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--primary)] px-1.5 text-xs font-medium text-white">
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--primary)] px-1.5 text-xs font-medium text-white" aria-label={`${unreadCount > 99 ? "99 or more" : unreadCount} unread`}>
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
           </button>
           <button
+            role="tab"
+            id="activity-tab"
+            aria-selected={activeTab === "activity"}
+            aria-controls="activity-panel"
+            tabIndex={activeTab === "activity" ? 0 : -1}
             onClick={() => setActiveTab("activity")}
-            className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] ${
               activeTab === "activity"
                 ? "bg-[var(--card)] text-foreground shadow-sm"
                 : "text-foreground-muted hover:text-foreground"
             }`}
           >
-            <ClockIcon className="h-4 w-4" />
+            <ClockIcon className="h-4 w-4" aria-hidden="true" />
             Activity Log
           </button>
         </div>
@@ -219,22 +246,34 @@ export function NotificationsPageClient({
       )}
 
       {/* Content */}
-      <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
-        {activeTab === "notifications" ? (
+      {activeTab === "notifications" ? (
+        <div
+          role="tabpanel"
+          id="notifications-panel"
+          aria-labelledby="notifications-tab"
+          className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto"
+        >
           <NotificationsList
             notifications={filteredNotifications}
             onNotificationClick={handleNotificationClick}
             formatTimeAgo={formatTimeAgo}
             filterActive={activeFilter !== "all"}
           />
-        ) : (
+        </div>
+      ) : (
+        <div
+          role="tabpanel"
+          id="activity-panel"
+          aria-labelledby="activity-tab"
+          className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto"
+        >
           <ActivityList
             activities={activities}
             getActivityLinkUrl={getActivityLinkUrl}
             formatTimeAgo={formatTimeAgo}
           />
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Settings Link */}
       <div className="text-center">

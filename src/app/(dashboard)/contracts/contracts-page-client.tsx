@@ -143,9 +143,11 @@ export function ContractsPageClient({
       {/* Search and Status Filter */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" />
+          <label htmlFor="contracts-search" className="sr-only">Search contracts</label>
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-muted" aria-hidden="true" />
           <input
-            type="text"
+            id="contracts-search"
+            type="search"
             placeholder="Search contracts, clients, templates..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -154,6 +156,7 @@ export function ContractsPageClient({
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
+              aria-label="Clear search"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-muted hover:text-foreground"
             >
               <X className="h-4 w-4" />

@@ -57,25 +57,25 @@ export default async function CMSAdminPage() {
           label="Active Policies"
           value={governanceStats?.activePolicies || 0}
           icon={Shield}
-          color="text-blue-500"
+          color="text-[var(--primary)]"
         />
         <StatCard
           label="Open Violations"
           value={governanceStats?.unresolvedViolations || 0}
           icon={AlertTriangle}
-          color="text-yellow-500"
+          color="text-[var(--warning)]"
         />
         <StatCard
           label="Active Workflows"
           value={workflowStats?.activeWorkflows || 0}
           icon={GitBranch}
-          color="text-purple-500"
+          color="text-[var(--ai)]"
         />
         <StatCard
           label="Pending Approvals"
           value={workflowStats?.pendingInstances || 0}
           icon={Clock}
-          color="text-orange-500"
+          color="text-[var(--warning)]"
         />
       </div>
 
@@ -85,7 +85,7 @@ export default async function CMSAdminPage() {
         <FeatureCard
           href="/cms/governance"
           icon={Shield}
-          iconColor="text-blue-500"
+          iconColor="text-[var(--primary)]"
           title="Content Governance"
           description="Enforce brand standards, SEO requirements, accessibility rules, and content freshness policies."
           features={[
@@ -105,7 +105,7 @@ export default async function CMSAdminPage() {
         <FeatureCard
           href="/cms/collaboration"
           icon={Users}
-          iconColor="text-green-500"
+          iconColor="text-[var(--success)]"
           title="Real-time Collaboration"
           description="Enable multiple users to edit content simultaneously with live presence and cursor tracking."
           features={[
@@ -120,7 +120,7 @@ export default async function CMSAdminPage() {
         <FeatureCard
           href="/cms/workflows"
           icon={GitBranch}
-          iconColor="text-purple-500"
+          iconColor="text-[var(--ai)]"
           title="Workflow Builder"
           description="Create visual approval workflows with conditions, actions, notifications, and delays."
           features={[
@@ -147,7 +147,7 @@ export default async function CMSAdminPage() {
         <div className="grid md:grid-cols-3 gap-8">
           {/* Governance Flow */}
           <div className="space-y-4">
-            <h3 className="font-medium text-blue-500">Governance Flow</h3>
+            <h3 className="font-medium text-[var(--primary)]">Governance Flow</h3>
             <div className="space-y-2 text-sm">
               <FlowStep number={1} text="Create governance policies" />
               <FlowArrow />
@@ -161,7 +161,7 @@ export default async function CMSAdminPage() {
 
           {/* Collaboration Flow */}
           <div className="space-y-4">
-            <h3 className="font-medium text-green-500">Collaboration Flow</h3>
+            <h3 className="font-medium text-[var(--success)]">Collaboration Flow</h3>
             <div className="space-y-2 text-sm">
               <FlowStep number={1} text="Open content editor" />
               <FlowArrow />
@@ -175,7 +175,7 @@ export default async function CMSAdminPage() {
 
           {/* Workflow Flow */}
           <div className="space-y-4">
-            <h3 className="font-medium text-purple-500">Workflow Flow</h3>
+            <h3 className="font-medium text-[var(--ai)]">Workflow Flow</h3>
             <div className="space-y-2 text-sm">
               <FlowStep number={1} text="Design workflow visually" />
               <FlowArrow />
@@ -194,19 +194,19 @@ export default async function CMSAdminPage() {
         <h3 className="text-sm font-medium mb-3">Status Legend</h3>
         <div className="flex flex-wrap gap-6 text-sm">
           <div className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-green-500" />
+            <CheckCircle className="w-4 h-4 text-[var(--success)]" />
             <span>Passed / Approved</span>
           </div>
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-yellow-500" />
+            <AlertTriangle className="w-4 h-4 text-[var(--warning)]" />
             <span>Warning / Pending</span>
           </div>
           <div className="flex items-center gap-2">
-            <XCircle className="w-4 h-4 text-red-500" />
+            <XCircle className="w-4 h-4 text-[var(--error)]" />
             <span>Blocked / Rejected</span>
           </div>
           <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-blue-500" />
+            <Clock className="w-4 h-4 text-[var(--primary)]" />
             <span>In Progress</span>
           </div>
         </div>
@@ -280,7 +280,7 @@ function FeatureCard({
       <ul className="space-y-2 mb-4">
         {features.map((feature, index) => (
           <li key={index} className="flex items-center gap-2 text-sm">
-            <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+            <CheckCircle className="w-3.5 h-3.5 text-[var(--success)]" />
             {feature}
           </li>
         ))}

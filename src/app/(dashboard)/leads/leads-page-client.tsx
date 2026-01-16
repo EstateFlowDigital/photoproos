@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useCallback, memo } from "react";
+import { useState, useTransition, useCallback, memo, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -966,6 +966,57 @@ function InquiryDetailModal({
   // Notes state
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [editedNotes, setEditedNotes] = useState("");
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
+
+  // Focus trap and restoration
+  useEffect(() => {
+    // Store the previously focused element
+    previousActiveElement.current = document.activeElement as HTMLElement;
+
+    // Focus the first focusable element in the modal
+    const focusableElements = modalRef.current?.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    if (focusableElements && focusableElements.length > 0) {
+      focusableElements[0].focus();
+    }
+
+    // Restore focus when modal closes
+    return () => {
+      previousActiveElement.current?.focus();
+    };
+  }, []);
+
+  // Handle escape key and focus trap
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+
+      // Focus trap - Tab cycling
+      if (e.key === "Tab" && modalRef.current) {
+        const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey && document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement?.focus();
+        } else if (!e.shiftKey && document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement?.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   // Get existing notes
   const getNotes = () => {
@@ -1018,19 +1069,34 @@ function InquiryDetailModal({
     setIsEditingNotes(true);
   };
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-lg rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="inquiry-modal-title"
+      onClick={(e) => {
+        // Close when clicking backdrop
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        ref={modalRef}
+        className="w-full max-w-lg rounded-xl border border-[var(--card-border)] bg-[var(--card)] shadow-2xl max-h-[90vh] overflow-y-auto"
+      >
         {/* Header */}
         <div className="flex items-start justify-between gap-4 flex-wrap border-b border-[var(--card-border)] px-6 py-4">
           <div className="flex items-center gap-3">
+            <h2 id="inquiry-modal-title" className="sr-only">
+              {inquiry.type === "portfolio" ? "Portfolio Inquiry Details" : inquiry.type === "chat" ? "Chat Message Details" : "Booking Request Details"}
+            </h2>
             <span
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium",
                 inquiry.type === "portfolio"
-                  ? "bg-purple-500/10 text-purple-400"
+                  ? "bg-[var(--ai)]/10 text-[var(--ai)]"
                   : inquiry.type === "chat"
-                  ? "bg-cyan-500/10 text-cyan-400"
-                  : "bg-orange-500/10 text-orange-400"
+                  ? "bg-[var(--info)]/10 text-[var(--info)]"
+                  : "bg-[var(--warning)]/10 text-[var(--warning)]"
               )}
             >
               {inquiry.type === "portfolio" ? "Portfolio Inquiry" : inquiry.type === "chat" ? "Chat Message" : "Booking Request"}
@@ -1046,7 +1112,8 @@ function InquiryDetailModal({
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground"
+            aria-label="Close dialog"
+            className="rounded-lg p-2 text-foreground-muted hover:bg-[var(--background-hover)] hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
           >
             <CloseIcon className="h-5 w-5" />
           </button>
@@ -1288,7 +1355,7 @@ function InquiryDetailModal({
               <button
                 onClick={onConvertToClient}
                 disabled={isPending || !email}
-                className="inline-flex items-center gap-2 rounded-lg border border-green-500/50 bg-green-500/10 px-4 py-2 text-sm font-medium text-green-500 transition-colors hover:bg-green-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-lg border border-[var(--success)]/50 bg-[var(--success)]/10 px-4 py-2 text-sm font-medium text-[var(--success)] transition-colors hover:bg-[var(--success)]/20 disabled:cursor-not-allowed disabled:opacity-50"
                 title={!email ? "Email required to convert" : undefined}
               >
                 <UserPlusIcon className="h-4 w-4" />
