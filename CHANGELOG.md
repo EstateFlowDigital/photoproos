@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Super Admin Data Fetching Errors** - Fixed multiple critical issues in super admin area:
+  - Fixed dashboard stats failing due to incorrect Prisma aggregate `_count` handling
+  - Fixed revenue stats page crashing from invalid `groupBy` query on nullable `organizationId` field
+  - Fixed revenue stats `reduce()` operations with proper null checks for payment and invoice arrays
+  - Fixed at-risk users `groupBy` query with empty array protection
+  - Fixed system stats returning undefined values with null coalescing
+  - Added defensive null checks throughout super admin data layer
+
+- **Super Admin Client Components** - Fixed null reference errors in client components:
+  - Fixed revenue client missing null checks on `revenueByMonth`, `revenueByDay`, `paymentsByStatus`, `topCustomers`, `revenueByPlan`
+  - Fixed dashboard client `unknown[]` type casting with array validation
+  - Fixed users client inconsistent optional chaining on `user.stats` properties
+
+- **Blog Editor Route** - Added missing blog post editor functionality:
+  - Created `/super-admin/marketing/blog/[id]/page.tsx` - Blog editor page
+  - Created `/super-admin/marketing/blog/[id]/blog-editor-client.tsx` - Blog editor component with full CRUD support
+  - Added `getBlogPostById()` action to marketing-cms.ts
+  - Fixed marketing dashboard "Create your first post" link (was pointing to non-existent route)
+
 ### Added
 - **Marketing Studio: Screenshot Zones** - New layer type for dashboard screenshots in social templates:
   - Added `ScreenshotZoneLayer` type to layer system (types.ts)
@@ -82,6 +102,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Full workflow: Edit → Save Draft → Preview Draft → Publish
 
 ### Fixed
+- **Marketing Studio: Template Rendering Bug Fix** - Fixed critical rendering issues in social template composer:
+  - **Root Cause**: Dimension mismatch between template loading (1080x1080) and display container (320x320)
+  - **Solution**: Standardized on 540px reference size for consistent layer positioning
+  - Added `CANVAS_REFERENCE_SIZE` constant (540px) for all layer calculations
+  - Updated template loading to use consistent reference size instead of platform-specific dimensions
+  - Fixed `InstagramPreview` container width from 320px to 540px to match layer coordinates
+  - Removed references to non-existent `platformConfig.previewSize` property
+  - Updated callback dependency arrays to remove unused platformConfig references
+  - Improved unknown element type fallback: now shows red semi-transparent shape with console warning instead of silent blue square
+
 - **Super-Admin Marketing CMS Fixes** - Resolved issues with testimonials, team members, FAQs, and navigation:
   - Fixed Zod validation for optional URL fields - empty strings now properly transform to null before URL validation
     - Updated `createTeamMemberSchema`: imageUrl, linkedIn, twitter, website use `optionalUrl` helper

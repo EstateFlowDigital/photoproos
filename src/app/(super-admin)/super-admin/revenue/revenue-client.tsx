@@ -370,13 +370,21 @@ export function RevenuePageClient({
         </div>
         <div className="h-32">
           {chartView === "daily" ? (
-            <MiniBarChart data={stats.revenueByDay} height={120} color="var(--success)" />
+            stats.revenueByDay && stats.revenueByDay.length > 0 ? (
+              <MiniBarChart data={stats.revenueByDay} height={120} color="var(--success)" />
+            ) : (
+              <div className="flex items-center justify-center h-full text-sm text-[var(--foreground-muted)]">No data available</div>
+            )
           ) : (
-            <MiniBarChart
-              data={stats.revenueByMonth.map((m) => ({ date: m.month, amount: m.amount }))}
-              height={120}
-              color="var(--primary)"
-            />
+            stats.revenueByMonth && stats.revenueByMonth.length > 0 ? (
+              <MiniBarChart
+                data={stats.revenueByMonth.map((m) => ({ date: m.month, amount: m.amount }))}
+                height={120}
+                color="var(--primary)"
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full text-sm text-[var(--foreground-muted)]">No data available</div>
+            )
           )}
         </div>
       </section>
@@ -438,37 +446,41 @@ export function RevenuePageClient({
             </h2>
           </div>
           <div className="space-y-3">
-            {stats.paymentsByStatus.map((status) => {
-              const percentage = stats.totalPayments > 0
-                ? (status.count / stats.totalPayments) * 100
-                : 0;
-              const statusConfig: Record<string, string> = {
-                completed: "bg-[var(--success)]",
-                pending: "bg-[var(--warning)]",
-                failed: "bg-[var(--error)]",
-                refunded: "bg-[var(--foreground-muted)]",
-              };
-              const barColor = statusConfig[status.status] || "bg-[var(--foreground-muted)]";
+            {stats.paymentsByStatus && stats.paymentsByStatus.length > 0 ? (
+              stats.paymentsByStatus.map((status) => {
+                const percentage = stats.totalPayments > 0
+                  ? (status.count / stats.totalPayments) * 100
+                  : 0;
+                const statusConfig: Record<string, string> = {
+                  completed: "bg-[var(--success)]",
+                  pending: "bg-[var(--warning)]",
+                  failed: "bg-[var(--error)]",
+                  refunded: "bg-[var(--foreground-muted)]",
+                };
+                const barColor = statusConfig[status.status] || "bg-[var(--foreground-muted)]";
 
-              return (
-                <div key={status.status}>
-                  <div className="flex items-start justify-between gap-4 flex-wrap mb-1">
-                    <span className="text-sm capitalize text-[var(--foreground)]">
-                      {status.status}
-                    </span>
-                    <span className="text-sm text-[var(--foreground-muted)]">
-                      {status.count} ({percentage.toFixed(1)}%)
-                    </span>
+                return (
+                  <div key={status.status}>
+                    <div className="flex items-start justify-between gap-4 flex-wrap mb-1">
+                      <span className="text-sm capitalize text-[var(--foreground)]">
+                        {status.status}
+                      </span>
+                      <span className="text-sm text-[var(--foreground-muted)]">
+                        {status.count} ({percentage.toFixed(1)}%)
+                      </span>
+                    </div>
+                    <div className="h-2 rounded-full bg-[var(--background-tertiary)] overflow-hidden">
+                      <div
+                        className={cn("h-full rounded-full transition-all", barColor)}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-2 rounded-full bg-[var(--background-tertiary)] overflow-hidden">
-                    <div
-                      className={cn("h-full rounded-full transition-all", barColor)}
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div className="text-sm text-[var(--foreground-muted)] py-4 text-center">No payment data</div>
+            )}
           </div>
         </section>
       </div>
@@ -490,7 +502,7 @@ export function RevenuePageClient({
               Top Customers
             </h2>
           </div>
-          {stats.topCustomers.length > 0 ? (
+          {stats.topCustomers && stats.topCustomers.length > 0 ? (
             <ul className="space-y-2" role="list">
               {stats.topCustomers.slice(0, 5).map((customer, index) => (
                 <li
@@ -626,7 +638,7 @@ export function RevenuePageClient({
       )}
 
       {/* Revenue by Plan */}
-      {stats.revenueByPlan.length > 0 && (
+      {stats.revenueByPlan && stats.revenueByPlan.length > 0 && (
         <section
           className={cn(
             "p-5 rounded-xl",

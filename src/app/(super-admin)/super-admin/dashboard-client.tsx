@@ -356,8 +356,9 @@ export function SuperAdminDashboardClient({
   recentActivity,
   recentFeedback,
 }: SuperAdminDashboardClientProps) {
-  const activity = recentActivity as AuditLog[];
-  const feedback = recentFeedback as Feedback[];
+  // Safely cast and validate arrays
+  const activity = Array.isArray(recentActivity) ? (recentActivity as AuditLog[]) : [];
+  const feedback = Array.isArray(recentFeedback) ? (recentFeedback as Feedback[]) : [];
 
   // Primary stats (big numbers)
   const primaryStats = [

@@ -204,19 +204,19 @@ export async function getSuperAdminDashboardStats(): Promise<
     }
 
     return ok({
-      totalUsers,
-      activeUsers,
-      totalOrganizations,
-      openTickets,
-      totalRevenueCents: revenueResult._sum.amountCents || 0,
-      newUsersThisWeek,
-      totalGalleries,
-      totalClients,
-      galleriesDeliveredThisMonth,
-      revenueThisMonth: revenueThisMonthResult._sum.amountCents || 0,
-      averageRating: feedbackStats._avg.rating || 0,
-      feedbackCount: feedbackStats._count || 0,
-      pendingFeedback,
+      totalUsers: totalUsers ?? 0,
+      activeUsers: activeUsers ?? 0,
+      totalOrganizations: totalOrganizations ?? 0,
+      openTickets: openTickets ?? 0,
+      totalRevenueCents: revenueResult?._sum?.amountCents ?? 0,
+      newUsersThisWeek: newUsersThisWeek ?? 0,
+      totalGalleries: totalGalleries ?? 0,
+      totalClients: totalClients ?? 0,
+      galleriesDeliveredThisMonth: galleriesDeliveredThisMonth ?? 0,
+      revenueThisMonth: revenueThisMonthResult?._sum?.amountCents ?? 0,
+      averageRating: feedbackStats?._avg?.rating ?? 0,
+      feedbackCount: typeof feedbackStats?._count === 'number' ? feedbackStats._count : 0,
+      pendingFeedback: pendingFeedback ?? 0,
       userGrowth,
       revenueGrowth,
     });
@@ -1497,14 +1497,14 @@ export async function getSystemHealthStats(): Promise<
     ]);
 
     return ok({
-      totalUsers,
-      totalOrganizations,
-      totalGalleries,
-      recentLogins,
-      activeImpersonations,
-      recentAuditLogs,
-      featureFlagsEnabled,
-      featureFlagsTotal,
+      totalUsers: totalUsers ?? 0,
+      totalOrganizations: totalOrganizations ?? 0,
+      totalGalleries: totalGalleries ?? 0,
+      recentLogins: recentLogins ?? 0,
+      activeImpersonations: activeImpersonations ?? 0,
+      recentAuditLogs: recentAuditLogs ?? 0,
+      featureFlagsEnabled: featureFlagsEnabled ?? 0,
+      featureFlagsTotal: featureFlagsTotal ?? 0,
     });
   } catch (error) {
     console.error("[SuperAdmin] Error fetching system stats:", error);
@@ -2727,7 +2727,7 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
         by: ["organizationId"],
         where: {
           status: "paid",
-          NOT: { organizationId: null },
+          organizationId: { not: null },
         },
         _sum: { amountCents: true },
         _count: true,
@@ -2774,28 +2774,30 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
       ? ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
       : 0;
 
-    // Payment stats
-    const totalPayments = paymentStats.reduce((acc, p) => acc + p._count, 0);
-    const successfulPayments = paymentStats.find((p) => p.status === "completed")?._count || 0;
-    const failedPayments = paymentStats.find((p) => p.status === "failed")?._count || 0;
-    const pendingPayments = paymentStats.find((p) => p.status === "pending")?._count || 0;
+    // Payment stats - with defensive null checks
+    const safePaymentStats = Array.isArray(paymentStats) ? paymentStats : [];
+    const totalPayments = safePaymentStats.reduce((acc, p) => acc + (p._count || 0), 0);
+    const successfulPayments = safePaymentStats.find((p) => p.status === "completed")?._count || 0;
+    const failedPayments = safePaymentStats.find((p) => p.status === "failed")?._count || 0;
+    const pendingPayments = safePaymentStats.find((p) => p.status === "pending")?._count || 0;
     const paymentSuccessRate = totalPayments > 0 ? (successfulPayments / totalPayments) * 100 : 0;
 
-    // Invoice stats
-    const totalInvoices = invoiceStats.reduce((acc, i) => acc + i._count, 0);
-    const paidInvoices = invoiceStats.find((i) => i.status === "paid")?._count || 0;
-    const unpaidInvoices = invoiceStats.filter((i) => ["draft", "sent", "viewed"].includes(i.status)).reduce((acc, i) => acc + i._count, 0);
-    const overdueInvoices = invoiceStats.find((i) => i.status === "overdue")?._count || 0;
+    // Invoice stats - with defensive null checks
+    const safeInvoiceStats = Array.isArray(invoiceStats) ? invoiceStats : [];
+    const totalInvoices = safeInvoiceStats.reduce((acc, i) => acc + (i._count || 0), 0);
+    const paidInvoices = safeInvoiceStats.find((i) => i.status === "paid")?._count || 0;
+    const unpaidInvoices = safeInvoiceStats.filter((i) => ["draft", "sent", "viewed"].includes(i.status)).reduce((acc, i) => acc + (i._count || 0), 0);
+    const overdueInvoices = safeInvoiceStats.find((i) => i.status === "overdue")?._count || 0;
 
     // Outstanding amount
-    const outstandingAmountCents = invoiceStats
+    const outstandingAmountCents = safeInvoiceStats
       .filter((i) => ["sent", "viewed", "overdue"].includes(i.status))
-      .reduce((acc, i) => acc + ((i._sum.totalCents || 0) - (i._sum.paidAmountCents || 0)), 0);
+      .reduce((acc, i) => acc + ((i._sum?.totalCents || 0) - (i._sum?.paidAmountCents || 0)), 0);
 
     // Averages
-    const completedPaymentAmount = paymentStats.find((p) => p.status === "completed")?._sum.amountCents || 0;
+    const completedPaymentAmount = safePaymentStats.find((p) => p.status === "completed")?._sum?.amountCents || 0;
     const averagePaymentCents = successfulPayments > 0 ? Math.round(completedPaymentAmount / successfulPayments) : 0;
-    const totalInvoiceAmount = invoiceStats.reduce((acc, i) => acc + (i._sum.totalCents || 0), 0);
+    const totalInvoiceAmount = safeInvoiceStats.reduce((acc, i) => acc + (i._sum?.totalCents || 0), 0);
     const averageInvoiceCents = totalInvoices > 0 ? Math.round(totalInvoiceAmount / totalInvoices) : 0;
 
     // Build daily revenue chart data
@@ -2836,14 +2838,15 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
       revenueByMonth.push({ month, amount: amount / 100 });
     });
 
-    // Top customers with org names
-    const topCustomers = topCustomersRaw.map((c) => {
+    // Top customers with org names - with defensive null check
+    const safeTopCustomersRaw = Array.isArray(topCustomersRaw) ? topCustomersRaw : [];
+    const topCustomers = safeTopCustomersRaw.map((c) => {
       const org = c.organizationId ? orgMap.get(c.organizationId) : null;
       return {
         organizationId: c.organizationId || "",
         organizationName: org?.name || "Unknown",
-        totalRevenue: (c._sum.amountCents || 0) / 100,
-        paymentCount: c._count,
+        totalRevenue: (c._sum?.amountCents || 0) / 100,
+        paymentCount: c._count || 0,
       };
     });
 
@@ -2851,11 +2854,11 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
     const planRevenue = new Map<string, { amount: number; count: number }>();
     organizations.forEach((org) => {
       const plan = org.plan || "free";
-      const customer = topCustomersRaw.find((c) => c.organizationId === org.id);
+      const customer = safeTopCustomersRaw.find((c) => c.organizationId === org.id);
       if (customer) {
         const existing = planRevenue.get(plan) || { amount: 0, count: 0 };
         planRevenue.set(plan, {
-          amount: existing.amount + (customer._sum.amountCents || 0) / 100,
+          amount: existing.amount + (customer._sum?.amountCents || 0) / 100,
           count: existing.count + 1,
         });
       }
@@ -3302,17 +3305,21 @@ export async function getAtRiskUsers(options: {
       .map((u) => u.memberships[0]?.organization?.id)
       .filter(Boolean) as string[];
 
-    const revenues = await prisma.payment.groupBy({
-      by: ["organizationId"],
-      where: {
-        organizationId: { in: orgIds },
-        status: "paid",
-      },
-      _sum: { amountCents: true },
-    });
+    // Only run groupBy if there are organizations to query
+    const revenues = orgIds.length > 0
+      ? await prisma.payment.groupBy({
+          by: ["organizationId"],
+          where: {
+            organizationId: { in: orgIds },
+            status: "paid",
+          },
+          _sum: { amountCents: true },
+        })
+      : [];
 
+    const safeRevenues = Array.isArray(revenues) ? revenues : [];
     const revenueMap = new Map(
-      revenues.map((r) => [r.organizationId, r._sum.amountCents || 0])
+      safeRevenues.map((r) => [r.organizationId, r._sum?.amountCents || 0])
     );
 
     const now = new Date();

@@ -472,7 +472,7 @@ export function MarketingDashboardClient({ pages = [], posts = [], testimonials 
                 <div className="p-6 sm:p-8 text-center text-[var(--foreground-muted)]" data-element="marketing-posts-empty">
                   <p className="text-sm sm:text-base">No blog posts yet.</p>
                   <Link
-                    href="/super-admin/marketing/blog/new"
+                    href="/super-admin/marketing/blog"
                     className={cn(
                       "text-[var(--primary)] hover:underline mt-2 inline-block",
                       "focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] rounded px-1"

@@ -988,6 +988,22 @@ export async function getBlogPost(slug: string): Promise<ActionResult<BlogPost |
 }
 
 /**
+ * Get a single blog post by ID
+ */
+export async function getBlogPostById(id: string): Promise<ActionResult<BlogPost | null>> {
+  try {
+    const post = await prisma.blogPost.findUnique({
+      where: { id },
+    });
+
+    return ok(post);
+  } catch (error) {
+    console.error("Error fetching blog post by ID:", error);
+    return fail("Failed to fetch blog post");
+  }
+}
+
+/**
  * Create a new blog post
  */
 export async function createBlogPost(

@@ -351,7 +351,7 @@ export function UsersPageClient({
 
     // Revenue filter
     if (filterRevenue !== "all") {
-      const revenue = user.stats.totalRevenueCents;
+      const revenue = user.stats?.totalRevenueCents ?? 0;
       if (filterRevenue === "none" && revenue > 0) return false;
       if (filterRevenue === "low" && (revenue <= 0 || revenue > 100000)) return false;
       if (filterRevenue === "medium" && (revenue <= 100000 || revenue > 500000)) return false;
@@ -832,13 +832,13 @@ export function UsersPageClient({
                 </span>
               </div>
               <div className="text-[var(--foreground-muted)]">
-                {formatCurrency(user.stats.totalRevenueCents)}
+                {formatCurrency(user.stats?.totalRevenueCents ?? 0)}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2 mb-4 text-xs text-[var(--foreground-muted)]">
-              <div>Galleries: {user.stats.totalGalleries}</div>
-              <div>Clients: {user.stats.totalClients}</div>
+              <div>Galleries: {user.stats?.totalGalleries ?? 0}</div>
+              <div>Clients: {user.stats?.totalClients ?? 0}</div>
             </div>
 
             {/* Quick Actions */}
