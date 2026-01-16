@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Super Admin Query Mismatches** - Fixed incorrect model and enum references:
+  - Changed `prisma.gallery` to `prisma.project` (Gallery model doesn't exist, Project is the correct model)
+  - Changed payment status `"succeeded"` to `"paid"` (matching actual PaymentStatus enum values)
+  - Fixes dashboard stats, user management, and system stats showing no data
+
 - **Super Admin Data Fetching Errors** - Fixed multiple critical issues in super admin area:
   - Fixed dashboard stats failing due to incorrect Prisma aggregate `_count` handling
   - Fixed revenue stats page crashing from invalid `groupBy` query on nullable `organizationId` field
