@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { isSuperAdmin } from "@/lib/auth/super-admin";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import {
   evaluateAllPolicies,
   evaluatePolicy,
@@ -77,7 +77,7 @@ export async function getGovernancePolicies(): Promise<
       orderBy: [{ priority: "desc" }, { name: "asc" }],
     });
 
-    return ok(
+    return success(
       policies.map((p) => ({
         id: p.id,
         name: p.name,
@@ -136,7 +136,7 @@ export async function getGovernancePolicy(
       return fail("Policy not found");
     }
 
-    return ok({
+    return success({
       policy,
       rules: (policy.rules as unknown as GovernanceRule[]) || [],
       recentViolations: policy.violations.map((v) => ({
@@ -176,7 +176,7 @@ export async function createGovernancePolicy(data: {
       isActive: true,
     });
 
-    return ok(policy);
+    return success(policy);
   } catch (error) {
     console.error("Error creating governance policy:", error);
     return fail("Failed to create policy");
@@ -204,7 +204,7 @@ export async function updateGovernancePolicy(
     }
 
     const policy = await updatePolicy(policyId, data);
-    return ok(policy);
+    return success(policy);
   } catch (error) {
     console.error("Error updating governance policy:", error);
     return fail("Failed to update policy");
@@ -223,7 +223,7 @@ export async function deleteGovernancePolicy(
     }
 
     await deletePolicy(policyId);
-    return ok(undefined);
+    return success(undefined);
   } catch (error) {
     console.error("Error deleting governance policy:", error);
     return fail("Failed to delete policy");
@@ -243,7 +243,7 @@ export async function toggleGovernancePolicyActive(
     }
 
     const policy = await togglePolicyActive(policyId, isActive);
-    return ok(policy);
+    return success(policy);
   } catch (error) {
     console.error("Error toggling policy:", error);
     return fail("Failed to toggle policy");
@@ -281,7 +281,7 @@ export async function checkContentGovernance(
       0
     );
 
-    return ok({
+    return success({
       ...result,
       totalViolations,
     });
@@ -332,7 +332,7 @@ export async function checkMarketingPageGovernance(
     };
 
     const result = await evaluateAllPolicies(content);
-    return ok(result);
+    return success(result);
   } catch (error) {
     console.error("Error checking marketing page governance:", error);
     return fail("Failed to check page");
@@ -372,7 +372,7 @@ export async function checkAndRecordViolations(
       }
     }
 
-    return ok(results);
+    return success(results);
   } catch (error) {
     console.error("Error checking and recording violations:", error);
     return fail("Failed to check content");
@@ -421,7 +421,7 @@ export async function getEntityViolations(
       orderBy: { createdAt: "desc" },
     });
 
-    return ok(
+    return success(
       violations.map((v) => ({
         id: v.id,
         policyId: v.policyId,
@@ -453,7 +453,7 @@ export async function resolveGovernanceViolation(
 
     // For now, use a placeholder for userId
     await resolveViolation(violationId, "super-admin", resolution, overrideReason);
-    return ok(undefined);
+    return success(undefined);
   } catch (error) {
     console.error("Error resolving violation:", error);
     return fail("Failed to resolve violation");
@@ -512,7 +512,7 @@ export async function getAllUnresolvedViolations(
       db.cMSGovernanceViolation.count({ where }),
     ]);
 
-    return ok({
+    return success({
       violations: violations.map((v) => ({
         id: v.id,
         policyId: v.policyId,
@@ -580,7 +580,7 @@ export async function getGovernanceStats(): Promise<ActionResult<GovernanceStats
       byType[p.type]++;
     });
 
-    return ok({
+    return success({
       totalPolicies,
       activePolicies,
       totalViolations,
@@ -634,7 +634,7 @@ export async function getGovernanceDashboardData(): Promise<
       take: 10,
     });
 
-    return ok({
+    return success({
       stats: statsResult.data,
       policies: policiesResult.data,
       recentViolations: recentViolations.map((v) => ({
@@ -666,7 +666,7 @@ export async function initializeGovernancePolicies(): Promise<ActionResult<void>
     }
 
     await seedDefaultPolicies();
-    return ok(undefined);
+    return success(undefined);
   } catch (error) {
     console.error("Error initializing policies:", error);
     return fail("Failed to initialize policies");
@@ -703,7 +703,7 @@ export async function getDefaultPolicyTemplates(): Promise<
       ruleCount: policy.rules.length,
     }));
 
-    return ok(templates);
+    return success(templates);
   } catch (error) {
     console.error("Error fetching default templates:", error);
     return fail("Failed to fetch templates");

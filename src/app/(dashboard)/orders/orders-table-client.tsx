@@ -60,15 +60,6 @@ function formatTimePreference(time: string | null) {
   return timeMap[time] || time;
 }
 
-// Kanban column definitions
-const _KANBAN_COLUMNS: { status: OrderStatus; label: string; color: string }[] = [
-  { status: "pending", label: "Pending", color: "var(--warning)" },
-  { status: "paid", label: "Paid", color: "var(--success)" },
-  { status: "processing", label: "Processing", color: "var(--primary)" },
-  { status: "completed", label: "Completed", color: "var(--success)" },
-  { status: "cancelled", label: "Cancelled", color: "var(--foreground-muted)" },
-];
-
 export function OrdersTableClient({
   orders,
   statusFilter,
@@ -242,16 +233,20 @@ export function OrdersTableClient({
       }
 
       startTransition(async () => {
-        const result = await updateOrder({
-          id: draggedOrder.id,
-          status: targetStatus,
-        });
+        try {
+          const result = await updateOrder({
+            id: draggedOrder.id,
+            status: targetStatus,
+          });
 
-        if (result.success) {
-          showToast(`Order ${draggedOrder.orderNumber} moved to ${formatStatusLabel(targetStatus)}`, "success");
-          router.refresh();
-        } else {
-          showToast(result.error || "Failed to update order status", "error");
+          if (result.success) {
+            showToast(`Order ${draggedOrder.orderNumber} moved to ${formatStatusLabel(targetStatus)}`, "success");
+            router.refresh();
+          } else {
+            showToast(result.error || "Failed to update order status", "error");
+          }
+        } catch {
+          showToast("Failed to update order. Please try again.", "error");
         }
       });
     }
@@ -376,7 +371,7 @@ export function OrdersTableClient({
       {filteredOrders.length > 0 && (
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
           <VirtualList
-            className="max-h-[70vh] min-w-[900px]"
+            className="max-h-[70vh] min-w-[600px] sm:min-w-[750px] md:min-w-[900px]"
             items={filteredOrders}
             estimateSize={() => 112}
             itemGap={0}

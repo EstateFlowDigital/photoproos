@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { isSuperAdmin, currentUser } from "@/lib/auth/super-admin";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import { randomBytes } from "crypto";
 import type { CMSWebhook, CMSWebhookLog, CMSWebhookEvent } from "@prisma/client";
 import { testWebhook, retryWebhook, getWebhookStats, cleanupWebhookLogs } from "@/lib/cms/webhooks";
@@ -27,7 +27,7 @@ export async function getWebhooks(): Promise<ActionResult<CMSWebhook[]>> {
       orderBy: { createdAt: "desc" },
     });
 
-    return ok(webhooks);
+    return success(webhooks);
   } catch (error) {
     console.error("Failed to get webhooks:", error);
     return fail("Failed to load webhooks");
@@ -51,7 +51,7 @@ export async function getWebhook(id: string): Promise<ActionResult<CMSWebhook>> 
       return fail("Webhook not found");
     }
 
-    return ok(webhook);
+    return success(webhook);
   } catch (error) {
     console.error("Failed to get webhook:", error);
     return fail("Failed to load webhook");
@@ -104,7 +104,7 @@ export async function createWebhook(params: {
       },
     });
 
-    return ok(webhook);
+    return success(webhook);
   } catch (error) {
     console.error("Failed to create webhook:", error);
     return fail("Failed to create webhook");
@@ -158,7 +158,7 @@ export async function updateWebhook(
       },
     });
 
-    return ok(webhook);
+    return success(webhook);
   } catch (error) {
     console.error("Failed to update webhook:", error);
     return fail("Failed to update webhook");
@@ -178,7 +178,7 @@ export async function deleteWebhook(id: string): Promise<ActionResult<void>> {
       where: { id },
     });
 
-    return ok(undefined);
+    return success(undefined);
   } catch (error) {
     console.error("Failed to delete webhook:", error);
     return fail("Failed to delete webhook");
@@ -201,7 +201,7 @@ export async function regenerateWebhookSecret(id: string): Promise<ActionResult<
       data: { secret: newSecret },
     });
 
-    return ok(newSecret);
+    return success(newSecret);
   } catch (error) {
     console.error("Failed to regenerate secret:", error);
     return fail("Failed to regenerate secret");
@@ -231,7 +231,7 @@ export async function toggleWebhookActive(id: string): Promise<ActionResult<bool
       data: { isActive: !webhook.isActive },
     });
 
-    return ok(updated.isActive);
+    return success(updated.isActive);
   } catch (error) {
     console.error("Failed to toggle webhook:", error);
     return fail("Failed to toggle webhook");
@@ -276,7 +276,7 @@ export async function getWebhookLogs(params: {
       db.cMSWebhookLog.count({ where }),
     ]);
 
-    return ok({ logs, total });
+    return success({ logs, total });
   } catch (error) {
     console.error("Failed to get webhook logs:", error);
     return fail("Failed to load webhook logs");
@@ -305,7 +305,7 @@ export async function getWebhookLog(id: string): Promise<ActionResult<CMSWebhook
       return fail("Log not found");
     }
 
-    return ok(log);
+    return success(log);
   } catch (error) {
     console.error("Failed to get webhook log:", error);
     return fail("Failed to load webhook log");
@@ -322,7 +322,7 @@ export async function retryWebhookDelivery(logId: string): Promise<ActionResult<
 
   try {
     const success = await retryWebhook(logId);
-    return ok(success);
+    return success(success);
   } catch (error) {
     console.error("Failed to retry webhook:", error);
     return fail("Failed to retry webhook");
@@ -346,7 +346,7 @@ export async function testWebhookDelivery(webhookId: string): Promise<
 
   try {
     const result = await testWebhook(webhookId);
-    return ok(result);
+    return success(result);
   } catch (error) {
     console.error("Failed to test webhook:", error);
     return fail("Failed to test webhook");
@@ -384,7 +384,7 @@ export async function getWebhookStatistics(webhookId: string): Promise<
 
   try {
     const stats = await getWebhookStats(webhookId);
-    return ok(stats);
+    return success(stats);
   } catch (error) {
     console.error("Failed to get webhook stats:", error);
     return fail("Failed to load webhook statistics");
@@ -401,7 +401,7 @@ export async function cleanupOldWebhookLogs(): Promise<ActionResult<number>> {
 
   try {
     const count = await cleanupWebhookLogs();
-    return ok(count);
+    return success(count);
   } catch (error) {
     console.error("Failed to cleanup logs:", error);
     return fail("Failed to cleanup logs");

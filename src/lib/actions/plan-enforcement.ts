@@ -190,7 +190,7 @@ export async function enforcePlanLimit(limitKey: LimitKey): Promise<ActionResult
     return fail(result.data.message || `You've reached your ${LIMIT_METADATA[limitKey].name.toLowerCase()} limit.`);
   }
 
-  return ok(undefined);
+  return success();
 }
 
 /**
@@ -207,7 +207,7 @@ export async function enforcePlanFeature(featureKey: FeatureKey): Promise<Action
     return fail(result.data.message || `${FEATURE_METADATA[featureKey].name} is not available on your current plan.`);
   }
 
-  return ok(undefined);
+  return success();
 }
 
 // =============================================================================

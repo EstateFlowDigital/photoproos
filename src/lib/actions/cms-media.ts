@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { isSuperAdmin, currentUser } from "@/lib/auth/super-admin";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import type { MediaAsset, MediaFolder, MediaAssetType } from "@prisma/client";
 import {
   generateSlug,
@@ -30,7 +30,7 @@ export async function getMediaFolders(): Promise<
     }
 
     const folders = await getFolderTree();
-    return ok(folders);
+    return success(folders);
   } catch (error) {
     console.error("Error fetching folders:", error);
     return fail("Failed to fetch folders");
@@ -58,7 +58,7 @@ export async function getMediaFolder(
 
     const path = await getFolderPath(id);
 
-    return ok({ ...folder, path });
+    return success({ ...folder, path });
   } catch (error) {
     console.error("Error fetching folder:", error);
     return fail("Failed to fetch folder");
@@ -102,7 +102,7 @@ export async function createMediaFolder(params: {
       },
     });
 
-    return ok(folder);
+    return success(folder);
   } catch (error) {
     console.error("Error creating folder:", error);
     return fail("Failed to create folder");
@@ -144,7 +144,7 @@ export async function updateMediaFolder(
       },
     });
 
-    return ok(folder);
+    return success(folder);
   } catch (error) {
     console.error("Error updating folder:", error);
     return fail("Failed to update folder");
@@ -188,7 +188,7 @@ export async function deleteMediaFolder(id: string): Promise<ActionResult<void>>
     // Delete the folder
     await db.mediaFolder.delete({ where: { id } });
 
-    return ok(undefined);
+    return success(undefined);
   } catch (error) {
     console.error("Error deleting folder:", error);
     return fail("Failed to delete folder");
@@ -220,7 +220,7 @@ export async function getMediaAssets(options?: {
     }
 
     const result = await searchAssets(options || {});
-    return ok(result);
+    return success(result);
   } catch (error) {
     console.error("Error fetching assets:", error);
     return fail("Failed to fetch assets");
@@ -247,7 +247,7 @@ export async function getMediaAsset(
       return fail("Asset not found");
     }
 
-    return ok(asset);
+    return success(asset);
   } catch (error) {
     console.error("Error fetching asset:", error);
     return fail("Failed to fetch asset");
@@ -323,7 +323,7 @@ export async function createMediaAsset(params: {
       },
     });
 
-    return ok(asset);
+    return success(asset);
   } catch (error) {
     console.error("Error creating asset:", error);
     return fail("Failed to create asset");
@@ -367,7 +367,7 @@ export async function updateMediaAsset(
       },
     });
 
-    return ok(asset);
+    return success(asset);
   } catch (error) {
     console.error("Error updating asset:", error);
     return fail("Failed to update asset");
@@ -386,7 +386,7 @@ export async function deleteMediaAsset(id: string): Promise<ActionResult<void>> 
     // TODO: Also delete from storage provider
     await db.mediaAsset.delete({ where: { id } });
 
-    return ok(undefined);
+    return success(undefined);
   } catch (error) {
     console.error("Error deleting asset:", error);
     return fail("Failed to delete asset");
@@ -407,7 +407,7 @@ export async function deleteMediaAssets(ids: string[]): Promise<ActionResult<{ d
       where: { id: { in: ids } },
     });
 
-    return ok({ deleted: result.count });
+    return success({ deleted: result.count });
   } catch (error) {
     console.error("Error deleting assets:", error);
     return fail("Failed to delete assets");
@@ -431,7 +431,7 @@ export async function moveMediaAssets(
       data: { folderId },
     });
 
-    return ok({ moved: result.count });
+    return success({ moved: result.count });
   } catch (error) {
     console.error("Error moving assets:", error);
     return fail("Failed to move assets");
@@ -461,7 +461,7 @@ export async function toggleMediaFavorite(id: string): Promise<ActionResult<Medi
       data: { isFavorite: !asset.isFavorite },
     });
 
-    return ok(updated);
+    return success(updated);
   } catch (error) {
     console.error("Error toggling favorite:", error);
     return fail("Failed to toggle favorite");
@@ -499,7 +499,7 @@ export async function addMediaTags(
 
     await Promise.all(updatePromises);
 
-    return ok({ updated: assets.length });
+    return success({ updated: assets.length });
   } catch (error) {
     console.error("Error adding tags:", error);
     return fail("Failed to add tags");
@@ -535,7 +535,7 @@ export async function removeMediaTags(
 
     await Promise.all(updatePromises);
 
-    return ok({ updated: assets.length });
+    return success({ updated: assets.length });
   } catch (error) {
     console.error("Error removing tags:", error);
     return fail("Failed to remove tags");
@@ -564,7 +564,7 @@ export async function getMediaStatistics(): Promise<
     }
 
     const stats = await getMediaStats();
-    return ok(stats);
+    return success(stats);
   } catch (error) {
     console.error("Error fetching statistics:", error);
     return fail("Failed to fetch statistics");
@@ -595,7 +595,7 @@ export async function getAllMediaTags(): Promise<ActionResult<{ tag: string; cou
       .map(([tag, count]) => ({ tag, count }))
       .sort((a, b) => b.count - a.count);
 
-    return ok(tags);
+    return success(tags);
   } catch (error) {
     console.error("Error fetching tags:", error);
     return fail("Failed to fetch tags");
@@ -612,7 +612,7 @@ export async function getAllMediaTags(): Promise<ActionResult<{ tag: string; cou
 export async function getUniqueFilename(originalName: string): Promise<ActionResult<string>> {
   try {
     const filename = generateFilename(originalName);
-    return ok(filename);
+    return success(filename);
   } catch (error) {
     console.error("Error generating filename:", error);
     return fail("Failed to generate filename");

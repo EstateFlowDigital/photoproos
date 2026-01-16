@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { isSuperAdmin } from "@/lib/auth/super-admin";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import {
   getPageAnalytics,
   getAnalyticsSummary,
@@ -37,7 +37,7 @@ export async function getPageAnalyticsData(
     startDate.setDate(startDate.getDate() - days);
 
     const analytics = await getPageAnalytics(pageId, startDate, endDate);
-    return ok(analytics);
+    return success(analytics);
   } catch (error) {
     console.error("Error fetching page analytics:", error);
     return fail("Failed to fetch page analytics");
@@ -60,7 +60,7 @@ export async function getAnalyticsSummaryData(
     startDate.setDate(startDate.getDate() - days);
 
     const summary = await getAnalyticsSummary(startDate, endDate);
-    return ok(summary);
+    return success(summary);
   } catch (error) {
     console.error("Error fetching analytics summary:", error);
     return fail("Failed to fetch analytics summary");
@@ -77,7 +77,7 @@ export async function getRealTimeVisitorCount(): Promise<ActionResult<number>> {
     }
 
     const count = await getRealTimeVisitors();
-    return ok(count);
+    return success(count);
   } catch (error) {
     console.error("Error fetching real-time visitors:", error);
     return fail("Failed to fetch real-time visitors");
@@ -107,7 +107,7 @@ export async function getPageRecentEvents(
     }
 
     const events = await getRecentEvents(pageId, limit);
-    return ok(events);
+    return success(events);
   } catch (error) {
     console.error("Error fetching recent events:", error);
     return fail("Failed to fetch recent events");
@@ -161,7 +161,7 @@ export async function getTopPages(
       take: limit,
     });
 
-    return ok(
+    return success(
       analytics.map((a) => ({
         pageSlug: a.pageSlug,
         pageviews: a._sum.pageviews || 0,
@@ -209,7 +209,7 @@ export async function getTrafficSources(
       });
     });
 
-    return ok(sources);
+    return success(sources);
   } catch (error) {
     console.error("Error fetching traffic sources:", error);
     return fail("Failed to fetch traffic sources");
@@ -249,7 +249,7 @@ export async function getDeviceBreakdown(
       });
     });
 
-    return ok(devices);
+    return success(devices);
   } catch (error) {
     console.error("Error fetching device breakdown:", error);
     return fail("Failed to fetch device breakdown");
@@ -289,7 +289,7 @@ export async function getCountryBreakdown(
       });
     });
 
-    return ok(countries);
+    return success(countries);
   } catch (error) {
     console.error("Error fetching country breakdown:", error);
     return fail("Failed to fetch country breakdown");
@@ -341,7 +341,7 @@ export async function getConversionFunnel(
     });
     const engaged = engagedAnalytics.reduce((sum, a) => sum + a.uniqueVisitors, 0);
 
-    return ok({
+    return success({
       visitors: analytics._sum.uniqueVisitors || 0,
       engaged,
       ctaClicks: analytics._sum.ctaClicks || 0,
@@ -392,7 +392,7 @@ export async function getDailyTrend(
       },
     });
 
-    return ok(
+    return success(
       analytics.map((a) => ({
         date: a.date.toISOString().split("T")[0],
         pageviews: a._sum.pageviews || 0,
@@ -424,7 +424,7 @@ export async function triggerAggregation(
     }
 
     await aggregateDailyAnalytics(pageId, pageSlug, date || new Date());
-    return ok(undefined);
+    return success(undefined);
   } catch (error) {
     console.error("Error triggering aggregation:", error);
     return fail("Failed to trigger aggregation");
@@ -447,7 +447,7 @@ export async function cleanupAnalyticsData(): Promise<
       cleanupOldSessions(),
     ]);
 
-    return ok({
+    return success({
       events: events.deleted,
       sessions: sessions.deleted,
     });
@@ -522,7 +522,7 @@ export async function getAnalyticsDashboardData(
         }))
       : [];
 
-    return ok({
+    return success({
       summary,
       dailyTrend,
       topPages,

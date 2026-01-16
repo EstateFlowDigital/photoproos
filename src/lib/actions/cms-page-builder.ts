@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { isSuperAdmin, currentUser } from "@/lib/auth/super-admin";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import type {
   CMSComponent,
   CMSComponentType,
@@ -46,7 +46,7 @@ export async function getCMSComponents(options?: {
       orderBy: [{ category: "asc" }, { sortOrder: "asc" }],
     });
 
-    return ok(
+    return success(
       components.map((c) => ({
         ...c,
         schema: c.schema as ComponentSchema,
@@ -78,7 +78,7 @@ export async function getCMSComponent(
       return fail("Component not found");
     }
 
-    return ok({
+    return success({
       ...component,
       schema: component.schema as ComponentSchema,
       defaultContent: component.defaultContent as Record<string, unknown>,
@@ -108,7 +108,7 @@ export async function getCMSComponentBySlug(
       return fail("Component not found");
     }
 
-    return ok({
+    return success({
       ...component,
       schema: component.schema as ComponentSchema,
       defaultContent: component.defaultContent as Record<string, unknown>,
@@ -162,7 +162,7 @@ export async function createCMSComponent(params: {
       },
     });
 
-    return ok(component);
+    return success(component);
   } catch (error) {
     console.error("Error creating component:", error);
     return fail("Failed to create component");
@@ -204,7 +204,7 @@ export async function updateCMSComponent(
       },
     });
 
-    return ok(component);
+    return success(component);
   } catch (error) {
     console.error("Error updating component:", error);
     return fail("Failed to update component");
@@ -225,7 +225,7 @@ export async function deleteCMSComponent(id: string): Promise<ActionResult<void>
       data: { isActive: false },
     });
 
-    return ok(undefined);
+    return success(undefined);
   } catch (error) {
     console.error("Error deleting component:", error);
     return fail("Failed to delete component");
@@ -262,7 +262,7 @@ export async function getPageForBuilder(
 
     const components = (page.components as PageComponentInstance[]) || [];
 
-    return ok({ page, components });
+    return success({ page, components });
   } catch (error) {
     console.error("Error fetching page for builder:", error);
     return fail("Failed to fetch page");
@@ -294,7 +294,7 @@ export async function updatePageComponents(
       },
     });
 
-    return ok(page);
+    return success(page);
   } catch (error) {
     console.error("Error updating page components:", error);
     return fail("Failed to update page components");
@@ -372,7 +372,7 @@ export async function addComponentToPage(
       data: { usageCount: { increment: 1 } },
     });
 
-    return ok({ page: updatedPage, instance });
+    return success({ page: updatedPage, instance });
   } catch (error) {
     console.error("Error adding component to page:", error);
     return fail("Failed to add component");
@@ -425,7 +425,7 @@ export async function removeComponentFromPage(
       });
     }
 
-    return ok(updatedPage);
+    return success(updatedPage);
   } catch (error) {
     console.error("Error removing component from page:", error);
     return fail("Failed to remove component");
@@ -475,7 +475,7 @@ export async function reorderPageComponents(
       },
     });
 
-    return ok(updatedPage);
+    return success(updatedPage);
   } catch (error) {
     console.error("Error reordering components:", error);
     return fail("Failed to reorder components");
@@ -520,7 +520,7 @@ export async function updateComponentInstanceContent(
       },
     });
 
-    return ok(updatedPage);
+    return success(updatedPage);
   } catch (error) {
     console.error("Error updating component content:", error);
     return fail("Failed to update component content");
@@ -582,7 +582,7 @@ export async function duplicateComponentInstance(
       data: { usageCount: { increment: 1 } },
     });
 
-    return ok({ page: updatedPage, instance: duplicate });
+    return success({ page: updatedPage, instance: duplicate });
   } catch (error) {
     console.error("Error duplicating component:", error);
     return fail("Failed to duplicate component");
@@ -613,7 +613,7 @@ export async function setPageLayoutMode(
       },
     });
 
-    return ok(page);
+    return success(page);
   } catch (error) {
     console.error("Error setting layout mode:", error);
     return fail("Failed to set layout mode");
@@ -684,7 +684,7 @@ export async function seedDefaultComponents(): Promise<ActionResult<{ created: n
       }
     }
 
-    return ok({ created });
+    return success({ created });
   } catch (error) {
     console.error("Error seeding components:", error);
     return fail("Failed to seed components");
@@ -730,7 +730,7 @@ export async function getComponentStats(): Promise<
       {} as Record<string, number>
     );
 
-    return ok({
+    return success({
       totalComponents: total,
       activeComponents: active,
       byCategory: categoryCount,

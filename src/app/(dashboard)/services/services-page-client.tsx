@@ -273,7 +273,7 @@ export function ServicesPageClient({ services }: ServicesPageClientProps) {
         </div>
       ) : (
         <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] overflow-x-auto">
-          <table className="w-full min-w-[700px]">
+          <table className="w-full min-w-[480px] sm:min-w-[600px] md:min-w-[700px]">
             <thead className="bg-[var(--background-secondary)] border-b border-[var(--card-border)]">
               <tr>
                 <th className="px-4 py-3 w-12"></th>

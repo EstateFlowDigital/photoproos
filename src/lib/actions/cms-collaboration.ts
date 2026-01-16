@@ -1,7 +1,7 @@
 "use server";
 
 import { isSuperAdmin } from "@/lib/auth/super-admin";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import {
   getOrCreateSession,
   getActiveParticipants,
@@ -46,7 +46,7 @@ export async function startCollabSession(
     }
 
     const result = await joinSession(entityType, entityId, user);
-    return ok(result);
+    return success(result);
   } catch (error) {
     console.error("Error starting collab session:", error);
     return fail("Failed to start collaborative session");
@@ -66,7 +66,7 @@ export async function endCollabSession(
     }
 
     await leaveSession(sessionId, userId);
-    return ok(undefined);
+    return success(undefined);
   } catch (error) {
     console.error("Error ending collab session:", error);
     return fail("Failed to end session");
@@ -86,7 +86,7 @@ export async function getCollabSession(
     }
 
     const session = await getOrCreateSession(entityType, entityId);
-    return ok(session);
+    return success(session);
   } catch (error) {
     console.error("Error getting collab session:", error);
     return fail("Failed to get session");
@@ -110,7 +110,7 @@ export async function collabPing(
     }
 
     const participants = await pingSession(sessionId, userId);
-    return ok(participants);
+    return success(participants);
   } catch (error) {
     console.error("Error pinging session:", error);
     return fail("Failed to ping session");
@@ -131,7 +131,7 @@ export async function updateCollabCursor(
     }
 
     await updateCursor(sessionId, userId, cursor);
-    return ok(undefined);
+    return success(undefined);
   } catch (error) {
     console.error("Error updating cursor:", error);
     return fail("Failed to update cursor");
@@ -150,7 +150,7 @@ export async function getCollabParticipants(
     }
 
     const participants = await getActiveParticipants(sessionId);
-    return ok(participants);
+    return success(participants);
   } catch (error) {
     console.error("Error getting participants:", error);
     return fail("Failed to get participants");
@@ -174,7 +174,7 @@ export async function saveCollabDocumentState(
     }
 
     await updateDocumentState(sessionId, documentState);
-    return ok(undefined);
+    return success(undefined);
   } catch (error) {
     console.error("Error saving document state:", error);
     return fail("Failed to save document state");
@@ -193,7 +193,7 @@ export async function getCollabDocumentState(
     }
 
     const state = await getDocumentState(sessionId);
-    return ok(state);
+    return success(state);
   } catch (error) {
     console.error("Error getting document state:", error);
     return fail("Failed to get document state");
@@ -225,7 +225,7 @@ export async function recordCollabEdit(
     }
 
     const recorded = await recordEdit(sessionId, user, edit);
-    return ok(recorded);
+    return success(recorded);
   } catch (error) {
     console.error("Error recording edit:", error);
     return fail("Failed to record edit");
@@ -245,7 +245,7 @@ export async function getCollabEditsSince(
     }
 
     const edits = await getEditsSinceVersion(sessionId, sinceVersion);
-    return ok(edits);
+    return success(edits);
   } catch (error) {
     console.error("Error getting edits:", error);
     return fail("Failed to get edits");
@@ -264,7 +264,7 @@ export async function getCollabVersion(
     }
 
     const version = await getCurrentVersion(sessionId);
-    return ok(version);
+    return success(version);
   } catch (error) {
     console.error("Error getting version:", error);
     return fail("Failed to get version");
@@ -305,7 +305,7 @@ export async function syncCollabSession(
       getCurrentVersion(sessionId),
     ]);
 
-    return ok({
+    return success({
       participants,
       edits,
       currentVersion,
@@ -336,7 +336,7 @@ export async function cleanupCollabSessions(): Promise<
       cleanupOldEdits(1000),
     ]);
 
-    return ok({
+    return success({
       sessions: sessions.deleted,
       edits: edits.deleted,
     });

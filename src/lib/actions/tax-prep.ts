@@ -107,7 +107,7 @@ export async function getOrCreateTaxPrepSession(
       });
     }
 
-    return ok({
+    return success({
       id: session.id,
       taxYear: session.taxYear,
       status: session.status,
@@ -145,7 +145,7 @@ export async function getTaxPrepSessions(): Promise<
       },
     });
 
-    return ok(
+    return success(
       sessions.map((session) => ({
         id: session.id,
         taxYear: session.taxYear,
@@ -384,7 +384,7 @@ export async function getTaxYearExpenseSummary(
       .map(([month, amount]) => ({ month, amount }))
       .sort((a, b) => a.month.localeCompare(b.month));
 
-    return ok({
+    return success({
       totalExpenses,
       totalMileage,
       expensesByCategory,
@@ -464,7 +464,7 @@ export async function getTaxYearRevenueSummary(taxYear: number): Promise<
       .map(([month, amount]) => ({ month, amount }))
       .sort((a, b) => a.month.localeCompare(b.month));
 
-    return ok({
+    return success({
       totalRevenue,
       paidRevenue: totalRevenue, // All payments are paid
       monthlyBreakdown,
@@ -505,7 +505,7 @@ export async function getTaxDocuments(
       orderBy: { createdAt: "desc" },
     });
 
-    return ok(
+    return success(
       documents.map((doc) => ({
         id: doc.id,
         type: doc.type,
@@ -568,7 +568,7 @@ export async function createTaxDocument(
     });
 
     revalidatePath("/settings/tax-prep");
-    return ok({ id: document.id });
+    return success({ id: document.id });
   } catch (error) {
     console.error("Error creating tax document:", error);
     return fail("Failed to create tax document");
@@ -797,7 +797,7 @@ export async function generateTaxSummary(
 
     revalidatePath("/settings/tax-prep");
 
-    return ok({
+    return success({
       taxYear,
       entityType: session.entityType,
       revenue: {
@@ -916,7 +916,7 @@ export async function shouldShowTaxSeasonModal(): Promise<
     const isInTaxSeason = currentMonth >= 0 && currentMonth < 4; // Jan-Apr
 
     if (!isInTaxSeason) {
-      return ok({ show: false, year: currentYear - 1 });
+      return success({ show: false, year: currentYear - 1 });
     }
 
     const taxYear = currentYear - 1;
@@ -938,7 +938,7 @@ export async function shouldShowTaxSeasonModal(): Promise<
       !session ||
       (session.status === "not_started" && !session.reminderDismissed);
 
-    return ok({ show: shouldShow, year: taxYear });
+    return success({ show: shouldShow, year: taxYear });
   } catch (error) {
     console.error("Error checking tax season modal:", error);
     return fail("Failed to check tax season status");
@@ -1011,7 +1011,7 @@ export async function processTaxDocumentWithAI(
 
     revalidatePath("/settings/tax-prep");
 
-    return ok({
+    return success({
       id: updated.id,
       type: updated.type,
       filename: updated.filename,
@@ -1073,7 +1073,7 @@ export async function processAllPendingDocuments(
     }
 
     revalidatePath("/settings/tax-prep");
-    return ok({ processed, failed });
+    return success({ processed, failed });
   } catch (error) {
     console.error("Error processing pending documents:", error);
     return fail("Failed to process documents");

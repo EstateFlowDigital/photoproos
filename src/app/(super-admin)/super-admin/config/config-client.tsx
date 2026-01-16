@@ -317,6 +317,7 @@ export function ConfigPageClient({
   const [settings, setSettings] = useState<SystemSetting[]>(initialSettings as SystemSetting[]);
   const [auditLogs] = useState<AuditLog[]>(initialAuditLogs as AuditLog[]);
   const [isPending, startTransition] = useTransition();
+  const [statusFilter, setStatusFilter] = useState<FeatureFlagStatus | "all">("all");
 
   const handleUpdateStatus = async (slugOrId: string, newStatus: FeatureFlagStatus) => {
     startTransition(async () => {
@@ -370,13 +371,23 @@ export function ConfigPageClient({
     });
   };
 
-  // Group flags by category
-  const flagsByCategory = flags.reduce((acc, flag) => {
+  // Filter flags by status, then group by category
+  const filteredFlags = statusFilter === "all"
+    ? flags
+    : flags.filter((f) => f.status === statusFilter);
+
+  const flagsByCategory = filteredFlags.reduce((acc, flag) => {
     const categoryName = CATEGORY_NAMES[flag.category] || flag.category;
     if (!acc[categoryName]) acc[categoryName] = [];
     acc[categoryName].push(flag);
     return acc;
   }, {} as Record<string, FeatureFlag[]>);
+
+  // Status counts for filter badges
+  const statusCounts = flags.reduce((acc, flag) => {
+    acc[flag.status] = (acc[flag.status] || 0) + 1;
+    return acc;
+  }, {} as Record<FeatureFlagStatus, number>);
 
   // Check if we have data
   const hasData = flags.length > 0 || settings.length > 0;
@@ -468,6 +479,60 @@ export function ConfigPageClient({
         </div>
       )}
 
+      {/* Feature Flags Header with Filter */}
+      {flags.length > 0 && (
+        <div
+          className={cn(
+            "rounded-xl",
+            "border border-[var(--border)]",
+            "bg-[var(--card)]",
+            "p-6"
+          )}
+        >
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <h2 className="text-lg font-semibold text-[var(--foreground)]">
+                Feature Flags
+              </h2>
+              <p className="text-sm text-[var(--foreground-muted)]">
+                Control feature availability across the platform
+              </p>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setStatusFilter("all")}
+                className={cn(
+                  "px-3 py-1.5 text-sm rounded-full border transition-colors",
+                  statusFilter === "all"
+                    ? "bg-[var(--primary)] text-white border-[var(--primary)]"
+                    : "bg-transparent text-[var(--foreground-muted)] border-[var(--border)] hover:border-[var(--foreground-muted)]"
+                )}
+              >
+                All ({flags.length})
+              </button>
+              {(Object.keys(STATUS_CONFIG) as FeatureFlagStatus[]).map((status) => {
+                const config = STATUS_CONFIG[status];
+                const count = statusCounts[status] || 0;
+                return (
+                  <button
+                    key={status}
+                    onClick={() => setStatusFilter(status)}
+                    className={cn(
+                      "px-3 py-1.5 text-sm rounded-full border transition-colors flex items-center gap-1.5",
+                      statusFilter === status
+                        ? `${config.bgColor} ${config.color} border-current`
+                        : "bg-transparent text-[var(--foreground-muted)] border-[var(--border)] hover:border-[var(--foreground-muted)]"
+                    )}
+                  >
+                    {config.label} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Feature Flags by Category */}
       {Object.entries(flagsByCategory).map(([category, categoryFlags]) => (
         <div
@@ -525,6 +590,22 @@ export function ConfigPageClient({
                       {flag.rolloutPercentage !== undefined && flag.rolloutPercentage < 100 && (
                         <p className="text-xs text-[var(--warning)] mt-1">
                           Rollout: {flag.rolloutPercentage}%
+                        </p>
+                      )}
+                      {/* Lifecycle dates */}
+                      {flag.status === "coming_soon" && flag.launchDate && (
+                        <p className="text-xs text-[var(--info)] mt-1">
+                          Launch: {new Date(flag.launchDate).toLocaleDateString()}
+                        </p>
+                      )}
+                      {flag.status === "beta" && flag.betaEndDate && (
+                        <p className="text-xs text-[var(--warning)] mt-1">
+                          Beta ends: {new Date(flag.betaEndDate).toLocaleDateString()}
+                        </p>
+                      )}
+                      {flag.status === "discontinued" && flag.deprecationDate && (
+                        <p className="text-xs text-[var(--foreground-muted)] mt-1">
+                          Discontinued: {new Date(flag.deprecationDate).toLocaleDateString()}
                         </p>
                       )}
                     </div>

@@ -80,7 +80,7 @@ export async function getConversations(): Promise<
       },
     });
 
-    return ok(
+    return success(
       conversations.map((c) => ({
         id: c.id,
         title: c.title,
@@ -127,7 +127,7 @@ export async function getConversation(
       return fail("Conversation not found");
     }
 
-    return ok({
+    return success({
       id: conversation.id,
       title: conversation.title,
       status: conversation.status,
@@ -196,7 +196,7 @@ export async function createConversation(): Promise<
       },
     });
 
-    return ok({ id: conversation.id });
+    return success({ id: conversation.id });
   } catch (error) {
     console.error("Error creating conversation:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -331,7 +331,7 @@ export async function sendMessage(
     });
 
     revalidatePath("/ai");
-    return ok({
+    return success({
       messageId: assistantMessage.id,
       response: agentResponse.message,
     });
@@ -412,7 +412,7 @@ export async function approveAction(
     });
 
     revalidatePath("/ai");
-    return ok({ success: true, result: executionResult.data });
+    return success({ success: true, result: executionResult.data });
   } catch (error) {
     console.error("Error approving action:", error);
     return fail("Failed to approve action");
@@ -529,7 +529,7 @@ export async function getAIUsageStats(): Promise<
       }),
     ]);
 
-    return ok({
+    return success({
       totalConversations: totalStats._count,
       totalMessages: messageCount,
       totalTokens: totalStats._sum.totalTokens || 0,

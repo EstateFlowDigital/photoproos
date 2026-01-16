@@ -81,7 +81,7 @@ export async function getPublicRoadmap(): Promise<
       },
     });
 
-    return ok(
+    return success(
       phases.map((phase) => ({
         id: phase.id,
         name: phase.name,
@@ -137,7 +137,7 @@ export async function getApprovedFeatureRequests(options?: {
       },
     });
 
-    return ok(
+    return success(
       features.map((feature) => ({
         id: feature.id,
         title: feature.title,
@@ -196,7 +196,7 @@ export async function castVoteAsUser(
       });
 
       revalidatePath("/roadmap");
-      return ok({ voted: false });
+      return success({ voted: false });
     }
 
     // Add vote
@@ -237,7 +237,7 @@ export async function castVoteAsUser(
     }
 
     revalidatePath("/roadmap");
-    return ok({ voted: true });
+    return success({ voted: true });
   } catch (error) {
     console.error("Error casting vote:", error);
     return fail("Failed to cast vote");
@@ -284,7 +284,7 @@ export async function submitFeatureRequestAsUser(data: {
     });
 
     revalidatePath("/roadmap");
-    return ok({ id: feature.id });
+    return success({ id: feature.id });
   } catch (error) {
     console.error("Error submitting feature request:", error);
     return fail("Failed to submit feature request");
@@ -427,7 +427,7 @@ export async function verifyVoterEmail(
       },
     });
 
-    return ok({ voterId: voter.id });
+    return success({ voterId: voter.id });
   } catch (error) {
     console.error("Error verifying email:", error);
     return fail("Failed to verify email");
@@ -499,7 +499,7 @@ export async function castVoteAsVoter(
       });
 
       revalidatePath("/roadmap");
-      return ok({ voted: false });
+      return success({ voted: false });
     }
 
     // Add vote
@@ -528,7 +528,7 @@ export async function castVoteAsVoter(
     ]);
 
     revalidatePath("/roadmap");
-    return ok({ voted: true });
+    return success({ voted: true });
   } catch (error) {
     console.error("Error casting vote:", error);
     return fail("Failed to cast vote");
@@ -571,7 +571,7 @@ export async function submitFeatureRequestAsVoter(
     });
 
     revalidatePath("/roadmap");
-    return ok({ id: feature.id });
+    return success({ id: feature.id });
   } catch (error) {
     console.error("Error submitting feature request:", error);
     return fail("Failed to submit feature request");
@@ -601,7 +601,7 @@ export async function getPendingFeatureRequests(): Promise<
       orderBy: { createdAt: "desc" },
     });
 
-    return ok(
+    return success(
       features.map((feature) => ({
         id: feature.id,
         title: feature.title,

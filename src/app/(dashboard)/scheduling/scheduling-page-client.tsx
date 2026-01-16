@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { CreateBookingModal } from "@/components/modals/create-booking-modal";
 import { updateBookingStatus } from "@/lib/actions/bookings";
 import { parseLocalDate } from "@/lib/dates";
+import { useToast } from "@/hooks/use-toast";
 import {
   PageHeader,
   PageContextNav,
@@ -279,6 +280,7 @@ export function SchedulingPageClient({
   pendingTimeOffCount = 0,
 }: SchedulingPageClientProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [calendarView, setCalendarView] = useState<CalendarViewMode>("month");
@@ -485,8 +487,28 @@ export function SchedulingPageClient({
     e.preventDefault();
     e.stopPropagation();
     startTransition(async () => {
-      await updateBookingStatus(bookingId, "confirmed");
-      router.refresh();
+      try {
+        const result = await updateBookingStatus(bookingId, "confirmed");
+        if (result?.error) {
+          toast({
+            title: "Error",
+            description: result.error,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Booking Confirmed",
+            description: "The booking has been confirmed successfully.",
+          });
+          router.refresh();
+        }
+      } catch {
+        toast({
+          title: "Error",
+          description: "Failed to confirm booking. Please try again.",
+          variant: "destructive",
+        });
+      }
     });
   };
 
@@ -494,8 +516,28 @@ export function SchedulingPageClient({
     e.preventDefault();
     e.stopPropagation();
     startTransition(async () => {
-      await updateBookingStatus(bookingId, "cancelled");
-      router.refresh();
+      try {
+        const result = await updateBookingStatus(bookingId, "cancelled");
+        if (result?.error) {
+          toast({
+            title: "Error",
+            description: result.error,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Booking Cancelled",
+            description: "The booking has been cancelled.",
+          });
+          router.refresh();
+        }
+      } catch {
+        toast({
+          title: "Error",
+          description: "Failed to cancel booking. Please try again.",
+          variant: "destructive",
+        });
+      }
     });
   };
 
@@ -503,8 +545,28 @@ export function SchedulingPageClient({
     e.preventDefault();
     e.stopPropagation();
     startTransition(async () => {
-      await updateBookingStatus(bookingId, "completed");
-      router.refresh();
+      try {
+        const result = await updateBookingStatus(bookingId, "completed");
+        if (result?.error) {
+          toast({
+            title: "Error",
+            description: result.error,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Booking Completed",
+            description: "The booking has been marked as complete.",
+          });
+          router.refresh();
+        }
+      } catch {
+        toast({
+          title: "Error",
+          description: "Failed to complete booking. Please try again.",
+          variant: "destructive",
+        });
+      }
     });
   };
 
@@ -916,7 +978,7 @@ export function SchedulingPageClient({
         <div className="p-4">
           {calendarView === "month" && !selectedDate && (
             <div className="overflow-x-auto">
-              <div className="min-w-[720px]">
+              <div className="min-w-[480px] sm:min-w-[600px] md:min-w-[720px]">
               {/* Day Headers */}
               <div className="grid grid-cols-7 gap-1 mb-2">
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
@@ -985,7 +1047,7 @@ export function SchedulingPageClient({
 
           {calendarView === "week" && !selectedDate && (
             <div className="overflow-x-auto">
-              <div className="min-w-[860px]">
+              <div className="min-w-[560px] sm:min-w-[700px] md:min-w-[860px]">
                 <div className="grid grid-cols-7 gap-2">
                   {weekDays.map((day, index) => {
                     const dayBookings = getBookingsForDate(day.date);

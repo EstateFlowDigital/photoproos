@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
@@ -79,7 +79,7 @@ export async function getSettingsHistory(
       createdAt: a.createdAt,
     }));
 
-    return ok({
+    return success({
       changes,
       total,
       hasMore,

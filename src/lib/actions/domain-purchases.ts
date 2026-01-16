@@ -17,7 +17,7 @@
 
 import { prisma } from "@/lib/db";
 import { requireOrganizationId, getOrganizationId } from "@/lib/actions/auth-helper";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import { revalidatePath } from "next/cache";
 
 // =============================================================================
@@ -142,7 +142,7 @@ export async function checkDomainAvailability(
       const baseName = normalizedDomain.split(".")[0];
       const suggestions = await generateAlternativeSuggestions(baseName);
 
-      return ok({
+      return success({
         domain: normalizedDomain,
         available: false,
         premium: false,
@@ -166,7 +166,7 @@ export async function checkDomainAvailability(
           const baseName = normalizedDomain.split(".")[0];
           const suggestions = await generateAlternativeSuggestions(baseName);
 
-          return ok({
+          return success({
             domain: normalizedDomain,
             available: false,
             premium: false,
@@ -191,7 +191,7 @@ export async function checkDomainAvailability(
           const premium = searchData.result?.premium ?? false;
 
           if (available) {
-            return ok({
+            return success({
               domain: normalizedDomain,
               available: true,
               premium,
@@ -202,7 +202,7 @@ export async function checkDomainAvailability(
             const baseName = normalizedDomain.split(".")[0];
             const suggestions = await generateAlternativeSuggestions(baseName);
 
-            return ok({
+            return success({
               domain: normalizedDomain,
               available: false,
               premium: false,
@@ -225,7 +225,7 @@ export async function checkDomainAvailability(
     const isAvailable = Math.random() > 0.3; // 70% available
 
     if (isAvailable) {
-      return ok({
+      return success({
         domain: normalizedDomain,
         available: true,
         premium: false,
@@ -236,7 +236,7 @@ export async function checkDomainAvailability(
       const baseName = normalizedDomain.split(".")[0];
       const suggestions = await generateAlternativeSuggestions(baseName);
 
-      return ok({
+      return success({
         domain: normalizedDomain,
         available: false,
         premium: false,
@@ -397,7 +397,7 @@ export async function initiateDomainPurchase(params: {
       data: { stripeCheckoutId: session.id },
     });
 
-    return ok({
+    return success({
       checkoutUrl: session.url!,
       purchaseId: purchase.id,
     });
@@ -426,7 +426,7 @@ export async function completeDomainPurchase(
     }
 
     if (purchase.status !== "pending_payment") {
-      return ok({ domain: purchase.domain, status: purchase.status });
+      return success({ domain: purchase.domain, status: purchase.status });
     }
 
     // Verify Stripe payment
@@ -453,7 +453,7 @@ export async function completeDomainPurchase(
     // In production, this would call the Cloudflare Registrar API
     await registerDomainWithCloudflare(purchaseId);
 
-    return ok({
+    return success({
       domain: purchase.domain,
       status: "registering",
     });
@@ -652,7 +652,7 @@ export async function getOrganizationDomains(): Promise<ActionResult<DomainPurch
       orderBy: { createdAt: "desc" },
     });
 
-    return ok(
+    return success(
       purchases.map((p) => ({
         id: p.id,
         domain: p.domain,
@@ -697,7 +697,7 @@ export async function getDomainPurchase(
       return fail("Domain purchase not found");
     }
 
-    return ok({
+    return success({
       id: purchase.id,
       domain: purchase.domain,
       status: purchase.status,
@@ -743,7 +743,7 @@ export async function cancelDomainPurchase(
       data: { status: "cancelled" },
     });
 
-    return ok(undefined);
+    return success(undefined);
   } catch (error) {
     console.error("[DomainPurchase] Error cancelling purchase:", error);
     return fail("Failed to cancel purchase");

@@ -1,6 +1,6 @@
 "use server";
 
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { revalidatePath } from "next/cache";
@@ -212,7 +212,7 @@ export async function exportSettings(): Promise<
       },
     };
 
-    return ok(exportData);
+    return success(exportData);
   } catch (error) {
     console.error("Error exporting settings:", error);
     return fail("Failed to export settings");
@@ -355,7 +355,7 @@ export async function importSettings(
     }
 
     revalidatePath("/settings");
-    return ok({ imported });
+    return success({ imported });
   } catch (error) {
     console.error("Error importing settings:", error);
     return fail("Failed to import settings");
@@ -373,7 +373,7 @@ export async function validateImportData(
 
     // Check basic structure
     if (!data || typeof data !== "object") {
-      return ok({ valid: false, errors: ["Invalid data format"] });
+      return success({ valid: false, errors: ["Invalid data format"] });
     }
 
     const obj = data as Record<string, unknown>;
@@ -390,7 +390,7 @@ export async function validateImportData(
       errors.push("Missing settings object");
     }
 
-    return ok({ valid: errors.length === 0, errors });
+    return success({ valid: errors.length === 0, errors });
   } catch {
     return fail("Failed to validate import data");
   }

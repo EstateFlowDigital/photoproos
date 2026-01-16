@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useMemo, useTransition } from "react";
+import { useRef, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -47,7 +47,6 @@ interface InvoicesPageClientProps {
 
 export function InvoicesPageClient({ invoices, statusFilter }: InvoicesPageClientProps) {
   const router = useRouter();
-  const [_isPending, _startTransition] = useTransition();
   const tableParentRef = useRef<HTMLDivElement | null>(null);
 
   // Search and filter state
@@ -258,7 +257,7 @@ export function InvoicesPageClient({ invoices, statusFilter }: InvoicesPageClien
           ref={tableParentRef}
           className="rounded-xl border border-[var(--card-border)] bg-[var(--card)] max-h-[70vh] overflow-auto"
         >
-          <table className="w-full min-w-[700px]">
+          <table className="w-full min-w-[480px] sm:min-w-[600px] md:min-w-[700px]">
             <thead className="border-b border-[var(--card-border)] bg-[var(--background-secondary)] sticky top-0 z-10">
               <tr>
                 <th className="w-12 px-4 py-3">

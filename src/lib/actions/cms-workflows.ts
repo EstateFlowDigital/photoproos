@@ -1,7 +1,7 @@
 "use server";
 
 import { isSuperAdmin } from "@/lib/auth/super-admin";
-import { ok, fail, type ActionResult } from "@/lib/types/action-result";
+import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import {
   getAllWorkflows,
   getWorkflowsForType,
@@ -34,7 +34,7 @@ export async function getWorkflows(): Promise<ActionResult<CMSWorkflow[]>> {
     }
 
     const workflows = await getAllWorkflows();
-    return ok(workflows);
+    return success(workflows);
   } catch (error) {
     console.error("Error getting workflows:", error);
     return fail("Failed to get workflows");
@@ -53,7 +53,7 @@ export async function getWorkflowsForContentType(
     }
 
     const workflows = await getWorkflowsForType(entityType);
-    return ok(workflows);
+    return success(workflows);
   } catch (error) {
     console.error("Error getting workflows for type:", error);
     return fail("Failed to get workflows");
@@ -76,7 +76,7 @@ export async function getWorkflowById(
       return fail("Workflow not found");
     }
 
-    return ok(workflow);
+    return success(workflow);
   } catch (error) {
     console.error("Error getting workflow:", error);
     return fail("Failed to get workflow");
@@ -114,7 +114,7 @@ export async function createNewWorkflow(data: {
     }
 
     const workflow = await createWorkflow(data);
-    return ok(workflow);
+    return success(workflow);
   } catch (error) {
     console.error("Error creating workflow:", error);
     return fail("Failed to create workflow");
@@ -157,7 +157,7 @@ export async function updateExistingWorkflow(
     }
 
     const workflow = await updateWorkflow(id, data);
-    return ok(workflow);
+    return success(workflow);
   } catch (error) {
     console.error("Error updating workflow:", error);
     return fail("Failed to update workflow");
@@ -176,7 +176,7 @@ export async function deleteExistingWorkflow(
     }
 
     await deleteWorkflow(id);
-    return ok(undefined);
+    return success(undefined);
   } catch (error) {
     console.error("Error deleting workflow:", error);
     return fail("Failed to delete workflow");
@@ -196,7 +196,7 @@ export async function toggleWorkflowActive(
     }
 
     const workflow = await updateWorkflow(id, { isActive });
-    return ok(workflow);
+    return success(workflow);
   } catch (error) {
     console.error("Error toggling workflow:", error);
     return fail("Failed to toggle workflow");
@@ -230,7 +230,7 @@ export async function startEntityWorkflow(
       user
     );
 
-    return ok(instance);
+    return success(instance);
   } catch (error) {
     console.error("Error starting workflow:", error);
     return fail(
@@ -255,7 +255,7 @@ export async function getWorkflowInstanceById(
       return fail("Workflow instance not found");
     }
 
-    return ok(instance);
+    return success(instance);
   } catch (error) {
     console.error("Error getting workflow instance:", error);
     return fail("Failed to get workflow instance");
@@ -275,7 +275,7 @@ export async function getEntityWorkflowInstances(
     }
 
     const instances = await getEntityInstances(entityType, entityId);
-    return ok(instances);
+    return success(instances);
   } catch (error) {
     console.error("Error getting entity instances:", error);
     return fail("Failed to get workflow instances");
@@ -305,7 +305,7 @@ export async function advanceWorkflowInstance(
       data
     );
 
-    return ok(instance);
+    return success(instance);
   } catch (error) {
     console.error("Error advancing workflow:", error);
     return fail(
@@ -350,7 +350,7 @@ export async function cancelWorkflowInstance(
     }
 
     await cancelWorkflow(instanceId, user, reason);
-    return ok(undefined);
+    return success(undefined);
   } catch (error) {
     console.error("Error cancelling workflow:", error);
     return fail(
@@ -373,7 +373,7 @@ export async function initializeDefaultWorkflows(): Promise<ActionResult<void>> 
     }
 
     await seedDefaultWorkflows();
-    return ok(undefined);
+    return success(undefined);
   } catch (error) {
     console.error("Error seeding workflows:", error);
     return fail("Failed to initialize default workflows");
@@ -417,7 +417,7 @@ export async function getWorkflowStats(): Promise<
       {} as Record<string, number>
     );
 
-    return ok({
+    return success({
       totalWorkflows: workflows.length,
       activeWorkflows: workflows.filter((w) => w.isActive).length,
       pendingInstances:
