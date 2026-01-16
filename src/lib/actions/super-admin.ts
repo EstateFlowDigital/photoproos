@@ -964,11 +964,13 @@ interface CreateFeatureFlagInput {
   name: string;
   description: string;
   category: FeatureFlagCategory;
-  enabled?: boolean;
+  status?: "coming_soon" | "beta" | "live" | "discontinued";
   rolloutPercentage?: number;
   icon?: string;
   order?: number;
   isSystem?: boolean;
+  launchDate?: Date;
+  betaEndDate?: Date;
 }
 
 export async function createFeatureFlag(
@@ -987,11 +989,13 @@ export async function createFeatureFlag(
         name: input.name,
         description: input.description,
         category: input.category,
-        enabled: input.enabled ?? false,
+        status: input.status ?? "coming_soon",
         rolloutPercentage: input.rolloutPercentage ?? 100,
         icon: input.icon,
         order: input.order ?? 0,
         isSystem: input.isSystem ?? false,
+        launchDate: input.launchDate,
+        betaEndDate: input.betaEndDate,
         createdBy: user?.id,
       },
     });
@@ -1012,9 +1016,10 @@ export async function createFeatureFlag(
   }
 }
 
-export async function toggleFeatureFlag(
+export async function updateFeatureStatus(
   slugOrId: string,
-  enabled: boolean
+  status: "coming_soon" | "beta" | "live" | "discontinued",
+  dates?: { launchDate?: Date; betaEndDate?: Date; deprecationDate?: Date }
 ): Promise<ActionResult<unknown>> {
   try {
     if (!(await isSuperAdmin())) {
@@ -1031,26 +1036,51 @@ export async function toggleFeatureFlag(
       return fail("Feature flag not found");
     }
 
+    const updateData: Record<string, unknown> = { status };
+
+    // Set lifecycle dates based on status transition
+    if (status === "discontinued" && !dates?.deprecationDate) {
+      updateData.deprecationDate = new Date();
+    }
+    if (dates?.launchDate) updateData.launchDate = dates.launchDate;
+    if (dates?.betaEndDate) updateData.betaEndDate = dates.betaEndDate;
+    if (dates?.deprecationDate) updateData.deprecationDate = dates.deprecationDate;
+
     const flag = await prisma.featureFlag.update({
       where: { id: existing.id },
-      data: { enabled },
+      data: updateData,
     });
+
+    const statusLabels = {
+      coming_soon: "Coming Soon",
+      beta: "Beta",
+      live: "Live",
+      discontinued: "Discontinued",
+    };
 
     await logAdminAction({
       actionType: "feature_flag_toggle",
-      description: `${enabled ? "Enabled" : "Disabled"} feature flag: ${flag.name}`,
+      description: `Changed feature flag "${flag.name}" status to ${statusLabels[status]}`,
       targetId: flag.id,
       targetType: "feature_flag",
-      previousValue: { enabled: existing.enabled },
-      newValue: { enabled: flag.enabled },
+      previousValue: { status: existing.status },
+      newValue: { status: flag.status },
     });
 
     revalidatePath("/super-admin/config");
     return success(flag);
   } catch (error) {
-    console.error("[SuperAdmin] Error toggling feature flag:", error);
-    return fail("Failed to toggle feature flag");
+    console.error("[SuperAdmin] Error updating feature flag status:", error);
+    return fail("Failed to update feature flag status");
   }
+}
+
+// Legacy function for backward compatibility
+export async function toggleFeatureFlag(
+  slugOrId: string,
+  enabled: boolean
+): Promise<ActionResult<unknown>> {
+  return updateFeatureStatus(slugOrId, enabled ? "live" : "discontinued");
 }
 
 export async function deleteFeatureFlag(slugOrId: string): Promise<ActionResult<void>> {
@@ -1095,10 +1125,12 @@ export async function deleteFeatureFlag(slugOrId: string): Promise<ActionResult<
 
 /**
  * Check if a feature is enabled for a specific organization
+ * Returns true only for "live" status (or "beta" if org has beta access)
  */
 export async function isFeatureEnabled(
   slug: string,
-  organizationId?: string
+  organizationId?: string,
+  options?: { includeBeta?: boolean }
 ): Promise<boolean> {
   try {
     const flag = await prisma.featureFlag.findUnique({
@@ -1106,11 +1138,23 @@ export async function isFeatureEnabled(
     });
 
     if (!flag) return false;
-    if (!flag.enabled) return false;
+
+    // Feature must be live (or beta if allowed)
+    const allowedStatuses = ["live"];
+    if (options?.includeBeta) allowedStatuses.push("beta");
+
+    if (!allowedStatuses.includes(flag.status)) return false;
 
     // Check org-specific overrides
     if (organizationId) {
       if (flag.disabledForOrgs.includes(organizationId)) return false;
+
+      // For beta features, only allow if org is in enabledForOrgs
+      if (flag.status === "beta") {
+        return flag.enabledForOrgs.includes(organizationId);
+      }
+
+      // For live features, check enabledForOrgs whitelist
       if (flag.enabledForOrgs.length > 0) {
         return flag.enabledForOrgs.includes(organizationId);
       }
@@ -1129,6 +1173,30 @@ export async function isFeatureEnabled(
   } catch (error) {
     console.error("[SuperAdmin] Error checking feature flag:", error);
     return false;
+  }
+}
+
+/**
+ * Get the current status of a feature flag
+ */
+export async function getFeatureStatus(
+  slug: string
+): Promise<ActionResult<{ status: string; launchDate?: Date; betaEndDate?: Date; deprecationDate?: Date } | null>> {
+  try {
+    const flag = await prisma.featureFlag.findUnique({
+      where: { slug },
+      select: {
+        status: true,
+        launchDate: true,
+        betaEndDate: true,
+        deprecationDate: true,
+      },
+    });
+
+    return success(flag);
+  } catch (error) {
+    console.error("[SuperAdmin] Error getting feature status:", error);
+    return fail("Failed to get feature status");
   }
 }
 
@@ -1289,7 +1357,7 @@ export async function seedDefaultFeatureFlags(): Promise<ActionResult<number>> {
         name: "AI Business Assistant",
         description: "Claude-powered AI assistant for business queries",
         category: "ai_features",
-        enabled: true,
+        status: "live",
         icon: "sparkles",
         order: 1,
         isSystem: true,
@@ -1299,7 +1367,7 @@ export async function seedDefaultFeatureFlags(): Promise<ActionResult<number>> {
         name: "Gamification System",
         description: "XP, levels, achievements, and streaks",
         category: "engagement",
-        enabled: true,
+        status: "live",
         icon: "trophy",
         order: 1,
         isSystem: true,
@@ -1309,7 +1377,7 @@ export async function seedDefaultFeatureFlags(): Promise<ActionResult<number>> {
         name: "Feedback Collection",
         description: "Session-based feedback modal for users",
         category: "engagement",
-        enabled: true,
+        status: "live",
         icon: "message-circle",
         order: 2,
         isSystem: true,
@@ -1319,7 +1387,7 @@ export async function seedDefaultFeatureFlags(): Promise<ActionResult<number>> {
         name: "Email Notifications",
         description: "Transactional and marketing emails",
         category: "communications",
-        enabled: true,
+        status: "live",
         icon: "mail",
         order: 1,
         isSystem: true,
@@ -1329,7 +1397,7 @@ export async function seedDefaultFeatureFlags(): Promise<ActionResult<number>> {
         name: "Slack Notifications",
         description: "Support ticket notifications to Slack",
         category: "communications",
-        enabled: true,
+        status: "live",
         icon: "bell",
         order: 2,
         isSystem: true,
@@ -1339,7 +1407,7 @@ export async function seedDefaultFeatureFlags(): Promise<ActionResult<number>> {
         name: "Tax Preparation",
         description: "Seasonal tax preparation wizard",
         category: "finance",
-        enabled: true,
+        status: "live",
         icon: "calendar",
         order: 1,
         isSystem: true,

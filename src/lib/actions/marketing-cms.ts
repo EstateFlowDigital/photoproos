@@ -80,7 +80,7 @@ export async function getMarketingPages(): Promise<ActionResult<MarketingPage[]>
       orderBy: [{ pageType: "asc" }, { slug: "asc" }],
     });
 
-    return ok(pages);
+    return success(pages);
   } catch (error) {
     console.error("Error fetching marketing pages:", error);
     return fail("Failed to fetch marketing pages");
@@ -100,7 +100,7 @@ export async function getMarketingPage(
     });
     console.log("[getMarketingPage] Found page:", page ? page.slug : "NULL");
 
-    return ok(page);
+    return success(page);
   } catch (error) {
     console.error("[getMarketingPage] Error:", error);
     return fail("Failed to fetch marketing page");
@@ -148,7 +148,7 @@ export async function createMarketingPage(data: {
     });
 
     revalidateMarketing();
-    return ok(page);
+    return success(page);
   } catch (error) {
     console.error("Error creating marketing page:", error);
     return fail("Failed to create marketing page");
@@ -268,7 +268,7 @@ export async function updateMarketingPage(
     });
 
     revalidateMarketing();
-    return ok(page);
+    return success(page);
   } catch (error) {
     console.error("Error updating marketing page:", error);
     return fail("Failed to update marketing page");
@@ -350,7 +350,7 @@ export async function publishMarketingPage(slug: string): Promise<ActionResult<M
     });
 
     revalidateMarketing();
-    return ok(page);
+    return success(page);
   } catch (error) {
     console.error("Error publishing marketing page:", error);
     return fail("Failed to publish marketing page");
@@ -448,7 +448,7 @@ export async function saveDraft(
     });
 
     // Don't invalidate cache - draft changes shouldn't affect live site
-    return ok(page);
+    return success(page);
   } catch (error) {
     console.error("Error saving draft:", error);
     return fail("Failed to save draft");
@@ -505,7 +505,7 @@ export async function publishDraft(slug: string): Promise<ActionResult<Marketing
     });
 
     revalidateMarketing();
-    return ok(page);
+    return success(page);
   } catch (error) {
     console.error("Error publishing draft:", error);
     return fail("Failed to publish draft");
@@ -529,7 +529,7 @@ export async function discardDraft(slug: string): Promise<ActionResult<Marketing
       },
     });
 
-    return ok(page);
+    return success(page);
   } catch (error) {
     console.error("Error discarding draft:", error);
     return fail("Failed to discard draft");
@@ -577,7 +577,7 @@ export async function schedulePublish(
       actorName: user.firstName || user.emailAddresses?.[0]?.emailAddress,
     });
 
-    return ok(page);
+    return success(page);
   } catch (error) {
     console.error("Error scheduling publish:", error);
     return fail("Failed to schedule publish");
@@ -601,7 +601,7 @@ export async function cancelScheduledPublish(slug: string): Promise<ActionResult
       },
     });
 
-    return ok(page);
+    return success(page);
   } catch (error) {
     console.error("Error canceling scheduled publish:", error);
     return fail("Failed to cancel scheduled publish");
@@ -647,7 +647,7 @@ export async function getPageVersions(
       skip: options?.offset ?? 0,
     });
 
-    return ok({ versions, total });
+    return success({ versions, total });
   } catch (error) {
     console.error("Error fetching page versions:", error);
     return fail("Failed to fetch page versions");
@@ -669,7 +669,7 @@ export async function getPageVersion(
       where: { id: versionId },
     });
 
-    return ok(version);
+    return success(version);
   } catch (error) {
     console.error("Error fetching page version:", error);
     return fail("Failed to fetch page version");
@@ -771,7 +771,7 @@ export async function restoreVersion(
     });
 
     revalidateMarketing();
-    return ok(restoredPage);
+    return success(restoredPage);
   } catch (error) {
     console.error("Error restoring version:", error);
     return fail("Failed to restore version");
@@ -802,7 +802,7 @@ export async function compareVersions(
       return fail("One or both versions not found");
     }
 
-    return ok({ version1, version2 });
+    return success({ version1, version2 });
   } catch (error) {
     console.error("Error comparing versions:", error);
     return fail("Failed to compare versions");
@@ -849,7 +849,7 @@ export async function cleanupOldVersions(
       },
     });
 
-    return ok({ deleted: result.count });
+    return success({ deleted: result.count });
   } catch (error) {
     console.error("Error cleaning up old versions:", error);
     return fail("Failed to cleanup old versions");
@@ -871,7 +871,7 @@ export async function getNavigation(
       where: { location },
     });
 
-    return ok(nav);
+    return success(nav);
   } catch (error) {
     console.error("Error fetching navigation:", error);
     return fail("Failed to fetch navigation");
@@ -910,7 +910,7 @@ export async function updateNavigation(
     });
 
     revalidateMarketing();
-    return ok(nav);
+    return success(nav);
   } catch (error) {
     console.error("Error updating navigation:", error);
     return fail("Failed to update navigation");
@@ -939,7 +939,7 @@ export async function getBlogPosts(options?: {
       ...(options?.limit && { take: options.limit }),
     });
 
-    return ok(posts);
+    return success(posts);
   } catch (error) {
     console.error("Error fetching blog posts:", error);
     return fail("Failed to fetch blog posts");
@@ -966,7 +966,7 @@ export async function getPublishedBlogPosts(options?: {
       ...(options?.limit && { take: options.limit }),
     });
 
-    return ok(posts);
+    return success(posts);
   } catch (error) {
     console.error("Error fetching published blog posts:", error);
     return fail("Failed to fetch blog posts");
@@ -982,7 +982,7 @@ export async function getBlogPost(slug: string): Promise<ActionResult<BlogPost |
       where: { slug },
     });
 
-    return ok(post);
+    return success(post);
   } catch (error) {
     console.error("Error fetching blog post:", error);
     return fail("Failed to fetch blog post");
@@ -998,7 +998,7 @@ export async function getBlogPostById(id: string): Promise<ActionResult<BlogPost
       where: { id },
     });
 
-    return ok(post);
+    return success(post);
   } catch (error) {
     console.error("Error fetching blog post by ID:", error);
     return fail("Failed to fetch blog post");
@@ -1033,7 +1033,7 @@ export async function createBlogPost(
     });
 
     revalidateMarketing();
-    return ok(post);
+    return success(post);
   } catch (error) {
     console.error("Error creating blog post:", error);
     return fail("Failed to create blog post");
@@ -1069,7 +1069,7 @@ export async function updateBlogPost(
     });
 
     revalidateMarketing();
-    return ok(post);
+    return success(post);
   } catch (error) {
     console.error("Error updating blog post:", error);
     return fail("Failed to update blog post");
@@ -1134,7 +1134,7 @@ export async function getTeamMembers(options?: {
       orderBy: { sortOrder: "asc" },
     });
 
-    return ok(members);
+    return success(members);
   } catch (error) {
     console.error("Error fetching team members:", error);
     return fail("Failed to fetch team members");
@@ -1167,7 +1167,7 @@ export async function createTeamMember(
     });
 
     revalidateMarketing();
-    return ok(member);
+    return success(member);
   } catch (error) {
     console.error("Error creating team member:", error);
     return fail("Failed to create team member");
@@ -1194,7 +1194,7 @@ export async function updateTeamMember(
     });
 
     revalidateMarketing();
-    return ok(member);
+    return success(member);
   } catch (error) {
     console.error("Error updating team member:", error);
     return fail("Failed to update team member");
@@ -1281,7 +1281,7 @@ export async function getTestimonials(options?: {
       orderBy: { sortOrder: "asc" },
     });
 
-    return ok(testimonials);
+    return success(testimonials);
   } catch (error) {
     console.error("Error fetching testimonials:", error);
     return fail("Failed to fetch testimonials");
@@ -1314,7 +1314,7 @@ export async function createTestimonial(
     });
 
     revalidateMarketing();
-    return ok(testimonial);
+    return success(testimonial);
   } catch (error) {
     console.error("Error creating testimonial:", error);
     return fail("Failed to create testimonial");
@@ -1341,7 +1341,7 @@ export async function updateTestimonial(
     });
 
     revalidateMarketing();
-    return ok(testimonial);
+    return success(testimonial);
   } catch (error) {
     console.error("Error updating testimonial:", error);
     return fail("Failed to update testimonial");
@@ -1423,7 +1423,7 @@ export async function getFAQs(options?: {
       orderBy: [{ category: "asc" }, { sortOrder: "asc" }],
     });
 
-    return ok(faqs);
+    return success(faqs);
   } catch (error) {
     console.error("Error fetching FAQs:", error);
     return fail("Failed to fetch FAQs");
@@ -1466,7 +1466,7 @@ export async function createFAQ(input: CreateFAQInput): Promise<ActionResult<FAQ
     });
 
     revalidateMarketing();
-    return ok(faq);
+    return success(faq);
   } catch (error) {
     console.error("Error creating FAQ:", error);
     return fail("Failed to create FAQ");
@@ -1502,7 +1502,7 @@ export async function updateFAQ(input: UpdateFAQInput): Promise<ActionResult<FAQ
     });
 
     revalidateMarketing();
-    return ok(faq);
+    return success(faq);
   } catch (error) {
     console.error("Error updating FAQ:", error);
     return fail("Failed to update FAQ");
@@ -1646,7 +1646,7 @@ export async function processScheduledPublishes(): Promise<
     });
 
     if (scheduledPages.length === 0) {
-      return ok({ processed: 0, errors: 0, details: ["No scheduled pages to publish"] });
+      return success({ processed: 0, errors: 0, details: ["No scheduled pages to publish"] });
     }
 
     details.push(`Found ${scheduledPages.length} pages scheduled for publishing`);
@@ -1693,7 +1693,7 @@ export async function processScheduledPublishes(): Promise<
       revalidateMarketing();
     }
 
-    return ok({ processed, errors, details });
+    return success({ processed, errors, details });
   } catch (error) {
     console.error("Error processing scheduled publishes:", error);
     return fail("Failed to process scheduled publishes");
@@ -1731,7 +1731,7 @@ export async function getScheduledPages(options?: {
       orderBy: { scheduledPublishAt: "asc" },
     });
 
-    return ok(pages);
+    return success(pages);
   } catch (error) {
     console.error("Error fetching scheduled pages:", error);
     return fail("Failed to fetch scheduled pages");
@@ -1752,7 +1752,7 @@ export async function getDraftPages(): Promise<ActionResult<MarketingPage[]>> {
       orderBy: { lastEditedAt: "desc" },
     });
 
-    return ok(pages);
+    return success(pages);
   } catch (error) {
     console.error("Error fetching draft pages:", error);
     return fail("Failed to fetch draft pages");
@@ -1854,7 +1854,7 @@ export async function getContentCalendarSummary(
       count,
     }));
 
-    return ok({ scheduled, drafts, published });
+    return success({ scheduled, drafts, published });
   } catch (error) {
     console.error("Error fetching content calendar summary:", error);
     return fail("Failed to fetch content calendar summary");
@@ -1933,7 +1933,7 @@ export async function updatePresence(
       },
     });
 
-    return ok(presence);
+    return success(presence);
   } catch (error) {
     console.error("Error updating presence:", error);
     return fail("Failed to update presence");
@@ -1967,7 +1967,7 @@ export async function getActiveEditors(
       },
     });
 
-    return ok(editors);
+    return success(editors);
   } catch (error) {
     console.error("Error fetching active editors:", error);
     return fail("Failed to fetch active editors");
@@ -2020,7 +2020,7 @@ export async function cleanupStalePresence(): Promise<
       },
     });
 
-    return ok({ deleted: result.count });
+    return success({ deleted: result.count });
   } catch (error) {
     console.error("Error cleaning up stale presence:", error);
     return fail("Failed to clean up stale presence");
@@ -2066,7 +2066,7 @@ export async function createAuditLog(params: {
       },
     });
 
-    return ok(log);
+    return success(log);
   } catch (error) {
     console.error("Error creating audit log:", error);
     return fail("Failed to create audit log");
@@ -2108,7 +2108,7 @@ export async function getAuditLogs(
       }),
     ]);
 
-    return ok({ logs, total });
+    return success({ logs, total });
   } catch (error) {
     console.error("Error fetching audit logs:", error);
     return fail("Failed to fetch audit logs");
@@ -2129,7 +2129,7 @@ export async function getRecentActivity(
       take: limit,
     });
 
-    return ok(logs);
+    return success(logs);
   } catch (error) {
     console.error("Error fetching recent activity:", error);
     return fail("Failed to fetch recent activity");
@@ -2206,7 +2206,7 @@ export async function requestApproval(params: {
       },
     });
 
-    return ok(approval);
+    return success(approval);
   } catch (error) {
     console.error("Error requesting approval:", error);
     return fail("Failed to request approval");
@@ -2321,7 +2321,7 @@ export async function respondToApproval(params: {
       });
     }
 
-    return ok(updated);
+    return success(updated);
   } catch (error) {
     console.error("Error responding to approval:", error);
     return fail("Failed to respond to approval");
@@ -2376,7 +2376,7 @@ export async function cancelApproval(
       },
     });
 
-    return ok(updated);
+    return success(updated);
   } catch (error) {
     console.error("Error cancelling approval:", error);
     return fail("Failed to cancel approval");
@@ -2416,7 +2416,7 @@ export async function getMyPendingApprovals(): Promise<
       return currentApprover?.userId === user.id && currentApprover?.status === "pending";
     });
 
-    return ok(myApprovals);
+    return success(myApprovals);
   } catch (error) {
     console.error("Error fetching pending approvals:", error);
     return fail("Failed to fetch pending approvals");
@@ -2445,7 +2445,7 @@ export async function getApprovalHistory(
       },
     });
 
-    return ok(approvals);
+    return success(approvals);
   } catch (error) {
     console.error("Error fetching approval history:", error);
     return fail("Failed to fetch approval history");
@@ -2472,7 +2472,7 @@ export async function getAllPendingApprovals(): Promise<
       },
     });
 
-    return ok(approvals);
+    return success(approvals);
   } catch (error) {
     console.error("Error fetching all pending approvals:", error);
     return fail("Failed to fetch pending approvals");

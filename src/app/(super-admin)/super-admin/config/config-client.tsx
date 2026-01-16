@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
-  toggleFeatureFlag,
+  updateFeatureStatus,
   updateSystemSetting,
   seedDefaultFeatureFlags,
   seedDefaultSystemSettings,
@@ -148,16 +148,95 @@ function CalendarIcon({ className }: { className?: string }) {
   );
 }
 
+function FlaskIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2" />
+      <path d="M8.5 2h7" />
+      <path d="M7 16h10" />
+    </svg>
+  );
+}
+
+function CheckCircleIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+function XCircleIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="m15 9-6 6" />
+      <path d="m9 9 6 6" />
+    </svg>
+  );
+}
+
+function ClockIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
+
+type FeatureFlagStatus = "coming_soon" | "beta" | "live" | "discontinued";
+
 interface FeatureFlag {
   id: string;
   slug: string;
   name: string;
   description: string;
-  enabled: boolean;
+  status: FeatureFlagStatus;
   category: string;
   icon?: string;
   isSystem?: boolean;
   rolloutPercentage?: number;
+  launchDate?: string;
+  betaEndDate?: string;
+  deprecationDate?: string;
 }
 
 interface SystemSetting {
@@ -202,6 +281,33 @@ const CATEGORY_NAMES: Record<string, string> = {
   system: "System",
 };
 
+const STATUS_CONFIG: Record<FeatureFlagStatus, { label: string; color: string; bgColor: string; icon: React.ComponentType<{ className?: string }> }> = {
+  coming_soon: {
+    label: "Coming Soon",
+    color: "text-[var(--info)]",
+    bgColor: "bg-[var(--info)]/10",
+    icon: ClockIcon,
+  },
+  beta: {
+    label: "Beta",
+    color: "text-[var(--warning)]",
+    bgColor: "bg-[var(--warning)]/10",
+    icon: FlaskIcon,
+  },
+  live: {
+    label: "Live",
+    color: "text-[var(--success)]",
+    bgColor: "bg-[var(--success)]/10",
+    icon: CheckCircleIcon,
+  },
+  discontinued: {
+    label: "Discontinued",
+    color: "text-[var(--foreground-muted)]",
+    bgColor: "bg-[var(--foreground-muted)]/10",
+    icon: XCircleIcon,
+  },
+};
+
 export function ConfigPageClient({
   initialFlags,
   initialSettings,
@@ -212,20 +318,20 @@ export function ConfigPageClient({
   const [auditLogs] = useState<AuditLog[]>(initialAuditLogs as AuditLog[]);
   const [isPending, startTransition] = useTransition();
 
-  const handleToggleFlag = async (slugOrId: string, currentEnabled: boolean) => {
+  const handleUpdateStatus = async (slugOrId: string, newStatus: FeatureFlagStatus) => {
     startTransition(async () => {
-      const result = await toggleFeatureFlag(slugOrId, !currentEnabled);
+      const result = await updateFeatureStatus(slugOrId, newStatus);
       if (result.success) {
         setFlags((prev) =>
           prev.map((f) =>
             f.slug === slugOrId || f.id === slugOrId
-              ? { ...f, enabled: !currentEnabled }
+              ? { ...f, status: newStatus }
               : f
           )
         );
-        toast.success(`Feature flag ${!currentEnabled ? "enabled" : "disabled"}`);
+        toast.success(`Feature flag updated to ${STATUS_CONFIG[newStatus].label}`);
       } else {
-        toast.error(result.error || "Failed to toggle feature flag");
+        toast.error(result.error || "Failed to update feature flag status");
       }
     });
   };
@@ -424,22 +530,36 @@ export function ConfigPageClient({
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Badge
-                      variant="secondary"
+                    {(() => {
+                      const statusConfig = STATUS_CONFIG[flag.status];
+                      const StatusIcon = statusConfig.icon;
+                      return (
+                        <Badge
+                          variant="secondary"
+                          className={cn("text-xs gap-1", statusConfig.bgColor, statusConfig.color)}
+                        >
+                          <StatusIcon className="w-3 h-3" />
+                          {statusConfig.label}
+                        </Badge>
+                      );
+                    })()}
+                    <select
+                      value={flag.status}
+                      onChange={(e) => handleUpdateStatus(flag.slug, e.target.value as FeatureFlagStatus)}
+                      disabled={isPending}
                       className={cn(
-                        "text-xs",
-                        flag.enabled
-                          ? "bg-[var(--success)]/10 text-[var(--success)]"
-                          : "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)]"
+                        "text-sm rounded-md px-2 py-1",
+                        "bg-[var(--background)] border border-[var(--border)]",
+                        "text-[var(--foreground)]",
+                        "focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/50",
+                        isPending && "opacity-50 cursor-not-allowed"
                       )}
                     >
-                      {flag.enabled ? "Enabled" : "Disabled"}
-                    </Badge>
-                    <Switch
-                      checked={flag.enabled}
-                      onCheckedChange={() => handleToggleFlag(flag.slug, flag.enabled)}
-                      disabled={isPending}
-                    />
+                      <option value="coming_soon">Coming Soon</option>
+                      <option value="beta">Beta</option>
+                      <option value="live">Live</option>
+                      <option value="discontinued">Discontinued</option>
+                    </select>
                   </div>
                 </div>
               );

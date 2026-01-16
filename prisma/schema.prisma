@@ -10043,6 +10043,14 @@ enum FeatureFlagCategory {
   system
 }
 
+// Feature Flag Status - Lifecycle state of a feature
+enum FeatureFlagStatus {
+  coming_soon  // Planned feature, not yet available
+  beta         // Testing phase, available to selected orgs
+  live         // Generally available
+  discontinued // No longer available
+}
+
 // Feature Flag - Database-backed feature toggles
 model FeatureFlag {
   id          String              @id @default(cuid())
@@ -10050,11 +10058,16 @@ model FeatureFlag {
   name        String // Human-readable name
   description String
   category    FeatureFlagCategory
-  enabled     Boolean             @default(false)
+  status      FeatureFlagStatus   @default(coming_soon)
 
-  // Rollout configuration
+  // Lifecycle dates
+  launchDate      DateTime? // When coming_soon becomes live
+  betaEndDate     DateTime? // When beta testing ends
+  deprecationDate DateTime? // When feature was discontinued
+
+  // Rollout configuration (applies to beta and live statuses)
   rolloutPercentage Int      @default(100) // 0-100, for gradual rollouts
-  enabledForOrgs    String[] @default([]) // Specific org IDs with access
+  enabledForOrgs    String[] @default([]) // Specific org IDs with access (for beta)
   disabledForOrgs   String[] @default([]) // Specific org IDs without access
 
   // Metadata
@@ -10067,7 +10080,7 @@ model FeatureFlag {
   createdBy String? // User ID who created
 
   @@index([category])
-  @@index([enabled])
+  @@index([status])
 }
 
 // Admin Action Type

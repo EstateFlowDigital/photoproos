@@ -7,7 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Enhanced Feature Flag System** - Granular control over feature lifecycle:
+  - New status states: Coming Soon, Beta, Live, Discontinued (replaces simple on/off toggle)
+  - Lifecycle date tracking: Launch date, Beta end date, Deprecation date
+  - New UI with status dropdown and color-coded badges
+  - Status-aware `isFeatureEnabled()` - only "live" features are enabled, "beta" requires explicit org access
+  - New `updateFeatureStatus()` and `getFeatureStatus()` server actions
+  - Database schema updated with `FeatureFlagStatus` enum
+
 ### Fixed
+
+- **Marketing CMS Data Not Appearing** - Fixed the same `ok(data)` bug in `marketing-cms.ts`:
+  - 49 instances of `ok(data)` replaced with `success(data)`
+  - This restores data to: Marketing pages, Blog posts, FAQs, Testimonials, Team members, Navigation, and Content calendar
 
 - **CRITICAL: Server Actions Returning Empty Data** - Fixed critical bug where ALL super admin data was being silently discarded:
   - Root cause: The `ok()` function takes NO parameters but was being called with data arguments throughout the codebase
