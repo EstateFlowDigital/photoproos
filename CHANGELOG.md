@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **AI Page Type Export Fix** - Fixed AI page crashing with "L is not a function" error:
+  - Added missing `export` keyword to type interfaces in `@/lib/actions/ai.ts`
+  - Exported: `ConversationSummary`, `ConversationMessage`, `ConversationDetail`, `PendingAction`
+  - Types were being imported in `ai-client.tsx` but not exported from the server actions file
+
+- **Marketing Studio: Template Rendering Bug Fix** - Fixed critical rendering issues in social template composer:
+  - **Root Cause**: Dimension mismatch between template loading (1080x1080) and display container (320x320)
+  - **Solution**: Standardized on 540px reference size for consistent layer positioning
+  - Added `CANVAS_REFERENCE_SIZE` constant (540px) for all layer calculations
+  - Updated template loading to use consistent reference size instead of platform-specific dimensions
+  - Fixed `InstagramPreview` container width from 320px to 540px to match layer coordinates
+  - Removed references to non-existent `platformConfig.previewSize` property
+  - Updated callback dependency arrays to remove unused platformConfig references
+  - Improved unknown element type fallback: now shows red semi-transparent shape with console warning instead of silent blue square
+
 - **Super Admin Query Mismatches** - Fixed incorrect model and enum references:
   - Changed `prisma.gallery` to `prisma.project` (Gallery model doesn't exist, Project is the correct model)
   - Changed payment status `"succeeded"` to `"paid"` (matching actual PaymentStatus enum values)
@@ -40,6 +55,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Created `/super-admin/marketing/blog/[id]/blog-editor-client.tsx` - Blog editor component with full CRUD support
   - Added `getBlogPostById()` action to marketing-cms.ts
   - Fixed marketing dashboard "Create your first post" link (was pointing to non-existent route)
+
+- **Super Admin Page Fixes (Comprehensive)** - Fixed multiple critical bugs across super admin pages:
+  - **Users page**: Added null check for `r._sum?.amountCents` in revenue aggregation (line 323)
+  - **Revenue page**: Fixed client name mapping - query returns `fullName` but interface expects `name` (line 2992)
+  - **Support page**: Added null check for `ticket.user` before accessing properties (line 777)
+  - **Feedback page**: Changed `prisma.xpTransaction` to `prisma.xpActivityLog` (model doesn't exist), changed invalid enum `"earned"` to `"admin_award"` (line 97-101)
+  - **Announcements stats**: Added `|| 0` fallback for `result._count` (lines 1915, 1926)
+  - **Logs page**: Fixed ACTION_TYPES enum values to match schema - `user_award_xp` → `xp_award`, `user_grant_license` → `lifetime_license`, `system_setting_update` → `system_setting_change`
 
 ### Added
 - **Marketing Studio: Screenshot Zones** - New layer type for dashboard screenshots in social templates:

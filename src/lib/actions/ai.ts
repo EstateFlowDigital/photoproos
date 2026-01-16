@@ -11,7 +11,7 @@ import { executeConfirmedAction } from "@/lib/ai/tools/executors";
 // TYPES
 // ============================================================================
 
-interface ConversationSummary {
+export interface ConversationSummary {
   id: string;
   title: string | null;
   status: string;
@@ -20,7 +20,7 @@ interface ConversationSummary {
   createdAt: Date;
 }
 
-interface ConversationMessage {
+export interface ConversationMessage {
   id: string;
   role: string;
   content: string;
@@ -30,7 +30,7 @@ interface ConversationMessage {
   createdAt: Date;
 }
 
-interface ConversationDetail {
+export interface ConversationDetail {
   id: string;
   title: string | null;
   status: string;
@@ -41,7 +41,7 @@ interface ConversationDetail {
   createdAt: Date;
 }
 
-interface PendingAction {
+export interface PendingAction {
   id: string;
   type: string;
   description: string;

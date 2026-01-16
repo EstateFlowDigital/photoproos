@@ -751,6 +751,10 @@ export async function getAdminSupportTicket(
       return fail("Ticket not found");
     }
 
+    if (!ticket.user) {
+      return fail("Ticket user not found");
+    }
+
     // Mark user messages as read (admin viewing)
     await prisma.supportMessage.updateMany({
       where: {

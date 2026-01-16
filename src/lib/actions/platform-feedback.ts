@@ -94,12 +94,11 @@ export async function submitPlatformFeedback(data: {
     });
 
     // Create XP record
-    await prisma.xpTransaction.create({
+    await prisma.xpActivityLog.create({
       data: {
         userId,
         amount: xpAward,
-        type: "earned",
-        source: "platform_feedback",
+        type: "admin_award",
         description: "Platform feedback submitted",
       },
     });

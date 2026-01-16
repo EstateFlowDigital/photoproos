@@ -320,7 +320,7 @@ export async function getAllUsers(options?: {
     const galleryMap = new Map(projectCounts.map((g) => [g.organizationId, g._count]));
     const clientMap = new Map(clientCounts.map((c) => [c.organizationId, c._count]));
     const revenueMap = new Map(
-      revenueSums.map((r) => [r.organizationId, r._sum.amountCents || 0])
+      revenueSums.map((r) => [r.organizationId, r._sum?.amountCents || 0])
     );
 
     const userList: UserListItem[] = users.map((user) => {
@@ -1912,7 +1912,7 @@ export async function getAnnouncementStats(): Promise<
     } as Record<AnnouncementType, number>;
 
     for (const result of byTypeResults) {
-      byType[result.type] = result._count;
+      byType[result.type] = result._count || 0;
     }
 
     const byPriority = {
@@ -1923,7 +1923,7 @@ export async function getAnnouncementStats(): Promise<
     } as Record<AnnouncementPriority, number>;
 
     for (const result of byPriorityResults) {
-      byPriority[result.priority] = result._count;
+      byPriority[result.priority] = result._count || 0;
     }
 
     return ok({
@@ -2989,7 +2989,7 @@ export async function getRecentInvoices(options: {
         dueDate: i.dueDate,
         paidAt: i.paidAt,
         createdAt: i.createdAt,
-        client: i.client,
+        client: i.client ? { name: i.client.fullName, email: i.client.email } : null,
         organization: i.organization,
       }))
     );

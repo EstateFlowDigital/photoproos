@@ -218,28 +218,30 @@ interface LogsPageClientProps {
 }
 
 const ACTION_TYPE_LABELS: Record<string, { label: string; color: string }> = {
+  user_view: { label: "View User", color: "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)]" },
+  user_update: { label: "Update User", color: "bg-[var(--primary)]/10 text-[var(--primary)]" },
   user_impersonate: { label: "Impersonate", color: "bg-[var(--ai)]/10 text-[var(--ai)]" },
-  user_award_xp: { label: "Award XP", color: "bg-[var(--success)]/10 text-[var(--success)]" },
-  user_grant_license: { label: "Grant License", color: "bg-[var(--primary)]/10 text-[var(--primary)]" },
-  user_revoke_license: { label: "Revoke License", color: "bg-[var(--warning)]/10 text-[var(--warning)]" },
-  user_apply_discount: { label: "Apply Discount", color: "bg-[var(--success)]/10 text-[var(--success)]" },
-  user_create_challenge: { label: "Create Challenge", color: "bg-[var(--primary)]/10 text-[var(--primary)]" },
+  xp_award: { label: "Award XP", color: "bg-[var(--success)]/10 text-[var(--success)]" },
+  plan_change: { label: "Change Plan", color: "bg-[var(--primary)]/10 text-[var(--primary)]" },
+  lifetime_license: { label: "Grant License", color: "bg-[var(--success)]/10 text-[var(--success)]" },
+  discount_apply: { label: "Apply Discount", color: "bg-[var(--success)]/10 text-[var(--success)]" },
+  custom_challenge: { label: "Create Challenge", color: "bg-[var(--primary)]/10 text-[var(--primary)]" },
   feature_flag_toggle: { label: "Toggle Flag", color: "bg-[var(--warning)]/10 text-[var(--warning)]" },
-  feature_flag_create: { label: "Create Flag", color: "bg-[var(--success)]/10 text-[var(--success)]" },
-  feature_flag_delete: { label: "Delete Flag", color: "bg-[var(--error)]/10 text-[var(--error)]" },
-  system_setting_update: { label: "Update Setting", color: "bg-[var(--warning)]/10 text-[var(--warning)]" },
+  system_setting_change: { label: "Update Setting", color: "bg-[var(--warning)]/10 text-[var(--warning)]" },
   support_ticket_resolve: { label: "Resolve Ticket", color: "bg-[var(--success)]/10 text-[var(--success)]" },
-  support_ticket_respond: { label: "Respond", color: "bg-[var(--primary)]/10 text-[var(--primary)]" },
+  feedback_review: { label: "Review Feedback", color: "bg-[var(--primary)]/10 text-[var(--primary)]" },
+  roadmap_update: { label: "Update Roadmap", color: "bg-[var(--primary)]/10 text-[var(--primary)]" },
+  other: { label: "Other", color: "bg-[var(--foreground-muted)]/10 text-[var(--foreground-muted)]" },
 };
 
 const ACTION_TYPES = [
   { value: "all", label: "All Actions" },
   { value: "user_impersonate", label: "Impersonation" },
-  { value: "user_award_xp", label: "XP Awards" },
-  { value: "user_grant_license", label: "License Grants" },
-  { value: "user_revoke_license", label: "License Revokes" },
+  { value: "xp_award", label: "XP Awards" },
+  { value: "lifetime_license", label: "License Grants" },
+  { value: "plan_change", label: "Plan Changes" },
   { value: "feature_flag_toggle", label: "Feature Flags" },
-  { value: "system_setting_update", label: "System Settings" },
+  { value: "system_setting_change", label: "System Settings" },
   { value: "support_ticket_resolve", label: "Support Actions" },
 ];
 
