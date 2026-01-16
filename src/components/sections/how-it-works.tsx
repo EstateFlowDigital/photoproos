@@ -3,6 +3,45 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
+import type { HomepageHowItWorksContent } from "@/lib/validations/marketing-cms";
+
+// ============================================
+// HOW IT WORKS DEFAULTS
+// ============================================
+
+const defaultHowItWorksContent: HomepageHowItWorksContent = {
+  badge: "Simple as",
+  badgeHighlight: "1-2-3",
+  title: "From shoot to",
+  titleHighlight: "payment in minutes",
+  subtitle: "No more juggling tools. Upload, price, share—and get paid. It really is that simple.",
+  steps: [
+    {
+      id: "1",
+      number: "01",
+      title: "Upload & Organize",
+      description: "Drag and drop your photos, and PhotoProOS handles the rest. Automatic organization, smart albums, and instant delivery-ready galleries.",
+      features: ["Bulk upload support", "Auto-organization", "Smart tagging", "RAW + JPEG support"],
+      color: "from-blue-500 to-cyan-500",
+    },
+    {
+      id: "2",
+      number: "02",
+      title: "Set Pricing & Share",
+      description: "Choose free delivery or set your prices. Generate beautiful, branded gallery links to share with clients in seconds.",
+      features: ["Custom pricing", "Branded galleries", "Password protection", "Expiration dates"],
+      color: "from-purple-500 to-pink-500",
+    },
+    {
+      id: "3",
+      number: "03",
+      title: "Get Paid & Deliver",
+      description: "Clients pay securely, downloads unlock automatically. Track everything from your dashboard—no chasing invoices.",
+      features: ["Instant payments", "Auto-delivery", "Payment tracking", "Tax reports"],
+      color: "from-green-500 to-emerald-500",
+    },
+  ],
+};
 
 interface Step {
   number: string;
@@ -14,39 +53,35 @@ interface Step {
   demo: React.ReactNode;
 }
 
-const steps: Step[] = [
-  {
-    number: "01",
-    title: "Upload & Organize",
-    description: "Drag and drop your photos, and PhotoProOS handles the rest. Automatic organization, smart albums, and instant delivery-ready galleries.",
-    icon: UploadIcon,
-    features: ["Bulk upload support", "Auto-organization", "Smart tagging", "RAW + JPEG support"],
-    color: "from-blue-500 to-cyan-500",
-    demo: <UploadDemo />,
-  },
-  {
-    number: "02",
-    title: "Set Pricing & Share",
-    description: "Choose free delivery or set your prices. Generate beautiful, branded gallery links to share with clients in seconds.",
-    icon: ShareIcon,
-    features: ["Custom pricing", "Branded galleries", "Password protection", "Expiration dates"],
-    color: "from-purple-500 to-pink-500",
-    demo: <ShareDemo />,
-  },
-  {
-    number: "03",
-    title: "Get Paid & Deliver",
-    description: "Clients pay securely, downloads unlock automatically. Track everything from your dashboard—no chasing invoices.",
-    icon: PaymentIcon,
-    features: ["Instant payments", "Auto-delivery", "Payment tracking", "Tax reports"],
-    color: "from-green-500 to-emerald-500",
-    demo: <PaymentDemo />,
-  },
-];
+interface HowItWorksSectionProps {
+  content?: Partial<HomepageHowItWorksContent>;
+}
 
-export function HowItWorksSection() {
+// Step icons mapping
+const stepIcons: React.FC<{ className?: string }>[] = [UploadIcon, ShareIcon, PaymentIcon];
+const stepDemos: React.ReactNode[] = [<UploadDemo key="upload" />, <ShareDemo key="share" />, <PaymentDemo key="payment" />];
+
+export function HowItWorksSection({ content }: HowItWorksSectionProps = {}) {
   const [activeStep, setActiveStep] = React.useState(0);
   const { ref, isVisible } = useScrollAnimation();
+
+  // Merge provided content with defaults
+  const howItWorks = {
+    ...defaultHowItWorksContent,
+    ...content,
+    steps: content?.steps || defaultHowItWorksContent.steps,
+  };
+
+  // Build steps with icons and demos
+  const steps: Step[] = howItWorks.steps.map((step, index) => ({
+    number: step.number,
+    title: step.title,
+    description: step.description,
+    icon: stepIcons[index] || UploadIcon,
+    features: step.features || [],
+    color: step.color || "from-blue-500 to-cyan-500",
+    demo: stepDemos[index] || <UploadDemo />,
+  }));
 
   // Auto-rotate steps
   React.useEffect(() => {
@@ -54,7 +89,7 @@ export function HowItWorksSection() {
       setActiveStep((prev) => (prev + 1) % steps.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [steps.length]);
 
   return (
     <section id="how-it-works" ref={ref} className="relative z-10 py-20 lg:py-32 overflow-hidden">
@@ -88,7 +123,7 @@ export function HowItWorksSection() {
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
             </span>
             <span className="text-sm text-foreground-secondary">
-              Simple as <span className="font-medium text-[var(--primary)]">1-2-3</span>
+              {howItWorks.badge} <span className="font-medium text-[var(--primary)]">{howItWorks.badgeHighlight}</span>
             </span>
           </div>
           <h2
@@ -100,8 +135,8 @@ export function HowItWorksSection() {
               transitionDelay: "100ms",
             }}
           >
-            <span className="text-foreground">From shoot to</span>{" "}
-            <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">payment in minutes</span>
+            <span className="text-foreground">{howItWorks.title}</span>{" "}
+            <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent text-shimmer">{howItWorks.titleHighlight}</span>
           </h2>
           <p
             className="mx-auto mt-6 max-w-2xl text-lg text-foreground-secondary"
@@ -112,7 +147,7 @@ export function HowItWorksSection() {
               transitionDelay: "200ms",
             }}
           >
-            No more juggling tools. Upload, price, share—and get paid. It really is that simple.
+            {howItWorks.subtitle}
           </p>
         </div>
 

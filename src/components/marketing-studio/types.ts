@@ -227,7 +227,7 @@ export interface CalendarPost {
 export type CalendarView = "month" | "week" | "board" | "grid";
 
 // Layer composition types
-export type LayerType = "image" | "mockup" | "text" | "shape" | "logo" | "group";
+export type LayerType = "image" | "mockup" | "text" | "shape" | "logo" | "group" | "screenshot-zone";
 
 export interface LayerBase {
   id: string;
@@ -290,7 +290,15 @@ export interface GroupLayer extends LayerBase {
   expanded: boolean; // Whether the group is expanded in the layers panel
 }
 
-export type Layer = ImageLayer | MockupLayer | TextLayer | ShapeLayer | LogoLayer | GroupLayer;
+export interface ScreenshotZoneLayer extends LayerBase {
+  type: "screenshot-zone";
+  src?: string;           // Image source when populated
+  placeholder?: string;   // Placeholder text shown when empty
+  objectFit: "cover" | "contain" | "fill";
+  borderRadius?: number;
+}
+
+export type Layer = ImageLayer | MockupLayer | TextLayer | ShapeLayer | LogoLayer | GroupLayer | ScreenshotZoneLayer;
 
 export interface CompositionState {
   layers: Layer[];

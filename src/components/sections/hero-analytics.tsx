@@ -5,7 +5,30 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { VideoModal } from "@/components/ui/video-modal";
 import { AnalyticsDashboardMockup } from "@/components/landing";
-import { cn } from "@/lib/utils";
+import type { HomepageHeroContent } from "@/lib/validations/marketing-cms";
+
+// ============================================
+// HERO CONTENT DEFAULTS
+// ============================================
+
+const defaultHeroContent: HomepageHeroContent = {
+  badge: "Complete platform",
+  badgeHighlight: "Photography-specific, all-in-one",
+  titleMuted: "The Business OS for",
+  titleMain: "Professional Photographers",
+  subtitle: "From booking to delivery to marketing—one platform that handles it all. Operate. Deliver. Get Paid. Grow. Automate.",
+  primaryCta: { label: "Start Free", href: "/signup", variant: "primary" },
+  secondaryCta: { label: "Take the Tour", href: "#", variant: "outline" },
+  socialProof: [
+    { id: "1", text: "Replaces 10+ tools" },
+    { id: "2", text: "6 photography verticals" },
+    { id: "3", text: "AI-powered automation" },
+  ],
+};
+
+interface HeroAnalyticsSectionProps {
+  content?: Partial<HomepageHeroContent>;
+}
 
 // ============================================
 // ANIMATED GRID BACKGROUND
@@ -47,8 +70,11 @@ function GridBackground() {
 // HERO ANALYTICS SECTION
 // ============================================
 
-export function HeroAnalyticsSection() {
+export function HeroAnalyticsSection({ content }: HeroAnalyticsSectionProps = {}) {
   const [isVideoModalOpen, setIsVideoModalOpen] = React.useState(false);
+
+  // Merge provided content with defaults
+  const hero = { ...defaultHeroContent, ...content };
 
   return (
     <section className="relative z-10 overflow-hidden bg-background pb-8 lg:pb-16">
@@ -78,55 +104,59 @@ export function HeroAnalyticsSection() {
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--primary)]" />
             </span>
             <span className="text-sm text-foreground-secondary">
-              <span className="font-medium text-[var(--primary)]">Complete platform</span> — Photography-specific, all-in-one
+              <span className="font-medium text-[var(--primary)]">{hero.badge}</span>
+              {hero.badgeHighlight && ` — ${hero.badgeHighlight}`}
             </span>
           </div>
 
           {/* Main Headline */}
           <h1 className="hero-animate hero-animate-2 text-[36px] font-medium leading-[1.1] tracking-[-0.02em] sm:text-[44px] md:text-[56px] lg:text-[64px]">
-            <span className="text-foreground-muted">The Business OS for</span>
-            <br />
-            <span className="text-foreground">Professional Photographers</span>
+            {hero.titleMuted && (
+              <>
+                <span className="text-foreground-muted">{hero.titleMuted}</span>
+                <br />
+              </>
+            )}
+            <span className="text-foreground">{hero.titleMain}</span>
           </h1>
 
           {/* Subheadline */}
           <p className="hero-animate hero-animate-3 mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-foreground-secondary lg:text-xl">
-            From booking to delivery to marketing—one platform that handles it all. Operate. Deliver. Get Paid. Grow. Automate.
+            {hero.subtitle}
           </p>
 
           {/* CTA Buttons */}
           <div className="hero-animate hero-animate-4 mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <Button variant="default" size="lg" asChild className="h-12 px-8 text-base w-full sm:w-auto shadow-lg shadow-[var(--primary)]/25 hover:shadow-xl hover:shadow-[var(--primary)]/30 transition-shadow">
-              <Link href="/signup">Start Free</Link>
+              <Link href={hero.primaryCta.href}>{hero.primaryCta.label}</Link>
             </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => setIsVideoModalOpen(true)}
-              className="h-12 px-8 text-base w-full sm:w-auto flex items-center justify-center gap-2"
-            >
-              <PlayIcon className="h-4 w-4" aria-hidden="true" />
-              Take the Tour
-            </Button>
+            {hero.secondaryCta && (
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setIsVideoModalOpen(true)}
+                className="h-12 px-8 text-base w-full sm:w-auto flex items-center justify-center gap-2"
+              >
+                <PlayIcon className="h-4 w-4" aria-hidden="true" />
+                {hero.secondaryCta.label}
+              </Button>
+            )}
           </div>
 
           {/* Social proof */}
-          <div className="hero-animate hero-animate-5 mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-sm text-foreground-muted">
-            <div className="flex items-center gap-2">
-              <CheckIcon className="h-4 w-4 text-[var(--success)]" />
-              <span>Replaces 10+ tools</span>
+          {hero.socialProof && hero.socialProof.length > 0 && (
+            <div className="hero-animate hero-animate-5 mt-6 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-sm text-foreground-muted">
+              {hero.socialProof.map((item, index) => (
+                <React.Fragment key={item.id}>
+                  {index > 0 && <div className="hidden sm:block h-4 w-px bg-[var(--border)]" />}
+                  <div className="flex items-center gap-2">
+                    <CheckIcon className="h-4 w-4 text-[var(--success)]" />
+                    <span>{item.text}</span>
+                  </div>
+                </React.Fragment>
+              ))}
             </div>
-            <div className="hidden sm:block h-4 w-px bg-[var(--border)]" />
-            <div className="flex items-center gap-2">
-              <CheckIcon className="h-4 w-4 text-[var(--success)]" />
-              <span>6 photography verticals</span>
-            </div>
-            <div className="hidden sm:block h-4 w-px bg-[var(--border)]" />
-            <div className="flex items-center gap-2">
-              <CheckIcon className="h-4 w-4 text-[var(--success)]" />
-              <span>AI-powered automation</span>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Dashboard mockup */}

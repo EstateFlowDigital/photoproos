@@ -1,0 +1,79 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="800" fill="#0A0A0A"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="280" height="800" fill="#141414"/>
+  <rect x="24" y="24" width="140" height="32" rx="4" fill="#3b82f6"/>
+  <text x="48" y="46" fill="white" font-family="system-ui" font-size="14" font-weight="600">PhotoProOS</text>
+
+  <!-- Nav items -->
+  <rect x="56" y="94" width="80" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="122" width="70" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="150" width="90" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="178" width="60" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="206" width="75" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="234" width="85" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="262" width="65" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="16" y="288" width="248" height="40" rx="6" fill="#1E1E1E"/>
+  <circle cx="40" cy="308" r="8" fill="#7C7C7C"/>
+  <rect x="56" y="302" width="70" height="12" rx="2" fill="#ffffff"/>
+
+  <!-- Main content -->
+  <text x="320" y="56" fill="#ffffff" font-family="system-ui" font-size="24" font-weight="700">Settings</text>
+
+  <!-- Settings tabs -->
+  <rect x="320" y="80" width="100" height="40" rx="8" fill="#3b82f6"/>
+  <text x="350" y="105" fill="white" font-family="system-ui" font-size="14">Profile</text>
+  <rect x="440" y="80" width="100" height="40" rx="8" fill="#1E1E1E"/>
+  <text x="462" y="105" fill="#7C7C7C" font-family="system-ui" font-size="14">Branding</text>
+  <rect x="560" y="80" width="100" height="40" rx="8" fill="#1E1E1E"/>
+  <text x="582" y="105" fill="#7C7C7C" font-family="system-ui" font-size="14">Payments</text>
+  <rect x="680" y="80" width="100" height="40" rx="8" fill="#1E1E1E"/>
+  <text x="700" y="105" fill="#7C7C7C" font-family="system-ui" font-size="14">Notifications</text>
+
+  <!-- Profile Section -->
+  <rect x="320" y="150" width="840" height="620" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+
+  <!-- Profile header -->
+  <rect x="360" y="190" width="100" height="100" rx="50" fill="#3b82f6"/>
+  <text x="384" y="250" fill="white" font-family="system-ui" font-size="32" font-weight="600">JD</text>
+  <rect x="420" y="260" width="30" height="30" rx="15" fill="#1E1E1E" stroke="#262626" stroke-width="1"/>
+  <text x="429" y="280" fill="#7C7C7C" font-family="system-ui" font-size="14">+</text>
+
+  <text x="490" y="225" fill="#ffffff" font-family="system-ui" font-size="20" font-weight="600">John's Photography</text>
+  <text x="490" y="250" fill="#7C7C7C" font-family="system-ui" font-size="14">john@johnsphotography.com</text>
+  <rect x="490" y="265" width="80" height="24" rx="4" fill="#22c55e" opacity="0.2"/>
+  <text x="504" y="282" fill="#22c55e" font-family="system-ui" font-size="11">Pro Plan</text>
+
+  <rect x="340" y="320" width="800" height="1" fill="#262626"/>
+
+  <!-- Form fields -->
+  <text x="360" y="360" fill="#7C7C7C" font-family="system-ui" font-size="12">Business Name</text>
+  <rect x="360" y="375" width="380" height="45" rx="8" fill="#1E1E1E" stroke="#262626" stroke-width="1"/>
+  <text x="380" y="403" fill="#ffffff" font-family="system-ui" font-size="14">John's Photography</text>
+
+  <text x="760" y="360" fill="#7C7C7C" font-family="system-ui" font-size="12">Email</text>
+  <rect x="760" y="375" width="380" height="45" rx="8" fill="#1E1E1E" stroke="#262626" stroke-width="1"/>
+  <text x="780" y="403" fill="#ffffff" font-family="system-ui" font-size="14">john@johnsphotography.com</text>
+
+  <text x="360" y="455" fill="#7C7C7C" font-family="system-ui" font-size="12">Phone</text>
+  <rect x="360" y="470" width="380" height="45" rx="8" fill="#1E1E1E" stroke="#262626" stroke-width="1"/>
+  <text x="380" y="498" fill="#ffffff" font-family="system-ui" font-size="14">(555) 123-4567</text>
+
+  <text x="760" y="455" fill="#7C7C7C" font-family="system-ui" font-size="12">Website</text>
+  <rect x="760" y="470" width="380" height="45" rx="8" fill="#1E1E1E" stroke="#262626" stroke-width="1"/>
+  <text x="780" y="498" fill="#ffffff" font-family="system-ui" font-size="14">www.johnsphotography.com</text>
+
+  <text x="360" y="550" fill="#7C7C7C" font-family="system-ui" font-size="12">Address</text>
+  <rect x="360" y="565" width="780" height="45" rx="8" fill="#1E1E1E" stroke="#262626" stroke-width="1"/>
+  <text x="380" y="593" fill="#ffffff" font-family="system-ui" font-size="14">123 Photography Lane, Creative District, CA 90210</text>
+
+  <text x="360" y="645" fill="#7C7C7C" font-family="system-ui" font-size="12">Bio</text>
+  <rect x="360" y="660" width="780" height="80" rx="8" fill="#1E1E1E" stroke="#262626" stroke-width="1"/>
+  <text x="380" y="688" fill="#ffffff" font-family="system-ui" font-size="14">Award-winning photographer specializing in weddings, portraits, and</text>
+  <text x="380" y="710" fill="#ffffff" font-family="system-ui" font-size="14">commercial photography. Serving clients nationwide since 2015.</text>
+
+  <!-- Save button -->
+  <rect x="1020" y="150" width="120" height="40" rx="8" fill="#3b82f6"/>
+  <text x="1048" y="175" fill="white" font-family="system-ui" font-size="14" font-weight="500">Save Changes</text>
+</svg>

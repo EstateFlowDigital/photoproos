@@ -3,6 +3,27 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
+import type { HomepageMetricsContent } from "@/lib/validations/marketing-cms";
+
+// ============================================
+// METRICS SECTION DEFAULTS
+// ============================================
+
+const defaultMetricsContent: HomepageMetricsContent = {
+  label: "Trusted by professionals across every vertical",
+  mainValue: 2500,
+  mainSuffix: "+",
+  mainLabel: "Photographers run their business on PhotoProOS",
+  cards: [
+    { id: "1", value: "$2.0M+", label: "Monthly Volume", description: "Professional-grade scale", color: "blue" },
+    { id: "2", value: "6", label: "Industries", description: "Purpose-built workflows", color: "purple" },
+    { id: "3", value: "99.9%", label: "Uptime SLA", description: "Your business, always on", color: "green" },
+  ],
+};
+
+interface MetricsShowcaseSectionProps {
+  content?: Partial<HomepageMetricsContent>;
+}
 
 // ============================================
 // ANIMATED COUNTER HOOK
@@ -49,12 +70,24 @@ function useAnimatedCounter(
 // METRICS SHOWCASE SECTION
 // ============================================
 
-export function MetricsShowcaseSection() {
+export function MetricsShowcaseSection({ content }: MetricsShowcaseSectionProps = {}) {
   const { ref, isVisible } = useScrollAnimation();
 
-  const photographerCount = useAnimatedCounter(2500, 2000, isVisible);
-  const processedAmount = useAnimatedCounter(2.0, 2000, isVisible);
-  const galleriesCount = useAnimatedCounter(50000, 2500, isVisible);
+  // Merge provided content with defaults
+  const metrics = {
+    ...defaultMetricsContent,
+    ...content,
+    cards: content?.cards || defaultMetricsContent.cards,
+  };
+
+  const photographerCount = useAnimatedCounter(metrics.mainValue, 2000, isVisible);
+
+  // Icon mapping for cards
+  const iconMap: Record<string, React.ReactNode> = {
+    blue: <DollarIcon />,
+    purple: <GalleryIcon />,
+    green: <ShieldIcon />,
+  };
 
   return (
     <section ref={ref} className="relative z-10 py-20 lg:py-28 overflow-hidden">
@@ -83,12 +116,12 @@ export function MetricsShowcaseSection() {
           }}
         >
           <p className="text-sm font-medium uppercase tracking-wider text-foreground-muted mb-4">
-            Trusted by professionals across every vertical
+            {metrics.label}
           </p>
           <div className="relative inline-block">
             <span className="text-[48px] sm:text-[64px] md:text-[96px] lg:text-[120px] font-bold leading-none tracking-tight">
               <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--ai)] to-[var(--primary)] bg-[length:200%_auto] bg-clip-text text-transparent">
-                {photographerCount.toLocaleString()}+
+                {photographerCount.toLocaleString()}{metrics.mainSuffix || ""}
               </span>
             </span>
             {/* Glow effect */}
@@ -100,7 +133,7 @@ export function MetricsShowcaseSection() {
             />
           </div>
           <p className="text-lg sm:text-xl lg:text-2xl text-foreground-secondary mt-2">
-            Photographers run their business on PhotoProOS
+            {metrics.mainLabel}
           </p>
         </div>
 
@@ -114,27 +147,16 @@ export function MetricsShowcaseSection() {
             transitionDelay: "200ms",
           }}
         >
-          <MetricCard
-            value={`$${processedAmount.toFixed(1)}M+`}
-            label="Monthly Volume"
-            description="Professional-grade scale"
-            icon={<DollarIcon />}
-            color="blue"
-          />
-          <MetricCard
-            value="6"
-            label="Industries"
-            description="Purpose-built workflows"
-            icon={<GalleryIcon />}
-            color="purple"
-          />
-          <MetricCard
-            value="99.9%"
-            label="Uptime SLA"
-            description="Your business, always on"
-            icon={<ShieldIcon />}
-            color="green"
-          />
+          {metrics.cards.map((card) => (
+            <MetricCard
+              key={card.id}
+              value={card.value}
+              label={card.label}
+              description={card.description}
+              icon={iconMap[card.color] || <DollarIcon />}
+              color={card.color}
+            />
+          ))}
         </div>
       </div>
     </section>

@@ -1,0 +1,141 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="800" fill="#0A0A0A"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="280" height="800" fill="#141414"/>
+  <rect x="24" y="24" width="140" height="32" rx="4" fill="#3b82f6"/>
+  <text x="48" y="46" fill="white" font-family="system-ui" font-size="14" font-weight="600">PhotoProOS</text>
+
+  <!-- Nav items -->
+  <rect x="56" y="94" width="80" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="122" width="70" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="150" width="90" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="178" width="60" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="206" width="75" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="16" y="232" width="248" height="40" rx="6" fill="#1E1E1E"/>
+  <circle cx="40" cy="252" r="8" fill="#22c55e"/>
+  <rect x="56" y="246" width="80" height="12" rx="2" fill="#ffffff"/>
+
+  <!-- Main content -->
+  <text x="320" y="56" fill="#ffffff" font-family="system-ui" font-size="24" font-weight="700">Analytics</text>
+
+  <!-- Time range selector -->
+  <rect x="320" y="80" width="100" height="36" rx="6" fill="#3b82f6"/>
+  <text x="343" y="103" fill="white" font-family="system-ui" font-size="12">This Month</text>
+  <rect x="440" y="80" width="100" height="36" rx="6" fill="#1E1E1E"/>
+  <text x="460" y="103" fill="#7C7C7C" font-family="system-ui" font-size="12">Last Month</text>
+  <rect x="560" y="80" width="100" height="36" rx="6" fill="#1E1E1E"/>
+  <text x="586" y="103" fill="#7C7C7C" font-family="system-ui" font-size="12">Quarter</text>
+  <rect x="680" y="80" width="100" height="36" rx="6" fill="#1E1E1E"/>
+  <text x="712" y="103" fill="#7C7C7C" font-family="system-ui" font-size="12">Year</text>
+
+  <!-- KPI Cards -->
+  <rect x="320" y="140" width="200" height="110" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <text x="340" y="170" fill="#7C7C7C" font-family="system-ui" font-size="12">Total Revenue</text>
+  <text x="340" y="210" fill="#ffffff" font-family="system-ui" font-size="32" font-weight="700">$24.5K</text>
+  <rect x="340" y="225" width="50" height="20" rx="4" fill="#22c55e" opacity="0.2"/>
+  <text x="348" y="240" fill="#22c55e" font-family="system-ui" font-size="11">+18.2%</text>
+
+  <rect x="540" y="140" width="200" height="110" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <text x="560" y="170" fill="#7C7C7C" font-family="system-ui" font-size="12">Completed Projects</text>
+  <text x="560" y="210" fill="#ffffff" font-family="system-ui" font-size="32" font-weight="700">42</text>
+  <rect x="560" y="225" width="50" height="20" rx="4" fill="#22c55e" opacity="0.2"/>
+  <text x="570" y="240" fill="#22c55e" font-family="system-ui" font-size="11">+12</text>
+
+  <rect x="760" y="140" width="200" height="110" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <text x="780" y="170" fill="#7C7C7C" font-family="system-ui" font-size="12">Photo Downloads</text>
+  <text x="780" y="210" fill="#ffffff" font-family="system-ui" font-size="32" font-weight="700">3,847</text>
+  <rect x="780" y="225" width="50" height="20" rx="4" fill="#22c55e" opacity="0.2"/>
+  <text x="788" y="240" fill="#22c55e" font-family="system-ui" font-size="11">+24.5%</text>
+
+  <rect x="980" y="140" width="180" height="110" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <text x="1000" y="170" fill="#7C7C7C" font-family="system-ui" font-size="12">Avg Project Value</text>
+  <text x="1000" y="210" fill="#ffffff" font-family="system-ui" font-size="32" font-weight="700">$583</text>
+  <rect x="1000" y="225" width="50" height="20" rx="4" fill="#ef4444" opacity="0.2"/>
+  <text x="1012" y="240" fill="#ef4444" font-family="system-ui" font-size="11">-3.2%</text>
+
+  <!-- Revenue Chart -->
+  <rect x="320" y="280" width="520" height="280" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <text x="340" y="315" fill="#ffffff" font-family="system-ui" font-size="16" font-weight="600">Revenue Trend</text>
+
+  <!-- Chart area -->
+  <path d="M360 500 L410 480 L460 490 L510 450 L560 440 L610 420 L660 400 L710 380 L760 370 L810 350" stroke="#3b82f6" stroke-width="3" fill="none"/>
+  <path d="M360 500 L410 480 L460 490 L510 450 L560 440 L610 420 L660 400 L710 380 L760 370 L810 350 L810 530 L360 530 Z" fill="url(#blueGradient)" opacity="0.3"/>
+
+  <!-- Chart grid lines -->
+  <line x1="360" y1="350" x2="810" y2="350" stroke="#262626" stroke-width="1"/>
+  <line x1="360" y1="400" x2="810" y2="400" stroke="#262626" stroke-width="1"/>
+  <line x1="360" y1="450" x2="810" y2="450" stroke="#262626" stroke-width="1"/>
+  <line x1="360" y1="500" x2="810" y2="500" stroke="#262626" stroke-width="1"/>
+
+  <text x="340" y="354" fill="#7C7C7C" font-family="system-ui" font-size="10">$30K</text>
+  <text x="340" y="404" fill="#7C7C7C" font-family="system-ui" font-size="10">$20K</text>
+  <text x="340" y="454" fill="#7C7C7C" font-family="system-ui" font-size="10">$10K</text>
+  <text x="347" y="504" fill="#7C7C7C" font-family="system-ui" font-size="10">$0</text>
+
+  <!-- X axis labels -->
+  <text x="380" y="545" fill="#7C7C7C" font-family="system-ui" font-size="10">Jan</text>
+  <text x="430" y="545" fill="#7C7C7C" font-family="system-ui" font-size="10">Feb</text>
+  <text x="480" y="545" fill="#7C7C7C" font-family="system-ui" font-size="10">Mar</text>
+  <text x="530" y="545" fill="#7C7C7C" font-family="system-ui" font-size="10">Apr</text>
+  <text x="580" y="545" fill="#7C7C7C" font-family="system-ui" font-size="10">May</text>
+  <text x="630" y="545" fill="#7C7C7C" font-family="system-ui" font-size="10">Jun</text>
+  <text x="680" y="545" fill="#7C7C7C" font-family="system-ui" font-size="10">Jul</text>
+  <text x="730" y="545" fill="#7C7C7C" font-family="system-ui" font-size="10">Aug</text>
+  <text x="780" y="545" fill="#7C7C7C" font-family="system-ui" font-size="10">Sep</text>
+
+  <!-- Project Types Chart -->
+  <rect x="860" y="280" width="300" height="280" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <text x="880" y="315" fill="#ffffff" font-family="system-ui" font-size="16" font-weight="600">Project Types</text>
+
+  <!-- Donut chart representation -->
+  <circle cx="1010" cy="420" r="70" fill="none" stroke="#3b82f6" stroke-width="20" stroke-dasharray="175 264"/>
+  <circle cx="1010" cy="420" r="70" fill="none" stroke="#22c55e" stroke-width="20" stroke-dasharray="110 264" stroke-dashoffset="-175"/>
+  <circle cx="1010" cy="420" r="70" fill="none" stroke="#f97316" stroke-width="20" stroke-dasharray="66 264" stroke-dashoffset="-285"/>
+  <circle cx="1010" cy="420" r="70" fill="none" stroke="#8b5cf6" stroke-width="20" stroke-dasharray="44 264" stroke-dashoffset="-351"/>
+  <circle cx="1010" cy="420" r="50" fill="#141414"/>
+  <text x="990" y="425" fill="#ffffff" font-family="system-ui" font-size="16" font-weight="700">42</text>
+
+  <!-- Legend -->
+  <rect x="880" y="510" width="12" height="12" rx="2" fill="#3b82f6"/>
+  <text x="900" y="520" fill="#A7A7A7" font-family="system-ui" font-size="11">Weddings (40%)</text>
+  <rect x="880" y="530" width="12" height="12" rx="2" fill="#22c55e"/>
+  <text x="900" y="540" fill="#A7A7A7" font-family="system-ui" font-size="11">Corporate (25%)</text>
+  <rect x="1000" y="510" width="12" height="12" rx="2" fill="#f97316"/>
+  <text x="1020" y="520" fill="#A7A7A7" font-family="system-ui" font-size="11">Real Estate (15%)</text>
+  <rect x="1000" y="530" width="12" height="12" rx="2" fill="#8b5cf6"/>
+  <text x="1020" y="540" fill="#A7A7A7" font-family="system-ui" font-size="11">Other (10%)</text>
+
+  <!-- Top Clients Table -->
+  <rect x="320" y="590" width="840" height="180" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <text x="340" y="625" fill="#ffffff" font-family="system-ui" font-size="16" font-weight="600">Top Clients by Revenue</text>
+
+  <!-- Table header -->
+  <text x="340" y="660" fill="#7C7C7C" font-family="system-ui" font-size="12">CLIENT</text>
+  <text x="580" y="660" fill="#7C7C7C" font-family="system-ui" font-size="12">PROJECTS</text>
+  <text x="720" y="660" fill="#7C7C7C" font-family="system-ui" font-size="12">REVENUE</text>
+  <text x="880" y="660" fill="#7C7C7C" font-family="system-ui" font-size="12">GROWTH</text>
+
+  <!-- Row 1 -->
+  <circle cx="355" cy="695" r="15" fill="#14b8a6"/>
+  <text x="350" y="700" fill="white" font-family="system-ui" font-size="10">TC</text>
+  <text x="380" y="700" fill="#ffffff" font-family="system-ui" font-size="13">Tech Corp Inc.</text>
+  <text x="580" y="700" fill="#ffffff" font-family="system-ui" font-size="13">12</text>
+  <text x="720" y="700" fill="#ffffff" font-family="system-ui" font-size="13" font-weight="600">$28,500</text>
+  <text x="880" y="700" fill="#22c55e" font-family="system-ui" font-size="13">+32%</text>
+
+  <!-- Row 2 -->
+  <circle cx="355" cy="735" r="15" fill="#f97316"/>
+  <text x="350" y="740" fill="white" font-family="system-ui" font-size="10">DR</text>
+  <text x="380" y="740" fill="#ffffff" font-family="system-ui" font-size="13">Downtown Realty</text>
+  <text x="580" y="740" fill="#ffffff" font-family="system-ui" font-size="13">24</text>
+  <text x="720" y="740" fill="#ffffff" font-family="system-ui" font-size="13" font-weight="600">$45,200</text>
+  <text x="880" y="740" fill="#22c55e" font-family="system-ui" font-size="13">+18%</text>
+
+  <defs>
+    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.5"/>
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0"/>
+    </linearGradient>
+  </defs>
+</svg>

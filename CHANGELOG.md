@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Marketing Studio: Screenshot Zones** - New layer type for dashboard screenshots in social templates:
+  - Added `ScreenshotZoneLayer` type to layer system (types.ts)
+  - Template "mockup" elements now convert to interactive screenshot zones
+  - Screenshot zones show dashed placeholder when empty, display image when populated
+  - Double-click zones to open screenshot picker modal
+  - 10 pre-made PhotoProOS dashboard screenshots (SVG):
+    - Dashboard overview with metrics and activity
+    - Gallery list and gallery detail views
+    - Invoices list with status indicators
+    - Clients management grid
+    - Booking calendar with events
+    - Analytics dashboard with charts
+    - Client portal gallery view
+    - Workflows automation page
+    - Settings profile page
+  - Screenshot picker modal with library and upload tabs
+  - Upload custom screenshots (drag & drop, file browser)
+  - Properties panel integration for screenshot zones:
+    - Screenshot preview with replace/remove buttons
+    - Object fit selector (cover/contain/fill)
+    - Border radius adjustment
+  - Templates now properly render screenshot drop areas instead of solid blue shapes
+
+- **CMS Homepage Editing** - Homepage sections now read content from CMS database:
+  - Expanded `HomepageContent` schema with 15 section types (hero, logos, metrics, howItWorks, pillars, industryTabs, clientExperience, toolReplacement, integrations, caseStudies, comparison, security, testimonials, pricing, cta)
+  - Updated `hero-analytics.tsx` section to accept CMS content props with fallback defaults
+  - Updated `logos.tsx` section with CMS-editable stats, photography types, and benefits
+  - Updated `metrics-showcase.tsx` section with CMS-editable main stat and metric cards
+  - Updated `how-it-works.tsx` section with CMS-editable badge, title, subtitle, and steps
+  - Modified `src/app/page.tsx` to fetch CMS content and pass to section components
+  - Created `src/lib/seed/homepage-content.ts` with `seedHomepageContent()` and `resetHomepageContent()` functions
+  - All sections maintain backwards compatibility with hardcoded defaults when no CMS content exists
+
 ### Fixed
 - **Super-Admin Marketing CMS Fixes** - Resolved issues with testimonials, team members, FAQs, and navigation:
   - Fixed Zod validation for optional URL fields - empty strings now properly transform to null before URL validation

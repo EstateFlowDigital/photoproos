@@ -1,0 +1,122 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="800" fill="#0A0A0A"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="280" height="800" fill="#141414"/>
+  <rect x="24" y="24" width="140" height="32" rx="4" fill="#3b82f6"/>
+  <text x="48" y="46" fill="white" font-family="system-ui" font-size="14" font-weight="600">PhotoProOS</text>
+
+  <!-- Nav items -->
+  <rect x="56" y="94" width="80" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="122" width="70" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="150" width="90" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="16" y="176" width="248" height="40" rx="6" fill="#1E1E1E"/>
+  <circle cx="40" cy="196" r="8" fill="#8b5cf6"/>
+  <rect x="56" y="190" width="70" height="12" rx="2" fill="#ffffff"/>
+
+  <!-- Main content -->
+  <text x="320" y="56" fill="#ffffff" font-family="system-ui" font-size="24" font-weight="700">Clients</text>
+  <text x="320" y="80" fill="#7C7C7C" font-family="system-ui" font-size="14">142 total clients</text>
+
+  <!-- Search and filters -->
+  <rect x="320" y="100" width="280" height="40" rx="8" fill="#1E1E1E" stroke="#262626" stroke-width="1"/>
+  <text x="340" y="125" fill="#7C7C7C" font-family="system-ui" font-size="14">Search clients...</text>
+
+  <rect x="620" y="100" width="100" height="40" rx="8" fill="#1E1E1E" stroke="#262626" stroke-width="1"/>
+  <text x="640" y="125" fill="#7C7C7C" font-family="system-ui" font-size="14">All Types</text>
+
+  <rect x="1060" y="100" width="100" height="40" rx="8" fill="#3b82f6"/>
+  <text x="1078" y="125" fill="white" font-family="system-ui" font-size="14" font-weight="500">+ Add</text>
+
+  <!-- Client grid -->
+  <!-- Row 1 -->
+  <rect x="320" y="170" width="260" height="180" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <circle cx="380" cy="230" r="35" fill="#3b82f6"/>
+  <text x="365" y="238" fill="white" font-family="system-ui" font-size="20" font-weight="600">SJ</text>
+  <text x="430" y="215" fill="#ffffff" font-family="system-ui" font-size="16" font-weight="600">Sarah Johnson</text>
+  <text x="430" y="240" fill="#7C7C7C" font-family="system-ui" font-size="13">Wedding Client</text>
+  <rect x="430" y="255" width="60" height="20" rx="4" fill="#22c55e" opacity="0.2"/>
+  <text x="442" y="270" fill="#22c55e" font-family="system-ui" font-size="10">Active</text>
+  <rect x="336" y="300" width="228" height="1" fill="#262626"/>
+  <text x="340" y="325" fill="#7C7C7C" font-family="system-ui" font-size="11">5 galleries</text>
+  <text x="420" y="325" fill="#7C7C7C" font-family="system-ui" font-size="11">$12,400 revenue</text>
+
+  <rect x="600" y="170" width="260" height="180" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <circle cx="660" cy="230" r="35" fill="#14b8a6"/>
+  <text x="645" y="238" fill="white" font-family="system-ui" font-size="20" font-weight="600">TC</text>
+  <text x="710" y="215" fill="#ffffff" font-family="system-ui" font-size="16" font-weight="600">Tech Corp Inc.</text>
+  <text x="710" y="240" fill="#7C7C7C" font-family="system-ui" font-size="13">Corporate</text>
+  <rect x="710" y="255" width="60" height="20" rx="4" fill="#22c55e" opacity="0.2"/>
+  <text x="722" y="270" fill="#22c55e" font-family="system-ui" font-size="10">Active</text>
+  <rect x="616" y="300" width="228" height="1" fill="#262626"/>
+  <text x="620" y="325" fill="#7C7C7C" font-family="system-ui" font-size="11">12 galleries</text>
+  <text x="700" y="325" fill="#7C7C7C" font-family="system-ui" font-size="11">$28,500 revenue</text>
+
+  <rect x="880" y="170" width="260" height="180" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <circle cx="940" cy="230" r="35" fill="#f97316"/>
+  <text x="925" y="238" fill="white" font-family="system-ui" font-size="20" font-weight="600">DR</text>
+  <text x="990" y="215" fill="#ffffff" font-family="system-ui" font-size="16" font-weight="600">Downtown Realty</text>
+  <text x="990" y="240" fill="#7C7C7C" font-family="system-ui" font-size="13">Real Estate</text>
+  <rect x="990" y="255" width="60" height="20" rx="4" fill="#22c55e" opacity="0.2"/>
+  <text x="1002" y="270" fill="#22c55e" font-family="system-ui" font-size="10">Active</text>
+  <rect x="896" y="300" width="228" height="1" fill="#262626"/>
+  <text x="900" y="325" fill="#7C7C7C" font-family="system-ui" font-size="11">24 galleries</text>
+  <text x="980" y="325" fill="#7C7C7C" font-family="system-ui" font-size="11">$45,200 revenue</text>
+
+  <!-- Row 2 -->
+  <rect x="320" y="370" width="260" height="180" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <circle cx="380" cy="430" r="35" fill="#8b5cf6"/>
+  <text x="362" y="438" fill="white" font-family="system-ui" font-size="20" font-weight="600">MC</text>
+  <text x="430" y="415" fill="#ffffff" font-family="system-ui" font-size="16" font-weight="600">Marcus Chen</text>
+  <text x="430" y="440" fill="#7C7C7C" font-family="system-ui" font-size="13">Portrait Client</text>
+  <rect x="430" y="455" width="60" height="20" rx="4" fill="#22c55e" opacity="0.2"/>
+  <text x="442" y="470" fill="#22c55e" font-family="system-ui" font-size="10">Active</text>
+  <rect x="336" y="500" width="228" height="1" fill="#262626"/>
+  <text x="340" y="525" fill="#7C7C7C" font-family="system-ui" font-size="11">3 galleries</text>
+  <text x="420" y="525" fill="#7C7C7C" font-family="system-ui" font-size="11">$6,800 revenue</text>
+
+  <rect x="600" y="370" width="260" height="180" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <circle cx="660" cy="430" r="35" fill="#ec4899"/>
+  <text x="646" y="438" fill="white" font-family="system-ui" font-size="20" font-weight="600">ED</text>
+  <text x="710" y="415" fill="#ffffff" font-family="system-ui" font-size="16" font-weight="600">Emily Davis</text>
+  <text x="710" y="440" fill="#7C7C7C" font-family="system-ui" font-size="13">Wedding Client</text>
+  <rect x="710" y="455" width="80" height="20" rx="4" fill="#7C7C7C" opacity="0.2"/>
+  <text x="720" y="470" fill="#7C7C7C" font-family="system-ui" font-size="10">Completed</text>
+  <rect x="616" y="500" width="228" height="1" fill="#262626"/>
+  <text x="620" y="525" fill="#7C7C7C" font-family="system-ui" font-size="11">2 galleries</text>
+  <text x="700" y="525" fill="#7C7C7C" font-family="system-ui" font-size="11">$4,900 revenue</text>
+
+  <rect x="880" y="370" width="260" height="180" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <circle cx="940" cy="430" r="35" fill="#22c55e"/>
+  <text x="925" y="438" fill="white" font-family="system-ui" font-size="20" font-weight="600">BH</text>
+  <text x="990" y="415" fill="#ffffff" font-family="system-ui" font-size="16" font-weight="600">Bella Home Co.</text>
+  <text x="990" y="440" fill="#7C7C7C" font-family="system-ui" font-size="13">Interior Design</text>
+  <rect x="990" y="455" width="60" height="20" rx="4" fill="#22c55e" opacity="0.2"/>
+  <text x="1002" y="470" fill="#22c55e" font-family="system-ui" font-size="10">Active</text>
+  <rect x="896" y="500" width="228" height="1" fill="#262626"/>
+  <text x="900" y="525" fill="#7C7C7C" font-family="system-ui" font-size="11">8 galleries</text>
+  <text x="980" y="525" fill="#7C7C7C" font-family="system-ui" font-size="11">$19,600 revenue</text>
+
+  <!-- Row 3 -->
+  <rect x="320" y="570" width="260" height="180" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <circle cx="380" cy="630" r="35" fill="#ef4444"/>
+  <text x="367" y="638" fill="white" font-family="system-ui" font-size="20" font-weight="600">JL</text>
+  <text x="430" y="615" fill="#ffffff" font-family="system-ui" font-size="16" font-weight="600">James Liu</text>
+  <text x="430" y="640" fill="#7C7C7C" font-family="system-ui" font-size="13">Event Client</text>
+  <rect x="430" y="655" width="60" height="20" rx="4" fill="#3b82f6" opacity="0.2"/>
+  <text x="444" y="670" fill="#3b82f6" font-family="system-ui" font-size="10">New</text>
+  <rect x="336" y="700" width="228" height="1" fill="#262626"/>
+  <text x="340" y="725" fill="#7C7C7C" font-family="system-ui" font-size="11">1 gallery</text>
+  <text x="420" y="725" fill="#7C7C7C" font-family="system-ui" font-size="11">$2,200 revenue</text>
+
+  <rect x="600" y="570" width="260" height="180" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <circle cx="660" cy="630" r="35" fill="#6366f1"/>
+  <text x="646" y="638" fill="white" font-family="system-ui" font-size="20" font-weight="600">AR</text>
+  <text x="710" y="615" fill="#ffffff" font-family="system-ui" font-size="16" font-weight="600">Atlas Restaurant</text>
+  <text x="710" y="640" fill="#7C7C7C" font-family="system-ui" font-size="13">Food Photography</text>
+  <rect x="710" y="655" width="60" height="20" rx="4" fill="#22c55e" opacity="0.2"/>
+  <text x="722" y="670" fill="#22c55e" font-family="system-ui" font-size="10">Active</text>
+  <rect x="616" y="700" width="228" height="1" fill="#262626"/>
+  <text x="620" y="725" fill="#7C7C7C" font-family="system-ui" font-size="11">6 galleries</text>
+  <text x="700" y="725" fill="#7C7C7C" font-family="system-ui" font-size="11">$8,400 revenue</text>
+</svg>

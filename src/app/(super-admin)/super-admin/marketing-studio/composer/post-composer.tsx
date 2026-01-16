@@ -4,7 +4,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import type { PlatformId, PostFormat, Layer, LayerType, TextLayer, ImageLayer, ShapeLayer, MockupLayer, GroupLayer } from "@/components/marketing-studio/types";
+import type { PlatformId, PostFormat, Layer, LayerType, TextLayer, ImageLayer, ShapeLayer, MockupLayer, GroupLayer, ScreenshotZoneLayer } from "@/components/marketing-studio/types";
 import type { IndustryId } from "@/components/mockups/types";
 import { PLATFORMS, PLATFORM_LIST } from "@/lib/marketing-studio/platforms";
 import { getMockupById } from "@/components/mockups/mockup-registry";
@@ -23,6 +23,7 @@ import { LayersPanel } from "@/components/marketing-studio/composer/layers-panel
 import { PropertiesPanel } from "@/components/marketing-studio/composer/properties-panel";
 import { SaveTemplateModal } from "@/components/marketing-studio/composer/save-template-modal";
 import { BatchExportModal } from "@/components/marketing-studio/composer/batch-export-modal";
+import { ScreenshotPicker } from "@/components/marketing-studio/composer/screenshot-picker";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -71,6 +72,7 @@ import {
   Plus,
   Circle,
   Copy as CopyIcon,
+  Monitor,
 } from "lucide-react";
 
 // Carousel slide type
@@ -148,6 +150,8 @@ export function PostComposer() {
   const [rightPanelTab, setRightPanelTab] = React.useState<"settings" | "properties">("settings");
   const [showSaveTemplateModal, setShowSaveTemplateModal] = React.useState(false);
   const [showBatchExportModal, setShowBatchExportModal] = React.useState(false);
+  const [showScreenshotPicker, setShowScreenshotPicker] = React.useState(false);
+  const [targetScreenshotZoneId, setTargetScreenshotZoneId] = React.useState<string | null>(null);
 
   // Composition state
   const [layers, setLayers] = React.useState<Layer[]>([]);
@@ -356,6 +360,19 @@ export function PostComposer() {
             return logoTextLayer;
           }
 
+          // Handle mockup elements as screenshot zones
+          if (element.type === "mockup") {
+            const screenshotZoneLayer: ScreenshotZoneLayer = {
+              ...baseLayer,
+              type: "screenshot-zone",
+              name: "Dashboard Screenshot",
+              placeholder: "Click to add dashboard screenshot",
+              objectFit: "cover",
+              borderRadius: 8,
+            };
+            return screenshotZoneLayer;
+          }
+
           // Default to shape for unknown types
           const defaultLayer: ShapeLayer = {
             ...baseLayer,
@@ -384,6 +401,27 @@ export function PostComposer() {
     setSelectedMockupId(mockupId);
     setContentType("mockup");
   }, []);
+
+  // Handle screenshot selection for screenshot zones
+  const handleScreenshotSelect = React.useCallback((src: string) => {
+    if (!targetScreenshotZoneId) return;
+
+    setLayers((prev) =>
+      prev.map((layer) => {
+        if (layer.id === targetScreenshotZoneId && layer.type === "screenshot-zone") {
+          return {
+            ...layer,
+            src,
+          } as ScreenshotZoneLayer;
+        }
+        return layer;
+      })
+    );
+
+    setShowScreenshotPicker(false);
+    setTargetScreenshotZoneId(null);
+    toast.success("Screenshot added to layer");
+  }, [targetScreenshotZoneId]);
 
   // Handle image upload
   const handleImageUpload = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -2056,10 +2094,66 @@ export function PostComposer() {
           </div>
         );
       }
+      case "screenshot-zone": {
+        const screenshotLayer = layer as ScreenshotZoneLayer;
+        const hasImage = !!screenshotLayer.src;
+        return (
+          <div
+            key={layer.id}
+            style={{
+              ...baseStyle,
+              borderRadius: screenshotLayer.borderRadius ? `${screenshotLayer.borderRadius}px` : undefined,
+              cursor: layer.locked ? "not-allowed" : isDragging && dragLayerId === layer.id ? "grabbing" : "pointer",
+            }}
+            className={cn(
+              "overflow-hidden transition-shadow",
+              isSelected && "ring-2 ring-[var(--primary)] ring-offset-1",
+              isMultiSelected && !isSelected && "ring-2 ring-[var(--ai)] ring-offset-1",
+              isPrimarySelection && "ring-2 ring-[var(--primary)] ring-offset-2",
+              isDragging && dragLayerId === layer.id && "opacity-90 shadow-lg"
+            )}
+            onMouseDown={(e) => handleLayerMouseDown(e, layer.id)}
+            onDoubleClick={(e) => {
+              if (!layer.locked) {
+                e.stopPropagation();
+                setTargetScreenshotZoneId(layer.id);
+                setShowScreenshotPicker(true);
+              }
+            }}
+          >
+            {hasImage ? (
+              <img
+                src={screenshotLayer.src}
+                alt={layer.name}
+                style={{
+                  objectFit: screenshotLayer.objectFit,
+                  borderRadius: screenshotLayer.borderRadius ? `${screenshotLayer.borderRadius}px` : undefined,
+                }}
+                className="w-full h-full pointer-events-none"
+                draggable={false}
+              />
+            ) : (
+              <div
+                className="w-full h-full border-2 border-dashed border-[var(--primary)]/50 bg-[var(--primary)]/10 flex flex-col items-center justify-center gap-2"
+                style={{
+                  borderRadius: screenshotLayer.borderRadius ? `${screenshotLayer.borderRadius}px` : undefined,
+                }}
+              >
+                <Monitor className="h-8 w-8 text-[var(--primary)]/60" aria-hidden="true" />
+                <span className="text-xs text-[var(--primary)]/80 font-medium text-center px-2">
+                  {screenshotLayer.placeholder || "Click to add screenshot"}
+                </span>
+              </div>
+            )}
+            {renderResizeHandles(layer.id, layer.locked)}
+            {renderLockBadge(layer.locked)}
+          </div>
+        );
+      }
       default:
         return null;
     }
-  }, [selectedLayerId, selectedLayerIds, isDragging, dragLayerId, handleLayerMouseDown, renderResizeHandles, renderLockBadge]);
+  }, [selectedLayerId, selectedLayerIds, isDragging, dragLayerId, handleLayerMouseDown, renderResizeHandles, renderLockBadge, setTargetScreenshotZoneId, setShowScreenshotPicker]);
 
   // Compute canvas background style
   const canvasBgStyle = React.useMemo((): React.CSSProperties => {
@@ -3041,6 +3135,10 @@ export function PostComposer() {
             <PropertiesPanel
               layer={selectedLayer}
               onUpdateLayer={handleUpdateLayer}
+              onOpenScreenshotPicker={(layerId) => {
+                setTargetScreenshotZoneId(layerId);
+                setShowScreenshotPicker(true);
+              }}
               className="flex-1 overflow-hidden"
             />
           )}
@@ -3560,6 +3658,22 @@ export function PostComposer() {
         canvasRef={previewRef}
         compositionName="social-post"
       />
+
+      {/* Screenshot Picker Modal */}
+      {showScreenshotPicker && (
+        <ScreenshotPicker
+          onSelect={handleScreenshotSelect}
+          onClose={() => {
+            setShowScreenshotPicker(false);
+            setTargetScreenshotZoneId(null);
+          }}
+          selectedSrc={
+            targetScreenshotZoneId
+              ? (layers.find((l) => l.id === targetScreenshotZoneId) as ScreenshotZoneLayer | undefined)?.src
+              : undefined
+          }
+        />
+      )}
     </div>
   );
 }

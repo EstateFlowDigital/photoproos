@@ -215,7 +215,7 @@ export async function getSuperAdminDashboardStats(): Promise<
       galleriesDeliveredThisMonth,
       revenueThisMonth: revenueThisMonthResult._sum.amountCents || 0,
       averageRating: feedbackStats._avg.rating || 0,
-      feedbackCount: feedbackStats._count._all || 0,
+      feedbackCount: feedbackStats._count || 0,
       pendingFeedback,
       userGrowth,
       revenueGrowth,

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import type { Layer, TextLayer, ShapeLayer, ImageLayer } from "@/components/marketing-studio/types";
+import type { Layer, TextLayer, ShapeLayer, ImageLayer, ScreenshotZoneLayer } from "@/components/marketing-studio/types";
 import {
   Settings2,
   Move,
@@ -19,11 +19,14 @@ import {
   FlipVertical,
   RotateCcw,
   RotateCw,
+  Monitor,
+  Trash2,
 } from "lucide-react";
 
 interface PropertiesPanelProps {
   layer: Layer | null;
   onUpdateLayer: (id: string, updates: Partial<Layer>) => void;
+  onOpenScreenshotPicker?: (layerId: string) => void;
   className?: string;
 }
 
@@ -45,6 +48,7 @@ const FONT_WEIGHT_OPTIONS = [
 export function PropertiesPanel({
   layer,
   onUpdateLayer,
+  onOpenScreenshotPicker,
   className,
 }: PropertiesPanelProps) {
   const [expandedSections, setExpandedSections] = React.useState<string[]>([
@@ -407,6 +411,87 @@ export function PropertiesPanel({
                     </select>
                     <ChevronDown className="absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-muted)] pointer-events-none" aria-hidden="true" />
                   </div>
+                </div>
+              </>
+            )}
+
+            {/* Screenshot Zone-specific properties */}
+            {layer.type === "screenshot-zone" && (
+              <>
+                <div>
+                  <label className="block text-xs text-[var(--foreground-muted)] mb-1.5">
+                    Screenshot
+                  </label>
+                  {(layer as ScreenshotZoneLayer).src ? (
+                    <div className="space-y-2">
+                      <div className="relative aspect-video rounded-lg overflow-hidden border border-[var(--border)]">
+                        <img
+                          src={(layer as ScreenshotZoneLayer).src}
+                          alt="Screenshot preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          onClick={() => onUpdateLayer(layer.id, { src: undefined } as Partial<ScreenshotZoneLayer>)}
+                          className="absolute top-1 right-1 p-1 rounded bg-black/50 text-white hover:bg-black/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                          aria-label="Remove screenshot"
+                        >
+                          <Trash2 className="h-3 w-3" aria-hidden="true" />
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => onOpenScreenshotPicker?.(layer.id)}
+                        className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-[var(--border)] text-xs text-[var(--foreground-muted)] hover:bg-[var(--background-hover)] hover:text-[var(--foreground)] transition-colors"
+                      >
+                        <Monitor className="h-3.5 w-3.5" aria-hidden="true" />
+                        Replace Screenshot
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => onOpenScreenshotPicker?.(layer.id)}
+                      className="flex flex-col items-center justify-center gap-2 w-full px-3 py-6 rounded-lg border border-dashed border-[var(--primary)]/50 bg-[var(--primary)]/5 text-xs text-[var(--primary)] hover:bg-[var(--primary)]/10 transition-colors"
+                    >
+                      <Monitor className="h-6 w-6" aria-hidden="true" />
+                      <span>Select Dashboard Screenshot</span>
+                    </button>
+                  )}
+                </div>
+                <div>
+                  <label htmlFor="screenshot-object-fit" className="block text-xs text-[var(--foreground-muted)] mb-1">
+                    Object Fit
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="screenshot-object-fit"
+                      value={(layer as ScreenshotZoneLayer).objectFit}
+                      onChange={(e) =>
+                        onUpdateLayer(layer.id, {
+                          objectFit: e.target.value as "cover" | "contain" | "fill",
+                        } as Partial<ScreenshotZoneLayer>)
+                      }
+                      className="w-full appearance-none rounded-lg border border-[var(--border)] bg-[var(--background)] px-2.5 py-1.5 pr-8 text-sm text-[var(--foreground)] focus:border-[var(--primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
+                    >
+                      <option value="cover">Cover</option>
+                      <option value="contain">Contain</option>
+                      <option value="fill">Fill</option>
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-muted)] pointer-events-none" aria-hidden="true" />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="screenshot-border-radius" className="block text-xs text-[var(--foreground-muted)] mb-1">
+                    Border Radius
+                  </label>
+                  <NumberInput
+                    id="screenshot-border-radius"
+                    value={(layer as ScreenshotZoneLayer).borderRadius || 0}
+                    onChange={(v) =>
+                      onUpdateLayer(layer.id, { borderRadius: v } as Partial<ScreenshotZoneLayer>)
+                    }
+                    min={0}
+                    max={100}
+                    suffix="px"
+                  />
                 </div>
               </>
             )}

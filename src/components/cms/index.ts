@@ -51,12 +51,14 @@ export type { AnalyticsTrackerProps, UseAnalyticsReturn } from "./analytics-trac
 // Governance Components
 export {
   GovernanceCheck,
+  GovernanceCheckInline,
   GovernanceBadge,
   GovernanceResultsPanel,
   GovernanceDashboard,
 } from "./governance-check";
 export type {
   GovernanceCheckProps,
+  GovernanceCheckInlineProps,
   GovernanceResultsPanelProps,
   GovernanceDashboardProps,
   GovernanceBadgeProps,

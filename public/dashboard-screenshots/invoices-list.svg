@@ -1,0 +1,98 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="800" fill="#0A0A0A"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="280" height="800" fill="#141414"/>
+  <rect x="24" y="24" width="140" height="32" rx="4" fill="#3b82f6"/>
+  <text x="48" y="46" fill="white" font-family="system-ui" font-size="14" font-weight="600">PhotoProOS</text>
+
+  <!-- Nav items -->
+  <rect x="56" y="94" width="80" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="122" width="70" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="16" y="148" width="248" height="40" rx="6" fill="#1E1E1E"/>
+  <circle cx="40" cy="168" r="8" fill="#22c55e"/>
+  <rect x="56" y="162" width="80" height="12" rx="2" fill="#ffffff"/>
+  <rect x="56" y="206" width="60" height="10" rx="2" fill="#7C7C7C"/>
+
+  <!-- Main content -->
+  <text x="320" y="56" fill="#ffffff" font-family="system-ui" font-size="24" font-weight="700">Invoices</text>
+
+  <!-- Stats row -->
+  <rect x="320" y="90" width="200" height="90" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <text x="340" y="120" fill="#7C7C7C" font-family="system-ui" font-size="12">Outstanding</text>
+  <text x="340" y="155" fill="#ffffff" font-family="system-ui" font-size="28" font-weight="700">$8,450</text>
+  <rect x="440" y="130" width="60" height="24" rx="4" fill="#f97316" opacity="0.2"/>
+  <text x="452" y="147" fill="#f97316" font-family="system-ui" font-size="11">4 invoices</text>
+
+  <rect x="540" y="90" width="200" height="90" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <text x="560" y="120" fill="#7C7C7C" font-family="system-ui" font-size="12">Paid This Month</text>
+  <text x="560" y="155" fill="#ffffff" font-family="system-ui" font-size="28" font-weight="700">$12,800</text>
+  <rect x="680" y="130" width="40" height="24" rx="4" fill="#22c55e" opacity="0.2"/>
+  <text x="686" y="147" fill="#22c55e" font-family="system-ui" font-size="11">+18%</text>
+
+  <rect x="760" y="90" width="200" height="90" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <text x="780" y="120" fill="#7C7C7C" font-family="system-ui" font-size="12">Overdue</text>
+  <text x="780" y="155" fill="#ef4444" font-family="system-ui" font-size="28" font-weight="700">$2,100</text>
+  <rect x="880" y="130" width="60" height="24" rx="4" fill="#ef4444" opacity="0.2"/>
+  <text x="892" y="147" fill="#ef4444" font-family="system-ui" font-size="11">2 invoices</text>
+
+  <rect x="1020" y="90" width="140" height="90" rx="8" fill="#3b82f6"/>
+  <text x="1048" y="130" fill="white" font-family="system-ui" font-size="14" font-weight="500">+ New Invoice</text>
+  <text x="1055" y="155" fill="white" font-family="system-ui" font-size="12" opacity="0.8">Create invoice</text>
+
+  <!-- Search and filters -->
+  <rect x="320" y="210" width="280" height="40" rx="8" fill="#1E1E1E" stroke="#262626" stroke-width="1"/>
+  <text x="340" y="235" fill="#7C7C7C" font-family="system-ui" font-size="14">Search invoices...</text>
+
+  <rect x="620" y="210" width="100" height="40" rx="8" fill="#1E1E1E" stroke="#262626" stroke-width="1"/>
+  <text x="640" y="235" fill="#7C7C7C" font-family="system-ui" font-size="14">All Status</text>
+
+  <!-- Invoice table header -->
+  <rect x="320" y="280" width="840" height="50" rx="8" fill="#141414"/>
+  <text x="340" y="310" fill="#7C7C7C" font-family="system-ui" font-size="12" font-weight="500">INVOICE</text>
+  <text x="520" y="310" fill="#7C7C7C" font-family="system-ui" font-size="12" font-weight="500">CLIENT</text>
+  <text x="720" y="310" fill="#7C7C7C" font-family="system-ui" font-size="12" font-weight="500">AMOUNT</text>
+  <text x="860" y="310" fill="#7C7C7C" font-family="system-ui" font-size="12" font-weight="500">STATUS</text>
+  <text x="1000" y="310" fill="#7C7C7C" font-family="system-ui" font-size="12" font-weight="500">DUE DATE</text>
+
+  <!-- Invoice rows -->
+  <rect x="320" y="340" width="840" height="70" rx="0" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <text x="340" y="380" fill="#ffffff" font-family="system-ui" font-size="14" font-weight="500">INV-2024-047</text>
+  <text x="520" y="380" fill="#ffffff" font-family="system-ui" font-size="14">Sarah Johnson</text>
+  <text x="720" y="380" fill="#ffffff" font-family="system-ui" font-size="14" font-weight="600">$3,200.00</text>
+  <rect x="860" y="362" width="60" height="24" rx="4" fill="#22c55e" opacity="0.2"/>
+  <text x="872" y="379" fill="#22c55e" font-family="system-ui" font-size="11">Paid</text>
+  <text x="1000" y="380" fill="#7C7C7C" font-family="system-ui" font-size="14">Jan 10, 2025</text>
+
+  <rect x="320" y="420" width="840" height="70" rx="0" fill="#0A0A0A" stroke="#262626" stroke-width="1"/>
+  <text x="340" y="460" fill="#ffffff" font-family="system-ui" font-size="14" font-weight="500">INV-2024-046</text>
+  <text x="520" y="460" fill="#ffffff" font-family="system-ui" font-size="14">Tech Corp Inc.</text>
+  <text x="720" y="460" fill="#ffffff" font-family="system-ui" font-size="14" font-weight="600">$4,500.00</text>
+  <rect x="860" y="442" width="80" height="24" rx="4" fill="#f97316" opacity="0.2"/>
+  <text x="872" y="459" fill="#f97316" font-family="system-ui" font-size="11">Pending</text>
+  <text x="1000" y="460" fill="#7C7C7C" font-family="system-ui" font-size="14">Jan 15, 2025</text>
+
+  <rect x="320" y="500" width="840" height="70" rx="0" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <text x="340" y="540" fill="#ffffff" font-family="system-ui" font-size="14" font-weight="500">INV-2024-045</text>
+  <text x="520" y="540" fill="#ffffff" font-family="system-ui" font-size="14">Downtown Realty</text>
+  <text x="720" y="540" fill="#ffffff" font-family="system-ui" font-size="14" font-weight="600">$1,800.00</text>
+  <rect x="860" y="522" width="70" height="24" rx="4" fill="#ef4444" opacity="0.2"/>
+  <text x="872" y="539" fill="#ef4444" font-family="system-ui" font-size="11">Overdue</text>
+  <text x="1000" y="540" fill="#ef4444" font-family="system-ui" font-size="14">Jan 5, 2025</text>
+
+  <rect x="320" y="580" width="840" height="70" rx="0" fill="#0A0A0A" stroke="#262626" stroke-width="1"/>
+  <text x="340" y="620" fill="#ffffff" font-family="system-ui" font-size="14" font-weight="500">INV-2024-044</text>
+  <text x="520" y="620" fill="#ffffff" font-family="system-ui" font-size="14">Marcus Chen</text>
+  <text x="720" y="620" fill="#ffffff" font-family="system-ui" font-size="14" font-weight="600">$2,450.00</text>
+  <rect x="860" y="602" width="60" height="24" rx="4" fill="#22c55e" opacity="0.2"/>
+  <text x="872" y="619" fill="#22c55e" font-family="system-ui" font-size="11">Paid</text>
+  <text x="1000" y="620" fill="#7C7C7C" font-family="system-ui" font-size="14">Jan 3, 2025</text>
+
+  <rect x="320" y="660" width="840" height="70" rx="0" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <text x="340" y="700" fill="#ffffff" font-family="system-ui" font-size="14" font-weight="500">INV-2024-043</text>
+  <text x="520" y="700" fill="#ffffff" font-family="system-ui" font-size="14">Emily Davis</text>
+  <text x="720" y="700" fill="#ffffff" font-family="system-ui" font-size="14" font-weight="600">$1,950.00</text>
+  <rect x="860" y="682" width="60" height="24" rx="4" fill="#22c55e" opacity="0.2"/>
+  <text x="872" y="699" fill="#22c55e" font-family="system-ui" font-size="11">Paid</text>
+  <text x="1000" y="700" fill="#7C7C7C" font-family="system-ui" font-size="14">Dec 28, 2024</text>
+</svg>

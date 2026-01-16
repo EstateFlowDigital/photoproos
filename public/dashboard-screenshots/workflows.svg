@@ -1,0 +1,92 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="800" fill="#0A0A0A"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="280" height="800" fill="#141414"/>
+  <rect x="24" y="24" width="140" height="32" rx="4" fill="#3b82f6"/>
+  <text x="48" y="46" fill="white" font-family="system-ui" font-size="14" font-weight="600">PhotoProOS</text>
+
+  <!-- Nav items -->
+  <rect x="56" y="94" width="80" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="122" width="70" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="150" width="90" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="178" width="60" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="206" width="75" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="56" y="234" width="85" height="10" rx="2" fill="#7C7C7C"/>
+  <rect x="16" y="260" width="248" height="40" rx="6" fill="#1E1E1E"/>
+  <circle cx="40" cy="280" r="8" fill="#8b5cf6"/>
+  <rect x="56" y="274" width="80" height="12" rx="2" fill="#ffffff"/>
+
+  <!-- Main content -->
+  <text x="320" y="56" fill="#ffffff" font-family="system-ui" font-size="24" font-weight="700">Workflow Automation</text>
+  <text x="320" y="80" fill="#7C7C7C" font-family="system-ui" font-size="14">Automate your photography business operations</text>
+
+  <rect x="1020" y="40" width="140" height="40" rx="8" fill="#3b82f6"/>
+  <text x="1048" y="66" fill="white" font-family="system-ui" font-size="14" font-weight="500">+ New Workflow</text>
+
+  <!-- Active Workflows -->
+  <text x="320" y="130" fill="#ffffff" font-family="system-ui" font-size="16" font-weight="600">Active Workflows</text>
+
+  <!-- Workflow 1 -->
+  <rect x="320" y="155" width="840" height="120" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <rect x="340" y="175" width="50" height="50" rx="8" fill="#22c55e" opacity="0.2"/>
+  <circle cx="365" cy="200" r="12" fill="#22c55e"/>
+  <text x="410" y="195" fill="#ffffff" font-family="system-ui" font-size="16" font-weight="600">New Client Onboarding</text>
+  <text x="410" y="218" fill="#7C7C7C" font-family="system-ui" font-size="13">Automatically sends welcome email, creates client folder, and schedules intro call</text>
+  <rect x="340" y="235" width="60" height="24" rx="4" fill="#22c55e" opacity="0.2"/>
+  <text x="350" y="252" fill="#22c55e" font-family="system-ui" font-size="11">Active</text>
+  <text x="420" y="252" fill="#7C7C7C" font-family="system-ui" font-size="11">Triggered 24 times this month</text>
+  <rect x="1060" y="185" width="80" height="32" rx="6" fill="#1E1E1E"/>
+  <text x="1082" y="206" fill="#ffffff" font-family="system-ui" font-size="12">Edit</text>
+
+  <!-- Workflow 2 -->
+  <rect x="320" y="290" width="840" height="120" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <rect x="340" y="310" width="50" height="50" rx="8" fill="#3b82f6" opacity="0.2"/>
+  <circle cx="365" cy="335" r="12" fill="#3b82f6"/>
+  <text x="410" y="330" fill="#ffffff" font-family="system-ui" font-size="16" font-weight="600">Gallery Delivery</text>
+  <text x="410" y="353" fill="#7C7C7C" font-family="system-ui" font-size="13">Sends gallery link, generates invoice, and schedules follow-up reminder</text>
+  <rect x="340" y="370" width="60" height="24" rx="4" fill="#22c55e" opacity="0.2"/>
+  <text x="350" y="387" fill="#22c55e" font-family="system-ui" font-size="11">Active</text>
+  <text x="420" y="387" fill="#7C7C7C" font-family="system-ui" font-size="11">Triggered 18 times this month</text>
+  <rect x="1060" y="320" width="80" height="32" rx="6" fill="#1E1E1E"/>
+  <text x="1082" y="341" fill="#ffffff" font-family="system-ui" font-size="12">Edit</text>
+
+  <!-- Workflow 3 -->
+  <rect x="320" y="425" width="840" height="120" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <rect x="340" y="445" width="50" height="50" rx="8" fill="#f97316" opacity="0.2"/>
+  <circle cx="365" cy="470" r="12" fill="#f97316"/>
+  <text x="410" y="465" fill="#ffffff" font-family="system-ui" font-size="16" font-weight="600">Invoice Reminder</text>
+  <text x="410" y="488" fill="#7C7C7C" font-family="system-ui" font-size="13">Sends payment reminder 3 days before due date and follow-up if overdue</text>
+  <rect x="340" y="505" width="60" height="24" rx="4" fill="#22c55e" opacity="0.2"/>
+  <text x="350" y="522" fill="#22c55e" font-family="system-ui" font-size="11">Active</text>
+  <text x="420" y="522" fill="#7C7C7C" font-family="system-ui" font-size="11">Triggered 8 times this month</text>
+  <rect x="1060" y="455" width="80" height="32" rx="6" fill="#1E1E1E"/>
+  <text x="1082" y="476" fill="#ffffff" font-family="system-ui" font-size="12">Edit</text>
+
+  <!-- Workflow Templates -->
+  <text x="320" y="585" fill="#ffffff" font-family="system-ui" font-size="16" font-weight="600">Workflow Templates</text>
+
+  <rect x="320" y="610" width="260" height="160" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <rect x="340" y="630" width="40" height="40" rx="8" fill="#8b5cf6" opacity="0.2"/>
+  <circle cx="360" cy="650" r="10" fill="#8b5cf6"/>
+  <text x="340" y="695" fill="#ffffff" font-family="system-ui" font-size="14" font-weight="600">Booking Confirmation</text>
+  <text x="340" y="715" fill="#7C7C7C" font-family="system-ui" font-size="12">Auto-confirm and send details</text>
+  <rect x="340" y="735" width="80" height="24" rx="4" fill="#8b5cf6"/>
+  <text x="356" y="752" fill="white" font-family="system-ui" font-size="11">Use Template</text>
+
+  <rect x="600" y="610" width="260" height="160" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <rect x="620" y="630" width="40" height="40" rx="8" fill="#ec4899" opacity="0.2"/>
+  <circle cx="640" cy="650" r="10" fill="#ec4899"/>
+  <text x="620" y="695" fill="#ffffff" font-family="system-ui" font-size="14" font-weight="600">Review Request</text>
+  <text x="620" y="715" fill="#7C7C7C" font-family="system-ui" font-size="12">Request feedback after delivery</text>
+  <rect x="620" y="735" width="80" height="24" rx="4" fill="#ec4899"/>
+  <text x="636" y="752" fill="white" font-family="system-ui" font-size="11">Use Template</text>
+
+  <rect x="880" y="610" width="260" height="160" rx="12" fill="#141414" stroke="#262626" stroke-width="1"/>
+  <rect x="900" y="630" width="40" height="40" rx="8" fill="#14b8a6" opacity="0.2"/>
+  <circle cx="920" cy="650" r="10" fill="#14b8a6"/>
+  <text x="900" y="695" fill="#ffffff" font-family="system-ui" font-size="14" font-weight="600">Annual Check-in</text>
+  <text x="900" y="715" fill="#7C7C7C" font-family="system-ui" font-size="12">Reconnect with past clients</text>
+  <rect x="900" y="735" width="80" height="24" rx="4" fill="#14b8a6"/>
+  <text x="916" y="752" fill="white" font-family="system-ui" font-size="11">Use Template</text>
+</svg>

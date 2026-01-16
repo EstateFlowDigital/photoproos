@@ -10085,6 +10085,7 @@ enum AdminActionType {
   support_ticket_resolve
   feedback_review
   roadmap_update
+  other // For announcements, discounts, and other miscellaneous admin actions
 }
 
 // Admin Audit Log - Tracks all super admin actions

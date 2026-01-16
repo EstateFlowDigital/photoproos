@@ -105,6 +105,9 @@ export default async function Home() {
     redirect("/dashboard");
   }
 
+  // Fetch homepage content from CMS
+  const { content } = await getHomepageContent();
+
   return (
     <main id="main-content" data-element="homepage" className="relative min-h-screen overflow-hidden bg-background">
       {/* Scroll Progress Indicator */}
@@ -129,20 +132,20 @@ export default async function Home() {
       <Navbar />
 
       {/* Hero Section - Analytics-focused with dashboard mockup */}
-      <HeroAnalyticsSection />
+      <HeroAnalyticsSection content={content?.hero} />
 
       {/* Logos Section - Social proof */}
-      <LogosSection />
+      <LogosSection content={content?.logos} />
 
       <div className="section-divider" />
 
       {/* Metrics Showcase - Platform stats */}
-      <MetricsShowcaseSection />
+      <MetricsShowcaseSection content={content?.metrics} />
 
       <div className="section-divider" />
 
       {/* How It Works - Simple 3-step process */}
-      <HowItWorksSection />
+      <HowItWorksSection content={content?.howItWorks} />
 
       <div className="section-divider" />
 

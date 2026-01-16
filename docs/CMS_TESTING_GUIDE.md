@@ -1,20 +1,22 @@
 # CMS Advanced Features - Testing Guide
 
-This guide covers testing for **Phase 14-16** of the Marketing CMS:
+This guide covers testing for **Phase 14-16** of the Marketing CMS and **Homepage Editing**:
 - Phase 14: Content Governance
 - Phase 15: Real-time Collaborative Editing
 - Phase 16: Custom Workflow Builder
+- **NEW: Homepage CMS Editing**
 
 ---
 
 ## Table of Contents
 
 1. [Quick Start Setup](#quick-start-setup)
-2. [Phase 14: Content Governance](#phase-14-content-governance)
-3. [Phase 15: Collaborative Editing](#phase-15-collaborative-editing)
-4. [Phase 16: Workflow Builder](#phase-16-workflow-builder)
-5. [Integration Examples](#integration-examples)
-6. [Troubleshooting](#troubleshooting)
+2. [Homepage CMS Editing](#homepage-cms-editing) ← NEW
+3. [Phase 14: Content Governance](#phase-14-content-governance)
+4. [Phase 15: Collaborative Editing](#phase-15-collaborative-editing)
+5. [Phase 16: Workflow Builder](#phase-16-workflow-builder)
+6. [Integration Examples](#integration-examples)
+7. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -62,6 +64,117 @@ import {
   WorkflowInstanceStatus,
 } from "@/components/cms";
 ```
+
+---
+
+## Homepage CMS Editing
+
+Edit the homepage content directly from the CMS. Changes reflect on the live site after publishing.
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    HOMEPAGE EDITING FLOW                         │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  1. Navigate to CMS        2. Edit Content       3. Publish     │
+│  ┌─────────────────┐      ┌─────────────────┐   ┌───────────┐  │
+│  │ /super-admin/   │  →   │  Change hero    │ → │  Click    │  │
+│  │ marketing/      │      │  title, stats,  │   │  Publish  │  │
+│  │ homepage        │      │  CTA text...    │   │           │  │
+│  └─────────────────┘      └─────────────────┘   └───────────┘  │
+│                                                                 │
+│  4. Cache Revalidates     5. Live Site Updates                 │
+│  ┌─────────────────┐      ┌─────────────────┐                  │
+│  │  ~1 minute      │  →   │  Visit /        │                  │
+│  │  (or instant    │      │  See new        │                  │
+│  │   on publish)   │      │  content!       │                  │
+│  └─────────────────┘      └─────────────────┘                  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Currently Editable Sections
+
+| Section | Editable Fields |
+|---------|-----------------|
+| **Hero** | Badge, title (muted + main), subtitle, CTAs, social proof items |
+| **Logos** | Stats (value, label, suffix), photography types, benefits list |
+| **Metrics** | Label, main value/suffix/label, metric cards (value, label, desc) |
+| **How It Works** | Badge, title, subtitle, step details (title, description, features) |
+
+### Testing Steps
+
+1. **Seed Default Content** (if homepage has no content):
+   ```typescript
+   import { seedHomepageContent } from "@/lib/seed/homepage-content";
+   await seedHomepageContent();
+   ```
+
+2. **Navigate to Homepage Editor**:
+   ```
+   /super-admin/marketing/homepage
+   ```
+
+3. **Edit Hero Section**:
+   - Change `titleMain` from "Professional Photographers" to "Photography Pros"
+   - Modify `subtitle` text
+   - Update social proof items
+
+4. **Click "Save" then "Publish"**
+
+5. **Visit Homepage**:
+   ```
+   /
+   ```
+
+6. **Verify Changes Appear**:
+   - New title should show
+   - Cache updates within ~1 minute (or instantly if publish triggers revalidation)
+
+### Visual: Editable Hero Fields
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  HERO SECTION - EDITABLE FIELDS                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  badge: "Complete platform"         ← Edit in CMS              │
+│  badgeHighlight: "Photography-specific, all-in-one"            │
+│                                                                 │
+│  ┌───────────────────────────────────────────────────────────┐ │
+│  │  titleMuted: "The Business OS for"        ← Gray text     │ │
+│  │  titleMain: "Professional Photographers"  ← White text    │ │
+│  └───────────────────────────────────────────────────────────┘ │
+│                                                                 │
+│  subtitle: "From booking to delivery..."     ← Edit in CMS     │
+│                                                                 │
+│  primaryCta:                                                    │
+│    label: "Start Free"              ← Button text              │
+│    href: "/signup"                  ← Button link              │
+│                                                                 │
+│  socialProof: [                     ← Array of items           │
+│    { text: "Replaces 10+ tools" },                             │
+│    { text: "6 photography verticals" },                        │
+│    { text: "AI-powered automation" }                           │
+│  ]                                                              │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Sections Coming Soon
+
+The following sections will be made CMS-editable in future updates:
+- Five Pillars
+- Industry Tabs
+- Client Experience
+- Tool Replacement
+- Integration Spotlight
+- Case Studies
+- Comparison
+- Security
+- (Testimonials and Pricing already use database content)
 
 ---
 

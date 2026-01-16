@@ -10,6 +10,6 @@ export function perfStart(label: string): number | null {
 export function perfEnd(label: string, start: number | null | undefined) {
   if (!PERF_ENABLED || start == null) return;
   const duration = performance.now() - start;
-  // eslint-disable-next-line no-console
+   
   console.info(`[perf][${label}] ${duration.toFixed(1)}ms`);
 }

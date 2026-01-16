@@ -4,26 +4,59 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 import { AnimatedCounter } from "@/hooks/use-count-animation";
+import type { HomepageLogosContent } from "@/lib/validations/marketing-cms";
 
-// Stats to display - Platform benefits
-const stats = [
-  { value: 10, label: "Tools replaced", suffix: "+" },
-  { value: 0, label: "Platform fees", suffix: "%" },
-  { value: 5, label: "Free galleries", suffix: "" },
-  { value: 24, label: "Hour support", suffix: "/7" },
-];
+// ============================================
+// LOGOS SECTION DEFAULTS
+// ============================================
 
-// Photography specialties we support
-const photographyTypes = [
-  { name: "Real Estate", icon: HomeIcon },
-  { name: "Architecture", icon: BuildingIcon },
-  { name: "Commercial", icon: BriefcaseIcon },
-  { name: "Events", icon: CalendarIcon },
-  { name: "Portraits", icon: UserIcon },
-  { name: "Food & Product", icon: CameraIcon },
-];
+const defaultLogosContent: HomepageLogosContent = {
+  stats: [
+    { id: "1", value: 10, label: "Tools replaced", suffix: "+" },
+    { id: "2", value: 0, label: "Platform fees", suffix: "%" },
+    { id: "3", value: 5, label: "Free galleries", suffix: "" },
+    { id: "4", value: 24, label: "Hour support", suffix: "/7" },
+  ],
+  typesLabel: "Built for every photography specialty",
+  photographyTypes: [
+    { id: "1", name: "Real Estate", icon: "home" },
+    { id: "2", name: "Architecture", icon: "building" },
+    { id: "3", name: "Commercial", icon: "briefcase" },
+    { id: "4", name: "Events", icon: "calendar" },
+    { id: "5", name: "Portraits", icon: "user" },
+    { id: "6", name: "Food & Product", icon: "camera" },
+  ],
+  benefits: [
+    "No credit card required",
+    "Free tier forever",
+    "Setup in minutes",
+    "Cancel anytime",
+  ],
+};
 
-export function LogosSection() {
+// Icon mapping for photography types
+const iconMap: Record<string, React.FC<{ className?: string }>> = {
+  home: HomeIcon,
+  building: BuildingIcon,
+  briefcase: BriefcaseIcon,
+  calendar: CalendarIcon,
+  user: UserIcon,
+  camera: CameraIcon,
+};
+
+interface LogosSectionProps {
+  content?: Partial<HomepageLogosContent>;
+}
+
+export function LogosSection({ content }: LogosSectionProps = {}) {
+  // Merge provided content with defaults
+  const logos = {
+    ...defaultLogosContent,
+    ...content,
+    stats: content?.stats || defaultLogosContent.stats,
+    photographyTypes: content?.photographyTypes || defaultLogosContent.photographyTypes,
+    benefits: content?.benefits || defaultLogosContent.benefits,
+  };
   const { ref, isVisible } = useScrollAnimation();
 
   return (
@@ -39,9 +72,9 @@ export function LogosSection() {
           aria-label="Platform statistics"
           className="mb-12 grid gap-8 border-b border-[var(--card-border)] pb-12 sm:grid-cols-2 lg:grid-cols-4"
         >
-          {stats.map((stat, index) => (
+          {logos.stats.map((stat, index) => (
             <div
-              key={stat.label}
+              key={stat.id}
               role="listitem"
               className={cn(
                 "text-center transition-all duration-500",
@@ -55,7 +88,7 @@ export function LogosSection() {
                 <AnimatedCounter
                   end={stat.value}
                   duration={2000}
-                  suffix={stat.suffix}
+                  suffix={stat.suffix || ""}
                   isVisible={isVisible}
                 />
               </div>
@@ -74,7 +107,7 @@ export function LogosSection() {
               isVisible ? "opacity-100" : "opacity-0"
             )}
           >
-            Built for every photography specialty
+            {logos.typesLabel}
           </p>
 
           <div
@@ -82,25 +115,28 @@ export function LogosSection() {
             aria-label="Supported photography specialties"
             className="flex flex-wrap items-center justify-center gap-3"
           >
-            {photographyTypes.map((type, index) => (
-              <div
-                key={type.name}
-                role="listitem"
-                className={cn(
-                  "group flex shrink-0 items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 transition-all duration-300",
-                  "hover:border-[var(--border-visible)] hover:bg-[var(--background-elevated)]",
-                  isVisible
-                    ? "opacity-100 translate-y-0 scale-100"
-                    : "opacity-0 translate-y-4 scale-95"
-                )}
-                style={{ transitionDelay: `${400 + index * 60}ms` }}
-              >
-                <type.icon className="h-4 w-4 text-foreground-muted transition-colors duration-200 group-hover:text-[var(--primary)]" />
-                <span className="text-sm font-medium text-foreground-secondary transition-colors duration-200 group-hover:text-foreground">
-                  {type.name}
-                </span>
-              </div>
-            ))}
+            {logos.photographyTypes.map((type, index) => {
+              const IconComponent = iconMap[type.icon || "camera"] || CameraIcon;
+              return (
+                <div
+                  key={type.id}
+                  role="listitem"
+                  className={cn(
+                    "group flex shrink-0 items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card)] px-4 py-2.5 transition-all duration-300",
+                    "hover:border-[var(--border-visible)] hover:bg-[var(--background-elevated)]",
+                    isVisible
+                      ? "opacity-100 translate-y-0 scale-100"
+                      : "opacity-0 translate-y-4 scale-95"
+                  )}
+                  style={{ transitionDelay: `${400 + index * 60}ms` }}
+                >
+                  <IconComponent className="h-4 w-4 text-foreground-muted transition-colors duration-200 group-hover:text-[var(--primary)]" />
+                  <span className="text-sm font-medium text-foreground-secondary transition-colors duration-200 group-hover:text-foreground">
+                    {type.name}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -114,12 +150,7 @@ export function LogosSection() {
           )}
           style={{ transitionDelay: "700ms" }}
         >
-          {[
-            "No credit card required",
-            "Free tier forever",
-            "Setup in minutes",
-            "Cancel anytime",
-          ].map((benefit, index) => (
+          {logos.benefits.map((benefit, index) => (
             <div
               key={benefit}
               role="listitem"

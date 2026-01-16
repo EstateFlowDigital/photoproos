@@ -25,16 +25,28 @@ import {
   X,
   Sparkles,
   History,
+  Shield,
+  GitBranch,
+  Users,
 } from "lucide-react";
 import { VersionHistory } from "@/components/cms/version-history";
 import { SchedulingPanel } from "@/components/cms/scheduling-panel";
 import { ActiveEditors } from "@/components/cms/active-editors";
 import { useAutoSave, AutoSaveBadge } from "@/components/cms/auto-save";
+import { GovernanceCheckInline } from "@/components/cms/governance-check";
+import { WorkflowInstanceStatus } from "@/components/cms/workflow-builder";
+import {
+  CollaborativeEditor,
+  ParticipantAvatars,
+  CollabStatus,
+} from "@/components/cms/collaborative-editor";
 import type { MarketingPage } from "@prisma/client";
 import { updateMarketingPage, publishMarketingPage, deleteMarketingPage, schedulePublish, cancelScheduledPublish, saveDraft } from "@/lib/actions/marketing-cms";
 
 interface Props {
   page: MarketingPage;
+  userId?: string;
+  userName?: string;
 }
 
 // Common content sections that can be edited visually
@@ -845,10 +857,11 @@ function DeleteConfirmDialog({
   );
 }
 
-export function PageEditorClient({ page }: Props) {
+export function PageEditorClient({ page, userId, userName }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [activeTab, setActiveTab] = useState<"content" | "seo" | "settings" | "history">("content");
+  const [activeTab, setActiveTab] = useState<"content" | "seo" | "settings" | "history" | "governance" | "workflow">("content");
+  const [collaborationEnabled, setCollaborationEnabled] = useState(false);
   const [editorMode, setEditorMode] = useState<"visual" | "json">("visual");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
@@ -1248,6 +1261,18 @@ export function PageEditorClient({ page }: Props) {
           icon={History}
           label="History"
         />
+        <TabButton
+          active={activeTab === "governance"}
+          onClick={() => setActiveTab("governance")}
+          icon={Shield}
+          label="Governance"
+        />
+        <TabButton
+          active={activeTab === "workflow"}
+          onClick={() => setActiveTab("workflow")}
+          icon={GitBranch}
+          label="Workflow"
+        />
       </div>
 
       {/* Tab Content */}
@@ -1498,6 +1523,112 @@ export function PageEditorClient({ page }: Props) {
               }}
               asPanel={false}
             />
+          </div>
+        )}
+
+        {activeTab === "governance" && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">Content Governance</h2>
+                <p className="text-sm text-[var(--foreground-muted)]">
+                  Check content against governance policies before publishing
+                </p>
+              </div>
+            </div>
+
+            <GovernanceCheckInline
+              entityType="MarketingPage"
+              entityId={page.id}
+              content={{
+                title,
+                metaTitle,
+                metaDescription,
+                content: parsedContent,
+              }}
+              onCheck={(canPublish) => {
+                // Could enable/disable publish button based on this
+                console.log("Governance check result:", canPublish);
+              }}
+            />
+          </div>
+        )}
+
+        {activeTab === "workflow" && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">Approval Workflow</h2>
+                <p className="text-sm text-[var(--foreground-muted)]">
+                  Track and manage approval workflows for this page
+                </p>
+              </div>
+            </div>
+
+            <WorkflowInstanceStatus
+              entityType="MarketingPage"
+              entityId={page.id}
+              entityTitle={page.title}
+              showActions
+              onComplete={() => {
+                // Workflow completed - could auto-publish
+                router.refresh();
+              }}
+            />
+
+            {/* Collaboration Section */}
+            <div className="border-t border-[var(--border)] pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-sm font-medium text-[var(--foreground)]">Real-time Collaboration</h3>
+                  <p className="text-xs text-[var(--foreground-muted)]">
+                    Enable real-time editing with other users
+                  </p>
+                </div>
+                <button
+                  onClick={() => setCollaborationEnabled(!collaborationEnabled)}
+                  className={cn(
+                    "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                    collaborationEnabled
+                      ? "bg-green-500/10 text-green-500 border border-green-500/20"
+                      : "bg-[var(--background-elevated)] text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+                  )}
+                >
+                  <span className="flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    {collaborationEnabled ? "Collaboration Active" : "Enable Collaboration"}
+                  </span>
+                </button>
+              </div>
+
+              {collaborationEnabled && userId && (
+                <CollaborativeEditor
+                  entityType="MarketingPage"
+                  entityId={page.id}
+                  user={{
+                    id: userId,
+                    name: userName || `User ${userId.slice(-4)}`,
+                  }}
+                  pollInterval={3000}
+                >
+                  <div className="p-4 bg-[var(--background)] rounded-lg border border-[var(--border)]">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-sm font-medium">Active Collaborators</span>
+                      <CollabStatus showVersion />
+                    </div>
+                    <ParticipantAvatars maxVisible={8} showNames />
+                  </div>
+                </CollaborativeEditor>
+              )}
+
+              {collaborationEnabled && !userId && (
+                <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                  <p className="text-sm text-yellow-500">
+                    User authentication required for real-time collaboration.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

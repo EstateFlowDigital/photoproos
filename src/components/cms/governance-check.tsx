@@ -756,6 +756,221 @@ function PolicyCard({ policy, onToggle, onClick: _onClick }: PolicyCardProps) {
 }
 
 // ============================================================================
+// GOVERNANCE CHECK INLINE
+// ============================================================================
+
+interface GovernanceCheckInlineProps {
+  entityType: string;
+  entityId: string;
+  content: Record<string, unknown>;
+  onCheck?: (canPublish: boolean) => void;
+  className?: string;
+}
+
+export function GovernanceCheckInline({
+  entityType,
+  entityId,
+  content,
+  onCheck,
+  className,
+}: GovernanceCheckInlineProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [results, setResults] = useState<GovernanceCheckResult[] | null>(null);
+  const [canPublish, setCanPublish] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const runCheck = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const contentToCheck: ContentToCheck = {
+        entityType,
+        entityId,
+        content,
+      };
+      const result = await checkContentGovernance(contentToCheck);
+
+      if (result.success && result.data) {
+        setResults(result.data.results);
+        setCanPublish(result.data.canPublish);
+        onCheck?.(result.data.canPublish);
+      } else {
+        setError(result.error || "Failed to run governance check");
+      }
+    } catch {
+      setError("An error occurred during governance check");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [entityType, entityId, content, onCheck]);
+
+  const failedResults = results?.filter((r) => !r.passed) || [];
+  const passedResults = results?.filter((r) => r.passed) || [];
+  const errors = failedResults.filter((r) => r.severity === "error");
+  const warnings = failedResults.filter((r) => r.severity === "warning");
+
+  return (
+    <div className={cn("space-y-4", className)}>
+      {/* Action Button */}
+      <div className="flex items-center justify-between p-4 bg-[var(--background)] rounded-lg border border-[var(--border)]">
+        <div className="flex items-center gap-3">
+          <Shield className="w-5 h-5 text-[var(--foreground-muted)]" />
+          <div>
+            <p className="font-medium text-sm">Run Governance Check</p>
+            <p className="text-xs text-[var(--foreground-muted)]">
+              Validate content against all active policies
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={runCheck}
+          disabled={isLoading}
+          className={cn(
+            "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+            "bg-[var(--primary)] text-white hover:bg-[var(--primary)]/90",
+            "disabled:opacity-50 disabled:cursor-not-allowed"
+          )}
+        >
+          {isLoading ? (
+            <span className="flex items-center gap-2">
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              Checking...
+            </span>
+          ) : (
+            "Check Content"
+          )}
+        </button>
+      </div>
+
+      {/* Error State */}
+      {error && (
+        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+          <div className="flex items-center gap-2">
+            <XCircle className="w-4 h-4 text-red-500" />
+            <p className="text-sm text-red-400">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Results */}
+      {results && (
+        <div className="space-y-4">
+          {/* Status Summary */}
+          <div
+            className={cn(
+              "p-4 rounded-lg border",
+              canPublish
+                ? "bg-green-500/10 border-green-500/20"
+                : "bg-red-500/10 border-red-500/20"
+            )}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {canPublish ? (
+                  <ShieldCheck className="w-5 h-5 text-green-500" />
+                ) : (
+                  <ShieldAlert className="w-5 h-5 text-red-500" />
+                )}
+                <span
+                  className={cn(
+                    "font-medium",
+                    canPublish ? "text-green-500" : "text-red-500"
+                  )}
+                >
+                  {canPublish ? "Ready to Publish" : "Cannot Publish"}
+                </span>
+              </div>
+              <div className="flex items-center gap-4 text-sm">
+                <span className="text-[var(--foreground-muted)]">
+                  {results.length} policies checked
+                </span>
+                {errors.length > 0 && (
+                  <span className="text-red-500">{errors.length} errors</span>
+                )}
+                {warnings.length > 0 && (
+                  <span className="text-yellow-500">{warnings.length} warnings</span>
+                )}
+                {passedResults.length > 0 && (
+                  <span className="text-green-500">{passedResults.length} passed</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Blocking Issues */}
+          {errors.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-red-500 flex items-center gap-1">
+                <ShieldAlert className="w-4 h-4" />
+                Blocking Issues ({errors.length})
+              </p>
+              {errors.map((result) => (
+                <PolicyViolationCard key={result.policyId} result={result} />
+              ))}
+            </div>
+          )}
+
+          {/* Warnings */}
+          {warnings.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-yellow-500 flex items-center gap-1">
+                <AlertTriangle className="w-4 h-4" />
+                Warnings ({warnings.length})
+              </p>
+              {warnings.map((result) => (
+                <PolicyViolationCard key={result.policyId} result={result} />
+              ))}
+            </div>
+          )}
+
+          {/* All Passed */}
+          {failedResults.length === 0 && (
+            <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <p className="text-sm font-medium text-green-500">
+                  All governance checks passed - content is ready for publishing
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Passed Checks Summary */}
+          {passedResults.length > 0 && failedResults.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-green-500 flex items-center gap-1">
+                <CheckCircle className="w-4 h-4" />
+                Passed ({passedResults.length})
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {passedResults.map((result) => (
+                  <span
+                    key={result.policyId}
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-green-500/10 text-green-500 rounded text-xs"
+                  >
+                    <CheckCircle className="w-3 h-3" />
+                    {result.policyName}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!results && !isLoading && !error && (
+        <div className="text-center py-8 text-[var(--foreground-muted)]">
+          <Shield className="w-12 h-12 mx-auto mb-3 opacity-50" />
+          <p className="text-sm">Click &quot;Check Content&quot; to validate against governance policies</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
 // EXPORTS
 // ============================================================================
 
@@ -764,4 +979,5 @@ export type {
   GovernanceResultsPanelProps,
   GovernanceDashboardProps,
   GovernanceBadgeProps,
+  GovernanceCheckInlineProps,
 };

@@ -49,18 +49,222 @@ export type FeatureItem = z.infer<typeof featureItemSchema>;
 // HOMEPAGE CONTENT
 // ============================================================================
 
+// Hero section with analytics dashboard
 export const homepageHeroSchema = z.object({
   badge: z.string().optional(),
-  title: z.string(),
-  titleHighlight: z.string().optional(), // Word to highlight in title
+  badgeHighlight: z.string().optional(),
+  titleMuted: z.string().optional(), // "The Business OS for"
+  titleMain: z.string(), // "Professional Photographers"
   subtitle: z.string(),
   primaryCta: ctaButtonSchema,
   secondaryCta: ctaButtonSchema.optional(),
-  trustedBy: z.array(z.object({
+  socialProof: z.array(z.object({
+    id: z.string(),
+    text: z.string(),
+  })).default([]),
+});
+
+// Logos/stats section with photography types
+export const homepageLogosSchema = z.object({
+  stats: z.array(z.object({
+    id: z.string(),
+    value: z.number(),
+    label: z.string(),
+    suffix: z.string().optional(),
+  })).default([]),
+  typesLabel: z.string().optional(), // "Built for every photography specialty"
+  photographyTypes: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    icon: z.string().optional(), // Icon name like "home", "building", etc.
+  })).default([]),
+  benefits: z.array(z.string()).default([]),
+});
+
+// Metrics showcase section
+export const homepageMetricsSchema = z.object({
+  label: z.string().optional(), // "Trusted by professionals..."
+  mainValue: z.number(), // 2500
+  mainSuffix: z.string().optional(), // "+"
+  mainLabel: z.string(), // "Photographers run their business on PhotoProOS"
+  cards: z.array(z.object({
+    id: z.string(),
+    value: z.string(),
+    label: z.string(),
+    description: z.string(),
+    color: z.enum(["blue", "purple", "green"]).default("blue"),
+  })).default([]),
+});
+
+// How it works section
+export const homepageHowItWorksSchema = z.object({
+  badge: z.string().optional(),
+  badgeHighlight: z.string().optional(),
+  title: z.string(),
+  titleHighlight: z.string().optional(),
+  subtitle: z.string(),
+  steps: z.array(z.object({
+    id: z.string(),
+    number: z.string(),
+    title: z.string(),
+    description: z.string(),
+    features: z.array(z.string()).default([]),
+    color: z.string().optional(),
+  })).default([]),
+});
+
+// Five pillars section
+export const homepagePillarsSchema = z.object({
+  badge: z.string().optional(),
+  title: z.string(),
+  subtitle: z.string().optional(),
+  pillars: z.array(z.object({
+    id: z.string(),
+    title: z.string(),
+    description: z.string(),
+    icon: z.string().optional(),
+    features: z.array(z.string()).default([]),
+  })).default([]),
+});
+
+// Industry tabs section
+export const homepageIndustryTabsSchema = z.object({
+  badge: z.string().optional(),
+  title: z.string(),
+  subtitle: z.string().optional(),
+  industries: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    icon: z.string().optional(),
+    headline: z.string(),
+    description: z.string(),
+    features: z.array(z.string()).default([]),
+    stats: z.array(z.object({
+      value: z.string(),
+      label: z.string(),
+    })).default([]),
+  })).default([]),
+});
+
+// Client experience section
+export const homepageClientExperienceSchema = z.object({
+  badge: z.string().optional(),
+  title: z.string(),
+  subtitle: z.string().optional(),
+  features: z.array(z.object({
+    id: z.string(),
+    title: z.string(),
+    description: z.string(),
+  })).default([]),
+});
+
+// Tool replacement section
+export const homepageToolReplacementSchema = z.object({
+  badge: z.string().optional(),
+  title: z.string(),
+  subtitle: z.string().optional(),
+  tools: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    monthlyPrice: z.number(),
+    icon: z.string().optional(),
+  })).default([]),
+  savingsLabel: z.string().optional(),
+});
+
+// Integration spotlight section
+export const homepageIntegrationsSchema = z.object({
+  badge: z.string().optional(),
+  title: z.string(),
+  subtitle: z.string().optional(),
+  integrations: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    description: z.string(),
+    icon: z.string().optional(),
+    logoUrl: z.string().optional(),
+  })).default([]),
+});
+
+// Case studies section
+export const homepageCaseStudiesSchema = z.object({
+  badge: z.string().optional(),
+  title: z.string(),
+  subtitle: z.string().optional(),
+  studies: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    role: z.string(),
+    company: z.string().optional(),
+    industry: z.string(),
+    quote: z.string(),
+    imageUrl: z.string().optional(),
+    stats: z.array(z.object({
+      value: z.string(),
+      label: z.string(),
+    })).default([]),
+  })).default([]),
+});
+
+// Comparison section
+export const homepageComparisonSchema = z.object({
+  badge: z.string().optional(),
+  title: z.string(),
+  subtitle: z.string().optional(),
+  competitors: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+  })).default([]),
+  features: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    category: z.string(),
+    photoproos: z.union([z.boolean(), z.string()]),
+    competitors: z.record(z.string(), z.union([z.boolean(), z.string()])).default({}),
+  })).default([]),
+});
+
+// Security section
+export const homepageSecuritySchema = z.object({
+  badge: z.string().optional(),
+  title: z.string(),
+  subtitle: z.string().optional(),
+  features: z.array(z.object({
+    id: z.string(),
+    title: z.string(),
+    description: z.string(),
+    icon: z.string().optional(),
+  })).default([]),
+  certifications: z.array(z.object({
     id: z.string(),
     name: z.string(),
     logoUrl: z.string().optional(),
   })).default([]),
+});
+
+// Testimonials section (references DB testimonials)
+export const homepageTestimonialsSchema = z.object({
+  badge: z.string().optional(),
+  title: z.string(),
+  subtitle: z.string().optional(),
+  displayCount: z.number().default(6),
+});
+
+// Pricing section (references pricing tiers)
+export const homepagePricingSchema = z.object({
+  badge: z.string().optional(),
+  title: z.string(),
+  subtitle: z.string().optional(),
+  showComparison: z.boolean().default(false),
+});
+
+// CTA section
+export const homepageCtaSchema = z.object({
+  title: z.string(),
+  titleHighlight: z.string().optional(),
+  subtitle: z.string().optional(),
+  cta: ctaButtonSchema,
+  secondaryCta: ctaButtonSchema.optional(),
 });
 
 export const homepageStatsSchema = z.object({
@@ -74,26 +278,45 @@ export const homepageFeaturesSchema = z.object({
   items: z.array(featureItemSchema).default([]),
 });
 
-export const homepageTestimonialsSchema = z.object({
-  title: z.string(),
-  subtitle: z.string().optional(),
-});
-
-export const homepageCtaSchema = z.object({
-  title: z.string(),
-  subtitle: z.string().optional(),
-  cta: ctaButtonSchema,
-});
-
+// Complete homepage content schema
 export const homepageContentSchema = z.object({
-  hero: homepageHeroSchema,
+  // Core sections
+  hero: homepageHeroSchema.optional(),
+  logos: homepageLogosSchema.optional(),
+  metrics: homepageMetricsSchema.optional(),
+  howItWorks: homepageHowItWorksSchema.optional(),
+  pillars: homepagePillarsSchema.optional(),
+  industryTabs: homepageIndustryTabsSchema.optional(),
+  clientExperience: homepageClientExperienceSchema.optional(),
+  toolReplacement: homepageToolReplacementSchema.optional(),
+  integrations: homepageIntegrationsSchema.optional(),
+  caseStudies: homepageCaseStudiesSchema.optional(),
+  comparison: homepageComparisonSchema.optional(),
+  security: homepageSecuritySchema.optional(),
+  testimonials: homepageTestimonialsSchema.optional(),
+  pricing: homepagePricingSchema.optional(),
+  cta: homepageCtaSchema.optional(),
+  // Legacy (for backwards compatibility)
   stats: homepageStatsSchema.optional(),
   features: homepageFeaturesSchema.optional(),
-  testimonials: homepageTestimonialsSchema.optional(),
-  cta: homepageCtaSchema.optional(),
 });
 
 export type HomepageContent = z.infer<typeof homepageContentSchema>;
+export type HomepageHeroContent = z.infer<typeof homepageHeroSchema>;
+export type HomepageLogosContent = z.infer<typeof homepageLogosSchema>;
+export type HomepageMetricsContent = z.infer<typeof homepageMetricsSchema>;
+export type HomepageHowItWorksContent = z.infer<typeof homepageHowItWorksSchema>;
+export type HomepagePillarsContent = z.infer<typeof homepagePillarsSchema>;
+export type HomepageIndustryTabsContent = z.infer<typeof homepageIndustryTabsSchema>;
+export type HomepageClientExperienceContent = z.infer<typeof homepageClientExperienceSchema>;
+export type HomepageToolReplacementContent = z.infer<typeof homepageToolReplacementSchema>;
+export type HomepageIntegrationsContent = z.infer<typeof homepageIntegrationsSchema>;
+export type HomepageCaseStudiesContent = z.infer<typeof homepageCaseStudiesSchema>;
+export type HomepageComparisonContent = z.infer<typeof homepageComparisonSchema>;
+export type HomepageSecurityContent = z.infer<typeof homepageSecuritySchema>;
+export type HomepageTestimonialsContent = z.infer<typeof homepageTestimonialsSchema>;
+export type HomepagePricingContent = z.infer<typeof homepagePricingSchema>;
+export type HomepageCtaContent = z.infer<typeof homepageCtaSchema>;
 
 // ============================================================================
 // PRICING CONTENT

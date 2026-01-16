@@ -223,7 +223,7 @@ export class DropboxClient {
           mute: false,
         }),
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       body: content as any,
     });
 
