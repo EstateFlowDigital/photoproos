@@ -22,8 +22,8 @@ async function LogsLoader({ searchParams }: { searchParams: SearchParams }) {
     getSystemHealthStats(),
   ]);
 
-  const logs = logsResult.success ? logsResult.data.logs : [];
-  const totalLogs = logsResult.success ? logsResult.data.total : 0;
+  const logs = logsResult.success ? (logsResult.data?.logs ?? []) : [];
+  const totalLogs = logsResult.success ? (logsResult.data?.total ?? 0) : 0;
   const health = healthResult.success ? healthResult.data : null;
 
   return (

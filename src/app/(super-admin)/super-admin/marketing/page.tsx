@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { getMarketingPages, getBlogPosts, getTestimonials, getFAQs, getTeamMembers } from "@/lib/actions/marketing-cms";
 import { MarketingDashboardClient } from "./marketing-client";
 
+export const dynamic = "force-dynamic";
+
 // Loading skeleton
 function LoadingSkeleton() {
   return (

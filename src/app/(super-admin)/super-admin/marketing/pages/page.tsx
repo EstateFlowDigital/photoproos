@@ -5,6 +5,8 @@ import { ChevronLeft } from "lucide-react";
 import type { MarketingPage } from "@prisma/client";
 import { PagesListClient } from "./pages-list-client";
 
+export const dynamic = "force-dynamic";
+
 // Loading skeleton
 function LoadingSkeleton() {
   return (

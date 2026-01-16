@@ -53,6 +53,13 @@ import {
 
 function revalidateMarketing() {
   revalidateTag("marketing");
+  // Revalidate all marketing-related paths
+  revalidatePath("/super-admin/marketing");
+  revalidatePath("/super-admin/marketing/faqs");
+  revalidatePath("/super-admin/marketing/testimonials");
+  revalidatePath("/super-admin/marketing/team");
+  revalidatePath("/super-admin/marketing/navigation");
+  revalidatePath("/super-admin/marketing/pages");
   revalidatePath("/", "layout");
 }
 

@@ -58,10 +58,10 @@ async function DiscountsLoader() {
   ]);
 
   const discounts = discountsResult.success
-    ? discountsResult.data.discounts
+    ? (discountsResult.data?.discounts ?? [])
     : [];
   const total = discountsResult.success
-    ? discountsResult.data.total
+    ? (discountsResult.data?.total ?? 0)
     : 0;
   const stats = statsResult.success ? statsResult.data : null;
 

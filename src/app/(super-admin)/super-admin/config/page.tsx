@@ -15,7 +15,7 @@ async function ConfigLoader() {
 
   const flags = flagsResult.success ? (flagsResult.data as unknown[]) : [];
   const settings = settingsResult.success ? (settingsResult.data as unknown[]) : [];
-  const auditLogs = auditResult.success ? auditResult.data.logs : [];
+  const auditLogs = auditResult.success ? (auditResult.data?.logs ?? []) : [];
 
   return (
     <ConfigPageClient

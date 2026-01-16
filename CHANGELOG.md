@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **Super-Admin Marketing CMS Fixes** - Resolved issues with testimonials, team members, FAQs, and navigation:
+  - Fixed Zod validation for optional URL fields - empty strings now properly transform to null before URL validation
+    - Updated `createTeamMemberSchema`: imageUrl, linkedIn, twitter, website use `optionalUrl` helper
+    - Updated `createTestimonialSchema`: authorImage uses `optionalUrl` helper
+    - Updated `createBlogPostSchema`: featuredImg, authorImage use `optionalUrl` helper
+    - Updated `updateMarketingPageSchema`: ogImage uses `optionalUrl` helper
+  - Fixed super-admin pages crashing when server actions return undefined data
+    - Added optional chaining (`?.`) and nullish coalescing (`?? []`) to page.tsx, logs/page.tsx, discounts/page.tsx, announcements/page.tsx, developer/page.tsx, config/page.tsx
+  - Fixed Prisma syntax error in revenue stats: changed `organizationId: { not: null }` to `NOT: { organizationId: null }`
+  - Fixed cache revalidation for marketing pages - changes now reflect immediately after save
+    - Added `export const dynamic = "force-dynamic"` to all marketing sub-pages
+    - Updated `revalidateMarketing()` to invalidate specific marketing page paths
+
 - **CMS Build Fixes** - Resolved Railway deployment failures:
   - Fixed `cms-governance.ts` importing `DEFAULT_POLICIES` object directly - changed to dynamic `await import()` inside `getDefaultPolicyTemplates()`
   - Fixed `workflow-client.tsx` importing types from "use server" file - moved imports to `cms-workflows-types.ts`

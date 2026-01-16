@@ -14,7 +14,7 @@ async function DashboardLoader() {
 
   const stats = statsResult.success ? statsResult.data : null;
   const recentTickets = ticketsResult.success ? ticketsResult.data?.slice(0, 5) : [];
-  const recentActivity = auditResult.success ? auditResult.data.logs : [];
+  const recentActivity = auditResult.success ? (auditResult.data?.logs ?? []) : [];
   const recentFeedback = feedbackResult.success ? feedbackResult.data : [];
 
   return (

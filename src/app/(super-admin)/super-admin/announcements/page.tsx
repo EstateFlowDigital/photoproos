@@ -58,10 +58,10 @@ async function AnnouncementsLoader() {
   ]);
 
   const announcements = announcementsResult.success
-    ? announcementsResult.data.announcements
+    ? (announcementsResult.data?.announcements ?? [])
     : [];
   const total = announcementsResult.success
-    ? announcementsResult.data.total
+    ? (announcementsResult.data?.total ?? 0)
     : 0;
   const stats = statsResult.success ? statsResult.data : null;
 

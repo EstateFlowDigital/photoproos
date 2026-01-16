@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { getTeamMembers } from "@/lib/actions/marketing-cms";
 import { TeamClient } from "./team-client";
 
+export const dynamic = "force-dynamic";
+
 function LoadingSkeleton() {
   return (
     <div className="space-y-6">

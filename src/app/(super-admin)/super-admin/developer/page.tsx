@@ -20,7 +20,7 @@ async function DeveloperLoader() {
   const plans = plansResult.success ? plansResult.data || [] : [];
   const experiments = experimentsResult.success ? experimentsResult.data || [] : [];
   const healthStats = healthResult.success ? healthResult.data : null;
-  const auditLogs = auditResult.success ? auditResult.data.logs : [];
+  const auditLogs = auditResult.success ? (auditResult.data?.logs ?? []) : [];
 
   return (
     <DeveloperPageClient

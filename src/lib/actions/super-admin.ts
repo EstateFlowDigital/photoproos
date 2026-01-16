@@ -2725,7 +2725,10 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
       // Top customers by revenue
       prisma.payment.groupBy({
         by: ["organizationId"],
-        where: { status: "paid", organizationId: { not: null } },
+        where: {
+          status: "paid",
+          NOT: { organizationId: null },
+        },
         _sum: { amountCents: true },
         _count: true,
         orderBy: { _sum: { amountCents: "desc" } },

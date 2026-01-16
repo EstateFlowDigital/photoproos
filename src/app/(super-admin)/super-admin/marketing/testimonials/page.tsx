@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { getTestimonials } from "@/lib/actions/marketing-cms";
 import { TestimonialsClient } from "./testimonials-client";
 
+export const dynamic = "force-dynamic";
+
 function LoadingSkeleton() {
   return (
     <div className="space-y-6">

@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { getNavigation } from "@/lib/actions/marketing-cms";
 import { NavigationEditorClient } from "./navigation-client";
 
+export const dynamic = "force-dynamic";
+
 // Loading skeleton
 function LoadingSkeleton() {
   return (

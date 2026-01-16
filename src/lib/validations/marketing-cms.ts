@@ -1,6 +1,21 @@
 import { z } from "zod";
 
 // ============================================================================
+// HELPER SCHEMAS
+// ============================================================================
+
+/**
+ * Optional URL field that accepts empty strings and converts them to null.
+ * Use this for all optional URL fields in forms where empty strings are passed.
+ */
+const optionalUrl = z
+  .string()
+  .transform((val) => (val === "" ? null : val))
+  .pipe(z.string().url().nullable())
+  .optional()
+  .nullable();
+
+// ============================================================================
 // SHARED COMPONENTS
 // ============================================================================
 
@@ -313,11 +328,11 @@ export const createBlogPostSchema = z.object({
   slug: z.string().min(1, "Slug is required").max(200).regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers, and hyphens only"),
   excerpt: z.string().max(500).optional(),
   content: z.string().min(1, "Content is required"),
-  featuredImg: z.string().url().optional().nullable(),
+  featuredImg: optionalUrl,
   category: z.enum(["tips", "tutorials", "news", "case_studies", "product_updates", "industry_insights"]),
   tags: z.array(z.string()).default([]),
   authorName: z.string().optional(),
-  authorImage: z.string().url().optional().nullable(),
+  authorImage: optionalUrl,
   authorBio: z.string().optional(),
   status: z.enum(["draft", "published", "archived"]).default("draft"),
   publishedAt: z.string().datetime().optional().nullable(),
@@ -342,10 +357,10 @@ export const createTeamMemberSchema = z.object({
   name: z.string().min(1, "Name is required"),
   role: z.string().min(1, "Role is required"),
   bio: z.string().optional(),
-  imageUrl: z.string().url().optional().nullable(),
-  linkedIn: z.string().url().optional().nullable(),
-  twitter: z.string().url().optional().nullable(),
-  website: z.string().url().optional().nullable(),
+  imageUrl: optionalUrl,
+  linkedIn: optionalUrl,
+  twitter: optionalUrl,
+  website: optionalUrl,
   sortOrder: z.number().default(0),
   isVisible: z.boolean().default(true),
 });
@@ -367,7 +382,7 @@ export const createTestimonialSchema = z.object({
   authorName: z.string().min(1, "Author name is required"),
   authorRole: z.string().optional(),
   companyName: z.string().optional(),
-  authorImage: z.string().url().optional().nullable(),
+  authorImage: optionalUrl,
   rating: z.number().min(1).max(5).optional().nullable(),
   targetPages: z.array(z.string()).default([]),
   targetIndustry: z.enum([
@@ -431,7 +446,7 @@ export const updateMarketingPageSchema = z.object({
   content: z.record(z.string(), z.unknown()), // Flexible JSON content
   metaTitle: z.string().max(70).optional().nullable(),
   metaDescription: z.string().max(160).optional().nullable(),
-  ogImage: z.string().url().optional().nullable(),
+  ogImage: optionalUrl,
   status: z.enum(["draft", "published", "archived"]).optional(),
 });
 
