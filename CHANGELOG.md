@@ -14,11 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fixed revenue stats `reduce()` operations with proper null checks for payment and invoice arrays
   - Fixed at-risk users `groupBy` query with empty array protection
   - Fixed system stats returning undefined values with null coalescing
+  - Fixed engagement stats with optional chaining on aggregate results (`_avg.totalSessions`, `_avg.currentLoginStreak`, `_avg.level`)
+  - Fixed activity breakdown with defensive array checks for `groupBy` results
   - Added defensive null checks throughout super admin data layer
 
 - **Super Admin Client Components** - Fixed null reference errors in client components:
   - Fixed revenue client missing null checks on `revenueByMonth`, `revenueByDay`, `paymentsByStatus`, `topCustomers`, `revenueByPlan`
   - Fixed dashboard client `unknown[]` type casting with array validation
+  - Fixed dashboard client `recentTickets` array validation before mapping
   - Fixed users client inconsistent optional chaining on `user.stats` properties
 
 - **Blog Editor Route** - Added missing blog post editor functionality:
