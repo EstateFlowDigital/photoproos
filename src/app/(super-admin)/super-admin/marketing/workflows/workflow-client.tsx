@@ -167,7 +167,7 @@ export function WorkflowPageClient({
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link
-          href="/cms"
+          href="/super-admin/marketing"
           className="p-2 hover:bg-[var(--background-tertiary)] rounded-lg transition-colors"
         >
           <ChevronLeft className="w-5 h-5" />

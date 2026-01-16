@@ -1,32 +1,6 @@
-import { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Workflow Builder | CMS Admin",
-  description: "Create and manage content approval workflows.",
-};
-
-export const dynamic = "force-dynamic";
-
-import { WorkflowPageClient } from "./workflow-client";
-import { getWorkflows, getWorkflowStats } from "@/lib/actions/cms-workflows";
-import { auth } from "@clerk/nextjs/server";
-
-export default async function WorkflowPage() {
-  const { userId } = await auth();
-
-  const [workflowsResult, statsResult] = await Promise.all([
-    getWorkflows(),
-    getWorkflowStats(),
-  ]);
-
-  const workflows = workflowsResult.success ? workflowsResult.data : [];
-  const stats = statsResult.success ? statsResult.data : null;
-
-  return (
-    <WorkflowPageClient
-      initialWorkflows={workflows || []}
-      initialStats={stats}
-      userId={userId || "demo-user"}
-    />
-  );
+// Workflows are now managed in the super-admin area
+export default function WorkflowPage() {
+  redirect("/super-admin/marketing/workflows");
 }
