@@ -2778,7 +2778,7 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
     // Payment stats - with defensive null checks
     const safePaymentStats = Array.isArray(paymentStats) ? paymentStats : [];
     const totalPayments = safePaymentStats.reduce((acc, p) => acc + (p._count || 0), 0);
-    const successfulPayments = safePaymentStats.find((p) => p.status === "completed")?._count || 0;
+    const successfulPayments = safePaymentStats.find((p) => p.status === "paid")?._count || 0;
     const failedPayments = safePaymentStats.find((p) => p.status === "failed")?._count || 0;
     const pendingPayments = safePaymentStats.find((p) => p.status === "pending")?._count || 0;
     const paymentSuccessRate = totalPayments > 0 ? (successfulPayments / totalPayments) * 100 : 0;
@@ -2796,7 +2796,7 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
       .reduce((acc, i) => acc + ((i._sum?.totalCents || 0) - (i._sum?.paidAmountCents || 0)), 0);
 
     // Averages
-    const completedPaymentAmount = safePaymentStats.find((p) => p.status === "completed")?._sum?.amountCents || 0;
+    const completedPaymentAmount = safePaymentStats.find((p) => p.status === "paid")?._sum?.amountCents || 0;
     const averagePaymentCents = successfulPayments > 0 ? Math.round(completedPaymentAmount / successfulPayments) : 0;
     const totalInvoiceAmount = safeInvoiceStats.reduce((acc, i) => acc + (i._sum?.totalCents || 0), 0);
     const averageInvoiceCents = totalInvoices > 0 ? Math.round(totalInvoiceAmount / totalInvoices) : 0;
