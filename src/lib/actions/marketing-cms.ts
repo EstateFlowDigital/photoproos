@@ -94,13 +94,15 @@ export async function getMarketingPage(
   slug: string
 ): Promise<ActionResult<MarketingPage | null>> {
   try {
+    console.log("[getMarketingPage] Looking for slug:", JSON.stringify(slug));
     const page = await prisma.marketingPage.findUnique({
       where: { slug },
     });
+    console.log("[getMarketingPage] Found page:", page ? page.slug : "NULL");
 
     return ok(page);
   } catch (error) {
-    console.error("Error fetching marketing page:", error);
+    console.error("[getMarketingPage] Error:", error);
     return fail("Failed to fetch marketing page");
   }
 }
