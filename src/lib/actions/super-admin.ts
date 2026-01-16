@@ -199,8 +199,8 @@ export async function getSuperAdminDashboardStats(): Promise<
         }),
       ]);
 
-      userGrowth.push(usersOnDay);
-      revenueGrowth.push((revenueOnDay._sum.amountCents || 0) / 100);
+      userGrowth.push(usersOnDay ?? 0);
+      revenueGrowth.push((revenueOnDay?._sum?.amountCents ?? 0) / 100);
     }
 
     return ok({
@@ -2752,18 +2752,19 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
       }),
     ]);
 
-    // Get organization names for top customers
-    const orgIds = topCustomersRaw.map((c) => c.organizationId).filter(Boolean) as string[];
-    const organizations = await prisma.organization.findMany({
+    // Get organization names for top customers - with defensive null check
+    const safeTopCustomersRawForOrgs = Array.isArray(topCustomersRaw) ? topCustomersRaw : [];
+    const orgIds = safeTopCustomersRawForOrgs.map((c) => c.organizationId).filter(Boolean) as string[];
+    const organizations = orgIds.length > 0 ? await prisma.organization.findMany({
       where: { id: { in: orgIds } },
       select: { id: true, name: true, plan: true },
-    });
+    }) : [];
     const orgMap = new Map(organizations.map((o) => [o.id, o]));
 
-    // Calculate totals
-    const totalRevenueCents = (totalRevenue._sum.amountCents || 0) + (totalRevenue._sum.tipAmountCents || 0);
-    const thisMonthRevenue = (revenueThisMonth._sum.amountCents || 0) + (revenueThisMonth._sum.tipAmountCents || 0);
-    const lastMonthRevenue = (revenueLastMonth._sum.amountCents || 0) + (revenueLastMonth._sum.tipAmountCents || 0);
+    // Calculate totals - with defensive null checks
+    const totalRevenueCents = (totalRevenue?._sum?.amountCents ?? 0) + (totalRevenue?._sum?.tipAmountCents ?? 0);
+    const thisMonthRevenue = (revenueThisMonth?._sum?.amountCents ?? 0) + (revenueThisMonth?._sum?.tipAmountCents ?? 0);
+    const lastMonthRevenue = (revenueLastMonth?._sum?.amountCents ?? 0) + (revenueLastMonth?._sum?.tipAmountCents ?? 0);
 
     // Calculate MRR (simplified - using this month's revenue as proxy)
     const mrr = thisMonthRevenue;
@@ -2800,7 +2801,7 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
     const totalInvoiceAmount = safeInvoiceStats.reduce((acc, i) => acc + (i._sum?.totalCents || 0), 0);
     const averageInvoiceCents = totalInvoices > 0 ? Math.round(totalInvoiceAmount / totalInvoices) : 0;
 
-    // Build daily revenue chart data
+    // Build daily revenue chart data - with defensive null check
     const revenueByDay: Array<{ date: string; amount: number }> = [];
     const dayMap = new Map<string, number>();
     for (let i = 29; i >= 0; i--) {
@@ -2808,7 +2809,8 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
       const key = date.toISOString().split("T")[0];
       dayMap.set(key, 0);
     }
-    last30DaysPayments.forEach((p) => {
+    const safeLast30DaysPayments = Array.isArray(last30DaysPayments) ? last30DaysPayments : [];
+    safeLast30DaysPayments.forEach((p) => {
       if (p.paidAt) {
         const key = p.paidAt.toISOString().split("T")[0];
         dayMap.set(key, (dayMap.get(key) || 0) + (p.amountCents || 0) + (p.tipAmountCents || 0));
@@ -2818,7 +2820,7 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
       revenueByDay.push({ date, amount: amount / 100 });
     });
 
-    // Build monthly revenue chart data
+    // Build monthly revenue chart data - with defensive null check
     const revenueByMonth: Array<{ month: string; amount: number }> = [];
     const monthMap = new Map<string, number>();
     for (let i = 11; i >= 0; i--) {
@@ -2826,7 +2828,8 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
       const key = date.toISOString().slice(0, 7);
       monthMap.set(key, 0);
     }
-    last12MonthsPayments.forEach((p) => {
+    const safeLast12MonthsPayments = Array.isArray(last12MonthsPayments) ? last12MonthsPayments : [];
+    safeLast12MonthsPayments.forEach((p) => {
       if (p.paidAt) {
         const key = p.paidAt.toISOString().slice(0, 7);
         if (monthMap.has(key)) {
@@ -2871,10 +2874,10 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
 
     return ok({
       totalRevenueCents,
-      revenueToday: ((revenueToday._sum.amountCents || 0) + (revenueToday._sum.tipAmountCents || 0)) / 100,
-      revenueThisWeek: ((revenueThisWeek._sum.amountCents || 0) + (revenueThisWeek._sum.tipAmountCents || 0)) / 100,
+      revenueToday: ((revenueToday?._sum?.amountCents ?? 0) + (revenueToday?._sum?.tipAmountCents ?? 0)) / 100,
+      revenueThisWeek: ((revenueThisWeek?._sum?.amountCents ?? 0) + (revenueThisWeek?._sum?.tipAmountCents ?? 0)) / 100,
       revenueThisMonth: thisMonthRevenue / 100,
-      revenueThisYear: ((revenueThisYear._sum.amountCents || 0) + (revenueThisYear._sum.tipAmountCents || 0)) / 100,
+      revenueThisYear: ((revenueThisYear?._sum?.amountCents ?? 0) + (revenueThisYear?._sum?.tipAmountCents ?? 0)) / 100,
       mrr: mrr / 100,
       arr: arr / 100,
       revenueGrowthPercent,
@@ -2892,10 +2895,10 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
       averageInvoiceCents,
       revenueByDay,
       revenueByMonth,
-      paymentsByStatus: paymentsByStatus.map((p) => ({
+      paymentsByStatus: safePaymentStats.map((p) => ({
         status: p.status,
-        count: p._count,
-        amount: (p._sum.amountCents || 0) / 100,
+        count: p._count || 0,
+        amount: (p._sum?.amountCents ?? 0) / 100,
       })),
       topCustomers,
       revenueByPlan,
@@ -3222,25 +3225,28 @@ export async function getEngagementStats(): Promise<ActionResult<EngagementStats
     const dauWauRatio = wauCount > 0 ? (dauCount / wauCount) * 100 : 0;
     const wauMauRatio = mauCount > 0 ? (wauCount / mauCount) * 100 : 0;
 
+    // Defensive array checks for groupBy results
+    const safeActivityCounts = Array.isArray(activityCounts) ? activityCounts : [];
+
     return ok({
-      dau: dauCount,
-      wau: wauCount,
-      mau: mauCount,
+      dau: dauCount ?? 0,
+      wau: wauCount ?? 0,
+      mau: mauCount ?? 0,
       dauWauRatio,
       wauMauRatio,
-      totalUsers,
-      newUsersThisWeek: newUsersWeek,
-      newUsersThisMonth: newUsersMonth,
-      atRiskUsers: atRiskCount,
-      churned30Days: churned30Count,
-      churned90Days: churned90Count,
-      avgSessionsPerUser: avgSessions._avg.totalSessions || 0,
-      avgLoginStreak: gamificationStats._avg.currentLoginStreak || 0,
-      usersWithStreak7Plus: streakUsers,
-      avgLevel: gamificationStats._avg.level || 1,
-      activityByType: activityCounts.map((a) => ({
+      totalUsers: totalUsers ?? 0,
+      newUsersThisWeek: newUsersWeek ?? 0,
+      newUsersThisMonth: newUsersMonth ?? 0,
+      atRiskUsers: atRiskCount ?? 0,
+      churned30Days: churned30Count ?? 0,
+      churned90Days: churned90Count ?? 0,
+      avgSessionsPerUser: avgSessions?._avg?.totalSessions ?? 0,
+      avgLoginStreak: gamificationStats?._avg?.currentLoginStreak ?? 0,
+      usersWithStreak7Plus: streakUsers ?? 0,
+      avgLevel: gamificationStats?._avg?.level ?? 1,
+      activityByType: safeActivityCounts.map((a) => ({
         type: a.type,
-        count: a._count,
+        count: a._count ?? 0,
       })),
       activityTrend,
       retentionCohorts: [], // Would need more complex query
@@ -3381,15 +3387,20 @@ export async function getActivityBreakdown(options: {
       }),
     ]);
 
-    const previousMap = new Map(previousPeriod.map((p) => [p.type, p._count]));
+    // Defensive array checks for groupBy results
+    const safePreviousPeriod = Array.isArray(previousPeriod) ? previousPeriod : [];
+    const safeCurrentPeriod = Array.isArray(currentPeriod) ? currentPeriod : [];
+
+    const previousMap = new Map(safePreviousPeriod.map((p) => [p.type, p._count ?? 0]));
 
     return ok(
-      currentPeriod.map((c) => {
+      safeCurrentPeriod.map((c) => {
         const prev = previousMap.get(c.type) || 0;
-        const change = prev > 0 ? ((c._count - prev) / prev) * 100 : 100;
+        const currentCount = c._count ?? 0;
+        const change = prev > 0 ? ((currentCount - prev) / prev) * 100 : 100;
         return {
           type: c.type,
-          count: c._count,
+          count: currentCount,
           change,
         };
       })

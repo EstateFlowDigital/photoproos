@@ -1,4 +1,6 @@
-<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="client-portal-title client-portal-desc">
+  <title id="client-portal-title">Client Portal</title>
+  <desc id="client-portal-desc">Gallery viewer with photo slideshow and download options</desc>
   <rect width="1200" height="800" fill="#0A0A0A"/>
 
   <!-- Clean header for client portal -->

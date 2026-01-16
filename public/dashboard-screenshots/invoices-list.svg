@@ -1,4 +1,6 @@
-<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="invoices-list-title invoices-list-desc">
+  <title id="invoices-list-title">Invoices List</title>
+  <desc id="invoices-list-desc">Invoice management table with payment status and amounts</desc>
   <rect width="1200" height="800" fill="#0A0A0A"/>
 
   <!-- Sidebar -->

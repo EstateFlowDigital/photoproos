@@ -1,4 +1,6 @@
-<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="gallery-detail-title gallery-detail-desc">
+  <title id="gallery-detail-title">Gallery Detail</title>
+  <desc id="gallery-detail-desc">Individual gallery view with photo grid and download statistics</desc>
   <rect width="1200" height="800" fill="#0A0A0A"/>
 
   <!-- Sidebar -->

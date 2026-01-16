@@ -98,6 +98,10 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
+// Canvas reference size for consistent layer positioning
+// This ensures layers are calculated and displayed at the same scale
+const CANVAS_REFERENCE_SIZE = 540;
+
 // Custom Pinterest icon (simplified)
 function PinterestIcon({ className }: { className?: string }) {
   return (
@@ -276,10 +280,9 @@ export function PostComposer() {
         }
 
         // Convert template elements to editable layers
-        const platformConfig = PLATFORMS[template.platforms[0] || "instagram"];
-        const formatDimensions = platformConfig?.dimensions?.[template.format];
-        const canvasWidth = formatDimensions?.width || 540;
-        const canvasHeight = formatDimensions?.height || 540;
+        // Use consistent canvas reference size for layer positioning
+        const canvasWidth = CANVAS_REFERENCE_SIZE;
+        const canvasHeight = CANVAS_REFERENCE_SIZE;
 
         const templateLayers: Layer[] = template.layout.elements.map((element, idx) => {
           const baseLayer = {
@@ -373,16 +376,17 @@ export function PostComposer() {
             return screenshotZoneLayer;
           }
 
-          // Default to shape for unknown types
+          // Default to shape for unknown types - make it obvious something is wrong
+          console.warn(`Unknown template element type: "${element.type}". Creating placeholder shape.`);
           const defaultLayer: ShapeLayer = {
             ...baseLayer,
             type: "shape",
-            name: `Element ${idx + 1}`,
+            name: `Unknown: ${element.type}`,
             shapeType: "rectangle",
-            fill: "#3b82f6",
-            stroke: "transparent",
-            strokeWidth: 0,
-            borderRadius: 0,
+            fill: "rgba(239, 68, 68, 0.5)", // Semi-transparent red for visibility
+            stroke: "#ef4444",
+            strokeWidth: 2,
+            borderRadius: 4,
           };
           return defaultLayer;
         });
@@ -483,8 +487,8 @@ export function PostComposer() {
 
   // Convert current composition to template layout
   const getCurrentTemplateLayout = React.useCallback((): TemplateLayout => {
-    const canvasWidth = platformConfig?.previewSize?.width || 540;
-    const canvasHeight = platformConfig?.previewSize?.height || 540;
+    const canvasWidth = CANVAS_REFERENCE_SIZE;
+    const canvasHeight = CANVAS_REFERENCE_SIZE;
 
     // Convert layers to template elements (percentages)
     const elements = layers.map((layer) => {
@@ -551,7 +555,7 @@ export function PostComposer() {
       gradientAngle: canvasBgType === "gradient" ? canvasGradientAngle : undefined,
       elements,
     };
-  }, [layers, platformConfig, canvasBgType, canvasBgColor, canvasGradientFrom, canvasGradientTo, canvasGradientAngle]);
+  }, [layers, canvasBgType, canvasBgColor, canvasGradientFrom, canvasGradientTo, canvasGradientAngle]);
 
   // Handle save as template
   const handleSaveAsTemplate = React.useCallback((templateData: {
@@ -654,7 +658,12 @@ export function PostComposer() {
     if (selectedLayerId === id) {
       setSelectedLayerId(null);
     }
-  }, [selectedLayerId]);
+    // Clear screenshot picker state if deleted layer was the target
+    if (targetScreenshotZoneId === id) {
+      setTargetScreenshotZoneId(null);
+      setShowScreenshotPicker(false);
+    }
+  }, [selectedLayerId, targetScreenshotZoneId]);
 
   const handleToggleVisibility = React.useCallback((id: string) => {
     setLayers((prev) =>
@@ -936,9 +945,9 @@ export function PostComposer() {
       let snappedX = x;
       let snappedY = y;
 
-      // Get canvas dimensions (approximate based on platform config)
-      const canvasWidth = platformConfig?.previewSize?.width || 540;
-      const canvasHeight = platformConfig?.previewSize?.height || 540;
+      // Get canvas dimensions
+      const canvasWidth = CANVAS_REFERENCE_SIZE;
+      const canvasHeight = CANVAS_REFERENCE_SIZE;
 
       // Center lines
       const centerX = canvasWidth / 2;
@@ -1012,7 +1021,7 @@ export function PostComposer() {
 
       return { x: snappedX, y: snappedY, guides };
     },
-    [snapToGrid, gridSize, layers, platformConfig, snapToGridValue]
+    [snapToGrid, gridSize, layers, snapToGridValue]
   );
 
   // Handle layer drag
@@ -1227,9 +1236,9 @@ export function PostComposer() {
       const layer = layers.find((l) => l.id === selectedLayerId);
       if (!layer || layer.locked) return;
 
-      // Get canvas dimensions from platform config
-      const canvasWidth = platformConfig?.previewSize?.width || 540;
-      const canvasHeight = platformConfig?.previewSize?.height || 540;
+      // Get canvas dimensions
+      const canvasWidth = CANVAS_REFERENCE_SIZE;
+      const canvasHeight = CANVAS_REFERENCE_SIZE;
 
       const newPosition = { ...layer.position };
 
@@ -1256,7 +1265,7 @@ export function PostComposer() {
 
       handleUpdateLayer(selectedLayerId, { position: newPosition });
     },
-    [selectedLayerId, layers, platformConfig, handleUpdateLayer]
+    [selectedLayerId, layers, handleUpdateLayer]
   );
 
   // Copy layer style
@@ -2100,19 +2109,30 @@ export function PostComposer() {
         return (
           <div
             key={layer.id}
+            role="button"
+            tabIndex={layer.locked ? -1 : 0}
+            aria-label={`${layer.name} - ${hasImage ? 'Press Enter to change screenshot' : 'Press Enter to add screenshot'}`}
             style={{
               ...baseStyle,
               borderRadius: screenshotLayer.borderRadius ? `${screenshotLayer.borderRadius}px` : undefined,
               cursor: layer.locked ? "not-allowed" : isDragging && dragLayerId === layer.id ? "grabbing" : "pointer",
             }}
             className={cn(
-              "overflow-hidden transition-shadow",
+              "overflow-hidden transition-shadow focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 focus:outline-none",
               isSelected && "ring-2 ring-[var(--primary)] ring-offset-1",
               isMultiSelected && !isSelected && "ring-2 ring-[var(--ai)] ring-offset-1",
               isPrimarySelection && "ring-2 ring-[var(--primary)] ring-offset-2",
               isDragging && dragLayerId === layer.id && "opacity-90 shadow-lg"
             )}
             onMouseDown={(e) => handleLayerMouseDown(e, layer.id)}
+            onKeyDown={(e) => {
+              if (!layer.locked && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                e.stopPropagation();
+                setTargetScreenshotZoneId(layer.id);
+                setShowScreenshotPicker(true);
+              }
+            }}
             onDoubleClick={(e) => {
               if (!layer.locked) {
                 e.stopPropagation();
@@ -2131,6 +2151,9 @@ export function PostComposer() {
                 }}
                 className="w-full h-full pointer-events-none"
                 draggable={false}
+                onError={() => {
+                  toast.error("Failed to load screenshot image");
+                }}
               />
             ) : (
               <div
@@ -2153,7 +2176,7 @@ export function PostComposer() {
       default:
         return null;
     }
-  }, [selectedLayerId, selectedLayerIds, isDragging, dragLayerId, handleLayerMouseDown, renderResizeHandles, renderLockBadge, setTargetScreenshotZoneId, setShowScreenshotPicker]);
+  }, [selectedLayerId, selectedLayerIds, isDragging, dragLayerId, handleLayerMouseDown, renderResizeHandles, renderLockBadge]);
 
   // Compute canvas background style
   const canvasBgStyle = React.useMemo((): React.CSSProperties => {

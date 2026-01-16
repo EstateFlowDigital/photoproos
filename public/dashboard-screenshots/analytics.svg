@@ -1,4 +1,6 @@
-<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="analytics-title analytics-desc">
+  <title id="analytics-title">Analytics Dashboard</title>
+  <desc id="analytics-desc">Revenue trends, project types chart, and top client table</desc>
   <rect width="1200" height="800" fill="#0A0A0A"/>
 
   <!-- Sidebar -->

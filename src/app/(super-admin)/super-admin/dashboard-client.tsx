@@ -359,6 +359,7 @@ export function SuperAdminDashboardClient({
   // Safely cast and validate arrays
   const activity = Array.isArray(recentActivity) ? (recentActivity as AuditLog[]) : [];
   const feedback = Array.isArray(recentFeedback) ? (recentFeedback as Feedback[]) : [];
+  const tickets = Array.isArray(recentTickets) ? recentTickets : [];
 
   // Primary stats (big numbers)
   const primaryStats = [
@@ -522,9 +523,9 @@ export function SuperAdminDashboardClient({
             </Link>
           </div>
 
-          {recentTickets.length > 0 ? (
+          {tickets.length > 0 ? (
             <div className="space-y-2">
-              {recentTickets.map((ticket) => (
+              {tickets.map((ticket) => (
                 <Link
                   key={ticket.id}
                   href={`/super-admin/support/${ticket.id}`}

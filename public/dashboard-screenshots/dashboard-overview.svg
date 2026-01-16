@@ -1,4 +1,6 @@
-<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dashboard-overview-title dashboard-overview-desc">
+  <title id="dashboard-overview-title">Dashboard Overview</title>
+  <desc id="dashboard-overview-desc">Main dashboard with revenue metrics, active projects, and recent activity</desc>
   <rect width="1200" height="800" fill="#0A0A0A"/>
 
   <!-- Sidebar -->

@@ -133,7 +133,7 @@ export function InstagramPreview({
   return (
     <div
       className={cn(
-        "instagram-preview instagram-feed w-[320px] bg-white rounded-lg overflow-hidden border border-gray-200",
+        "instagram-preview instagram-feed w-[540px] bg-white rounded-lg overflow-hidden border border-gray-200",
         className
       )}
     >
