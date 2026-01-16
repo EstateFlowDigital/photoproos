@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useId } from "react";
+import { useState, useTransition, useId, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -45,8 +45,8 @@ export function FAQsClient({ faqs: initialFaqs = [] }: Props) {
   const formId = useId();
   const filterId = useId();
   const [isPending, startTransition] = useTransition();
-  // Ensure faqs is always an array
-  const [faqs] = useState(Array.isArray(initialFaqs) ? initialFaqs : []);
+  // Use prop directly - component will re-render when router.refresh() triggers server re-fetch
+  const faqs = useMemo(() => Array.isArray(initialFaqs) ? initialFaqs : [], [initialFaqs]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<FAQCategory | "all">("all");

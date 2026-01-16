@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useId } from "react";
+import { useState, useTransition, useId, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -33,8 +33,8 @@ export function TeamClient({ members: initialMembers = [] }: Props) {
   const router = useRouter();
   const formId = useId();
   const [isPending, startTransition] = useTransition();
-  // Ensure members is always an array
-  const [members] = useState(Array.isArray(initialMembers) ? initialMembers : []);
+  // Use prop directly - component will re-render when router.refresh() triggers server re-fetch
+  const members = useMemo(() => Array.isArray(initialMembers) ? initialMembers : [], [initialMembers]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useId } from "react";
+import { useState, useTransition, useId, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -40,8 +40,8 @@ export function TestimonialsClient({ testimonials: initialTestimonials = [] }: P
   const router = useRouter();
   const formId = useId();
   const [isPending, startTransition] = useTransition();
-  // Ensure testimonials is always an array
-  const [testimonials] = useState(Array.isArray(initialTestimonials) ? initialTestimonials : []);
+  // Use prop directly - component will re-render when router.refresh() triggers server re-fetch
+  const testimonials = useMemo(() => Array.isArray(initialTestimonials) ? initialTestimonials : [], [initialTestimonials]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
