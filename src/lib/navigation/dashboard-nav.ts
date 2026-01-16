@@ -158,6 +158,7 @@ export const DASHBOARD_SUB_NAV: Record<string, DashboardNavSubItem[]> = {
     { label: "Billing & plan", href: "/settings/billing" },
     { label: "Invite team", href: "/settings/team?invite=1" },
     { label: "View client portal", href: "/portal" },
+    { label: "CMS Admin", href: "/cms" },
   ],
 };
 

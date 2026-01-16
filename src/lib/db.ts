@@ -3,7 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
 declare global {
-  // eslint-disable-next-line no-var
+   
   var __prismaClient: PrismaClient | undefined;
 }
 
@@ -76,4 +76,8 @@ function getPrismaClient(): PrismaClient {
 }
 
 export const prisma = getPrismaClient();
+
+// Alias for backward compatibility - some files use 'db' instead of 'prisma'
+export const db = prisma;
+
 export default prisma;

@@ -1,0 +1,904 @@
+# CMS Advanced Features - Testing Guide
+
+This guide covers testing for **Phase 14-16** of the Marketing CMS:
+- Phase 14: Content Governance
+- Phase 15: Real-time Collaborative Editing
+- Phase 16: Custom Workflow Builder
+
+---
+
+## Table of Contents
+
+1. [Quick Start Setup](#quick-start-setup)
+2. [Phase 14: Content Governance](#phase-14-content-governance)
+3. [Phase 15: Collaborative Editing](#phase-15-collaborative-editing)
+4. [Phase 16: Workflow Builder](#phase-16-workflow-builder)
+5. [Integration Examples](#integration-examples)
+6. [Troubleshooting](#troubleshooting)
+
+---
+
+## Quick Start Setup
+
+### 1. Run Database Migration
+
+Before testing, ensure the database schema is up to date:
+
+```bash
+npx prisma db push
+```
+
+### 2. Seed Default Data (Optional)
+
+Initialize default governance policies and workflows:
+
+```typescript
+// In a server action or API route
+import { seedDefaultPolicies } from "@/lib/cms/governance-engine";
+import { seedDefaultWorkflows } from "@/lib/cms/workflow-engine";
+
+await seedDefaultPolicies();
+await seedDefaultWorkflows();
+```
+
+### 3. Import Components
+
+```typescript
+import {
+  // Governance
+  GovernanceCheck,
+  GovernanceBadge,
+  GovernanceDashboard,
+
+  // Collaboration
+  CollaborativeEditor,
+  ParticipantAvatars,
+  CollabStatus,
+  CollabField,
+
+  // Workflows
+  WorkflowBuilder,
+  WorkflowDashboard,
+  WorkflowInstanceStatus,
+} from "@/components/cms";
+```
+
+---
+
+## Phase 14: Content Governance
+
+Content governance automatically enforces brand standards, SEO requirements, accessibility rules, and more.
+
+### Visual Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    GOVERNANCE DASHBOARD                         │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
+│  │ Active   │  │ Warnings │  │ Blocked  │  │ Override │       │
+│  │    5     │  │    12    │  │    2     │  │    3     │       │
+│  │ policies │  │  total   │  │  items   │  │ required │       │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘       │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │ POLICIES                                    [+ Add New] │   │
+│  ├─────────────────────────────────────────────────────────┤   │
+│  │ ○ Brand Voice Guidelines         brand_voice    Active  │   │
+│  │ ○ SEO Requirements               seo            Active  │   │
+│  │ ○ Accessibility Standards        accessibility  Active  │   │
+│  │ ○ Content Freshness              freshness      Active  │   │
+│  │ ○ Publishing Windows             publishing_... Inactive│   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Component: GovernanceCheck
+
+Automatically checks content against all active policies.
+
+```tsx
+<GovernanceCheck
+  entityType="MarketingPage"
+  entityId="page-123"
+  content={{
+    title: "My Page Title",
+    body: "Page content here...",
+    metaDescription: "SEO description",
+  }}
+  autoRun={true}
+  onComplete={(results) => console.log(results)}
+/>
+```
+
+**Visual Result:**
+
+```
+┌────────────────────────────────────────────────────┐
+│ Governance Check Results                           │
+├────────────────────────────────────────────────────┤
+│                                                    │
+│  ✓ Brand Voice          Passed                    │
+│  ✓ SEO Requirements     Passed                    │
+│  ⚠ Accessibility        2 warnings                │
+│     └─ Missing alt text on 2 images               │
+│     └─ Heading hierarchy skips H3                 │
+│  ✗ Content Freshness    1 violation               │
+│     └─ Content older than 90 days                 │
+│                                                    │
+│  [Override & Publish]  [Fix Issues]  [Cancel]     │
+└────────────────────────────────────────────────────┘
+```
+
+### Component: GovernanceBadge
+
+Compact status indicator for list views.
+
+```tsx
+<GovernanceBadge
+  status="warning"  // "passed" | "warning" | "blocked"
+  count={2}
+/>
+```
+
+**Visual States:**
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Governance Badge States                            │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  ✓ Passed    [  ✓  ]  Green, checkmark             │
+│                                                     │
+│  ⚠ Warning   [ ⚠ 2 ]  Yellow, with count          │
+│                                                     │
+│  ✗ Blocked   [ ✗ 1 ]  Red, requires resolution    │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+### Policy Types
+
+| Type | Description | Example Rules |
+|------|-------------|---------------|
+| `brand_voice` | Enforce brand language | Banned words, required phrases |
+| `seo` | SEO requirements | Title length, meta description |
+| `accessibility` | WCAG compliance | Alt text, heading hierarchy |
+| `freshness` | Content age limits | Update within 90 days |
+| `legal_compliance` | Legal requirements | Required disclaimers |
+| `approval_gates` | Approval requirements | Require manager sign-off |
+| `publishing_windows` | Time restrictions | No weekend publishing |
+
+### Testing Steps
+
+1. **View Governance Dashboard**
+   ```
+   Navigate to: /admin/cms/governance
+   ```
+
+2. **Create a Test Policy**
+   - Click "+ Add New" button
+   - Fill in policy details:
+     ```
+     Name: Test SEO Policy
+     Type: seo
+     Action: warn
+     Rules:
+       - Field: title, Check: min_length, Value: 10
+       - Field: metaDescription, Check: max_length, Value: 160
+     ```
+
+3. **Test Content Against Policies**
+   - Navigate to any marketing page editor
+   - The GovernanceCheck component runs automatically
+   - View results in the panel
+
+4. **Resolve Violations**
+   - Fix the content issues, OR
+   - Click "Override" with a reason
+
+---
+
+## Phase 15: Collaborative Editing
+
+Real-time multi-user editing with presence indicators and cursor tracking.
+
+### Visual Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Marketing Page Editor                    ● 3 editors active    │
+│                                           ┌──────────────────┐  │
+│                                           │ 👤 You (editing) │  │
+│                                           │ 👤 Sarah Chen    │  │
+│                                           │ 👤 Mike Johnson  │  │
+│                                           └──────────────────┘  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Title                                                          │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │ Summer Photography Sale|                                 │   │
+│  │                       ↑                                  │   │
+│  │                   [Sarah]  ← cursor indicator            │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│  Description                                                    │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │ Book your summer session today and save 20%...          │   │
+│  │                                                     |    │   │
+│  │                                                 [Mike]   │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │ 🟢 Connected • Last sync: 2s ago • Version: 42          │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Component: CollaborativeEditor (Provider)
+
+Wrap your editor with this provider to enable collaboration.
+
+```tsx
+<CollaborativeEditor
+  entityType="MarketingPage"
+  entityId="page-123"
+  user={{
+    id: "user-456",
+    name: "John Doe",
+    avatar: "/avatars/john.jpg",
+  }}
+  pollInterval={2000}  // Sync every 2 seconds
+>
+  {/* Your editor content */}
+</CollaborativeEditor>
+```
+
+### Component: ParticipantAvatars
+
+Shows who is currently editing.
+
+```tsx
+<ParticipantAvatars maxVisible={3} showNames={true} />
+```
+
+**Visual:**
+
+```
+┌───────────────────────────────────────────┐
+│  Participant Display Options              │
+├───────────────────────────────────────────┤
+│                                           │
+│  Compact (maxVisible=3):                  │
+│  ┌────┐┌────┐┌────┐┌────┐                │
+│  │ 👤 ││ 👤 ││ 👤 ││ +2 │                │
+│  │ JD ││ SC ││ MJ ││    │                │
+│  └────┘└────┘└────┘└────┘                │
+│                                           │
+│  With Names (showNames=true):             │
+│  ┌────┐ John Doe (you)                   │
+│  │ 👤 │ Sarah Chen                       │
+│  └────┘ Mike Johnson                     │
+│                                           │
+└───────────────────────────────────────────┘
+```
+
+### Component: CollabField
+
+Wrap form fields to show cursor indicators.
+
+```tsx
+<CollabField fieldId="title">
+  <input
+    type="text"
+    value={title}
+    onChange={(e) => setTitle(e.target.value)}
+  />
+</CollabField>
+```
+
+### Component: CollabStatus
+
+Shows connection status and sync info.
+
+```tsx
+<CollabStatus showVersion={true} />
+```
+
+**Visual States:**
+
+```
+┌─────────────────────────────────────────────────────┐
+│  Connection Status States                           │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  🟢 Connected     Last sync: 2s ago • v42          │
+│                                                     │
+│  🟡 Syncing...    Saving changes...                │
+│                                                     │
+│  🔴 Disconnected  Reconnecting in 5s...            │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+### Cursor Colors
+
+Each participant gets a unique color:
+
+```
+┌────────────────────────────────────────┐
+│  Cursor Color Palette                  │
+├────────────────────────────────────────┤
+│  User 1: #3b82f6 (Blue)               │
+│  User 2: #22c55e (Green)              │
+│  User 3: #f97316 (Orange)             │
+│  User 4: #8b5cf6 (Purple)             │
+│  User 5: #ec4899 (Pink)               │
+│  User 6: #14b8a6 (Teal)               │
+│  User 7: #eab308 (Yellow)             │
+│  User 8: #ef4444 (Red)                │
+│  User 9: #6366f1 (Indigo)             │
+│  User 10: #84cc16 (Lime)              │
+└────────────────────────────────────────┘
+```
+
+### Testing Steps
+
+1. **Open Same Page in Two Browsers**
+   - Open the page editor in Chrome
+   - Open the same page in Firefox (or incognito)
+   - Use different user accounts
+
+2. **Verify Presence Detection**
+   - Both users should appear in ParticipantAvatars
+   - Avatars show within 2 seconds of joining
+
+3. **Test Cursor Tracking**
+   - Click into a field in Browser 1
+   - See the cursor indicator appear in Browser 2
+
+4. **Test Conflict Detection**
+   - Edit the same field in both browsers
+   - Last save wins (polling-based sync)
+
+---
+
+## Phase 16: Workflow Builder
+
+Visual designer for creating content approval workflows.
+
+### Visual Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  WORKFLOW BUILDER                              [Save Workflow]  │
+├──────────┬──────────────────────────────────────────────────────┤
+│          │                                                      │
+│ ADD STEP │           WORKFLOW CANVAS                           │
+│          │                                                      │
+│ ┌──────┐ │        ┌───────────────┐                            │
+│ │ ✓    │ │        │ ▶ Start       │                            │
+│ │Approv│ │        └───────┬───────┘                            │
+│ └──────┘ │                │                                     │
+│          │                ▼                                     │
+│ ┌──────┐ │        ┌───────────────┐                            │
+│ │ ◇    │ │        │ ✓ Review      │←─── Drag to reposition    │
+│ │Condit│ │        │   (Approval)  │                            │
+│ └──────┘ │        └───────┬───────┘                            │
+│          │           ┌────┴────┐                                │
+│ ┌──────┐ │           ▼         ▼                               │
+│ │ ⚡   │ │    ┌──────────┐ ┌──────────┐                        │
+│ │Action│ │    │ ⚡ Publish│ │ ■ Reject │                        │
+│ └──────┘ │    └────┬─────┘ └──────────┘                        │
+│          │         │                                            │
+│ ┌──────┐ │         ▼                                           │
+│ │ 🔔   │ │    ┌──────────┐                                     │
+│ │Notify│ │    │ ■ End    │                                     │
+│ └──────┘ │    └──────────┘                                     │
+│          │                                                      │
+│ ┌──────┐ │                                                      │
+│ │ ⏱    │ │                                                      │
+│ │Delay │ │                                                      │
+│ └──────┘ │                                                      │
+│          │                                                      │
+└──────────┴──────────────────────────────────────────────────────┘
+```
+
+### Step Types
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  WORKFLOW STEP TYPES                                            │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ▶ START (Green)                                               │
+│     Entry point - every workflow needs one                      │
+│                                                                 │
+│  ■ END (Gray)                                                  │
+│     Completion point - can have multiple (Approved/Rejected)    │
+│                                                                 │
+│  ✓ APPROVAL (Blue)                                             │
+│     Requires user approval to proceed                           │
+│     Config: approvers[], minApprovals, autoApproveAfter        │
+│                                                                 │
+│  ◇ CONDITION (Yellow)                                          │
+│     Branch based on rules                                       │
+│     Config: field, operator, value → trueStep/falseStep        │
+│                                                                 │
+│  ⚡ ACTION (Purple)                                             │
+│     Perform automated action                                    │
+│     Config: publish, unpublish, archive, notify, set_status    │
+│                                                                 │
+│  ⏱ DELAY (Orange)                                              │
+│     Wait before continuing                                      │
+│     Config: delayHours, delayUntil (specific time)             │
+│                                                                 │
+│  🔔 NOTIFICATION (Pink)                                        │
+│     Send notifications                                          │
+│     Config: notifyUsers[], notifyRoles[], notifyEmail[]        │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Component: WorkflowBuilder
+
+Full visual editor for creating workflows.
+
+```tsx
+<WorkflowBuilder
+  workflow={existingWorkflow}  // Optional, for editing
+  onSave={(workflow) => {
+    console.log("Saved:", workflow);
+  }}
+  onCancel={() => {
+    router.back();
+  }}
+/>
+```
+
+### Component: WorkflowDashboard
+
+Management dashboard for all workflows.
+
+```tsx
+<WorkflowDashboard />
+```
+
+**Visual:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  WORKFLOW DASHBOARD                                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐  │
+│  │    3    │ │    2    │ │    5    │ │   12    │ │    1    │  │
+│  │  Total  │ │ Active  │ │ Pending │ │Complete │ │Rejected │  │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘  │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │                                    [Init Defaults] [+New]│   │
+│  ├─────────────────────────────────────────────────────────┤   │
+│  │                                                         │   │
+│  │  Simple Approval              DEFAULT                   │   │
+│  │  Basic single-step approval workflow                    │   │
+│  │  5 steps • 2 types            [🔘 Active] [🗑]          │   │
+│  │                                                         │   │
+│  │  Two-Stage Approval           DEFAULT                   │   │
+│  │  Content reviewed by editor then manager                │   │
+│  │  7 steps • 2 types            [🔘 Active] [🗑]          │   │
+│  │                                                         │   │
+│  │  Conditional Approval         DEFAULT                   │   │
+│  │  Routes based on content type                           │   │
+│  │  7 steps • 3 types            [⚪ Inactive] [🗑]        │   │
+│  │                                                         │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Component: WorkflowInstanceStatus
+
+Shows current workflow progress for content.
+
+```tsx
+<WorkflowInstanceStatus
+  instance={workflowInstance}
+  onApprove={(comment) => handleApprove(comment)}
+  onReject={(reason) => handleReject(reason)}
+  onCancel={(reason) => handleCancel(reason)}
+/>
+```
+
+**Visual:**
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│  Simple Approval                           ● In Progress       │
+│  "Summer Photography Sale" page                                │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│  → Current step: Review (Approval)                            │
+│                                                                │
+│  ┌──────────────────────────────────────────────────────────┐ │
+│  │ Add a comment (optional)                                  │ │
+│  │ ____________________________________________              │ │
+│  │                                                           │ │
+│  └──────────────────────────────────────────────────────────┘ │
+│                                                                │
+│  [ ✓ Approve ]  [ ✗ Reject ]                                  │
+│                                                                │
+├────────────────────────────────────────────────────────────────┤
+│  History                                                       │
+│  ─────────────────────────────────────────────────────────────│
+│  • Start - started by John Doe                                │
+│  • Review - entered                                           │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+```
+
+### Default Workflow Templates
+
+#### 1. Simple Approval
+
+```
+┌─────────────────────────────────────────┐
+│          SIMPLE APPROVAL                │
+│                                         │
+│         ┌──────────┐                   │
+│         │ ▶ Start  │                   │
+│         └────┬─────┘                   │
+│              │                          │
+│              ▼                          │
+│         ┌──────────┐                   │
+│         │ ✓ Review │ ← Admin approval  │
+│         └────┬─────┘                   │
+│         ┌────┴────┐                    │
+│         │         │                     │
+│         ▼         ▼                     │
+│    ┌────────┐ ┌────────┐              │
+│    │⚡Publish│ │■Rejected│              │
+│    └───┬────┘ └────────┘              │
+│        │                               │
+│        ▼                               │
+│    ┌────────┐                         │
+│    │■Approved│                         │
+│    └────────┘                         │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+#### 2. Two-Stage Approval
+
+```
+┌─────────────────────────────────────────┐
+│        TWO-STAGE APPROVAL               │
+│                                         │
+│         ┌──────────┐                   │
+│         │ ▶ Start  │                   │
+│         └────┬─────┘                   │
+│              │                          │
+│              ▼                          │
+│         ┌──────────┐                   │
+│         │✓ Editor  │ ← Editor review   │
+│         │  Review  │                   │
+│         └────┬─────┘                   │
+│         ┌────┴────┐                    │
+│         │         │                     │
+│         ▼         ▼                     │
+│    ┌─────────┐ ┌────────┐             │
+│    │✓ Manager│ │■Rejected│             │
+│    │ Review  │ └────────┘             │
+│    └────┬────┘                        │
+│    ┌────┴────┐                        │
+│    │         │                         │
+│    ▼         ▼                         │
+│ ┌───────┐ ┌────────┐                  │
+│ │⚡Publis│ │■Rejected│                  │
+│ └───┬───┘ └────────┘                  │
+│     │                                  │
+│     ▼                                  │
+│ ┌───────┐                             │
+│ │🔔Notify│ ← Notify author            │
+│ └───┬───┘                             │
+│     │                                  │
+│     ▼                                  │
+│ ┌────────┐                            │
+│ │■Published                            │
+│ └────────┘                            │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+#### 3. Conditional Approval
+
+```
+┌─────────────────────────────────────────┐
+│       CONDITIONAL APPROVAL              │
+│                                         │
+│         ┌──────────┐                   │
+│         │ ▶ Start  │                   │
+│         └────┬─────┘                   │
+│              │                          │
+│              ▼                          │
+│         ┌──────────┐                   │
+│         │◇ Check   │ ← Is MarketingPage?│
+│         │  Type    │                   │
+│         └────┬─────┘                   │
+│         ┌────┴────┐                    │
+│     YES │         │ NO                 │
+│         ▼         ▼                     │
+│    ┌─────────┐ ┌─────────┐            │
+│    │✓Marketing│ │✓ Quick  │            │
+│    │ Review  │ │ Review  │            │
+│    └────┬────┘ └────┬────┘            │
+│         │           │                   │
+│         └─────┬─────┘                  │
+│               │                         │
+│               ▼                         │
+│          ┌────────┐                    │
+│          │⚡Publish│                    │
+│          └───┬────┘                    │
+│              │                          │
+│              ▼                          │
+│         ┌─────────┐                    │
+│         │■Published│                    │
+│         └─────────┘                    │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+### Testing Steps
+
+1. **Access Workflow Dashboard**
+   ```
+   Navigate to: /admin/cms/workflows
+   ```
+
+2. **Initialize Default Workflows**
+   - Click "Init Defaults" button
+   - Three default workflows will be created
+
+3. **Create Custom Workflow**
+   - Click "+ New Workflow"
+   - Name it "My Test Workflow"
+   - Add steps from the left panel:
+     - Drag "Approval" step onto canvas
+     - Configure approvers in the right panel
+   - Connect steps by editing "Next Steps" IDs
+   - Click "Save Workflow"
+
+4. **Test Workflow on Content**
+   - Navigate to a marketing page
+   - Click "Start Workflow"
+   - Select a workflow
+   - View the instance status
+
+5. **Complete Workflow**
+   - As an approver, view pending items
+   - Click "Approve" or "Reject"
+   - See workflow advance to next step
+
+---
+
+## Integration Examples
+
+### Complete Page Editor Integration
+
+```tsx
+"use client";
+
+import { useState } from "react";
+import {
+  CollaborativeEditor,
+  ParticipantAvatars,
+  CollabStatus,
+  CollabField,
+  GovernanceCheck,
+  GovernanceBadge,
+  WorkflowInstanceStatus,
+} from "@/components/cms";
+
+export function MarketingPageEditor({
+  pageId,
+  user,
+  workflowInstance
+}) {
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [governanceStatus, setGovernanceStatus] = useState(null);
+
+  return (
+    <CollaborativeEditor
+      entityType="MarketingPage"
+      entityId={pageId}
+      user={user}
+    >
+      <div className="flex flex-col gap-4">
+
+        {/* Header with Collab Status */}
+        <div className="flex items-center justify-between">
+          <h1>Edit Page</h1>
+          <div className="flex items-center gap-4">
+            <ParticipantAvatars maxVisible={3} />
+            <CollabStatus />
+            <GovernanceBadge status={governanceStatus} />
+          </div>
+        </div>
+
+        {/* Form Fields with Collab Tracking */}
+        <CollabField fieldId="title">
+          <label>Title</label>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full p-2 border rounded"
+          />
+        </CollabField>
+
+        <CollabField fieldId="body">
+          <label>Body</label>
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            rows={10}
+            className="w-full p-2 border rounded"
+          />
+        </CollabField>
+
+        {/* Governance Check */}
+        <GovernanceCheck
+          entityType="MarketingPage"
+          entityId={pageId}
+          content={{ title, body }}
+          autoRun={true}
+          onComplete={(results) => {
+            const hasBlocking = results.some(r => r.action === "block");
+            const hasWarnings = results.some(r => r.action === "warn");
+            setGovernanceStatus(
+              hasBlocking ? "blocked" :
+              hasWarnings ? "warning" : "passed"
+            );
+          }}
+        />
+
+        {/* Active Workflow */}
+        {workflowInstance && (
+          <WorkflowInstanceStatus
+            instance={workflowInstance}
+            onApprove={() => handleApprove()}
+            onReject={() => handleReject()}
+          />
+        )}
+
+      </div>
+    </CollaborativeEditor>
+  );
+}
+```
+
+### Admin Dashboard Integration
+
+```tsx
+import {
+  GovernanceDashboard,
+  WorkflowDashboard,
+} from "@/components/cms";
+
+export function CMSAdminPage() {
+  return (
+    <div className="space-y-8">
+      <section>
+        <h2>Content Governance</h2>
+        <GovernanceDashboard />
+      </section>
+
+      <section>
+        <h2>Workflow Management</h2>
+        <WorkflowDashboard />
+      </section>
+    </div>
+  );
+}
+```
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| "Unauthorized" errors | User not super admin | Ensure user has super admin role |
+| Collaborators not showing | Polling not running | Check CollaborativeEditor provider is wrapping content |
+| Workflow not advancing | Missing next step ID | Edit step and set nextSteps array |
+| Governance always passing | No active policies | Run seedDefaultPolicies() or create policies |
+
+### Debug Mode
+
+Enable debug logging:
+
+```typescript
+// In your .env.local
+CMS_DEBUG=true
+```
+
+### Database Reset
+
+If you need to reset CMS data:
+
+```bash
+# Clear all CMS tables
+npx prisma db push --force-reset
+
+# Re-seed defaults
+npm run seed:cms
+```
+
+---
+
+## API Reference
+
+### Server Actions
+
+| Action | Description |
+|--------|-------------|
+| `checkContentGovernance()` | Check content against all policies |
+| `startCollabSession()` | Join/create collaborative session |
+| `syncCollabSession()` | Get participants and edits |
+| `startEntityWorkflow()` | Start workflow for content |
+| `advanceWorkflowInstance()` | Move workflow to next step |
+| `getWorkflowStats()` | Get workflow statistics |
+
+### Hooks
+
+| Hook | Description |
+|------|-------------|
+| `useCollab()` | Access collaboration context (requires provider) |
+| `useCollabOptional()` | Access collab context or null |
+
+---
+
+## Quick Reference Card
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    CMS QUICK REFERENCE                          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  GOVERNANCE                                                     │
+│  ─────────────────────────────────────────────────────────────  │
+│  <GovernanceCheck />      Auto-check content against policies  │
+│  <GovernanceBadge />      Compact status indicator             │
+│  <GovernanceDashboard />  Full policy management               │
+│                                                                 │
+│  COLLABORATION                                                  │
+│  ─────────────────────────────────────────────────────────────  │
+│  <CollaborativeEditor>    Provider for real-time editing       │
+│  <ParticipantAvatars />   Show active editors                  │
+│  <CollabStatus />         Connection status                    │
+│  <CollabField />          Cursor tracking wrapper              │
+│                                                                 │
+│  WORKFLOWS                                                      │
+│  ─────────────────────────────────────────────────────────────  │
+│  <WorkflowBuilder />      Visual workflow designer             │
+│  <WorkflowDashboard />    Management dashboard                 │
+│  <WorkflowInstanceStatus /> Show workflow progress             │
+│                                                                 │
+│  KEYBOARD SHORTCUTS                                             │
+│  ─────────────────────────────────────────────────────────────  │
+│  Cmd+S          Save content                                   │
+│  Escape         Cancel editing                                 │
+│  Delete         Remove selected step (workflow builder)        │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+*Last updated: January 2025*
+*Covers: Phase 14 (Governance), Phase 15 (Collaboration), Phase 16 (Workflows)*

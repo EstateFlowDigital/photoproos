@@ -11186,3 +11186,215 @@ model CMSGovernanceViolation {
   @@index([severity])
   @@index([resolvedAt])
 }
+
+// ============================================================================
+// REAL-TIME COLLABORATIVE EDITING
+// ============================================================================
+
+// Collaborative editing session
+model CMSCollabSession {
+  id          String   @id @default(cuid())
+
+  // Content being edited
+  entityType  String   // "MarketingPage", "FAQ", etc.
+  entityId    String
+
+  // Current document state (stored as JSON for collaborative sync)
+  // This stores the document content for conflict resolution
+  documentState Json?
+
+  // Session metadata
+  startedAt   DateTime @default(now())
+  lastActivity DateTime @default(now())
+
+  // Participants in this session
+  participants CMSCollabParticipant[]
+
+  // Edit history for undo/redo support
+  editHistory CMSCollabEdit[]
+
+  @@unique([entityType, entityId])
+  @@index([lastActivity])
+}
+
+// Participant in a collaborative editing session
+model CMSCollabParticipant {
+  id          String   @id @default(cuid())
+
+  sessionId   String
+  session     CMSCollabSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  // User info
+  userId      String
+  userName    String
+  userAvatar  String?
+  userColor   String   // Assigned cursor color
+
+  // Current position in document
+  cursorField String?  // Field being edited (e.g., "title", "content.hero.headline")
+  cursorOffset Int?    // Position in field
+
+  // Selection (if any)
+  selectionStart Int?
+  selectionEnd   Int?
+
+  // Activity tracking
+  isActive    Boolean  @default(true)
+  joinedAt    DateTime @default(now())
+  lastPing    DateTime @default(now())
+
+  @@unique([sessionId, userId])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([lastPing])
+}
+
+// Individual edit in a collaborative session
+model CMSCollabEdit {
+  id          String   @id @default(cuid())
+
+  sessionId   String
+  session     CMSCollabSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  // Who made the edit
+  userId      String
+  userName    String
+
+  // Edit details
+  field       String   // Field that was edited
+  operation   CollabEditOperation
+
+  // For insert/delete operations
+  position    Int?
+  content     String?
+  length      Int?
+
+  // Previous value (for undo)
+  previousValue String?
+
+  // Timestamp for ordering
+  timestamp   DateTime @default(now())
+
+  // Version for conflict resolution
+  version     Int
+
+  @@index([sessionId, timestamp])
+  @@index([sessionId, version])
+}
+
+enum CollabEditOperation {
+  insert
+  delete
+  replace
+  format
+}
+
+// ============================================================================
+// CUSTOM WORKFLOW BUILDER
+// ============================================================================
+
+// Workflow step types
+enum WorkflowStepType {
+  start           // Entry point
+  end             // Terminal state
+  approval        // Requires user approval
+  condition       // Branching based on rules
+  action          // Automated action (publish, notify, etc.)
+  delay           // Wait for time period
+  notification    // Send notification
+}
+
+// Workflow instance status
+enum WorkflowInstanceStatus {
+  pending         // Not yet started
+  in_progress     // Currently active
+  paused          // Temporarily paused
+  completed       // Successfully finished
+  cancelled       // Cancelled by user
+  rejected        // Rejected during approval
+  failed          // Failed due to error
+}
+
+// Workflow definition
+model CMSWorkflow {
+  id          String   @id @default(cuid())
+
+  name        String
+  description String?
+
+  // Target content types this workflow applies to
+  targetTypes String[] // ["MarketingPage", "BlogPost", "FAQ"]
+
+  // Workflow steps (JSON array)
+  // Each step: { id, name, type, config, nextSteps, position }
+  steps       Json
+
+  // Conditions for auto-triggering this workflow
+  // { trigger: "on_create" | "on_update" | "on_publish", rules: [...] }
+  triggerConfig Json?
+
+  // Layout positions for visual builder
+  // { [stepId]: { x, y } }
+  layout      Json?
+
+  // Priority for ordering workflows
+  priority    Int @default(0)
+
+  // Status
+  isActive    Boolean @default(true)
+  isDefault   Boolean @default(false)
+
+  // Workflow instances
+  instances   CMSWorkflowInstance[]
+
+  // Metadata
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([isDefault])
+}
+
+// Active workflow instance
+model CMSWorkflowInstance {
+  id          String   @id @default(cuid())
+
+  // Reference to workflow definition
+  workflowId  String
+  workflow    CMSWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  // Content this workflow is running for
+  entityType  String
+  entityId    String
+  entityTitle String?
+
+  // Current state
+  currentStepId String
+  status        WorkflowInstanceStatus @default(pending)
+
+  // History of steps taken
+  // [{ stepId, action, userId, userName, timestamp, comment, data }]
+  history     Json
+
+  // Data passed between steps
+  workflowData Json?
+
+  // Timing
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  dueAt       DateTime?
+
+  // Who started this instance
+  startedBy   String?
+  startedByName String?
+
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([workflowId])
+  @@index([entityType, entityId])
+  @@index([status])
+  @@index([currentStepId])
+}

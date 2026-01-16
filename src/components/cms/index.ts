@@ -47,3 +47,57 @@ export {
 } from "./page-analytics";
 export { AnalyticsTracker, useAnalytics } from "./analytics-tracker";
 export type { AnalyticsTrackerProps, UseAnalyticsReturn } from "./analytics-tracker";
+
+// Governance Components
+export {
+  GovernanceCheck,
+  GovernanceBadge,
+  GovernanceResultsPanel,
+  GovernanceDashboard,
+} from "./governance-check";
+export type {
+  GovernanceCheckProps,
+  GovernanceResultsPanelProps,
+  GovernanceDashboardProps,
+  GovernanceBadgeProps,
+} from "./governance-check";
+
+// Collaborative Editing Components
+export {
+  CollaborativeEditor,
+  ParticipantAvatars,
+  CursorIndicator,
+  CursorOverlay,
+  CollabStatus,
+  CollabField,
+  CollabInput,
+  CollabPanel,
+  useCollab,
+  useCollabOptional,
+} from "./collaborative-editor";
+export type {
+  CollabUser,
+  CollaborativeEditorProps,
+  ParticipantAvatarsProps,
+  CursorOverlayProps,
+  CollabStatusProps,
+  CollabFieldProps,
+  CollabInputProps,
+  CollabPanelProps,
+} from "./collaborative-editor";
+
+// Workflow Builder Components
+export {
+  WorkflowBuilder,
+  WorkflowList,
+  WorkflowInstanceStatus,
+  WorkflowDashboard,
+} from "./workflow-builder";
+export type {
+  WorkflowBuilderProps,
+  WorkflowListProps,
+  WorkflowCanvasProps,
+  StepEditorProps,
+  WorkflowInstanceStatusProps,
+  WorkflowDashboardProps,
+} from "./workflow-builder";
