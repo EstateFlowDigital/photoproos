@@ -39,15 +39,17 @@ async function CalendarContent() {
       getDraftPages(),
     ]);
 
-  const calendarSummary = calendarSummaryResult.success
+  const calendarSummary = calendarSummaryResult.success && calendarSummaryResult.data
     ? calendarSummaryResult.data
     : { scheduled: [], drafts: [], published: [] };
 
-  const scheduledPages = scheduledPagesResult.success
+  const scheduledPages = scheduledPagesResult.success && Array.isArray(scheduledPagesResult.data)
     ? scheduledPagesResult.data
     : [];
 
-  const draftPages = draftPagesResult.success ? draftPagesResult.data : [];
+  const draftPages = draftPagesResult.success && Array.isArray(draftPagesResult.data)
+    ? draftPagesResult.data
+    : [];
 
   return (
     <ContentCalendarClient

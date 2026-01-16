@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Super Admin Navigation Complete** - Added missing pages to super-admin sidebar:
+  - Added **Marketing Studio** link (`/super-admin/marketing-studio`) - Social media post composer
+  - Added **Mockups** link (`/super-admin/mockups`) - Mockup management
+  - Added new icons: `ShareIcon` and `ImageIcon` for the new navigation items
+  - All super-admin pages now accessible from sidebar navigation
+
 - **Dashboard Audit Phase 1: Accessibility & Design System Fixes** - Comprehensive fixes across 14+ dashboard pages:
 
   **Accessibility (WCAG 2.1 AA Compliance)**
