@@ -11,7 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Super Admin Query Mismatches** - Fixed incorrect model and enum references:
   - Changed `prisma.gallery` to `prisma.project` (Gallery model doesn't exist, Project is the correct model)
   - Changed payment status `"succeeded"` to `"paid"` (matching actual PaymentStatus enum values)
+  - Changed payment status `"completed"` to `"paid"` in revenue stats (PaymentStatus enum doesn't have "completed")
   - Fixes dashboard stats, user management, and system stats showing no data
+
+- **Super Admin Prisma Validation Error** - Fixed `groupBy` query causing "Argument 'not' must not be null" error:
+  - Removed invalid `organizationId: { not: null }` from groupBy query (Prisma limitation)
+  - Filter null organizationIds in JavaScript instead
+  - Fixes revenue stats page failing to load entirely
 
 - **Super Admin Data Fetching Errors** - Fixed multiple critical issues in super admin area:
   - Fixed dashboard stats failing due to incorrect Prisma aggregate `_count` handling
