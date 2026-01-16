@@ -29,5 +29,7 @@ export {
   triggerPaymentReceived,
   triggerContractSigned,
   triggerBookingConfirmed,
+  triggerEmailSent,
+  triggerSmsSent,
   type GamificationEvent,
 } from "./trigger";

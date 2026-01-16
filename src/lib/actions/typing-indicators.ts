@@ -8,7 +8,7 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // Types
 // =============================================================================
 
-export interface TypingUser {
+interface TypingUser {
   userId: string;
   userName: string;
   avatarUrl: string | null;

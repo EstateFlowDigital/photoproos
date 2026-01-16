@@ -25,7 +25,7 @@ import {
 import {
   WorkflowBuilder,
   WorkflowInstanceStatus,
-} from "@/components/cms";
+} from "@/components/cms/workflow-builder";
 import {
   initializeDefaultWorkflows,
   toggleWorkflowActive,
@@ -34,9 +34,8 @@ import {
   approveWorkflowStep,
   rejectWorkflowStep,
   getWorkflows,
-  type WorkflowStep,
-  type WorkflowInstanceData,
 } from "@/lib/actions/cms-workflows";
+import type { WorkflowStep, WorkflowInstanceData } from "@/lib/actions/cms-workflows-types";
 import type { CMSWorkflow, WorkflowStepType } from "@prisma/client";
 
 interface WorkflowPageClientProps {

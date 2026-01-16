@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache";
 // Types
 // ============================================================================
 
-export interface ExportedSettings {
+interface ExportedSettings {
   version: string;
   exportedAt: string;
   organizationName: string;
@@ -223,7 +223,7 @@ export async function exportSettings(): Promise<
 // Import Settings
 // ============================================================================
 
-export interface ImportOptions {
+interface ImportOptions {
   branding?: boolean;
   notifications?: boolean;
   workflow?: boolean;

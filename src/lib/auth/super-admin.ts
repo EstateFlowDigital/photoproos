@@ -1,5 +1,8 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser as clerkCurrentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+
+// Re-export currentUser for convenience
+export { clerkCurrentUser as currentUser };
 
 /**
  * Check if the current user is a super admin
@@ -9,7 +12,7 @@ export async function isSuperAdmin(): Promise<boolean> {
   const { userId } = await auth();
   if (!userId) return false;
 
-  const user = await currentUser();
+  const user = await clerkCurrentUser();
   if (!user) return false;
 
   return user.publicMetadata?.isSuperAdmin === true;
@@ -32,7 +35,7 @@ export async function getSuperAdminUser() {
   const { userId } = await auth();
   if (!userId) return null;
 
-  const user = await currentUser();
+  const user = await clerkCurrentUser();
   if (!user) return null;
 
   if (user.publicMetadata?.isSuperAdmin !== true) {

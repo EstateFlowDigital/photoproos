@@ -16,7 +16,7 @@ import { logActivity } from "@/lib/utils/activity";
 // Types
 // ============================================================================
 
-export interface CreateEmailTemplateInput {
+interface CreateEmailTemplateInput {
   name: string;
   emailType: InvoiceEmailType;
   subject: string;
@@ -30,7 +30,7 @@ export interface CreateEmailTemplateInput {
   isDefault?: boolean;
 }
 
-export interface UpdateEmailTemplateInput {
+interface UpdateEmailTemplateInput {
   name?: string;
   subject?: string;
   bodyHtml?: string;
@@ -45,7 +45,7 @@ export interface UpdateEmailTemplateInput {
 }
 
 // Available template variables for email content
-export const TEMPLATE_VARIABLES = {
+const TEMPLATE_VARIABLES = {
   common: [
     { key: "{{organizationName}}", description: "Your business name" },
     { key: "{{organizationEmail}}", description: "Your business email" },

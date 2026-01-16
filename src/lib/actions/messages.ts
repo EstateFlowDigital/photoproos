@@ -17,7 +17,7 @@ import { shouldSendNotification } from "./notification-preferences";
 // Types
 // =============================================================================
 
-export interface SendMessageInput {
+interface SendMessageInput {
   conversationId: string;
   content: string;
   contentHtml?: string;
@@ -27,7 +27,7 @@ export interface SendMessageInput {
   clientMessageId?: string;
 }
 
-export interface MessageAttachment {
+interface MessageAttachment {
   type: "image" | "file" | "video";
   url: string;
   name: string;
@@ -35,7 +35,7 @@ export interface MessageAttachment {
   mimeType?: string;
 }
 
-export interface MessageWithDetails {
+interface MessageWithDetails {
   id: string;
   conversationId: string;
   content: string;
@@ -1019,14 +1019,14 @@ export async function searchMessages(
 // Attachment Upload Actions
 // =============================================================================
 
-export interface AttachmentUploadRequest {
+interface AttachmentUploadRequest {
   conversationId: string;
   fileName: string;
   contentType: string;
   size: number;
 }
 
-export interface AttachmentUploadResponse {
+interface AttachmentUploadResponse {
   uploadUrl: string;
   publicUrl: string;
   key: string;
@@ -1484,7 +1484,7 @@ async function sendMessageEmailNotifications(params: {
 /**
  * Widget message summary for dashboard display
  */
-export interface WidgetMessage {
+interface WidgetMessage {
   id: string;
   conversationId: string;
   conversationName: string | null;

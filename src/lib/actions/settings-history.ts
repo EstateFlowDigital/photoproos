@@ -9,7 +9,7 @@ import { logActivity } from "@/lib/utils/activity";
 // Types
 // ============================================================================
 
-export interface SettingsChange {
+interface SettingsChange {
   id: string;
   description: string;
   changes: Record<string, { from: unknown; to: unknown }> | null;
@@ -18,7 +18,7 @@ export interface SettingsChange {
   createdAt: Date;
 }
 
-export interface SettingsHistoryResult {
+interface SettingsHistoryResult {
   changes: SettingsChange[];
   total: number;
   hasMore: boolean;

@@ -14,7 +14,7 @@ import type {
 // TYPES
 // ============================================================================
 
-export interface SupportTicketSummary {
+interface SupportTicketSummary {
   id: string;
   subject: string;
   category: SupportTicketCategory;
@@ -27,7 +27,7 @@ export interface SupportTicketSummary {
   updatedAt: Date;
 }
 
-export interface SupportTicketWithMessages {
+interface SupportTicketWithMessages {
   id: string;
   subject: string;
   category: SupportTicketCategory;
@@ -39,7 +39,7 @@ export interface SupportTicketWithMessages {
   messages: SupportMessageData[];
 }
 
-export interface SupportMessageData {
+interface SupportMessageData {
   id: string;
   content: string;
   isFromAdmin: boolean;
@@ -686,7 +686,7 @@ export async function updateTicketPriority(
 /**
  * Admin interface for a support ticket with messages and user info
  */
-export interface AdminSupportTicketDetail {
+interface AdminSupportTicketDetail {
   id: string;
   subject: string;
   category: SupportTicketCategory;

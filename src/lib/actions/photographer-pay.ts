@@ -10,7 +10,7 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // Types
 // ============================================================================
 
-export interface PhotographerRateWithRelations {
+interface PhotographerRateWithRelations {
   id: string;
   organizationId: string;
   userId: string;
@@ -24,7 +24,7 @@ export interface PhotographerRateWithRelations {
   updatedAt: Date;
 }
 
-export interface PhotographerEarningWithRelations {
+interface PhotographerEarningWithRelations {
   id: string;
   organizationId: string;
   userId: string;
@@ -44,7 +44,7 @@ export interface PhotographerEarningWithRelations {
   updatedAt: Date;
 }
 
-export interface CreateRateInput {
+interface CreateRateInput {
   userId: string;
   serviceId?: string | null;
   rateType: "percentage" | "fixed" | "hourly";
@@ -54,7 +54,7 @@ export interface CreateRateInput {
   bookingTypeId?: string | null;
 }
 
-export interface UpdateRateInput extends Partial<Omit<CreateRateInput, "userId">> {
+interface UpdateRateInput extends Partial<Omit<CreateRateInput, "userId">> {
   id: string;
 }
 

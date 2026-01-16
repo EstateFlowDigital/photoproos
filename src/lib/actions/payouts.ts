@@ -10,7 +10,7 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // Types
 // ============================================================================
 
-export interface PayoutBatchWithRelations {
+interface PayoutBatchWithRelations {
   id: string;
   organizationId: string;
   batchNumber: string;
@@ -27,7 +27,7 @@ export interface PayoutBatchWithRelations {
   items?: PayoutItemWithRelations[];
 }
 
-export interface PayoutItemWithRelations {
+interface PayoutItemWithRelations {
   id: string;
   batchId: string;
   userId: string;
@@ -55,7 +55,7 @@ export interface PayoutItemWithRelations {
   }>;
 }
 
-export interface CreatePayoutBatchInput {
+interface CreatePayoutBatchInput {
   photographerIds?: string[]; // If empty, include all with approved earnings
   periodStart?: Date;
   periodEnd?: Date;

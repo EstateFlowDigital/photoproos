@@ -11,7 +11,7 @@ import type { PortfolioABTestStatus, ABTestGoalType, PortfolioTemplate } from "@
 // TYPES
 // ============================================================================
 
-export interface CreateABTestInput {
+interface CreateABTestInput {
   portfolioWebsiteId: string;
   name: string;
   description?: string;
@@ -27,7 +27,7 @@ export interface CreateABTestInput {
   endDate?: Date;
 }
 
-export interface UpdateABTestInput {
+interface UpdateABTestInput {
   name?: string;
   description?: string;
   controlTrafficPercent?: number;

@@ -16,7 +16,7 @@ const emailSettingsSchema = z.object({
   digestEmailTime: z.string().regex(/^\d{2}:\d{2}$/).optional().nullable(),
 });
 
-export type EmailSettings = z.infer<typeof emailSettingsSchema>;
+type EmailSettings = z.infer<typeof emailSettingsSchema>;
 
 /**
  * Get email settings for the current organization

@@ -13,7 +13,7 @@ import {
 // Types
 // =============================================================================
 
-export interface ServiceImageUploadRequest {
+interface ServiceImageUploadRequest {
   filename: string;
   contentType: string;
   size: number;
@@ -21,7 +21,7 @@ export interface ServiceImageUploadRequest {
   entityId?: string; // Optional for new entities
 }
 
-export interface ServiceImageUploadResult {
+interface ServiceImageUploadResult {
   success: boolean;
   data?: {
     uploadUrl: string;

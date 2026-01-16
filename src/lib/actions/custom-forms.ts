@@ -11,12 +11,12 @@ import { ok, fail } from "@/lib/types/action-result";
 // TYPES
 // ============================================================================
 
-export interface FormFieldOption {
+interface FormFieldOption {
   label: string;
   value: string;
 }
 
-export interface FormFieldInput {
+interface FormFieldInput {
   name: string;
   label: string;
   type: CustomFormFieldType;
@@ -39,7 +39,7 @@ export interface FormFieldInput {
   };
 }
 
-export interface CreateFormInput {
+interface CreateFormInput {
   name: string;
   description?: string;
   slug?: string;
@@ -52,7 +52,7 @@ export interface CreateFormInput {
   fields?: FormFieldInput[];
 }
 
-export interface UpdateFormInput {
+interface UpdateFormInput {
   name?: string;
   description?: string;
   slug?: string;

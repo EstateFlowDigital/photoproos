@@ -5,13 +5,13 @@ import { prisma } from "@/lib/db";
 import { requireOrganizationId } from "./auth-helper";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
-export interface CreateTagInput {
+interface CreateTagInput {
   name: string;
   color?: string;
   description?: string;
 }
 
-export interface UpdateTagInput {
+interface UpdateTagInput {
   id: string;
   name?: string;
   color?: string;

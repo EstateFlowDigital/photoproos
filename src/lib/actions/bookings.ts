@@ -120,7 +120,7 @@ async function getBookingBufferSettings(organizationId: string, serviceId?: stri
 }
 
 // Input types
-export interface CreateBookingInput {
+interface CreateBookingInput {
   title: string;
   description?: string;
   clientId?: string;
@@ -145,7 +145,7 @@ export interface CreateBookingInput {
   recurrenceDaysOfWeek?: number[];
 }
 
-export interface UpdateBookingInput {
+interface UpdateBookingInput {
   id: string;
   title?: string;
   description?: string;
@@ -1397,7 +1397,7 @@ export async function removeFromSeries(bookingId: string): Promise<ActionResult>
 // BOOKING REMINDERS
 // ============================================================================
 
-export interface ReminderInput {
+interface ReminderInput {
   type: "hours_24" | "hours_1" | "custom";
   channel: "email" | "sms";
   recipient: "client" | "photographer" | "both";
@@ -1767,7 +1767,7 @@ export async function markReminderSent(
 // Multi-Day Event Functions
 // =============================================================================
 
-export interface MultiDaySession {
+interface MultiDaySession {
   title: string;
   startTime: Date;
   endTime: Date;
@@ -1777,7 +1777,7 @@ export interface MultiDaySession {
   assignedUserId?: string;
 }
 
-export interface CreateMultiDayEventInput {
+interface CreateMultiDayEventInput {
   eventName: string;
   clientId?: string;
   clientName?: string;
@@ -2225,7 +2225,7 @@ export async function getMultiDayEvents(): Promise<
 // Booking Conflict Detection
 // =============================================================================
 
-export interface BookingConflict {
+interface BookingConflict {
   bookingId: string;
   title: string;
   startTime: Date;
@@ -2235,7 +2235,7 @@ export interface BookingConflict {
   conflictType: "full" | "partial_start" | "partial_end" | "contained";
 }
 
-export interface ConflictCheckResult {
+interface ConflictCheckResult {
   hasConflicts: boolean;
   conflicts: BookingConflict[];
   suggestions?: {

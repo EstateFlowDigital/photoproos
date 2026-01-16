@@ -9,7 +9,7 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // Types
 // ============================================================================
 
-export interface BrokerageWithRelations {
+interface BrokerageWithRelations {
   id: string;
   organizationId: string;
   name: string;
@@ -38,7 +38,7 @@ export interface BrokerageWithRelations {
   };
 }
 
-export interface CreateBrokerageInput {
+interface CreateBrokerageInput {
   name: string;
   slug: string;
   email?: string | null;
@@ -55,7 +55,7 @@ export interface CreateBrokerageInput {
   contactPhone?: string | null;
 }
 
-export interface UpdateBrokerageInput extends Partial<CreateBrokerageInput> {
+interface UpdateBrokerageInput extends Partial<CreateBrokerageInput> {
   id: string;
   isActive?: boolean;
 }

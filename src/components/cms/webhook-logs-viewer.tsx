@@ -6,8 +6,8 @@ import {
   getWebhookLogs,
   getWebhookLog,
   retryWebhookDelivery,
-  WEBHOOK_EVENTS,
 } from "@/lib/actions/cms-webhooks";
+import { WEBHOOK_EVENTS } from "@/lib/constants/cms-webhook-events";
 import type { CMSWebhookLog, CMSWebhookEvent } from "@prisma/client";
 import {
   History,

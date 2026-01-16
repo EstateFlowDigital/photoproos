@@ -1062,7 +1062,7 @@ export async function deletePricingTier(id: string): Promise<ActionResult> {
 // SQFT PRICE CALCULATION
 // =============================================================================
 
-export type BundlePriceResult = {
+type BundlePriceResult = {
   priceCents: number;
   pricingMethod: BundlePricingMethod;
   appliedTier?: {

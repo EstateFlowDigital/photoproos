@@ -6,12 +6,11 @@ import type { ActivityData } from "@/lib/types/activity";
 import { ActivityType, Prisma } from "@prisma/client";
 import { fail, success, type ActionResult } from "@/lib/types/action-result";
 
-// Note: Types can be re-exported but functions cannot from "use server" files
-// Import getActivityLinkUrl and getActivityIcon directly from "@/lib/types/activity"
-export type { ActivityData } from "@/lib/types/activity";
+// Note: Types cannot be exported from "use server" files.
+// Import ActivityData, getActivityLinkUrl and getActivityIcon directly from "@/lib/types/activity"
 
 // Activity feed filters
-export interface ActivityFeedFilters {
+interface ActivityFeedFilters {
   types?: ActivityType[];
   userId?: string;
   clientId?: string;
@@ -22,7 +21,7 @@ export interface ActivityFeedFilters {
 }
 
 // Activity summary stats
-export interface ActivitySummary {
+interface ActivitySummary {
   totalActivities: number;
   todayCount: number;
   weekCount: number;

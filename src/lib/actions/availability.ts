@@ -11,7 +11,7 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // Types
 // =============================================================================
 
-export interface CreateAvailabilityBlockInput {
+interface CreateAvailabilityBlockInput {
   title: string;
   description?: string;
   blockType?: AvailabilityBlockType;
@@ -24,7 +24,7 @@ export interface CreateAvailabilityBlockInput {
   userId?: string;
 }
 
-export interface UpdateAvailabilityBlockInput {
+interface UpdateAvailabilityBlockInput {
   id: string;
   title?: string;
   description?: string;
@@ -37,7 +37,7 @@ export interface UpdateAvailabilityBlockInput {
   recurrenceEnd?: Date;
 }
 
-export interface CreateBookingBufferInput {
+interface CreateBookingBufferInput {
   serviceId?: string;
   bufferBefore?: number;
   bufferAfter?: number;
@@ -45,7 +45,7 @@ export interface CreateBookingBufferInput {
   maxAdvanceDays?: number;
 }
 
-export interface UpdateBookingBufferInput {
+interface UpdateBookingBufferInput {
   id: string;
   bufferBefore?: number;
   bufferAfter?: number;
@@ -765,7 +765,7 @@ export async function addHolidayBlock(
 // Time-Off Request Actions
 // =============================================================================
 
-export interface TimeOffRequestInput {
+interface TimeOffRequestInput {
   title: string;
   description?: string;
   startDate: Date;

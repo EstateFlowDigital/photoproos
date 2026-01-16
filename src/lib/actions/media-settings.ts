@@ -10,7 +10,7 @@ import type { VideoProvider, TourProvider } from "@prisma/client";
 // Types
 // ============================================================================
 
-export interface VideoSettingsData {
+interface VideoSettingsData {
   defaultProvider: VideoProvider;
   vimeoEnabled: boolean;
   vimeoAccessToken: string | null;
@@ -48,7 +48,7 @@ export interface VideoSettingsData {
   autoUploadQuality: string | null;
 }
 
-export interface TourSettingsData {
+interface TourSettingsData {
   defaultProvider: TourProvider;
   matterportEnabled: boolean;
   matterportSdkKey: string | null;

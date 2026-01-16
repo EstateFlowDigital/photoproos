@@ -6,7 +6,7 @@ import { success, fail, type ActionResult } from "@/lib/types/action-result";
 import type { ClientBookingPreferences, ClientPreferences } from "@/lib/types/client-preferences";
 import { Prisma } from "@prisma/client";
 
-export type UpdateClientBookingPreferencesInput = Partial<ClientBookingPreferences> & {
+type UpdateClientBookingPreferencesInput = Partial<ClientBookingPreferences> & {
   profile?: ClientBookingPreferences["profile"];
   preferences?: ClientBookingPreferences["preferences"];
   agreements?: ClientBookingPreferences["agreements"];

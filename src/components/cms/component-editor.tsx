@@ -6,8 +6,8 @@ import {
   type PageComponentInstance,
   type ComponentField,
   type ComponentSchema,
-  COMPONENT_SCHEMAS,
-} from "@/lib/cms/page-builder";
+} from "@/lib/cms/page-builder-utils";
+import { COMPONENT_SCHEMAS } from "@/lib/cms/page-builder-constants";
 import type { CMSComponentType } from "@prisma/client";
 import {
   X,

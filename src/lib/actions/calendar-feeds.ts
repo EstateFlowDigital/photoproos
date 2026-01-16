@@ -23,7 +23,7 @@ async function getOrganizationId(): Promise<string> {
 // Calendar Feed Management
 // =============================================================================
 
-export interface CalendarFeedInfo {
+interface CalendarFeedInfo {
   id: string;
   name: string;
   token: string;

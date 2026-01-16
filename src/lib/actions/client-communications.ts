@@ -7,7 +7,7 @@ import { requireOrganizationId, requireUserId } from "./auth-helper";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import { triggerEmailSent, triggerSmsSent } from "@/lib/gamification";
 
-export interface CreateCommunicationInput {
+interface CreateCommunicationInput {
   clientId: string;
   type: CommunicationType;
   direction: CommunicationDirection;
@@ -19,7 +19,7 @@ export interface CreateCommunicationInput {
   invoiceId?: string;
 }
 
-export interface UpdateCommunicationInput {
+interface UpdateCommunicationInput {
   id: string;
   subject?: string;
   content?: string;

@@ -282,7 +282,7 @@ export async function createDashboardLink(): Promise<
 // DETAILED ACCOUNT INFO
 // ============================================================================
 
-export interface ConnectAccountDetails {
+interface ConnectAccountDetails {
   hasAccount: boolean;
   accountId: string | null;
   isOnboarded: boolean;

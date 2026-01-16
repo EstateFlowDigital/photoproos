@@ -10,7 +10,7 @@ import type { MessageWithDetails } from "./messages";
 // Types
 // =============================================================================
 
-export interface StarredMessageWithDetails {
+interface StarredMessageWithDetails {
   id: string;
   userId: string;
   messageId: string;

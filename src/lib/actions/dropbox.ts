@@ -154,7 +154,7 @@ async function getDropboxClient(
   return new DropboxClient(accessToken);
 }
 
-export type DropboxConfig = {
+type DropboxConfig = {
   id: string;
   organizationId: string;
   accountId: string;

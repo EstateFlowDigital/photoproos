@@ -663,7 +663,9 @@ export async function bulkDeleteServices(
 // SQUARE FOOTAGE PRICING
 // =============================================================================
 
-export type ServicePriceResult = {
+// Note: Type moved to avoid "use server" export restrictions.
+// For external use, define this type in a separate types file (e.g., @/lib/types/services.ts)
+type ServicePriceResult = {
   priceCents: number;
   pricingMethod: ServicePricingMethod;
   appliedTier?: {

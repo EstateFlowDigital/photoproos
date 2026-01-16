@@ -10,7 +10,7 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // Types
 // ============================================================================
 
-export interface InvoiceSplitWithRelations {
+interface InvoiceSplitWithRelations {
   id: string;
   organizationId: string;
   primaryInvoiceId: string;
@@ -34,14 +34,14 @@ export interface InvoiceSplitWithRelations {
   } | null;
 }
 
-export interface CreateInvoiceSplitInput {
+interface CreateInvoiceSplitInput {
   primaryInvoiceId: string;
   splitType: InvoiceSplitType;
   brokeragePayPercent?: number | null; // For percentage-based splits
   lineItemAssignments?: Record<string, "brokerage" | "agent"> | null;
 }
 
-export interface SplitCalculation {
+interface SplitCalculation {
   brokerageAmountCents: number;
   agentAmountCents: number;
   splitDetails: Array<{

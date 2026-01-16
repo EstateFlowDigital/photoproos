@@ -11,7 +11,7 @@ import { sendMessage, type MessageAttachment } from "./messages";
 // Types
 // =============================================================================
 
-export interface ScheduledMessageWithDetails {
+interface ScheduledMessageWithDetails {
   id: string;
   conversationId: string;
   userId: string;
@@ -36,7 +36,7 @@ export interface ScheduledMessageWithDetails {
   };
 }
 
-export interface ScheduleMessageInput {
+interface ScheduleMessageInput {
   conversationId: string;
   content: string;
   contentHtml?: string;

@@ -7,7 +7,7 @@ import { getClientSession } from "@/lib/actions/client-auth";
 import { ok, fail, success } from "@/lib/types/action-result";
 
 // Types for selections
-export interface Selection {
+interface Selection {
   id: string;
   assetId: string;
   notes: string | null;
@@ -22,7 +22,7 @@ export interface Selection {
   };
 }
 
-export interface SelectionSummary {
+interface SelectionSummary {
   total: number;
   limit: number | null;
   submitted: boolean;

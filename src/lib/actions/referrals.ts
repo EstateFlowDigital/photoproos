@@ -7,7 +7,9 @@ import { ReferralStatus, ReferralRewardType } from "@prisma/client";
 import { nanoid } from "nanoid";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
-export type ReferralProgram = {
+// Note: Types moved to avoid "use server" export restrictions.
+// For external use, define these types in a separate types file (e.g., @/lib/types/referrals.ts)
+type ReferralProgram = {
   id: string;
   organizationId: string;
   name: string;
@@ -26,7 +28,7 @@ export type ReferralProgram = {
   updatedAt: Date;
 };
 
-export type Referrer = {
+type Referrer = {
   id: string;
   programId: string;
   clientId: string | null;
@@ -42,7 +44,7 @@ export type Referrer = {
   updatedAt: Date;
 };
 
-export type Referral = {
+type Referral = {
   id: string;
   programId: string;
   referrerId: string;

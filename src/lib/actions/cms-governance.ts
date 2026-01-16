@@ -14,7 +14,6 @@ import {
   deletePolicy,
   togglePolicyActive,
   seedDefaultPolicies,
-  DEFAULT_POLICIES,
   type ContentToCheck,
   type GovernanceCheckResult,
   type GovernanceRule,
@@ -24,9 +23,11 @@ import type { GovernancePolicyType, GovernanceAction, CMSGovernancePolicy } from
 
 // ============================================================================
 // TYPES FOR ACTIONS
+// Note: These interfaces cannot be exported from "use server" files.
+// Import types from @prisma/client or @/lib/cms/governance-engine instead.
 // ============================================================================
 
-export interface PolicySummary {
+interface PolicySummary {
   id: string;
   name: string;
   description: string | null;
@@ -39,7 +40,7 @@ export interface PolicySummary {
   priority: number;
 }
 
-export interface GovernanceStats {
+interface GovernanceStats {
   totalPolicies: number;
   activePolicies: number;
   totalViolations: number;
@@ -690,6 +691,9 @@ export async function getDefaultPolicyTemplates(): Promise<
     if (!(await isSuperAdmin())) {
       return fail("Unauthorized");
     }
+
+    // Dynamic import to avoid "use server" constraint on non-function exports
+    const { DEFAULT_POLICIES } = await import("@/lib/cms/governance-engine");
 
     const templates = Object.entries(DEFAULT_POLICIES).map(([key, policy]) => ({
       key,

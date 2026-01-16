@@ -13,7 +13,7 @@ import {
 import { requireAdmin } from "@/lib/actions/auth-helper";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
-export type PlatformReferrerProfile = {
+type PlatformReferrerProfile = {
   id: string;
   userId: string;
   referralCode: string;
@@ -26,7 +26,7 @@ export type PlatformReferrerProfile = {
   createdAt: Date;
 };
 
-export type PlatformReferralItem = {
+type PlatformReferralItem = {
   id: string;
   referredEmail: string;
   referredName: string | null;
@@ -37,7 +37,7 @@ export type PlatformReferralItem = {
   createdAt: Date;
 };
 
-export type PlatformReferralStats = {
+type PlatformReferralStats = {
   totalReferrals: number;
   pendingReferrals: number;
   signedUpReferrals: number;
@@ -47,7 +47,7 @@ export type PlatformReferralStats = {
   conversionRate: number;
 };
 
-export type PlatformReward = {
+type PlatformReward = {
   id: string;
   rewardType: PlatformRewardType;
   valueCents: number;

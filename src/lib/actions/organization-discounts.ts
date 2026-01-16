@@ -5,7 +5,7 @@ import { requireAuth } from "@/lib/actions/auth-helper";
 import type { DiscountType, DiscountAppliesTo, DiscountScope } from "@prisma/client";
 
 // Types
-export interface OrgDiscountListItem {
+interface OrgDiscountListItem {
   id: string;
   code: string;
   name: string | null;
@@ -26,7 +26,7 @@ export interface OrgDiscountListItem {
   totalSavings: number;
 }
 
-export interface CreateOrgDiscountInput {
+interface CreateOrgDiscountInput {
   code: string;
   name?: string;
   description?: string;

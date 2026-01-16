@@ -23,13 +23,13 @@ import { requireOrganizationId } from "./auth-helper";
 // Types
 // =============================================================================
 
-export interface UploadRequestFile {
+interface UploadRequestFile {
   filename: string;
   contentType: string;
   size: number;
 }
 
-export interface UploadPresignedUrlResult {
+interface UploadPresignedUrlResult {
   success: boolean;
   data?: {
     files: Array<{
@@ -43,7 +43,7 @@ export interface UploadPresignedUrlResult {
   error?: string;
 }
 
-export interface CreateAssetInput {
+interface CreateAssetInput {
   projectId: string;
   key: string;
   filename: string;
@@ -54,7 +54,7 @@ export interface CreateAssetInput {
   exifData?: Record<string, unknown>;
 }
 
-export interface CreateAssetResult {
+interface CreateAssetResult {
   success: boolean;
   data?: {
     id: string;
@@ -63,7 +63,7 @@ export interface CreateAssetResult {
   error?: string;
 }
 
-export interface BulkCreateAssetsResult {
+interface BulkCreateAssetsResult {
   success: boolean;
   data?: {
     assets: Array<{

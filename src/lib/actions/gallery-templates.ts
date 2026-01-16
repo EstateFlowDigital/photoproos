@@ -5,7 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { ok, fail, success } from "@/lib/types/action-result";
 
-export interface GalleryTemplateInput {
+interface GalleryTemplateInput {
   name: string;
   description?: string | null;
   serviceId?: string | null;

@@ -24,14 +24,14 @@ import { revalidatePath } from "next/cache";
 // TYPES
 // =============================================================================
 
-export interface DomainSuggestion {
+interface DomainSuggestion {
   domain: string;
   available: boolean;
   premium: boolean;
   priceCents: number;
 }
 
-export interface DomainAvailabilityResult {
+interface DomainAvailabilityResult {
   domain: string;
   available: boolean;
   premium: boolean;
@@ -39,7 +39,7 @@ export interface DomainAvailabilityResult {
   suggestions: DomainSuggestion[];
 }
 
-export interface DomainPurchaseData {
+interface DomainPurchaseData {
   id: string;
   domain: string;
   status: string;

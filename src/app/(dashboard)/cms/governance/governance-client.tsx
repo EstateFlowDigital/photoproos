@@ -20,9 +20,9 @@ import {
 import {
   checkContentGovernance,
   createGovernancePolicy,
-  toggleGovernancePolicy,
+  toggleGovernancePolicyActive,
   deleteGovernancePolicy,
-  initializeDefaultPolicies,
+  initializeGovernancePolicies,
 } from "@/lib/actions/cms-governance";
 import type { CMSGovernancePolicy, GovernancePolicyType, GovernanceAction } from "@prisma/client";
 
@@ -73,7 +73,7 @@ export function GovernancePageClient({
 
   const handleInitDefaults = async () => {
     setIsLoading(true);
-    const result = await initializeDefaultPolicies();
+    const result = await initializeGovernancePolicies();
     if (result.success) {
       window.location.reload();
     }
@@ -81,7 +81,7 @@ export function GovernancePageClient({
   };
 
   const handleTogglePolicy = async (id: string, isActive: boolean) => {
-    const result = await toggleGovernancePolicy(id, !isActive);
+    const result = await toggleGovernancePolicyActive(id, !isActive);
     if (result.success && result.data) {
       setPolicies(policies.map(p => p.id === id ? result.data! : p));
     }

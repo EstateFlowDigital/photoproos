@@ -9,7 +9,7 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // TYPES
 // ============================================================================
 
-export type CalendlyConfig = {
+type CalendlyConfig = {
   id: string;
   organizationId: string;
   userUri: string | null;
@@ -26,7 +26,7 @@ export type CalendlyConfig = {
   updatedAt: Date;
 };
 
-export type CalendlyEventType = {
+type CalendlyEventType = {
   uri: string;
   name: string;
   slug: string;

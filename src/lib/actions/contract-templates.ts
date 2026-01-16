@@ -13,7 +13,7 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
 // Types
-export type ContractCategory =
+type ContractCategory =
   | "wedding"
   | "portrait"
   | "commercial"
@@ -39,7 +39,7 @@ interface TemplateSection {
   order: number;
 }
 
-export interface ContractTemplate {
+interface ContractTemplate {
   id: string;
   name: string;
   description: string;
@@ -54,7 +54,7 @@ export interface ContractTemplate {
   createdAt: Date;
 }
 
-export type ContractTemplateWithCount = ContractTemplate & {
+type ContractTemplateWithCount = ContractTemplate & {
   isDefault?: boolean;
   updatedAt?: Date;
   _count: { contracts: number };

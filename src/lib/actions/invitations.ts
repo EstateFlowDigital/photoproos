@@ -604,4 +604,4 @@ export async function getPendingInvitations() {
 }
 
 // Type exports
-export type CreateInvitationInput = z.infer<typeof createInvitationSchema>;
+type CreateInvitationInput = z.infer<typeof createInvitationSchema>;

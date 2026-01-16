@@ -10,9 +10,9 @@ import React from "react";
 import { createPdfElement } from "@/lib/pdf/utils";
 import type { MarketingAssetType as PrismaMarketingAssetType } from "@prisma/client";
 
-export type MarketingAssetType = PrismaMarketingAssetType;
+type MarketingAssetType = PrismaMarketingAssetType;
 
-export type SocialVariant = "listing" | "just_listed" | "just_sold" | "open_house";
+type SocialVariant = "listing" | "just_listed" | "just_sold" | "open_house";
 
 interface GenerateFlyerInput {
   propertyWebsiteId: string;

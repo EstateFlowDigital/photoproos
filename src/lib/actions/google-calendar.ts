@@ -6,7 +6,7 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import type { SyncDirection } from "@prisma/client";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
-export interface GoogleCalendarConfig {
+interface GoogleCalendarConfig {
   id: string;
   organizationId: string;
   userId: string | null;
@@ -22,7 +22,7 @@ export interface GoogleCalendarConfig {
   updatedAt: Date;
 }
 
-export interface CalendarListItem {
+interface CalendarListItem {
   id: string;
   summary: string;
   primary: boolean;
@@ -31,7 +31,7 @@ export interface CalendarListItem {
   selected: boolean;
 }
 
-export interface SyncResult {
+interface SyncResult {
   imported: number;
   exported: number;
   errors: string[];

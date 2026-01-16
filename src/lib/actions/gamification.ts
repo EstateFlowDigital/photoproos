@@ -83,7 +83,7 @@ function parseStringArray(value: unknown): string[] {
 // TYPES
 // ============================================================================
 
-export interface GamificationState {
+interface GamificationState {
   level: number;
   levelTitle: string;
   totalXp: number;
@@ -105,7 +105,7 @@ export interface GamificationState {
   };
 }
 
-export interface UnlockedAchievement {
+interface UnlockedAchievement {
   id: string;
   slug: string;
   name: string;
@@ -117,7 +117,7 @@ export interface UnlockedAchievement {
   unlockedAt: Date;
 }
 
-export interface AchievementUnlock {
+interface AchievementUnlock {
   slug: string;
   name: string;
   description: string;
@@ -126,7 +126,7 @@ export interface AchievementUnlock {
   xpReward: number;
 }
 
-export interface LeaderboardEntry {
+interface LeaderboardEntry {
   userId: string;
   userName: string;
   userAvatar?: string | null;
@@ -224,7 +224,7 @@ export async function getGamificationState(): Promise<ActionResult<GamificationS
 // GET ALL ACHIEVEMENTS (with unlock status)
 // ============================================================================
 
-export interface AchievementWithStatus {
+interface AchievementWithStatus {
   id: string;
   slug: string;
   name: string;
@@ -687,7 +687,7 @@ export async function updateDeliveryStreak(userId: string): Promise<void> {
 // STREAK FREEZE MANAGEMENT
 // ============================================================================
 
-export type StreakFreezeState = {
+type StreakFreezeState = {
   available: number;
   totalUsed: number;
   maxFreezes: number;
@@ -969,16 +969,16 @@ export async function getLeaderboard(): Promise<ActionResult<LeaderboardEntry[]>
 // ENHANCED LEADERBOARD WITH FILTERS
 // ============================================================================
 
-export type LeaderboardTimeFilter = "all_time" | "this_week" | "this_month";
-export type LeaderboardRankBy = "xp" | "achievements" | "login_streak" | "delivery_streak" | "deliveries";
+type LeaderboardTimeFilter = "all_time" | "this_week" | "this_month";
+type LeaderboardRankBy = "xp" | "achievements" | "login_streak" | "delivery_streak" | "deliveries";
 
-export interface LeaderboardFilters {
+interface LeaderboardFilters {
   timeFilter?: LeaderboardTimeFilter;
   rankBy?: LeaderboardRankBy;
   limit?: number;
 }
 
-export interface EnhancedLeaderboardEntry extends LeaderboardEntry {
+interface EnhancedLeaderboardEntry extends LeaderboardEntry {
   achievementsCount: number;
   deliveriesThisPeriod?: number;
   changeFromPrevious?: number; // Rank change from previous period
@@ -1198,7 +1198,7 @@ export async function getUnnotifiedAchievements(): Promise<ActionResult<Unlocked
   }
 }
 
-export interface DailyBonusState {
+interface DailyBonusState {
   canClaim: boolean;
   currentDay: number; // 1-7
   nextBonusXp: number;
@@ -1274,7 +1274,7 @@ export async function getDailyBonusState(): Promise<ActionResult<DailyBonusState
   }
 }
 
-export interface DailyBonusClaimResult {
+interface DailyBonusClaimResult {
   xpAwarded: number;
   newTotal: number;
   newLevel: number;
@@ -1393,7 +1393,7 @@ export async function claimDailyBonus(): Promise<ActionResult<DailyBonusClaimRes
 // PERSONAL BESTS
 // ============================================================================
 
-export interface PersonalBests {
+interface PersonalBests {
   bestMonthRevenue: { amountCents: number; date: Date | null };
   fastestDelivery: { hours: number | null; date: Date | null };
   bestWeekDeliveries: { count: number; date: Date | null };
@@ -1448,7 +1448,7 @@ export async function getPersonalBests(): Promise<ActionResult<PersonalBests>> {
 // STREAK STATUS CHECK
 // ============================================================================
 
-export interface StreakStatus {
+interface StreakStatus {
   loginStreak: {
     current: number;
     isAtRisk: boolean;
@@ -1554,7 +1554,7 @@ export async function getStreakStatus(): Promise<ActionResult<StreakStatus>> {
 }
 
 // Statistics Dashboard types
-export interface GamificationStatistics {
+interface GamificationStatistics {
   level: number;
   totalXp: number;
   xpToNextLevel: number;
@@ -1716,7 +1716,7 @@ export async function updateFastestDelivery(
 // MILESTONES
 // ============================================================================
 
-export interface MilestoneCheck {
+interface MilestoneCheck {
   milestone: Milestone;
   reachedAt: Date;
 }
@@ -1833,7 +1833,7 @@ export async function markMilestoneCelebrated(milestoneId: string): Promise<void
 // PRESTIGE SYSTEM
 // ============================================================================
 
-export interface PrestigeState {
+interface PrestigeState {
   prestigeLevel: number;
   lifetimeXp: number;
   canPrestige: boolean;
@@ -1882,7 +1882,7 @@ export async function getPrestigeState(): Promise<ActionResult<PrestigeState>> {
   }
 }
 
-export interface PrestigeResult {
+interface PrestigeResult {
   newPrestigeLevel: number;
   newTier: PrestigeTier;
   xpMultiplier: number;
@@ -1950,7 +1950,7 @@ export async function performPrestige(): Promise<ActionResult<PrestigeResult>> {
 // YEAR IN REVIEW
 // ============================================================================
 
-export interface YearInReviewData extends YearInReviewStats {
+interface YearInReviewData extends YearInReviewStats {
   funFacts: string[];
   encouragementMessage: string;
 }
@@ -2222,7 +2222,7 @@ export async function getYearInReview(
 // SKILL TREES
 // ============================================================================
 
-export interface SkillTreeState {
+interface SkillTreeState {
   totalSkillPoints: number;
   availableSkillPoints: number;
   spentSkillPoints: number;
@@ -2239,7 +2239,7 @@ export interface SkillTreeState {
   }[];
 }
 
-export interface SkillWithStatus extends Skill {
+interface SkillWithStatus extends Skill {
   isUnlocked: boolean;
   canUnlock: boolean;
 }
@@ -2302,7 +2302,7 @@ export async function getSkillTreeState(): Promise<ActionResult<SkillTreeState>>
   }
 }
 
-export interface UnlockSkillResult {
+interface UnlockSkillResult {
   skill: Skill;
   remainingPoints: number;
   perkUnlocked: string;
@@ -2463,7 +2463,7 @@ import {
   type QuestStatus,
 } from "@/lib/gamification/quests";
 
-export interface QuestState {
+interface QuestState {
   currentQuest: Quest | null;
   objectiveProgress: Record<string, number>;
   completedQuestIds: string[];
@@ -2482,7 +2482,7 @@ export interface QuestState {
   xpEarned: number;
 }
 
-export interface QuestWithStatus extends Quest {
+interface QuestWithStatus extends Quest {
   status: QuestStatus;
   objectiveProgress?: Record<string, number>;
 }
@@ -2732,9 +2732,9 @@ export async function abandonQuest(): Promise<ActionResult<{ success: boolean }>
 // WEEKLY/MONTHLY RECAPS
 // ============================================================================
 
-export type RecapPeriod = "week" | "month";
+type RecapPeriod = "week" | "month";
 
-export interface RecapSummary {
+interface RecapSummary {
   period: RecapPeriod;
   startDate: Date;
   endDate: Date;
@@ -3003,16 +3003,16 @@ export async function getAvailableRecaps(): Promise<
 // TEAM CHALLENGES
 // ============================================================================
 
-export type TeamChallengeType =
+type TeamChallengeType =
   | "total_deliveries"
   | "total_galleries"
   | "total_xp"
   | "most_achievements"
   | "longest_streak";
 
-export type TeamChallengeStatus = "upcoming" | "active" | "completed";
+type TeamChallengeStatus = "upcoming" | "active" | "completed";
 
-export interface TeamChallenge {
+interface TeamChallenge {
   id: string;
   name: string;
   description: string;
@@ -3027,7 +3027,7 @@ export interface TeamChallenge {
   isTeamGoal: boolean; // true = collaborative, false = competitive
 }
 
-export interface TeamChallengeParticipant {
+interface TeamChallengeParticipant {
   userId: string;
   userName: string;
   userAvatar?: string | null;
@@ -3243,7 +3243,7 @@ export async function getMyChallengContributions(): Promise<
 // XP ACTIVITY LOG
 // ============================================================================
 
-export type XpActivityType =
+type XpActivityType =
   | "achievement"
   | "daily_bonus"
   | "level_up"
@@ -3254,7 +3254,7 @@ export type XpActivityType =
   | "challenge"
   | "referral";
 
-export interface XpActivityEntry {
+interface XpActivityEntry {
   id: string;
   type: XpActivityType;
   amount: number;
@@ -3392,7 +3392,7 @@ export async function getXpSummaryByType(): Promise<
 // BADGE SHOWCASE
 // ============================================================================
 
-export interface BadgeShowcase {
+interface BadgeShowcase {
   featuredAchievementIds: string[];
   maxSlots: number;
 }
@@ -3523,7 +3523,7 @@ export async function getShowcaseableAchievements(): Promise<
 // SEASONAL EVENTS
 // ============================================================================
 
-export type SeasonalEventType =
+type SeasonalEventType =
   | "new_year"
   | "spring"
   | "summer"
@@ -3532,7 +3532,7 @@ export type SeasonalEventType =
   | "anniversary"
   | "special";
 
-export interface SeasonalEvent {
+interface SeasonalEvent {
   id: string;
   name: string;
   description: string;
@@ -3681,7 +3681,7 @@ export async function getUpcomingEvents(): Promise<ActionResult<SeasonalEvent[]>
 // DAILY QUESTS
 // ============================================================================
 
-export interface DailyQuest {
+interface DailyQuest {
   id: string;
   name: string;
   description: string;
@@ -3789,7 +3789,7 @@ export async function getDailyQuests(): Promise<ActionResult<DailyQuest[]>> {
 // NOTIFICATION PREFERENCES
 // ============================================================================
 
-export interface GamificationNotificationPrefs {
+interface GamificationNotificationPrefs {
   achievementUnlocks: boolean;
   levelUps: boolean;
   streakReminders: boolean;
@@ -3886,7 +3886,7 @@ export async function updateGamificationNotificationPrefs(
 // ACHIEVEMENT CATEGORIES
 // ============================================================================
 
-export interface AchievementCategoryInfo {
+interface AchievementCategoryInfo {
   category: AchievementCategory;
   name: string;
   description: string;

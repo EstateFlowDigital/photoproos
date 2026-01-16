@@ -33,7 +33,7 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // Types
 // =============================================================================
 
-export interface CallWithDetails {
+interface CallWithDetails {
   id: string;
   conversationId: string;
   initiatorId: string;
@@ -84,7 +84,7 @@ export interface CallWithDetails {
   };
 }
 
-export interface StartCallInput {
+interface StartCallInput {
   conversationId: string;
   type?: CallType;
   title?: string;

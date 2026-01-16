@@ -77,7 +77,7 @@ function validatePhone(phone: string | undefined | null): string | null {
 }
 
 // Input types
-export interface CreateClientInput {
+interface CreateClientInput {
   email: string;
   fullName?: string;
   company?: string;
@@ -87,7 +87,7 @@ export interface CreateClientInput {
   notes?: string;
 }
 
-export interface UpdateClientInput {
+interface UpdateClientInput {
   id: string;
   email?: string;
   fullName?: string;
@@ -443,7 +443,7 @@ export async function impersonateClientPortal(
 /**
  * Update client email/communication preferences
  */
-export interface UpdateClientPreferencesInput {
+interface UpdateClientPreferencesInput {
   clientId: string;
   emailOptIn?: boolean;
   smsOptIn?: boolean;

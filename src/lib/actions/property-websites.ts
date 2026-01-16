@@ -14,7 +14,7 @@ import {
 } from "@/lib/property-templates";
 
 // Types
-export interface PropertyWebsiteInput {
+interface PropertyWebsiteInput {
   projectId: string;
   address: string;
   city: string;
@@ -48,7 +48,7 @@ export interface PropertyWebsiteInput {
   openHouseEndDate?: Date | null;
 }
 
-export interface PropertyWebsiteWithRelations {
+interface PropertyWebsiteWithRelations {
   id: string;
   projectId: string;
   address: string;

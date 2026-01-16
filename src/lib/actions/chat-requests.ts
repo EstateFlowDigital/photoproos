@@ -13,7 +13,7 @@ import { createClientNotification } from "./client-notifications";
 // Types
 // =============================================================================
 
-export interface ChatRequestWithDetails {
+interface ChatRequestWithDetails {
   id: string;
   organizationId: string;
   clientId: string;
@@ -43,7 +43,7 @@ export interface ChatRequestWithDetails {
   } | null;
 }
 
-export interface CreateChatRequestInput {
+interface CreateChatRequestInput {
   subject: string;
   initialMessage: string;
 }

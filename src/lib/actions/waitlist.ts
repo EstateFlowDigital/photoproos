@@ -18,7 +18,7 @@ import { fail, success, type ActionResult } from "@/lib/types/action-result";
 // Types
 // =============================================================================
 
-export interface WaitlistEntryData {
+interface WaitlistEntryData {
   id: string;
   clientId: string | null;
   clientName: string;

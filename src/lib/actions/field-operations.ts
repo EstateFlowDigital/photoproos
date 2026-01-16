@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
-export type FieldBooking = {
+type FieldBooking = {
   id: string;
   title: string;
   clientName: string;
@@ -17,14 +17,14 @@ export type FieldBooking = {
   description: string | null;
 };
 
-export type CheckInData = {
+type CheckInData = {
   bookingId: string;
   latitude?: number;
   longitude?: number;
   notes?: string;
 };
 
-export type CheckOutData = {
+type CheckOutData = {
   bookingId: string;
   latitude?: number;
   longitude?: number;
@@ -274,7 +274,7 @@ export async function addFieldNote(
 // FIELD NOTES
 // ============================================================================
 
-export type FieldNote = {
+type FieldNote = {
   id: string;
   content: string;
   createdAt: Date;

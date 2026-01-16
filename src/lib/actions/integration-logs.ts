@@ -12,7 +12,7 @@ import { Prisma } from "@prisma/client";
 /**
  * Integration providers
  */
-export const INTEGRATION_PROVIDERS = [
+const INTEGRATION_PROVIDERS = [
   "google_calendar",
   "dropbox",
   "slack",
@@ -25,12 +25,12 @@ export const INTEGRATION_PROVIDERS = [
   "zapier",
 ] as const;
 
-export type IntegrationProvider = (typeof INTEGRATION_PROVIDERS)[number];
+type IntegrationProvider = (typeof INTEGRATION_PROVIDERS)[number];
 
 /**
  * Integration event types
  */
-export const INTEGRATION_EVENT_TYPES = [
+const INTEGRATION_EVENT_TYPES = [
   "connected",
   "disconnected",
   "sync_started",
@@ -44,7 +44,7 @@ export const INTEGRATION_EVENT_TYPES = [
   "data_imported",
 ] as const;
 
-export type IntegrationEventType = (typeof INTEGRATION_EVENT_TYPES)[number];
+type IntegrationEventType = (typeof INTEGRATION_EVENT_TYPES)[number];
 
 /**
  * Log an integration event (for internal use by other actions)

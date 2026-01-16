@@ -6,7 +6,7 @@ import { success, fail } from "@/lib/types/action-result";
 import { createGalleryCollection, addAssetsToCollection } from "./gallery-collections";
 
 // Types for smart collection suggestions
-export interface SmartCollectionSuggestion {
+interface SmartCollectionSuggestion {
   type: "date" | "filename" | "camera" | "custom";
   name: string;
   description: string;

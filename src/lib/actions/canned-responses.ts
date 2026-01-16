@@ -10,7 +10,7 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // Types
 // =============================================================================
 
-export interface CannedResponseInput {
+interface CannedResponseInput {
   title: string;
   content: string;
   shortcut?: string;
@@ -18,7 +18,7 @@ export interface CannedResponseInput {
   isPersonal?: boolean; // If true, only visible to this user
 }
 
-export interface UpdateCannedResponseInput {
+interface UpdateCannedResponseInput {
   title?: string;
   content?: string;
   shortcut?: string;
@@ -27,7 +27,7 @@ export interface UpdateCannedResponseInput {
   order?: number;
 }
 
-export interface CannedResponseWithUser {
+interface CannedResponseWithUser {
   id: string;
   organizationId: string;
   userId: string | null;

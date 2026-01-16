@@ -411,7 +411,7 @@ export async function cleanupOldWebhookLogs(): Promise<ActionResult<number>> {
 /**
  * Available webhook events with descriptions
  */
-export const WEBHOOK_EVENTS: Array<{
+const WEBHOOK_EVENTS: Array<{
   value: CMSWebhookEvent;
   label: string;
   description: string;

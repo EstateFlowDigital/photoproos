@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { nanoid } from "nanoid";
 
-export interface CreateProjectBundleInput {
+interface CreateProjectBundleInput {
   // Client
   clientMode: "existing" | "new";
   clientId?: string;
@@ -43,7 +43,7 @@ export interface CreateProjectBundleInput {
   invoiceNotes?: string;
 }
 
-export interface CreateProjectBundleResult {
+interface CreateProjectBundleResult {
   clientId: string;
   galleryId: string;
   bookingId?: string;

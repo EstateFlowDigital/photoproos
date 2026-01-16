@@ -31,8 +31,8 @@ import {
   deleteWebhook,
   toggleWebhookActive,
   testWebhookDelivery,
-  WEBHOOK_EVENTS,
 } from "@/lib/actions/cms-webhooks";
+import { WEBHOOK_EVENTS } from "@/lib/constants/cms-webhook-events";
 
 interface WebhookManagerProps {
   className?: string;

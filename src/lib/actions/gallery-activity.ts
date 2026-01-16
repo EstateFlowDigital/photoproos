@@ -24,7 +24,7 @@ async function getOrganizationId(): Promise<string | null> {
 // Types
 // =============================================================================
 
-export type ActivityEventType =
+type ActivityEventType =
   | "gallery_created"
   | "gallery_delivered"
   | "gallery_viewed"
@@ -36,7 +36,7 @@ export type ActivityEventType =
   | "photo_rated"
   | "comment_added";
 
-export interface ActivityTimelineEvent {
+interface ActivityTimelineEvent {
   id: string;
   type: ActivityEventType;
   title: string;

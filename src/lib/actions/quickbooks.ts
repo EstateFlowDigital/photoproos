@@ -17,7 +17,9 @@ interface QuickBooksTokenResponse {
   x_refresh_token_expires_in: number;
 }
 
-export type QuickBooksConfig = {
+// Note: Types moved to avoid "use server" export restrictions.
+// For external use, define these types in a separate types file (e.g., @/lib/types/quickbooks.ts)
+type QuickBooksConfig = {
   id: string;
   organizationId: string;
   realmId: string;
@@ -37,7 +39,7 @@ export type QuickBooksConfig = {
   updatedAt: Date;
 };
 
-export type QuickBooksSyncHistoryItem = {
+type QuickBooksSyncHistoryItem = {
   id: string;
   syncType: string;
   action: string;

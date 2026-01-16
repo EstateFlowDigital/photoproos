@@ -10,7 +10,7 @@ import { Prisma, type MessageVisibility } from "@prisma/client";
 // TYPES
 // ============================================================================
 
-export interface CreateMessageInput {
+interface CreateMessageInput {
   content: string;
   visibility: MessageVisibility;
   attachments?: Array<{
@@ -22,11 +22,11 @@ export interface CreateMessageInput {
   parentId?: string;
 }
 
-export interface UpdateMessageInput {
+interface UpdateMessageInput {
   content: string;
 }
 
-export interface ProjectMessageWithReplies {
+interface ProjectMessageWithReplies {
   id: string;
   organizationId: string;
   projectId: string;

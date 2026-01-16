@@ -4,7 +4,7 @@ import { useState, useCallback, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { ComponentLibrary } from "./component-library";
 import { ComponentEditor } from "./component-editor";
-import type { PageComponentInstance, ComponentWithSchema } from "@/lib/cms/page-builder";
+import type { PageComponentInstance, ComponentWithSchema } from "@/lib/cms/page-builder-utils";
 import type { MarketingPage } from "@prisma/client";
 import {
   addComponentToPage,

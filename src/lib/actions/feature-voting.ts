@@ -16,7 +16,7 @@ import type {
 // TYPES
 // ============================================================================
 
-export interface PublicRoadmapPhase {
+interface PublicRoadmapPhase {
   id: string;
   name: string;
   title: string;
@@ -28,7 +28,7 @@ export interface PublicRoadmapPhase {
   items: PublicRoadmapItem[];
 }
 
-export interface PublicRoadmapItem {
+interface PublicRoadmapItem {
   id: string;
   name: string;
   description: string | null;
@@ -38,7 +38,7 @@ export interface PublicRoadmapItem {
   voteCount: number;
 }
 
-export interface PublicFeatureRequest {
+interface PublicFeatureRequest {
   id: string;
   title: string;
   description: string;

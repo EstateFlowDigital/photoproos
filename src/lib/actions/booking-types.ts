@@ -5,7 +5,7 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { revalidatePath } from "next/cache";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
-export interface BookingTypeInput {
+interface BookingTypeInput {
   name: string;
   description?: string;
   durationMinutes: number;

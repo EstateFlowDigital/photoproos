@@ -18,8 +18,8 @@ import {
 import type { PortalQuestionnaireWithRelations } from "./questionnaire-types";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
-// Re-export the type for consumers who import from this file
-export type { PortalQuestionnaireWithRelations } from "./questionnaire-types";
+// Note: Types cannot be exported from "use server" files.
+// Import PortalQuestionnaireWithRelations directly from "./questionnaire-types"
 
 // ============================================================================
 // HELPER FUNCTIONS

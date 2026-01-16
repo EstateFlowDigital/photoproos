@@ -28,7 +28,7 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // Types
 // =============================================================================
 
-export interface CreateContractInput {
+interface CreateContractInput {
   name: string;
   content: string;
   clientId?: string;
@@ -36,7 +36,7 @@ export interface CreateContractInput {
   expiresAt?: Date;
 }
 
-export interface UpdateContractInput {
+interface UpdateContractInput {
   name?: string;
   content?: string;
   clientId?: string | null;

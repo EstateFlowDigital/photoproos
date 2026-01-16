@@ -16,7 +16,7 @@ import { createNotification } from "./notifications";
 // Types
 // =============================================================================
 
-export interface ReviewPlatformInput {
+interface ReviewPlatformInput {
   type: ReviewPlatformType;
   name: string;
   url: string;
@@ -24,7 +24,7 @@ export interface ReviewPlatformInput {
   priority?: number;
 }
 
-export interface UpdateReviewPlatformInput {
+interface UpdateReviewPlatformInput {
   name?: string;
   url?: string;
   iconUrl?: string;
@@ -32,7 +32,7 @@ export interface UpdateReviewPlatformInput {
   priority?: number;
 }
 
-export interface ReviewGateSettings {
+interface ReviewGateSettings {
   reviewGateEnabled: boolean;
   reviewGateDeliveryEmailEnabled: boolean;
   reviewGateFollowupEnabled: boolean;
@@ -41,7 +41,7 @@ export interface ReviewGateSettings {
   reviewGateGalleryPromptEnabled: boolean;
 }
 
-export interface CreateReviewRequestInput {
+interface CreateReviewRequestInput {
   projectId?: string;
   clientId?: string;
   clientEmail?: string;
@@ -51,7 +51,7 @@ export interface CreateReviewRequestInput {
   expiresAt?: Date;
 }
 
-export interface SubmitReviewResponseInput {
+interface SubmitReviewResponseInput {
   token: string;
   rating: number;
   feedback?: string;
@@ -61,7 +61,7 @@ export interface SubmitReviewResponseInput {
   userAgent?: string;
 }
 
-export interface ReviewStats {
+interface ReviewStats {
   totalRequests: number;
   pendingRequests: number;
   completedRequests: number;

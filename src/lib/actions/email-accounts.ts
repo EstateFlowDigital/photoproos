@@ -8,7 +8,7 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { disconnectGmailAccount } from "@/lib/integrations/gmail";
 import { disconnectOutlookAccount } from "@/lib/integrations/outlook";
 
-export interface ConnectedEmailAccount {
+interface ConnectedEmailAccount {
   id: string;
   provider: "GMAIL" | "OUTLOOK";
   email: string;

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Comprehensive Server Action Build Fixes** - Fixed all Next.js build errors caused by "use server" files exporting non-async values:
+  - Removed `export type`, `export interface`, and `export const` from 120+ server action files
+  - Created `src/lib/constants/cms-webhook-events.ts` for WEBHOOK_EVENTS constant
+  - Created `src/lib/constants/webhook-event-types.ts` for WEBHOOK_EVENT_TYPES constant
+  - Created `src/lib/cms/page-builder-constants.ts` for COMPONENT_SCHEMAS and related constants
+  - Removed "use server" from CMS library files (analytics.ts, collaboration.ts, workflow-engine.ts, governance-engine.ts)
+  - Updated all component imports to use new constant file locations
+  - Fixed missing `currentUser` export in `src/lib/auth/super-admin.ts`
+  - Fixed missing `triggerSmsSent` and `triggerEmailSent` exports in gamification index
+  - Fixed `toggleGovernancePolicyActive` and `initializeGovernancePolicies` function name mismatches
+  - Fixed `Squares` icon (doesn't exist in lucide-react) to `LayoutGrid`
+  - Removed non-existent `WebhookCard` and `WebhookForm` exports from CMS index
+
 ### Added
 - **Marketing Studio: Help & Instructions Page** - Comprehensive visual guide at `/super-admin/marketing-studio/help`:
   - Step-by-step instructions for all Marketing Studio features

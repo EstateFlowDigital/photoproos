@@ -23,7 +23,7 @@ async function getOrganizationId(): Promise<string> {
 // Booking Type Equipment Requirements
 // =============================================================================
 
-export interface EquipmentRequirementInput {
+interface EquipmentRequirementInput {
   equipmentId: string;
   isRequired?: boolean;
   quantity?: number;

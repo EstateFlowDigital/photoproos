@@ -10,7 +10,7 @@ import { isSuperAdmin } from "@/lib/auth/super-admin";
 // TYPES
 // ============================================================================
 
-export interface PlatformFeedbackData {
+interface PlatformFeedbackData {
   id: string;
   source: string;
   rating: number | null;
@@ -33,7 +33,7 @@ export interface PlatformFeedbackData {
   } | null;
 }
 
-export interface FeedbackStats {
+interface FeedbackStats {
   totalFeedback: number;
   averageRating: number;
   pendingReview: number;

@@ -25,7 +25,7 @@ async function getOrganizationId(): Promise<string | null> {
 // Types
 // =============================================================================
 
-export interface GalleryAnalyticsOverview {
+interface GalleryAnalyticsOverview {
   totalViews: number;
   uniqueVisitors: number;
   totalDownloads: number;
@@ -35,7 +35,7 @@ export interface GalleryAnalyticsOverview {
   lastViewedAt: string | null;
 }
 
-export interface PhotoEngagementData {
+interface PhotoEngagementData {
   id: string;
   filename: string;
   thumbnailUrl: string;
@@ -45,7 +45,7 @@ export interface PhotoEngagementData {
   engagementScore: number; // Normalized 0-100 score for heat map
 }
 
-export interface DownloadLogEntry {
+interface DownloadLogEntry {
   id: string;
   format: string;
   fileCount: number;
@@ -54,7 +54,7 @@ export interface DownloadLogEntry {
   assetFilename: string | null;
 }
 
-export interface ViewingSession {
+interface ViewingSession {
   id: string;
   sessionId: string;
   startTime: Date;

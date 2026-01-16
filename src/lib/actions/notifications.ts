@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 import type { NotificationType as PrismaNotificationType } from "@prisma/client";
 
-export interface NotificationData {
+interface NotificationData {
   id: string;
   type: string;
   title: string;
@@ -142,7 +142,7 @@ export async function markAllNotificationsAsRead(): Promise<ActionResult> {
 /**
  * Re-export the Prisma NotificationType for use in other modules
  */
-export type NotificationType = PrismaNotificationType;
+type NotificationType = PrismaNotificationType;
 
 interface CreateNotificationInput {
   type: PrismaNotificationType;

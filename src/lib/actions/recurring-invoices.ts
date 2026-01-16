@@ -8,14 +8,14 @@ import { logActivity } from "@/lib/utils/activity";
 import type { RecurringFrequency, LineItemType } from "@prisma/client";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
-export interface RecurringInvoiceLineItem {
+interface RecurringInvoiceLineItem {
   itemType: LineItemType;
   description: string;
   quantity: number;
   unitCents: number;
 }
 
-export interface CreateRecurringInvoiceInput {
+interface CreateRecurringInvoiceInput {
   clientId: string;
   frequency: RecurringFrequency;
   dayOfMonth?: number;
@@ -30,7 +30,7 @@ export interface CreateRecurringInvoiceInput {
   maxInvoices?: number;
 }
 
-export interface UpdateRecurringInvoiceInput {
+interface UpdateRecurringInvoiceInput {
   id: string;
   frequency?: RecurringFrequency;
   dayOfMonth?: number;

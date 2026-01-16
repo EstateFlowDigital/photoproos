@@ -10,7 +10,7 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // Types
 // ============================================================================
 
-export interface BrokerageContractWithRelations {
+interface BrokerageContractWithRelations {
   id: string;
   brokerageId: string;
   name: string;
@@ -34,7 +34,7 @@ export interface BrokerageContractWithRelations {
   };
 }
 
-export interface CreateContractInput {
+interface CreateContractInput {
   brokerageId: string;
   name: string;
   description?: string | null;
@@ -49,7 +49,7 @@ export interface CreateContractInput {
   endDate?: Date | null;
 }
 
-export interface UpdateContractInput extends Partial<Omit<CreateContractInput, "brokerageId">> {
+interface UpdateContractInput extends Partial<Omit<CreateContractInput, "brokerageId">> {
   id: string;
   isActive?: boolean;
 }

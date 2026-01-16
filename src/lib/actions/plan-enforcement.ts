@@ -27,7 +27,7 @@ import { fail, ok, success, type ActionResult } from "@/lib/types/action-result"
 // TYPES
 // =============================================================================
 
-export interface LimitCheckResult {
+interface LimitCheckResult {
   allowed: boolean;
   limit: number;
   current: number;
@@ -37,14 +37,14 @@ export interface LimitCheckResult {
   upgradeRequired?: boolean;
 }
 
-export interface FeatureCheckResult {
+interface FeatureCheckResult {
   allowed: boolean;
   feature: string;
   message?: string;
   upgradeRequired?: boolean;
 }
 
-export interface UsageStats {
+interface UsageStats {
   plan: PlanName;
   hasLifetimeLicense: boolean;
   limits: Record<

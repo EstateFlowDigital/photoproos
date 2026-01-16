@@ -37,14 +37,14 @@ import { triggerContractSigned } from "@/lib/gamification";
 // Types
 // =============================================================================
 
-export interface CreateSignerInput {
+interface CreateSignerInput {
   contractId: string;
   email: string;
   name?: string;
   sortOrder?: number;
 }
 
-export interface SignContractInput {
+interface SignContractInput {
   signingToken: string;
   signatureData: string; // Base64 encoded signature image
   signatureType?: SignatureType;

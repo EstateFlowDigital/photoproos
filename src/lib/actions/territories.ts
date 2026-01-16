@@ -5,7 +5,9 @@ import { revalidatePath } from "next/cache";
 import { getAuthContext } from "@/lib/auth/clerk";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
-export type ServiceTerritory = {
+// Note: Types moved to avoid "use server" export restrictions.
+// For external use, define these types in a separate types file (e.g., @/lib/types/territories.ts)
+type ServiceTerritory = {
   id: string;
   organizationId: string;
   name: string;
@@ -26,7 +28,7 @@ export type ServiceTerritory = {
   updatedAt: Date;
 };
 
-export type TerritoryServiceOverride = {
+type TerritoryServiceOverride = {
   id: string;
   territoryId: string;
   serviceId: string;

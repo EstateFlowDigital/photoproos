@@ -7,7 +7,7 @@ import { getAuthContext } from "@/lib/auth/clerk";
 import { logActivity } from "@/lib/utils/activity";
 import { fail, success, type ActionResult } from "@/lib/types/action-result";
 
-export interface DuplicateGroup {
+interface DuplicateGroup {
   matchType: "email" | "phone" | "name";
   confidence: "high" | "medium" | "low";
   clients: Array<{

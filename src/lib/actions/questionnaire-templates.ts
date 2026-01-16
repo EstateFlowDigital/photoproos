@@ -24,8 +24,8 @@ import { Prisma, Industry, LegalAgreementType } from "@prisma/client";
 import type { QuestionnaireTemplateWithRelations } from "./questionnaire-types";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
-// Re-export the type for consumers who import from this file
-export type { QuestionnaireTemplateWithRelations } from "./questionnaire-types";
+// Note: Types cannot be exported from "use server" files.
+// Import QuestionnaireTemplateWithRelations directly from "./questionnaire-types"
 
 // ============================================================================
 // HELPER FUNCTIONS

@@ -13,7 +13,7 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // Types
 // =============================================================================
 
-export interface CreateConversationInput {
+interface CreateConversationInput {
   type: ConversationType;
   name?: string;
   description?: string;
@@ -22,7 +22,7 @@ export interface CreateConversationInput {
   participantUserIds?: string[];
 }
 
-export interface UpdateConversationInput {
+interface UpdateConversationInput {
   name?: string;
   description?: string;
   isArchived?: boolean;
@@ -31,7 +31,7 @@ export interface UpdateConversationInput {
   allowThreads?: boolean;
 }
 
-export interface ConversationWithDetails {
+interface ConversationWithDetails {
   id: string;
   organizationId: string;
   type: ConversationType;

@@ -15,7 +15,7 @@ import {
 // TYPES
 // ============================================================================
 
-export interface GalleryAddonInput {
+interface GalleryAddonInput {
   name: string;
   description?: string | null;
   iconName?: string | null;
@@ -31,7 +31,7 @@ export interface GalleryAddonInput {
   maxPhotos?: number | null;
 }
 
-export interface AddonRequestInput {
+interface AddonRequestInput {
   addonId: string;
   projectId: string;
   notes?: string | null;

@@ -8,7 +8,7 @@ import { logActivity } from "@/lib/utils/activity";
 import type { ClientIndustry } from "@prisma/client";
 import { fail, success, type ActionResult } from "@/lib/types/action-result";
 
-export interface CSVClientRow {
+interface CSVClientRow {
   email: string;
   fullName?: string;
   company?: string;
@@ -20,7 +20,7 @@ export interface CSVClientRow {
   isVIP?: boolean | string;
 }
 
-export interface ImportValidationResult {
+interface ImportValidationResult {
   valid: boolean;
   rowNumber: number;
   data: CSVClientRow;
@@ -28,7 +28,7 @@ export interface ImportValidationResult {
   warnings: string[];
 }
 
-export interface ImportPreview {
+interface ImportPreview {
   totalRows: number;
   validRows: number;
   invalidRows: number;
@@ -37,7 +37,7 @@ export interface ImportPreview {
   validationResults: ImportValidationResult[];
 }
 
-export interface ImportResult {
+interface ImportResult {
   imported: number;
   skipped: number;
   failed: number;

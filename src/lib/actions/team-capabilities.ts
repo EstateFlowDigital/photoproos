@@ -501,5 +501,6 @@ export async function setUserHomeBase(
   }
 }
 
-// Type exports
-export type ServiceCapabilityInput = z.infer<typeof serviceCapabilitySchema>;
+// Note: Type moved to avoid "use server" export restrictions.
+// For external use, define this type in a separate types file (e.g., @/lib/types/team-capabilities.ts)
+type ServiceCapabilityInput = z.infer<typeof serviceCapabilitySchema>;

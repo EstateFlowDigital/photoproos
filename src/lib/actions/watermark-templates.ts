@@ -6,7 +6,9 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { WatermarkPosition } from "@prisma/client";
 
-export type WatermarkTemplateInput = {
+// Note: Type moved to avoid "use server" export restrictions.
+// For external use, define this type in a separate types file (e.g., @/lib/types/watermark-templates.ts)
+type WatermarkTemplateInput = {
   name: string;
   watermarkType: "text" | "image";
   watermarkText?: string | null;

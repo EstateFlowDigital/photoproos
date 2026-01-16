@@ -21,8 +21,8 @@ import {
   deleteWebhookEndpoint,
   testWebhookEndpoint,
   regenerateWebhookSecret,
-  WEBHOOK_EVENT_TYPES,
 } from "@/lib/actions/webhooks";
+import { WEBHOOK_EVENT_TYPES } from "@/lib/constants/webhook-event-types";
 
 // ============================================================================
 // Types

@@ -17,14 +17,14 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // Types
 // ============================================================================
 
-export interface PresetLineItem {
+interface PresetLineItem {
   itemType: LineItemType;
   description: string;
   quantity: number;
   unitCents: number;
 }
 
-export interface CreateInvoicePresetInput {
+interface CreateInvoicePresetInput {
   name: string;
   description?: string;
   category?: string;
@@ -36,7 +36,7 @@ export interface CreateInvoicePresetInput {
   isDefault?: boolean;
 }
 
-export interface UpdateInvoicePresetInput {
+interface UpdateInvoicePresetInput {
   name?: string;
   description?: string;
   category?: string;

@@ -914,5 +914,5 @@ export async function getUpcomingEquipmentNeeds(days: number = 7) {
 }
 
 // Type exports
-export type CreateEquipmentInput = z.infer<typeof createEquipmentSchema>;
-export type UpdateEquipmentInput = z.infer<typeof updateEquipmentSchema>;
+type CreateEquipmentInput = z.infer<typeof createEquipmentSchema>;
+type UpdateEquipmentInput = z.infer<typeof updateEquipmentSchema>;

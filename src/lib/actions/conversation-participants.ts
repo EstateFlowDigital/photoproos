@@ -10,7 +10,7 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // Types
 // =============================================================================
 
-export interface ParticipantWithDetails {
+interface ParticipantWithDetails {
   id: string;
   conversationId: string;
   userId: string | null;
@@ -1172,7 +1172,7 @@ export async function revokeBrokerAccess(
 // Broker Visibility Functions
 // =============================================================================
 
-export interface ParticipantWithBrokerageDetails extends ParticipantWithDetails {
+interface ParticipantWithBrokerageDetails extends ParticipantWithDetails {
   client: {
     id: string;
     fullName: string | null;

@@ -26,7 +26,10 @@ import {
   Sparkles,
   History,
 } from "lucide-react";
-import { VersionHistory, SchedulingPanel, ActiveEditors, useAutoSave, AutoSaveBadge } from "@/components/cms";
+import { VersionHistory } from "@/components/cms/version-history";
+import { SchedulingPanel } from "@/components/cms/scheduling-panel";
+import { ActiveEditors } from "@/components/cms/active-editors";
+import { useAutoSave, AutoSaveBadge } from "@/components/cms/auto-save";
 import type { MarketingPage } from "@prisma/client";
 import { updateMarketingPage, publishMarketingPage, deleteMarketingPage, schedulePublish, cancelScheduledPublish, saveDraft } from "@/lib/actions/marketing-cms";
 

@@ -9,7 +9,7 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // Types
 // ============================================================================
 
-export interface MlsPreset {
+interface MlsPreset {
   id: string;
   organizationId: string | null;
   name: string;
@@ -30,7 +30,7 @@ export interface MlsPreset {
   updatedAt: Date;
 }
 
-export interface MlsPresetOverride {
+interface MlsPresetOverride {
   id: string;
   brokerageId: string | null;
   clientId: string | null;
@@ -45,7 +45,7 @@ export interface MlsPresetOverride {
   updatedAt: Date;
 }
 
-export interface ResolvedPreset extends MlsPreset {
+interface ResolvedPreset extends MlsPreset {
   // Effective values after override resolution
   effectiveWidth: number;
   effectiveHeight: number;
@@ -57,7 +57,7 @@ export interface ResolvedPreset extends MlsPreset {
   overrideSource: "system" | "organization" | "brokerage" | "client";
 }
 
-export interface CreateMlsPresetInput {
+interface CreateMlsPresetInput {
   name: string;
   provider: string;
   description?: string;
@@ -71,7 +71,7 @@ export interface CreateMlsPresetInput {
   letterboxColor?: string;
 }
 
-export interface UpdateMlsPresetInput {
+interface UpdateMlsPresetInput {
   id: string;
   name?: string;
   provider?: string;
@@ -88,7 +88,7 @@ export interface UpdateMlsPresetInput {
   sortOrder?: number;
 }
 
-export interface SetPresetOverrideInput {
+interface SetPresetOverrideInput {
   presetId: string;
   brokerageId?: string;
   clientId?: string;

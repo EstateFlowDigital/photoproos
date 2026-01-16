@@ -9,7 +9,7 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // TYPES
 // ============================================================================
 
-export type MailchimpConfig = {
+type MailchimpConfig = {
   id: string;
   organizationId: string;
   datacenter: string;
@@ -28,13 +28,13 @@ export type MailchimpConfig = {
   updatedAt: Date;
 };
 
-export type MailchimpAudience = {
+type MailchimpAudience = {
   id: string;
   name: string;
   memberCount: number;
 };
 
-export type MailchimpSyncHistoryItem = {
+type MailchimpSyncHistoryItem = {
   id: string;
   action: string;
   description: string;

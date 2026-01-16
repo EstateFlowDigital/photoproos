@@ -5,7 +5,7 @@ import { getStripe } from "@/lib/stripe";
 import type { PlanName, ExperimentStatus } from "@prisma/client";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
-export interface SubscriptionPlanInput {
+interface SubscriptionPlanInput {
   name: string;
   slug: string;
   plan: PlanName;
@@ -22,7 +22,7 @@ export interface SubscriptionPlanInput {
   isPublic?: boolean;
 }
 
-export interface PlanFeatureInput {
+interface PlanFeatureInput {
   planId: string;
   name: string;
   description?: string | null;
@@ -34,7 +34,7 @@ export interface PlanFeatureInput {
   tooltip?: string | null;
 }
 
-export interface PricingExperimentInput {
+interface PricingExperimentInput {
   name: string;
   slug: string;
   description?: string | null;
@@ -43,7 +43,7 @@ export interface PricingExperimentInput {
   landingPagePaths?: string[];
 }
 
-export interface PricingVariantInput {
+interface PricingVariantInput {
   experimentId?: string | null;
   planId: string;
   name: string;
@@ -1006,7 +1006,7 @@ export async function deletePricingVariant(id: string): Promise<ActionResult> {
 // Environment Check
 // =============================================================================
 
-export interface EnvironmentStatus {
+interface EnvironmentStatus {
   stripe: { configured: boolean; mode: "live" | "test" | null };
   twilio: { configured: boolean };
   resend: { configured: boolean };

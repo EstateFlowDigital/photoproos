@@ -16,25 +16,27 @@ import { logActivity } from "@/lib/utils/activity";
 // Types
 // ============================================================================
 
-export type RetainerWithTransactions = ClientRetainer & {
+// Note: Types moved to avoid "use server" export restrictions.
+// For external use, define these types in a separate types file (e.g., @/lib/types/retainers.ts)
+type RetainerWithTransactions = ClientRetainer & {
   transactions: RetainerTransaction[];
   client: { id: string; fullName: string | null; email: string };
 };
 
-export interface CreateRetainerInput {
+interface CreateRetainerInput {
   clientId: string;
   initialDepositCents?: number;
   lowBalanceThresholdCents?: number;
   notes?: string;
 }
 
-export interface DepositInput {
+interface DepositInput {
   amountCents: number;
   description?: string;
   paymentId?: string;
 }
 
-export interface ApplyToInvoiceInput {
+interface ApplyToInvoiceInput {
   invoiceId: string;
   amountCents: number;
   description?: string;

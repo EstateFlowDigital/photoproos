@@ -8,7 +8,7 @@ import { fail, success, type ActionResult } from "@/lib/types/action-result";
 // INVOICE ANALYTICS
 // ============================================================================
 
-export interface RevenueByPeriod {
+interface RevenueByPeriod {
   period: string;
   invoiced: number;
   collected: number;
@@ -16,7 +16,7 @@ export interface RevenueByPeriod {
   invoiceCount: number;
 }
 
-export interface ARAgingBucket {
+interface ARAgingBucket {
   bucket: string;
   minDays: number;
   maxDays: number | null;
@@ -31,7 +31,7 @@ export interface ARAgingBucket {
   }>;
 }
 
-export interface ClientRevenue {
+interface ClientRevenue {
   clientId: string;
   clientName: string | null;
   company: string | null;

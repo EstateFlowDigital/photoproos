@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 import { requireAuth, requireOrganizationId } from "@/lib/actions/auth-helper";
 import { revalidatePath } from "next/cache";
 
-export interface PortfolioCommentWithMeta {
+interface PortfolioCommentWithMeta {
   id: string;
   content: string;
   sectionId: string | null;

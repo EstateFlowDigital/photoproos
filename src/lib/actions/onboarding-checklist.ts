@@ -13,7 +13,7 @@ import {
 // TYPES
 // ============================================================================
 
-export interface ChecklistItemData {
+interface ChecklistItemData {
   id: string;
   label: string;
   description: string;
@@ -43,9 +43,9 @@ export interface ChecklistItemData {
 }
 
 // Categories for organizing onboarding steps
-export type OnboardingCategory = "getting_started" | "payments" | "workflow" | "advanced";
+type OnboardingCategory = "getting_started" | "payments" | "workflow" | "advanced";
 
-export interface CreateChecklistItemInput {
+interface CreateChecklistItemInput {
   label: string;
   description: string;
   href: string;
@@ -63,7 +63,7 @@ export interface CreateChecklistItemInput {
   plans?: string[];
 }
 
-export interface UpdateChecklistItemInput {
+interface UpdateChecklistItemInput {
   label?: string;
   description?: string;
   href?: string;

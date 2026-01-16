@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { PageComponentInstance } from "@/lib/cms/page-builder";
+import type { PageComponentInstance } from "@/lib/cms/page-builder-utils";
 import {
   Check,
   Star,

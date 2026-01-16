@@ -17,7 +17,7 @@ const resolveCname = promisify(dns.resolveCname);
 // The CNAME target that users should point their domains to
 const CNAME_TARGET = process.env.CNAME_TARGET || "cname.photoproos.com";
 
-export interface DomainStatus {
+interface DomainStatus {
   domain: string;
   isVerified: boolean;
   sslStatus: "pending" | "active" | "failed";

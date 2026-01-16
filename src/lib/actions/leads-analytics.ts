@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireAuth, requireOrganizationId } from "./auth-helper";
 
-export interface LeadsAnalytics {
+interface LeadsAnalytics {
   summary: {
     totalLeads: number;
     newLeads: number;

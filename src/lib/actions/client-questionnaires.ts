@@ -24,7 +24,7 @@ import {
 } from "@/lib/actions/email-logs";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
-export type ClientQuestionnaireWithRelations = {
+type ClientQuestionnaireWithRelations = {
   id: string;
   organizationId: string;
   clientId: string;

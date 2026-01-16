@@ -653,5 +653,5 @@ export async function validateAddressAction(
 }
 
 // Type exports
-export type CreateLocationInput = z.infer<typeof createLocationSchema>;
-export type UpdateLocationInput = z.infer<typeof updateLocationSchema>;
+type CreateLocationInput = z.infer<typeof createLocationSchema>;
+type UpdateLocationInput = z.infer<typeof updateLocationSchema>;

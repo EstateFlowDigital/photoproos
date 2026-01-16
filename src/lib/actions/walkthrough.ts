@@ -11,7 +11,7 @@ import type { WalkthroughPageId } from "@/lib/walkthrough-types";
 // Types
 // =============================================================================
 
-export interface WalkthroughPreferenceData {
+interface WalkthroughPreferenceData {
   id: string;
   userId: string;
   pageId: string;

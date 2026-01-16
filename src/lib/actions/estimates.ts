@@ -16,7 +16,7 @@ import { logActivity } from "@/lib/utils/activity";
 // Types
 // ============================================================================
 
-export interface CreateEstimateLineItem {
+interface CreateEstimateLineItem {
   itemType: LineItemType;
   description: string;
   quantity: number;
@@ -24,7 +24,7 @@ export interface CreateEstimateLineItem {
   sortOrder?: number;
 }
 
-export interface CreateEstimateInput {
+interface CreateEstimateInput {
   clientId?: string;
   clientName?: string;
   clientEmail?: string;
@@ -38,7 +38,7 @@ export interface CreateEstimateInput {
   discountCents?: number;
 }
 
-export interface UpdateEstimateInput {
+interface UpdateEstimateInput {
   clientId?: string;
   clientName?: string;
   clientEmail?: string;
@@ -52,7 +52,7 @@ export interface UpdateEstimateInput {
   discountCents?: number;
 }
 
-export type EstimateWithLineItems = Estimate & {
+type EstimateWithLineItems = Estimate & {
   lineItems: EstimateLineItem[];
   client?: { id: string; fullName: string | null; email: string } | null;
 };

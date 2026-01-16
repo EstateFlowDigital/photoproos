@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { getCMSComponents } from "@/lib/actions/cms-page-builder";
 import type { CMSComponentCategory } from "@prisma/client";
-import type { ComponentWithSchema } from "@/lib/cms/page-builder";
+import type { ComponentWithSchema } from "@/lib/cms/page-builder-utils";
 import {
   Layout,
   Grid3x3,
@@ -21,7 +21,7 @@ import {
   PlayCircle,
   Table,
   Clock,
-  Squares,
+  LayoutGrid,
   Mail,
   Send,
   Star,
@@ -68,7 +68,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   "play-circle": PlayCircle,
   table: Table,
   clock: Clock,
-  squares: Squares,
+  squares: LayoutGrid,
   mail: Mail,
   send: Send,
   star: Star,

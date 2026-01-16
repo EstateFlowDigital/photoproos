@@ -10,7 +10,7 @@ export { SEOScore, SEOScoreBadge, SEOScorePanel, useSEOScore } from "./seo-score
 export { ContentHealthDashboard, ContentHealthBadge, useContentHealth } from "./content-health";
 export { ApprovalPanel, ApprovalResponsePanel, ApprovalBadge } from "./approval-panel";
 export { AIAssistant, AIFieldWrapper, AIButton, useAISuggestions } from "./ai-assistant";
-export { WebhookManager, WebhookCard, WebhookForm, WebhookBadge } from "./webhook-manager";
+export { WebhookManager, WebhookBadge } from "./webhook-manager";
 export { WebhookLogsViewer, WebhookLogsCompact } from "./webhook-logs-viewer";
 export { MediaLibrary, AssetCard, AssetRow } from "./media-library";
 export { MediaUploader, MediaUploadButton } from "./media-uploader";

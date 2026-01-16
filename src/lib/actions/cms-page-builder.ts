@@ -10,14 +10,16 @@ import type {
   MarketingPage,
   PageLayoutMode,
 } from "@prisma/client";
+import type {
+  PageComponentInstance,
+  ComponentSchema,
+  ComponentWithSchema,
+} from "@/lib/cms/page-builder-utils";
 import {
-  type PageComponentInstance,
-  type ComponentSchema,
-  type ComponentWithSchema,
   COMPONENT_SCHEMAS,
   DEFAULT_COMPONENT_CONTENT,
   COMPONENT_TYPE_CATEGORY,
-} from "@/lib/cms/page-builder";
+} from "@/lib/cms/page-builder-constants";
 import { generateComponentId } from "@/lib/cms/page-builder-utils";
 
 // ============================================================================

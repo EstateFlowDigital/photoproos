@@ -23,7 +23,7 @@ import {
   CollabInput,
   CollabPanel,
   useCollabOptional,
-} from "@/components/cms";
+} from "@/components/cms/collaborative-editor";
 
 interface CollaborationPageClientProps {
   userId: string;

@@ -9,7 +9,9 @@ import { fail, success, type ActionResult } from "@/lib/types/action-result";
 // TYPES
 // ============================================================================
 
-export type PublicService = {
+// Note: Types moved to avoid "use server" export restrictions.
+// For external use, define these types in a separate types file (e.g., @/lib/types/self-booking.ts)
+type PublicService = {
   id: string;
   name: string;
   description: string | null;
@@ -18,14 +20,14 @@ export type PublicService = {
   category: string;
 };
 
-export type AvailableSlot = {
+type AvailableSlot = {
   date: string;
   time: string;
   datetime: Date;
   timezone: string;
 };
 
-export type BookingSubmission = {
+type BookingSubmission = {
   organizationSlug: string;
   serviceId: string;
   scheduledDate: string;
@@ -37,7 +39,7 @@ export type BookingSubmission = {
   notes?: string;
 };
 
-export type BookingConfirmation = {
+type BookingConfirmation = {
   id: string;
   serviceName: string;
   scheduledDate: Date;

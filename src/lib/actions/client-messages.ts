@@ -10,7 +10,7 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // Types
 // =============================================================================
 
-export interface ClientConversationWithDetails {
+interface ClientConversationWithDetails {
   id: string;
   type: string;
   name: string | null;
@@ -40,7 +40,7 @@ export interface ClientConversationWithDetails {
   unreadCount: number;
 }
 
-export interface ClientMessageWithDetails {
+interface ClientMessageWithDetails {
   id: string;
   conversationId: string;
   content: string;

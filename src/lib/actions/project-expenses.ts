@@ -13,7 +13,7 @@ import { createNotification } from "@/lib/actions/notifications";
 // TYPES
 // ============================================================================
 
-export interface CreateExpenseInput {
+interface CreateExpenseInput {
   description: string;
   category: ExpenseCategory;
   amountCents: number;
@@ -33,7 +33,7 @@ export interface CreateExpenseInput {
   mileageRateCents?: number;
 }
 
-export interface UpdateExpenseInput {
+interface UpdateExpenseInput {
   description?: string;
   category?: ExpenseCategory;
   amountCents?: number;
@@ -53,7 +53,7 @@ export interface UpdateExpenseInput {
   mileageRateCents?: number;
 }
 
-export interface ProjectPLSummary {
+interface ProjectPLSummary {
   revenue: {
     total: number;
     paid: number;
@@ -842,7 +842,7 @@ export async function getReceiptUploadUrl(
 // RECURRING EXPENSE TEMPLATES
 // ============================================================================
 
-export interface CreateRecurringTemplateInput {
+interface CreateRecurringTemplateInput {
   name: string;
   description: string;
   category: ExpenseCategory;
@@ -855,7 +855,7 @@ export interface CreateRecurringTemplateInput {
   monthOfYear?: number;
 }
 
-export interface UpdateRecurringTemplateInput {
+interface UpdateRecurringTemplateInput {
   name?: string;
   description?: string;
   category?: ExpenseCategory;
@@ -1206,7 +1206,7 @@ function getDaysInMonth(date: Date): number {
 // RECURRING EXPENSE AUTO-GENERATION (CRON)
 // ============================================================================
 
-export interface RecurringExpenseProcessResult {
+interface RecurringExpenseProcessResult {
   processed: number;
   failed: number;
   details: {
@@ -1843,7 +1843,7 @@ export async function getPendingApprovals() {
 // BUDGET TRACKING
 // ============================================================================
 
-export interface CreateBudgetInput {
+interface CreateBudgetInput {
   totalBudgetCents?: number;
   laborBudgetCents?: number;
   travelBudgetCents?: number;
@@ -1861,7 +1861,7 @@ export interface CreateBudgetInput {
   notifyOnOverBudget?: boolean;
 }
 
-export interface BudgetStatus {
+interface BudgetStatus {
   budget: {
     totalBudgetCents: number | null;
     byCategory: {
@@ -2191,7 +2191,7 @@ export async function deleteProjectBudget(projectId: string) {
 // PDF EXPENSE REPORTS
 // ============================================================================
 
-export interface ExpenseReportData {
+interface ExpenseReportData {
   projectName: string;
   projectId: string;
   generatedAt: string;
@@ -2516,7 +2516,7 @@ export async function calculateMileageAmount(distance: number, rateCents: number
 // EXPENSE FORECASTING
 // ============================================================================
 
-export interface ExpenseForecast {
+interface ExpenseForecast {
   templateId: string;
   templateName: string;
   category: ExpenseCategory;
@@ -2643,7 +2643,7 @@ export async function getExpenseForecast(
 // VENDOR MANAGEMENT
 // ============================================================================
 
-export interface CreateVendorInput {
+interface CreateVendorInput {
   name: string;
   description?: string;
   category?: ExpenseCategory;
@@ -2661,7 +2661,7 @@ export interface CreateVendorInput {
   notes?: string;
 }
 
-export interface UpdateVendorInput {
+interface UpdateVendorInput {
   name?: string;
   description?: string;
   category?: ExpenseCategory;

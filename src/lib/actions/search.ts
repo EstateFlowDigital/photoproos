@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { getAuthContext } from "@/lib/auth/clerk";
 
-export interface SearchResult {
+interface SearchResult {
   id: string;
   type: "client" | "gallery" | "property" | "service" | "invoice" | "booking";
   title: string;
@@ -11,7 +11,7 @@ export interface SearchResult {
   href: string;
 }
 
-export interface SearchResults {
+interface SearchResults {
   clients: SearchResult[];
   galleries: SearchResult[];
   properties: SearchResult[];

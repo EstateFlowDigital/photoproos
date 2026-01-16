@@ -16,7 +16,7 @@ import type { ChallengeType } from "@prisma/client";
 // Types
 // =============================================================================
 
-export interface ChallengeWithProgress {
+interface ChallengeWithProgress {
   id: string;
   name: string;
   description: string;

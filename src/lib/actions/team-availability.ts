@@ -15,7 +15,7 @@ import { fail, success, type ActionResult } from "@/lib/types/action-result";
 // Types
 // =============================================================================
 
-export interface TeamMemberAvailability {
+interface TeamMemberAvailability {
   userId: string;
   userName: string;
   userEmail: string;

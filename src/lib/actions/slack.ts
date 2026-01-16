@@ -10,7 +10,9 @@ import { ok, fail, success, type ActionResult } from "@/lib/types/action-result"
 // TYPES
 // ============================================================================
 
-export type SlackConfig = {
+// Note: Type moved to avoid "use server" export restrictions.
+// For external use, define this type in a separate types file (e.g., @/lib/types/slack.ts)
+type SlackConfig = {
   id: string;
   organizationId: string;
   teamId: string;

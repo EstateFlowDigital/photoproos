@@ -14,7 +14,7 @@ import { ok, fail } from "@/lib/types/action-result";
 /**
  * Available webhook event types
  */
-export const WEBHOOK_EVENT_TYPES = [
+const WEBHOOK_EVENT_TYPES = [
   // Gallery events
   { id: "gallery_created", label: "Gallery Created", category: "Gallery" },
   { id: "gallery_delivered", label: "Gallery Delivered", category: "Gallery" },
@@ -45,7 +45,9 @@ export const WEBHOOK_EVENT_TYPES = [
   { id: "project_completed", label: "Project Completed", category: "Project" },
 ] as const;
 
-export type WebhookEventId = (typeof WEBHOOK_EVENT_TYPES)[number]["id"];
+// Note: Type moved to avoid "use server" export restrictions.
+// For external use, define this type in a separate types file (e.g., @/lib/types/webhooks.ts)
+type WebhookEventId = (typeof WEBHOOK_EVENT_TYPES)[number]["id"];
 
 /**
  * Generate a cryptographically secure webhook signing secret

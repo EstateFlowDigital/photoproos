@@ -12,7 +12,7 @@ import { prisma } from "@/lib/db";
 import { ClientNotificationType } from "@prisma/client";
 import { ok, fail, success, type ActionResult } from "@/lib/types/action-result";
 
-export interface ClientNotificationData {
+interface ClientNotificationData {
   id: string;
   type: ClientNotificationType;
   title: string;

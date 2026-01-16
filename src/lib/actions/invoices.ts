@@ -2625,7 +2625,7 @@ export async function bulkDeleteInvoices(
 // INVOICE AGING REPORT
 // ============================================================================
 
-export interface AgingBucket {
+interface AgingBucket {
   label: string;
   count: number;
   totalCents: number;

@@ -1282,7 +1282,7 @@ export async function createTaskFromClient(
 // ANALYTICS ACTIONS
 // ============================================================================
 
-export interface TaskAnalytics {
+interface TaskAnalytics {
   summary: {
     totalTasks: number;
     completedTasks: number;
@@ -2011,7 +2011,7 @@ export async function deleteTaskTemplate(
 // AUTOMATION RULES
 // ============================================================================
 
-export type AutomationTriggerType =
+type AutomationTriggerType =
   | "task_created"
   | "task_moved"
   | "subtasks_complete"
@@ -2019,7 +2019,7 @@ export type AutomationTriggerType =
   | "priority_changed"
   | "assignee_changed";
 
-export type AutomationActionType =
+type AutomationActionType =
   | "move_to_column"
   | "assign_to_user"
   | "set_priority"
@@ -2027,13 +2027,13 @@ export type AutomationActionType =
   | "remove_tag"
   | "send_notification";
 
-export interface AutomationTrigger {
+interface AutomationTrigger {
   type: AutomationTriggerType;
   columnId?: string; // For task_moved trigger (from/to column)
   priority?: TaskPriority; // For priority_changed trigger
 }
 
-export interface AutomationAction {
+interface AutomationAction {
   type: AutomationActionType;
   columnId?: string; // For move_to_column
   userId?: string; // For assign_to_user
@@ -2305,7 +2305,7 @@ async function executeAction(
 // RECURRING TASKS
 // ============================================================================
 
-export type RecurringFrequency = "daily" | "weekly" | "monthly" | "custom";
+type RecurringFrequency = "daily" | "weekly" | "monthly" | "custom";
 
 /**
  * Get all recurring tasks for a board

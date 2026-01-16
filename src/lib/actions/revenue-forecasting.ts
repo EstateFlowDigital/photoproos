@@ -15,7 +15,7 @@ import { fail, success, type ActionResult } from "@/lib/types/action-result";
 // Types
 // =============================================================================
 
-export interface RevenueForecast {
+interface RevenueForecast {
   period: string; // "2025-01" or "2025-Q1" or "2025"
   predictedRevenueCents: number;
   confirmedRevenueCents: number; // From confirmed bookings

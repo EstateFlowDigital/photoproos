@@ -17,7 +17,7 @@ import { triggerSmsSent } from "@/lib/gamification";
 // SMS SETTINGS
 // ============================================================================
 
-export interface SMSSettings {
+interface SMSSettings {
   smsEnabled: boolean;
   twilioAccountSid: string | null;
   twilioAuthToken: string | null;
@@ -25,7 +25,7 @@ export interface SMSSettings {
   hasTwilioCredentials: boolean;
 }
 
-export interface SMSStats {
+interface SMSStats {
   totalSent: number;
   delivered: number;
   failed: number;
@@ -175,7 +175,7 @@ export async function sendTestSMS(toPhone: string): Promise<ActionResult> {
 // SMS TEMPLATES
 // ============================================================================
 
-export interface SMSTemplateData {
+interface SMSTemplateData {
   id: string;
   name: string;
   templateType: SMSTemplateType;
@@ -433,7 +433,7 @@ export async function deleteSMSTemplate(id: string): Promise<ActionResult> {
 // SMS LOGS
 // ============================================================================
 
-export interface SMSLogData {
+interface SMSLogData {
   id: string;
   toPhone: string;
   fromPhone: string;

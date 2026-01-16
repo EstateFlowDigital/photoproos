@@ -17,7 +17,7 @@ import { deleteFile, extractKeyFromUrl } from "@/lib/storage/r2";
 // Types
 // ============================================================================
 
-export interface AddAttachmentInput {
+interface AddAttachmentInput {
   invoiceId: string;
   fileName: string;
   fileUrl: string;
@@ -26,7 +26,7 @@ export interface AddAttachmentInput {
   description?: string;
 }
 
-export interface UpdateAttachmentInput {
+interface UpdateAttachmentInput {
   fileName?: string;
   description?: string;
 }

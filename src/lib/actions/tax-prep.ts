@@ -15,7 +15,7 @@ import type {
 // TYPES
 // ============================================================================
 
-export interface TaxPrepSessionSummary {
+interface TaxPrepSessionSummary {
   id: string;
   taxYear: number;
   status: TaxPrepStatus;
@@ -29,7 +29,7 @@ export interface TaxPrepSessionSummary {
   updatedAt: Date;
 }
 
-export interface TaxExpenseSummary {
+interface TaxExpenseSummary {
   totalExpenses: number;
   totalMileage: number;
   expensesByCategory: {
@@ -43,7 +43,7 @@ export interface TaxExpenseSummary {
   }[];
 }
 
-export interface TaxDocumentWithExtraction {
+interface TaxDocumentWithExtraction {
   id: string;
   type: TaxDocumentType;
   filename: string;
@@ -699,7 +699,7 @@ export async function deleteTaxDocument(
 // TAX SUMMARY GENERATION
 // ============================================================================
 
-export interface TaxSummaryData {
+interface TaxSummaryData {
   taxYear: number;
   entityType: TaxEntityType | null;
   revenue: {

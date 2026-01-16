@@ -11,7 +11,7 @@ import type { FeatureFlagCategory, AdminActionType, AnnouncementType, Announceme
 // TYPES
 // ============================================================================
 
-export interface UserListItem {
+interface UserListItem {
   id: string;
   clerkUserId: string;
   email: string;
@@ -38,7 +38,7 @@ export interface UserListItem {
   };
 }
 
-export interface UserDetailData extends UserListItem {
+interface UserDetailData extends UserListItem {
   memberships: {
     role: string;
     organization: {
@@ -71,7 +71,7 @@ export interface UserDetailData extends UserListItem {
   }[];
 }
 
-export interface DashboardStats {
+interface DashboardStats {
   totalUsers: number;
   activeUsers: number;
   totalOrganizations: number;
@@ -1516,7 +1516,7 @@ export async function getSystemHealthStats(): Promise<
 // ANNOUNCEMENTS
 // ============================================================================
 
-export interface AnnouncementListItem {
+interface AnnouncementListItem {
   id: string;
   title: string;
   content: string;
@@ -1540,7 +1540,7 @@ export interface AnnouncementListItem {
   };
 }
 
-export interface CreateAnnouncementInput {
+interface CreateAnnouncementInput {
   title: string;
   content: string;
   type: AnnouncementType;
@@ -1556,7 +1556,7 @@ export interface CreateAnnouncementInput {
   expiresAt?: Date;
 }
 
-export interface UpdateAnnouncementInput extends Partial<CreateAnnouncementInput> {
+interface UpdateAnnouncementInput extends Partial<CreateAnnouncementInput> {
   isActive?: boolean;
 }
 
@@ -1995,7 +1995,7 @@ export async function toggleAnnouncementActive(
 // DISCOUNT CODES
 // ============================================================================
 
-export interface DiscountCodeListItem {
+interface DiscountCodeListItem {
   id: string;
   code: string;
   name: string | null;
@@ -2025,7 +2025,7 @@ export interface DiscountCodeListItem {
   };
 }
 
-export interface CreateDiscountInput {
+interface CreateDiscountInput {
   code: string;
   name?: string;
   description?: string;
@@ -2044,7 +2044,7 @@ export interface CreateDiscountInput {
   shareableSlug?: string;
 }
 
-export interface UpdateDiscountInput extends Partial<CreateDiscountInput> {
+interface UpdateDiscountInput extends Partial<CreateDiscountInput> {
   id: string;
 }
 
@@ -2549,7 +2549,7 @@ export async function generateDiscountQrCode(
 // REVENUE & BILLING
 // ============================================================================
 
-export interface RevenueStats {
+interface RevenueStats {
   // Overview
   totalRevenueCents: number;
   revenueToday: number;
@@ -2603,7 +2603,7 @@ export interface RevenueStats {
   }>;
 }
 
-export interface RecentPayment {
+interface RecentPayment {
   id: string;
   amountCents: number;
   tipAmountCents: number;
@@ -2619,7 +2619,7 @@ export interface RecentPayment {
   } | null;
 }
 
-export interface RecentInvoice {
+interface RecentInvoice {
   id: string;
   invoiceNumber: string;
   status: string;
@@ -2993,7 +2993,7 @@ export async function getRecentInvoices(options: {
 // USER ENGAGEMENT & CHURN TRACKING
 // ============================================================================
 
-export interface EngagementStats {
+interface EngagementStats {
   // Active users
   dau: number; // Daily Active Users
   wau: number; // Weekly Active Users
@@ -3045,7 +3045,7 @@ export interface EngagementStats {
   }>;
 }
 
-export interface AtRiskUser {
+interface AtRiskUser {
   id: string;
   email: string;
   fullName: string | null;
