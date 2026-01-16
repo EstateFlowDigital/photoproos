@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **CMS Build Fixes** - Resolved Railway deployment failures:
+  - Fixed `cms-governance.ts` importing `DEFAULT_POLICIES` object directly - changed to dynamic `await import()` inside `getDefaultPolicyTemplates()`
+  - Fixed `workflow-client.tsx` importing types from "use server" file - moved imports to `cms-workflows-types.ts`
+  - Fixed client components importing from barrel export `@/components/cms` which pulled in server-only code (pg/db)
+    - Updated `collaboration-client.tsx` to import from `@/components/cms/collaborative-editor`
+    - Updated `workflow-client.tsx` to import from `@/components/cms/workflow-builder`
+    - Updated `page-editor-client.tsx` to import from specific component files
+
 - **Comprehensive Server Action Build Fixes** - Fixed all Next.js build errors caused by "use server" files exporting non-async values:
   - Removed `export type`, `export interface`, and `export const` from 120+ server action files
   - Created `src/lib/constants/cms-webhook-events.ts` for WEBHOOK_EVENTS constant
