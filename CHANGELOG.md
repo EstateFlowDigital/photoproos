@@ -24,7 +24,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Preview of selected mockup
   - Integration with existing mockup library
 
-- **CMS Page Builder Enhancements** - New page builder features for marketing pages
+- **CMS Page Builder Enhancements** - New page builder features for marketing pages:
+  - **Component Presets**: Save configured components as reusable presets
+    - SavePresetDialog for creating presets with name, description, category
+    - PresetLibrary component for browsing and filtering saved presets
+    - Search and category filtering
+    - Delete functionality for non-global presets
+  - **Page Templates**: Pre-built page layouts for quick page creation
+    - CMSComponentPreset and CMSPageTemplate database models
+    - TemplateSelector modal for choosing templates
+    - Industry-based filtering (photography, real-estate, wedding, etc.)
+    - "Start from Template" button on empty page canvas
+  - **Live Preview Panel**: Real-time preview while editing
+    - Device toggle (desktop, tablet, mobile)
+    - Editor/Preview mode toggle in toolbar
+    - Resizable preview panel
+  - **New Component Renderers**: PricingTableRenderer and additional component types
 
 - **Comprehensive Module Configuration System** - Super admin config now includes ALL platform modules:
   - 34 platform modules added as configurable feature flags organized by category:

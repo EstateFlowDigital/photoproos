@@ -10959,6 +10959,97 @@ model CMSPageTemplate {
   @@index([sortOrder])
 }
 
+// A/B Test - Test different page variations
+model ABTest {
+  id          String       @id @default(cuid())
+  name        String       // Test name
+  description String?      // Description of what's being tested
+  pageId      String       // Reference to MarketingPage
+  status      ABTestStatus @default(draft)
+
+  // Variants
+  variants ABTestVariant[]
+
+  // Configuration
+  trafficSplit  Json      // { "control": 50, "variant-a": 50 } - percentages
+  goalType      String    // "clicks", "conversions", "time_on_page", "scroll_depth"
+  goalTarget    String?   // e.g., button ID for click tracking, conversion event name
+  goalMetric    String?   // Additional metric config
+
+  // Timeline
+  startedAt DateTime?
+  endedAt   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Who created this test
+  createdBy     String? // Clerk user ID
+  createdByName String?
+
+  @@index([pageId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+// A/B Test Variant - A specific variation in a test
+model ABTestVariant {
+  id       String @id @default(cuid())
+  testId   String
+  test     ABTest @relation(fields: [testId], references: [id], onDelete: Cascade)
+  name     String // "Control", "Variant A", etc.
+  slug     String // URL-safe slug for routing
+
+  // Content - components for this variant
+  components Json // PageComponentInstance[]
+
+  // Results
+  impressions Int @default(0)
+  conversions Int @default(0)
+  clicks      Int @default(0)
+  totalTime   Int @default(0) // Total time on page in seconds
+  bounces     Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([testId, slug])
+  @@index([testId])
+}
+
+// A/B Test Status enum
+enum ABTestStatus {
+  draft     // Being set up
+  running   // Actively collecting data
+  paused    // Temporarily stopped
+  completed // Finished collecting data
+  archived  // No longer relevant
+}
+
+// Component Analytics - Track component performance
+model ComponentAnalytics {
+  id            String @id @default(cuid())
+  pageId        String // MarketingPage ID
+  componentId   String // Instance ID on the page
+  componentType String // Component type slug
+
+  // Metrics
+  impressions Int   @default(0)
+  clicks      Int   @default(0)
+  scrollDepth Float @default(0) // Average % scrolled to this component
+  timeInView  Int   @default(0) // Average seconds in viewport
+
+  // Time bucket (daily aggregation)
+  date DateTime @db.Date
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([pageId, componentId, date])
+  @@index([pageId])
+  @@index([date])
+  @@index([componentType])
+}
+
 // Component types enum
 enum CMSComponentType {
   hero              // Hero sections with headline, subtext, CTA
