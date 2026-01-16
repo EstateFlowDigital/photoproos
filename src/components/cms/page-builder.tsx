@@ -376,6 +376,7 @@ export function PageBuilder({
   const [showPreviewPanel, setShowPreviewPanel] = useState(false);
   const [rightPanelMode, setRightPanelMode] = useState<RightPanelMode>("editor");
   const [previewDevice, setPreviewDevice] = useState<DeviceType>("desktop");
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
 
   // Find selected component
   const selectedComponent = selectedId
@@ -634,15 +635,33 @@ export function PageBuilder({
         <div className="flex-1 overflow-y-auto p-6">
           {components.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center">
-              <div className="text-center space-y-4">
+              <div className="text-center space-y-6">
                 <div className="w-16 h-16 rounded-full bg-[var(--background-elevated)] flex items-center justify-center mx-auto">
                   <Plus className="w-8 h-8 text-[var(--foreground-muted)]" />
                 </div>
                 <div>
                   <h4 className="font-semibold mb-1">Start building your page</h4>
                   <p className="text-sm text-[var(--foreground-secondary)]">
-                    Drag components from the library or click to add
+                    Choose a template or drag components from the library
                   </p>
+                </div>
+                <div className="flex items-center gap-3 justify-center">
+                  <button
+                    onClick={() => setShowTemplateSelector(true)}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-lg",
+                      "bg-[var(--primary)] text-white",
+                      "hover:bg-[var(--primary)]/90",
+                      "transition-colors"
+                    )}
+                  >
+                    <FileText className="w-4 h-4" />
+                    Start from Template
+                  </button>
+                  <span className="text-sm text-[var(--foreground-muted)]">or</span>
+                  <span className="text-sm text-[var(--foreground-secondary)]">
+                    drag components →
+                  </span>
                 </div>
               </div>
             </div>
@@ -721,6 +740,26 @@ export function PageBuilder({
           />
         </div>
       )}
+
+      {/* Template Selector Modal */}
+      <TemplateSelectorModal
+        open={showTemplateSelector}
+        onSelect={(templateComponents) => {
+          // Add all template components to the page
+          setComponents(templateComponents);
+          setShowTemplateSelector(false);
+          // Save the template components to the page
+          if (templateComponents.length > 0) {
+            startTransition(async () => {
+              // Update page with template components via bulk add
+              for (const component of templateComponents) {
+                await addComponentToPage(page.id, component.componentSlug);
+              }
+            });
+          }
+        }}
+        onClose={() => setShowTemplateSelector(false)}
+      />
     </div>
   );
 }
