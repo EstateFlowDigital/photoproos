@@ -2722,17 +2722,16 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
         _count: true,
         _sum: { amountCents: true },
       }),
-      // Top customers by revenue
+      // Top customers by revenue (filter nulls in JS since groupBy doesn't support not:null well)
       prisma.payment.groupBy({
         by: ["organizationId"],
         where: {
           status: "paid",
-          organizationId: { not: null },
         },
         _sum: { amountCents: true },
         _count: true,
         orderBy: { _sum: { amountCents: "desc" } },
-        take: 10,
+        take: 15, // Fetch extra to account for null entries that will be filtered
       }),
       // Last 30 days for daily chart
       prisma.payment.findMany({
@@ -2842,8 +2841,10 @@ export async function getRevenueStats(): Promise<ActionResult<RevenueStats>> {
     });
 
     // Top customers with org names - with defensive null check
-    const safeTopCustomersRaw = Array.isArray(topCustomersRaw) ? topCustomersRaw : [];
-    const topCustomers = safeTopCustomersRaw.map((c) => {
+    const safeTopCustomersRaw = Array.isArray(topCustomersRaw)
+      ? topCustomersRaw.filter((c) => c.organizationId !== null) // Filter out null organizationIds
+      : [];
+    const topCustomers = safeTopCustomersRaw.slice(0, 10).map((c) => { // Limit to top 10
       const org = c.organizationId ? orgMap.get(c.organizationId) : null;
       return {
         organizationId: c.organizationId || "",
