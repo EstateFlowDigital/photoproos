@@ -8,6 +8,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Marketing Studio: Help & Instructions Page** - Comprehensive visual guide at `/super-admin/marketing-studio/help`:
+  - Step-by-step instructions for all Marketing Studio features
+  - Visual diagrams showing the composer interface layout
+  - Keyboard shortcuts reference (Ctrl+S save, Ctrl+E export, etc.)
+  - Sections for layers, text editing, images, carousels, and exporting
+  - Template usage guide and content calendar overview
+  - Help link added to Marketing Studio hub navigation
+
+- **Marketing Studio: Social Media Integrations** - Connect social accounts at `/super-admin/marketing-studio/integrations`:
+  - Instagram integration (OAuth2) - Direct publishing, stories, carousels, engagement metrics
+  - Facebook integration (OAuth2) - Page publishing, stories, multi-page support, insights
+  - X/Twitter integration (OAuth2) - Tweet publishing, media upload, thread support, analytics
+  - LinkedIn integration (OAuth2) - Profile/page posts, article publishing, analytics
+  - TikTok integration (Coming Soon) - Video upload, cover images, analytics
+  - Pinterest integration (Coming Soon) - Pin creation, board selection, rich pins
+  - Integration status badges (Connected, Not Connected, Coming Soon)
+  - OAuth flow simulation with connect/disconnect functionality
+  - Features and settings displayed for each platform
+  - Secure OAuth 2.0 authentication messaging
+  - Social Connections link added to Marketing Studio hub navigation
+
 - **Marketing Studio: Save as Template** - Create reusable templates from compositions:
   - "Save as Template" button in composer toolbar
   - Modal with template name, description, category, and tags
@@ -126,6 +147,198 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - TypeScript interfaces documentation
     - Usage examples and code snippets
     - Accessibility and browser support notes
+
+- **CMS Admin Pages** - Live interactive testing pages for all CMS features:
+  - **CMS Hub** (`/cms`) - Central administration dashboard:
+    - Quick stats for policies, violations, workflows, and pending approvals
+    - Feature cards linking to Governance, Collaboration, and Workflows
+    - Visual "How It Works" flow diagrams
+    - Status legend for all states
+  - **Governance Test Page** (`/cms/governance`):
+    - Create and manage governance policies
+    - Live content checker with test form
+    - Real-time validation results panel
+    - Policy toggle and delete controls
+    - Recent violations list
+  - **Collaboration Test Page** (`/cms/collaboration`):
+    - Session settings with name and document ID
+    - One-click "Start Editing" to join session
+    - URL copy for multi-browser testing
+    - Live editor with collaborative fields
+    - Participant avatars and cursor tracking
+    - Connection status indicator
+  - **Workflow Test Page** (`/cms/workflows`):
+    - Visual workflow builder integration
+    - Workflow list with stats
+    - "Start Demo" to test workflow instances
+    - Live approve/reject actions
+    - Workflow progress visualization
+    - Step types reference guide
+
+- **CMS Testing Guide** (`docs/CMS_TESTING_GUIDE.md`) - Comprehensive documentation for Phases 14-16:
+  - Visual ASCII diagrams for all components and dashboards
+  - Step-by-step testing instructions for each feature
+  - Default workflow template diagrams (Simple, Two-Stage, Conditional)
+  - Full integration code examples for page editors
+  - Troubleshooting guide with common issues and solutions
+  - API reference for server actions and hooks
+  - Quick reference card for all components
+
+- **Marketing CMS Phase 16: Custom Workflow Builder** - Visual workflow designer for content approval:
+  - **CMSWorkflow & CMSWorkflowInstance Tables** (Prisma schema):
+    - `CMSWorkflow` model for workflow definitions (name, description, steps, targetTypes)
+    - `CMSWorkflowInstance` model for active workflow instances
+    - `WorkflowStepType` enum: start, end, approval, condition, action, delay, notification
+    - `WorkflowInstanceStatus` enum: pending, in_progress, paused, completed, rejected, cancelled
+    - JSON-based step definitions with config and nextSteps
+    - Layout storage for visual positioning
+    - Priority-based workflow ordering
+    - Default workflow flag for auto-assignment
+  - **Workflow Engine** (`src/lib/cms/workflow-engine.ts`):
+    - `getAllWorkflows()` - Get all workflows
+    - `getWorkflowsForType()` - Get workflows for content type
+    - `getWorkflow()` - Get workflow by ID
+    - `createWorkflow()` / `updateWorkflow()` / `deleteWorkflow()` - CRUD operations
+    - `startWorkflowInstance()` - Start workflow for entity
+    - `getWorkflowInstance()` - Get instance by ID
+    - `getEntityInstances()` - Get instances for entity
+    - `advanceWorkflow()` - Move to next step with action
+    - `cancelWorkflow()` - Cancel active workflow
+    - `evaluateCondition()` - Evaluate condition rules
+    - 3 Default workflow templates: simpleApproval, twoStageApproval, conditionalApproval
+    - `seedDefaultWorkflows()` - Initialize default workflows
+  - **Workflow Server Actions** (`src/lib/actions/cms-workflows.ts`):
+    - `getWorkflows()` - List all workflows
+    - `getWorkflowsForContentType()` - Filter by entity type
+    - `getWorkflowById()` - Get single workflow
+    - `createNewWorkflow()` / `updateExistingWorkflow()` / `deleteExistingWorkflow()` - CRUD
+    - `toggleWorkflowActive()` - Enable/disable workflows
+    - `startEntityWorkflow()` - Start workflow for content
+    - `getWorkflowInstanceById()` - Get instance details
+    - `getEntityWorkflowInstances()` - Get instances for entity
+    - `advanceWorkflowInstance()` - Move workflow forward
+    - `approveWorkflowStep()` / `rejectWorkflowStep()` - Quick approval actions
+    - `cancelWorkflowInstance()` - Cancel workflow
+    - `initializeDefaultWorkflows()` - Seed defaults
+    - `getWorkflowStats()` - Dashboard statistics
+  - **WorkflowBuilder Component** (`src/components/cms/workflow-builder.tsx`):
+    - `WorkflowBuilder` - Visual drag-and-drop workflow designer
+    - `WorkflowCanvas` - Draggable step nodes with connection lines
+    - `StepEditor` - Configure step properties (approvers, conditions, actions)
+    - `WorkflowList` - List view with toggle active and delete
+    - `WorkflowInstanceStatus` - Show instance progress with approve/reject actions
+    - `WorkflowDashboard` - Full management dashboard with stats
+    - 7 step types with icons: Start, End, Approval, Condition, Action, Delay, Notification
+    - Condition editor with field, operator, value configuration
+    - Approval editor with approvers list and min approvals
+    - Action editor with publish, unpublish, archive, notify options
+    - SVG connection lines with arrowhead markers
+  - **CMS Index Exports** - All workflow components exported from `src/components/cms/index.ts`
+
+- **Marketing CMS Phase 15: Real-time Collaborative Editing** - Multi-user editing with presence sync:
+  - **CMSCollabSession, CMSCollabParticipant & CMSCollabEdit Tables** (Prisma schema):
+    - `CMSCollabSession` model for editing sessions (entityType, entityId, documentState)
+    - `CMSCollabParticipant` model for tracking editors (userId, userName, cursor position, color)
+    - `CMSCollabEdit` model for edit history with version tracking
+    - `CollabEditOperation` enum: insert, delete, replace, format
+    - Cursor position tracking (field, offset, selection range)
+    - 30-second participant timeout for stale detection
+    - Auto-assigned cursor colors (10-color palette)
+  - **Collaboration Utilities** (`src/lib/cms/collaboration.ts`):
+    - `getOrCreateSession()` - Get or create collab session for entity
+    - `getActiveParticipants()` - Get currently active editors
+    - `cleanupStaleParticipants()` - Remove inactive participants
+    - `joinSession()` - Join session with user info and cursor color
+    - `leaveSession()` - Leave session gracefully
+    - `updateCursor()` - Update cursor position and selection
+    - `pingSession()` - Heartbeat to maintain presence
+    - `updateDocumentState()` / `getDocumentState()` - Document sync
+    - `recordEdit()` - Track edit for undo/redo support
+    - `getEditsSinceVersion()` - Get edits since a version
+    - `getCurrentVersion()` - Get current document version
+    - `cleanupInactiveSessions()` - Clean up old sessions (7-day default)
+    - `cleanupOldEdits()` - Limit edit history (1000 max)
+  - **Collaboration Server Actions** (`src/lib/actions/cms-collaboration.ts`):
+    - `startCollabSession()` - Join or create session
+    - `endCollabSession()` - Leave session
+    - `getCollabSession()` - Get session with participants
+    - `collabPing()` - Send heartbeat and get participants
+    - `updateCollabCursor()` - Update cursor position
+    - `getCollabParticipants()` - List active participants
+    - `saveCollabDocumentState()` / `getCollabDocumentState()` - Document state
+    - `recordCollabEdit()` - Record edit
+    - `getCollabEditsSince()` - Get edits since version
+    - `getCollabVersion()` - Get current version
+    - `syncCollabSession()` - All-in-one sync for polling (participants, edits, version)
+    - `cleanupCollabSessions()` - Admin cleanup action
+  - **CollaborativeEditor Component** (`src/components/cms/collaborative-editor.tsx`):
+    - `CollaborativeEditor` - Provider component with polling-based sync
+    - `ParticipantAvatars` - Display active collaborators with avatars
+    - `CursorIndicator` - Show who's editing what field
+    - `CursorOverlay` - Visual cursor position indicator
+    - `CollabStatus` - Connection status with participant count
+    - `CollabField` - Wrapper for fields with cursor overlays
+    - `CollabInput` - Collab-aware input with cursor tracking
+    - `CollabPanel` - Full panel showing all collaborators
+    - `useCollab()` / `useCollabOptional()` hooks for accessing context
+    - 2-second default poll interval (configurable)
+    - Auto-join on mount, auto-leave on unmount
+    - Color-coded cursors per participant
+  - **CMS Index Exports** - All collaboration components exported from `src/components/cms/index.ts`
+
+- **Marketing CMS Phase 14: Content Governance** - Automated content standards enforcement:
+  - **CMSGovernancePolicy & CMSGovernanceViolation Tables** (Prisma schema):
+    - `CMSGovernancePolicy` model for policy definitions
+    - `CMSGovernanceViolation` model for tracking violations
+    - `GovernancePolicyType` enum: brand_voice, legal_compliance, accessibility, seo, freshness, approval_gates, publishing_windows
+    - `GovernanceAction` enum: warn, block, require_override
+    - JSON-based rule definitions with field, check, value, severity, message
+    - Priority-based policy ordering
+    - Active/inactive toggle for policies
+    - Violation resolution tracking (fixed, overridden, dismissed)
+  - **Governance Engine** (`src/lib/cms/governance-engine.ts`):
+    - 16 rule check types: contains, not_contains, max_length, min_length, regex, regex_not_match, required, all_have_alt, no_empty_text, proper_hierarchy, within_days, not_weekend, business_hours, min_word_count, max_word_count, unique_title
+    - `evaluatePolicy()` - Evaluate single policy against content
+    - `evaluateAllPolicies()` - Evaluate all applicable policies
+    - `recordViolation()` - Record violations in database
+    - `resolveViolation()` - Mark violations as resolved
+    - `getUnresolvedViolations()` - Fetch pending violations
+    - `createPolicy()`, `updatePolicy()`, `deletePolicy()` - Policy CRUD
+    - `togglePolicyActive()` - Enable/disable policies
+    - `seedDefaultPolicies()` - Initialize default policy templates
+    - Helper functions: extractTextContent, getFieldValue, getHighestSeverity
+  - **Default Policy Templates**:
+    - **Brand Voice**: Banned marketing terms (cheap, guaranteed, best ever), superlative warnings
+    - **SEO Requirements**: Meta title/description required, length limits (60/160 chars)
+    - **Accessibility**: All images need alt text, descriptive link text, proper heading hierarchy
+    - **Content Freshness**: 90-day review warning, 180-day review requirement
+    - **Publishing Windows**: Weekend publishing warnings, business hours recommendations
+  - **Governance Server Actions** (`src/lib/actions/cms-governance.ts`):
+    - `getGovernancePolicies()` - List all policies with violation counts
+    - `getGovernancePolicy()` - Get single policy with details
+    - `createGovernancePolicy()`, `updateGovernancePolicy()`, `deleteGovernancePolicy()` - CRUD
+    - `toggleGovernancePolicyActive()` - Enable/disable
+    - `checkContentGovernance()` - Check content against all policies
+    - `checkMarketingPageGovernance()` - Check marketing page
+    - `checkAndRecordViolations()` - Check and persist violations
+    - `getEntityViolations()` - Get violations for specific content
+    - `resolveGovernanceViolation()` - Resolve a violation
+    - `getAllUnresolvedViolations()` - Paginated violation list
+    - `getGovernanceStats()` - Dashboard statistics
+    - `getGovernanceDashboardData()` - All-in-one dashboard data
+    - `initializeGovernancePolicies()` - Seed default policies
+    - `getDefaultPolicyTemplates()` - List available templates
+  - **GovernanceCheck Component** (`src/components/cms/governance-check.tsx`):
+    - `GovernanceCheck` - Main check component with auto-run
+    - `GovernanceBadge` - Compact status indicator (OK, errors, warnings)
+    - `GovernanceResultsPanel` - Display check results
+    - `GovernanceDashboard` - Full governance management dashboard
+    - Policy type icons and labels
+    - Severity icons (error, warning, info)
+    - Expandable violation details with field and snippet info
+    - Policy card with toggle, rule count, violation count
+    - Stats cards for active policies, unresolved issues, blocked publishes
+  - **CMS Index Exports** - All governance components exported from `src/components/cms/index.ts`
 
 - **Marketing CMS Phase 13: Page Analytics** - Traffic, engagement, and conversion tracking:
   - **CMSPageAnalytics, CMSPageEvent & CMSVisitorSession Tables** (Prisma schema):

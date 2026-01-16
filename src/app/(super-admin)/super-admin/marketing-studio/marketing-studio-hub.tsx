@@ -23,6 +23,8 @@ import {
   FileImage,
   Edit3,
   Trash2,
+  HelpCircle,
+  Link2,
 } from "lucide-react";
 import { PLATFORM_LIST } from "@/lib/marketing-studio/platforms";
 
@@ -450,6 +452,24 @@ export function MarketingStudioHub() {
             >
               <Calendar className="h-4 w-4" aria-hidden="true" />
               <span>Content Calendar</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/super-admin/marketing-studio/integrations"
+              className="flex items-center gap-2 text-sm text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] rounded-lg p-1"
+            >
+              <Link2 className="h-4 w-4" aria-hidden="true" />
+              <span>Social Connections</span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/super-admin/marketing-studio/help"
+              className="flex items-center gap-2 text-sm text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] rounded-lg p-1"
+            >
+              <HelpCircle className="h-4 w-4" aria-hidden="true" />
+              <span>Help & Instructions</span>
             </Link>
           </li>
         </ul>

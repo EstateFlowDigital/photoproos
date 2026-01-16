@@ -15,7 +15,8 @@ export type IntegrationCategory =
   | "communication"
   | "automation"
   | "productivity"
-  | "payments";
+  | "payments"
+  | "social";
 
 export type AuthType = "oauth2" | "api_key" | "webhook" | "credentials";
 
@@ -501,6 +502,327 @@ export const INTEGRATIONS: Integration[] = [
     ],
     requiredEnvVars: [],
   },
+
+  // ============================================================================
+  // SOCIAL MEDIA (Marketing Studio)
+  // ============================================================================
+  {
+    id: "instagram",
+    name: "Instagram",
+    description: "Publish content directly to Instagram",
+    longDescription:
+      "Connect your Instagram Business or Creator account to publish posts, stories, and reels directly from Marketing Studio. Schedule content in advance and track engagement metrics.",
+    icon: "instagram",
+    category: "social",
+    authType: "oauth2",
+    isBuiltIn: true,
+    settingsHref: "/super-admin/marketing-studio/integrations",
+    docsUrl: "https://developers.facebook.com/docs/instagram-api",
+    features: [
+      {
+        id: "direct_publish",
+        label: "Direct Publishing",
+        description: "Post content directly to your Instagram feed",
+      },
+      {
+        id: "story_publish",
+        label: "Story Publishing",
+        description: "Publish stories directly from the composer",
+      },
+      {
+        id: "carousel_support",
+        label: "Carousel Support",
+        description: "Create and publish multi-image carousels",
+      },
+      {
+        id: "engagement_metrics",
+        label: "Engagement Metrics",
+        description: "Track likes, comments, and reach on your posts",
+      },
+    ],
+    settingsFields: [
+      {
+        id: "account_type",
+        label: "Account Type",
+        type: "select",
+        options: [
+          { value: "business", label: "Business Account" },
+          { value: "creator", label: "Creator Account" },
+        ],
+        description: "Your Instagram account type",
+        required: true,
+      },
+      {
+        id: "auto_hashtags",
+        label: "Auto-Add Hashtags",
+        type: "toggle",
+        description: "Automatically add default hashtags from your brand kit",
+      },
+    ],
+    requiredEnvVars: ["INSTAGRAM_APP_ID", "INSTAGRAM_APP_SECRET"],
+  },
+  {
+    id: "facebook",
+    name: "Facebook",
+    description: "Publish content to Facebook Pages",
+    longDescription:
+      "Connect your Facebook Page to publish posts and stories directly from Marketing Studio. Manage multiple pages and schedule content for optimal engagement times.",
+    icon: "facebook",
+    category: "social",
+    authType: "oauth2",
+    isBuiltIn: true,
+    settingsHref: "/super-admin/marketing-studio/integrations",
+    docsUrl: "https://developers.facebook.com/docs/pages-api",
+    features: [
+      {
+        id: "page_publish",
+        label: "Page Publishing",
+        description: "Post content directly to your Facebook Page",
+      },
+      {
+        id: "story_publish",
+        label: "Story Publishing",
+        description: "Publish stories to your Facebook Page",
+      },
+      {
+        id: "multi_page",
+        label: "Multi-Page Support",
+        description: "Manage and post to multiple Facebook Pages",
+      },
+      {
+        id: "insights",
+        label: "Page Insights",
+        description: "View post reach and engagement metrics",
+      },
+    ],
+    settingsFields: [
+      {
+        id: "default_page",
+        label: "Default Page",
+        type: "select",
+        description: "Default Facebook Page for publishing",
+        required: true,
+      },
+      {
+        id: "include_link",
+        label: "Include Website Link",
+        type: "toggle",
+        description: "Automatically add your website link to posts",
+      },
+    ],
+    requiredEnvVars: ["FACEBOOK_APP_ID", "FACEBOOK_APP_SECRET"],
+  },
+  {
+    id: "twitter",
+    name: "X (Twitter)",
+    description: "Post content to X (formerly Twitter)",
+    longDescription:
+      "Connect your X account to publish tweets and threads directly from Marketing Studio. Share your photography work and engage with your audience on the platform.",
+    icon: "twitter",
+    category: "social",
+    authType: "oauth2",
+    isBuiltIn: true,
+    settingsHref: "/super-admin/marketing-studio/integrations",
+    docsUrl: "https://developer.twitter.com/en/docs",
+    features: [
+      {
+        id: "tweet_publish",
+        label: "Tweet Publishing",
+        description: "Post tweets directly from the composer",
+      },
+      {
+        id: "media_upload",
+        label: "Media Upload",
+        description: "Upload images and videos with your tweets",
+      },
+      {
+        id: "thread_support",
+        label: "Thread Support",
+        description: "Create and publish multi-tweet threads",
+      },
+      {
+        id: "analytics",
+        label: "Tweet Analytics",
+        description: "Track impressions, engagement, and profile visits",
+      },
+    ],
+    settingsFields: [
+      {
+        id: "char_warning",
+        label: "Character Warning",
+        type: "toggle",
+        description: "Show warning when approaching character limit",
+      },
+      {
+        id: "auto_thread",
+        label: "Auto-Thread Long Posts",
+        type: "toggle",
+        description: "Automatically split long content into threads",
+      },
+    ],
+    requiredEnvVars: ["TWITTER_CLIENT_ID", "TWITTER_CLIENT_SECRET"],
+  },
+  {
+    id: "linkedin",
+    name: "LinkedIn",
+    description: "Share content to LinkedIn profiles and pages",
+    longDescription:
+      "Connect your LinkedIn account to share professional content with your network. Perfect for B2B photography services, headshots, and corporate event photography.",
+    icon: "linkedin",
+    category: "social",
+    authType: "oauth2",
+    isBuiltIn: true,
+    settingsHref: "/super-admin/marketing-studio/integrations",
+    docsUrl: "https://learn.microsoft.com/en-us/linkedin/",
+    features: [
+      {
+        id: "profile_post",
+        label: "Profile Posts",
+        description: "Share content to your personal LinkedIn profile",
+      },
+      {
+        id: "page_post",
+        label: "Company Page Posts",
+        description: "Post to your LinkedIn Company Page",
+      },
+      {
+        id: "article_publish",
+        label: "Article Publishing",
+        description: "Publish long-form articles on LinkedIn",
+      },
+      {
+        id: "analytics",
+        label: "Post Analytics",
+        description: "Track views, reactions, and comments",
+      },
+    ],
+    settingsFields: [
+      {
+        id: "post_target",
+        label: "Default Post Target",
+        type: "select",
+        options: [
+          { value: "profile", label: "Personal Profile" },
+          { value: "page", label: "Company Page" },
+        ],
+        description: "Where to post by default",
+        required: true,
+      },
+      {
+        id: "company_page",
+        label: "Company Page",
+        type: "select",
+        description: "Select your LinkedIn Company Page",
+      },
+    ],
+    requiredEnvVars: ["LINKEDIN_CLIENT_ID", "LINKEDIN_CLIENT_SECRET"],
+  },
+  {
+    id: "tiktok",
+    name: "TikTok",
+    description: "Share content to TikTok",
+    longDescription:
+      "Connect your TikTok Business account to share video content and behind-the-scenes clips. Reach a younger audience and showcase your creative process.",
+    icon: "tiktok",
+    category: "social",
+    authType: "oauth2",
+    settingsHref: "/super-admin/marketing-studio/integrations",
+    docsUrl: "https://developers.tiktok.com/",
+    features: [
+      {
+        id: "video_upload",
+        label: "Video Upload",
+        description: "Upload videos directly to TikTok",
+      },
+      {
+        id: "cover_image",
+        label: "Cover Image Selection",
+        description: "Choose or upload a custom cover image",
+      },
+      {
+        id: "analytics",
+        label: "Video Analytics",
+        description: "Track views, likes, and shares",
+      },
+    ],
+    settingsFields: [
+      {
+        id: "default_privacy",
+        label: "Default Privacy",
+        type: "select",
+        options: [
+          { value: "public", label: "Public" },
+          { value: "friends", label: "Friends Only" },
+          { value: "private", label: "Private" },
+        ],
+        description: "Default privacy setting for uploads",
+      },
+      {
+        id: "allow_comments",
+        label: "Allow Comments",
+        type: "toggle",
+        description: "Enable comments on uploaded videos",
+      },
+      {
+        id: "allow_duet",
+        label: "Allow Duet",
+        type: "toggle",
+        description: "Allow others to duet with your videos",
+      },
+    ],
+    requiredEnvVars: ["TIKTOK_CLIENT_KEY", "TIKTOK_CLIENT_SECRET"],
+    comingSoon: true,
+  },
+  {
+    id: "pinterest",
+    name: "Pinterest",
+    description: "Pin your photography to Pinterest boards",
+    longDescription:
+      "Connect your Pinterest Business account to create pins from your photography work. Drive traffic to your portfolio and attract clients searching for photography inspiration.",
+    icon: "pinterest",
+    category: "social",
+    authType: "oauth2",
+    settingsHref: "/super-admin/marketing-studio/integrations",
+    docsUrl: "https://developers.pinterest.com/",
+    features: [
+      {
+        id: "create_pins",
+        label: "Create Pins",
+        description: "Create pins directly from your compositions",
+      },
+      {
+        id: "board_selection",
+        label: "Board Selection",
+        description: "Pin to any of your Pinterest boards",
+      },
+      {
+        id: "rich_pins",
+        label: "Rich Pins",
+        description: "Create rich pins with enhanced metadata",
+      },
+      {
+        id: "analytics",
+        label: "Pin Analytics",
+        description: "Track impressions, saves, and clicks",
+      },
+    ],
+    settingsFields: [
+      {
+        id: "default_board",
+        label: "Default Board",
+        type: "select",
+        description: "Default board for new pins",
+      },
+      {
+        id: "link_url",
+        label: "Default Link URL",
+        type: "text",
+        description: "Default URL for pin links (e.g., your portfolio)",
+      },
+    ],
+    requiredEnvVars: ["PINTEREST_APP_ID", "PINTEREST_APP_SECRET"],
+    comingSoon: true,
+  },
 ];
 
 // ============================================================================
@@ -577,6 +899,21 @@ export function getCategoryLabel(category: IntegrationCategory): string {
     automation: "Automation",
     productivity: "Productivity",
     payments: "Payments",
+    social: "Social Media",
   };
   return labels[category];
+}
+
+/**
+ * Get social media integrations for Marketing Studio
+ */
+export function getSocialMediaIntegrations(): Integration[] {
+  return INTEGRATIONS.filter((i) => i.category === "social");
+}
+
+/**
+ * Get available (not coming soon) social media integrations
+ */
+export function getAvailableSocialMediaIntegrations(): Integration[] {
+  return INTEGRATIONS.filter((i) => i.category === "social" && !i.comingSoon);
 }
