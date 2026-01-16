@@ -10041,6 +10041,11 @@ enum FeatureFlagCategory {
   finance
   experimental
   system
+  // Platform module categories
+  platform_core
+  platform_operations
+  platform_client
+  platform_advanced
 }
 
 // Feature Flag Status - Lifecycle state of a feature
