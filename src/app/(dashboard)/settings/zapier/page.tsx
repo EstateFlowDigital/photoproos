@@ -9,7 +9,7 @@ import { ArrowLeftIcon } from "@/components/ui/settings-icons";
 
 export default async function ZapierSettingsPage() {
   const apiKeysResult = await getApiKeys();
-  const apiKeys = apiKeysResult.success && apiKeysResult.apiKeys ? apiKeysResult.apiKeys : [];
+  const apiKeys = apiKeysResult.success && apiKeysResult.data ? apiKeysResult.data : [];
 
   return (
     <div data-element="settings-zapier-page" className="space-y-6">
