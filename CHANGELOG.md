@@ -85,11 +85,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Gallery List Modal Accessibility** - Improved delete confirmation modals with:
-  - `role="dialog"` and `aria-modal="true"` attributes
-  - `aria-labelledby` linking to modal titles
-  - Escape key handler to close modals
-  - Click outside (backdrop) to close modals
+- **Gallery List Accessibility Improvements** - Enhanced accessibility throughout galleries:
+  - Delete confirmation modals with `role="dialog"`, `aria-modal="true"`, `aria-labelledby`
+  - Escape key handler and click-outside-to-close for modals
+  - ARIA labels on selection mode toggle button with `aria-pressed` state
+  - ARIA labels on bulk action buttons (Share, Export, Archive, Delete) with selection counts
+  - ARIA label on Select All/Deselect All button
 
 - **Marketing CMS Data Not Appearing** - Fixed the same `ok(data)` bug in `marketing-cms.ts`:
   - 49 instances of `ok(data)` replaced with `success(data)`
