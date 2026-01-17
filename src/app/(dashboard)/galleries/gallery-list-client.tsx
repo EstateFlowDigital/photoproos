@@ -537,6 +537,8 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
           {displayedGalleries.length > 0 && (
             <button
               onClick={toggleSelectMode}
+              aria-label={isSelectMode ? "Exit selection mode" : "Enter selection mode"}
+              aria-pressed={isSelectMode}
               className={cn(
                 "inline-flex items-center gap-2 whitespace-nowrap rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
                 isSelectMode
@@ -560,6 +562,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
             </span>
             <button
               onClick={selectedGalleries.size === displayedGalleries.length ? deselectAllGalleries : selectAllGalleries}
+              aria-label={selectedGalleries.size === displayedGalleries.length ? "Deselect all galleries" : "Select all galleries"}
               className="text-sm text-[var(--primary)] hover:underline"
             >
               {selectedGalleries.size === displayedGalleries.length ? "Deselect All" : "Select All"}
@@ -568,6 +571,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={handleBulkShare}
+              aria-label={`Share ${selectedGalleries.size} selected galleries`}
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
             >
               <ShareIcon className="h-4 w-4" />
@@ -575,6 +579,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
             </button>
             <button
               onClick={handleBulkExport}
+              aria-label={`Export ${selectedGalleries.size} selected galleries`}
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
             >
               <ExportIcon className="h-4 w-4" />
@@ -582,6 +587,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
             </button>
             <button
               onClick={handleBulkArchive}
+              aria-label={`Archive ${selectedGalleries.size} selected galleries`}
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--card-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-[var(--background-hover)]"
             >
               <ArchiveIcon className="h-4 w-4" />
@@ -589,6 +595,7 @@ export function GalleryListClient({ galleries, filter, availableServices }: Gall
             </button>
             <button
               onClick={handleBulkDelete}
+              aria-label={`Delete ${selectedGalleries.size} selected galleries`}
               className="inline-flex items-center gap-2 rounded-lg border border-[var(--error)]/30 bg-[var(--error)]/10 px-3 py-1.5 text-sm font-medium text-[var(--error)] transition-colors hover:bg-[var(--error)]/20"
             >
               <TrashIcon className="h-4 w-4" />

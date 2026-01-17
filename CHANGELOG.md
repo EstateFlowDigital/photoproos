@@ -40,6 +40,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Editor/Preview mode toggle in toolbar
     - Resizable preview panel
   - **New Component Renderers**: PricingTableRenderer and additional component types
+  - **A/B Testing Infrastructure**: Test different page variations
+    - ABTest, ABTestVariant, ComponentAnalytics database models
+    - Consistent hashing for traffic routing (same visitor sees same variant)
+    - Tracking for impressions, conversions, and clicks
+    - Server actions in `cms-ab-testing.ts`
+  - **Component Analytics Tracking**: Track component performance
+    - Page impressions and component-level events
+    - Daily analytics aggregation
+    - Analytics API endpoint at `/api/analytics/track`
+  - **Marketing Page Route**: Dynamic route for CMS pages at `/p/[...slug]`
+    - Supports both `layoutMode: "components"` and `layoutMode: "structured"`
+    - Preview mode via cookie for draft content viewing
 
 - **Comprehensive Module Configuration System** - Super admin config now includes ALL platform modules:
   - 34 platform modules added as configurable feature flags organized by category:
